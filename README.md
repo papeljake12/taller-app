@@ -40,6 +40,8 @@ Necesitas Python 3.12, `uv` y PostgreSQL.
 | `config/` | Ajustes de Django por entorno y las direcciones principales |
 | `cuentas/` | Talleres, usuarias, inicio y cierre de sesión |
 | `pedidos/` | La app de pedidos. Por ahora solo trae la pantalla Hoy |
+| `templates/` | La plantilla base (marco y menú) y las piezas del diseño |
+| `static/` | Estilos, JavaScript, la fuente Inter, HTMX y los íconos, todo guardado aquí |
 | `tests/` | Pruebas automáticas generales del proyecto |
 | `docs/bitacora/` | Una explicación sencilla por cada tarea terminada |
 

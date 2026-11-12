@@ -1,0 +1,9 @@
+{% load piezas %}{% comment %}
+Pieza Pasos de etapa: seis círculos; los cumplidos en negro con visto bueno, el actual con
+punto y los que faltan en blanco.
+  {% include "piezas/_pasos.html" with pasos=pasos %}
+`pasos` es una lista con, para cada etapa: nombre, estado ("hecho", "actual" o "pendiente")
+y valor (lo que se envía al tocarla). Cada paso es un botón; la vista decide qué hace (T07).
+{% endcomment %}<div class="pasos">
+{% for paso in pasos %}<button type="button" class="paso paso--{{ paso.estado }}" name="estado" value="{{ paso.valor }}"{% if paso.estado == "actual" %} aria-current="step"{% endif %}><span class="paso__circulo">{% if paso.estado == "hecho" %}{% icono "visto" 16 %}{% endif %}</span>{{ paso.nombre }}</button>
+{% endfor %}</div>

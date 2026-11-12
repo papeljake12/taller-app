@@ -1,12 +1,5 @@
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hoy</title>
-</head>
-<body>
-<h1>Hoy</h1>
-<p>{{ hoy|date:"l, j \d\e F"|capfirst }}</p>
-</body>
-</html>
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Pantalla Hoy. Sus tarjetas (cifras, qué hacer hoy, trabajos, gráfica, quién te debe y pedidos por etapa) llegan con T06 y T13.{% endcomment %}
+{% block pestana %}Hoy{% endblock %}
+{% block titulo %}Hoy{% endblock %}
+{% block apoyo %}<span class="encabezado__apoyo">{{ hoy|fecha_larga }}</span>{% endblock %}

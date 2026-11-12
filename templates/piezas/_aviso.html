@@ -1,0 +1,5 @@
+{% comment %}
+Pieza Aviso: los mensajes generales de un formulario ("faltan datos", "usuario o
+contraseña"). Va en ámbar, no en rojo: el rojo es solo para atrasos y deudas.
+  {% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+{% endcomment %}{% if mensajes %}<div class="aviso" role="alert">{% for mensaje in mensajes %}<p>{{ mensaje }}</p>{% endfor %}</div>{% endif %}

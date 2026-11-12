@@ -1,0 +1,29 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block pestana %}{% endblock %} · {% if request.taller %}{{ request.taller.nombre }}{% else %}Pedidos del taller{% endif %}</title>
+<link rel="preload" href="{% static 'fuentes/inter-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{% static 'fuentes/inter-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+<script src="{% static 'js/htmx.min.js' %}" defer></script>
+<script src="{% static 'js/app.js' %}" defer></script>
+</head>
+<body data-csrf="{{ csrf_token }}">
+{% block cuerpo %}
+<div class="marco{% if menu_contraido %} marco--contraido{% endif %}" data-marco>
+{% include "_menu.html" %}
+<main class="hoja" id="contenido">
+<header class="encabezado">
+<div class="encabezado__titulo"><h1>{% block titulo %}{% endblock %}</h1>{% block apoyo %}{% endblock %}</div>
+<div class="encabezado__acciones">{% block acciones %}{% endblock %}</div>
+</header>
+<div class="hoja__contenido">
+{% block contenido %}{% endblock %}
+</div>
+</main>
+</div>
+{% endblock %}
+</body>
+</html>

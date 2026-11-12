@@ -63,7 +63,11 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # El menú (secciones, sección actual, contadores) en todas las pantallas.
+                "config.menu.menu",
             ],
+            # {% load piezas %}: íconos, fecha larga y campos. Ver config/piezas.py.
+            "libraries": {"piezas": "config.piezas"},
         },
     },
 ]
@@ -136,6 +140,7 @@ USE_TZ = True
 # Archivos estáticos (estilos, fuentes, íconos) y archivos subidos (fotos, logos)
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"

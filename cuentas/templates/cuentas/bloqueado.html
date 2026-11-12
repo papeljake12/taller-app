@@ -1,16 +1,15 @@
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Acceso bloqueado</title>
-</head>
-<body>
-<main>
-<h1>Acceso bloqueado por un rato</h1>
-<p>Hubo {{ intentos }} intentos fallidos seguidos con este usuario. Por seguridad, espera {{ minutos }} minutos y vuelve a intentarlo.</p>
-<p>Si intentas antes de que pase ese tiempo, la espera vuelve a empezar.</p>
-<p><a href="{% url 'cuentas:entrar' %}">Volver a la página de entrada</a></p>
+{% extends "base.html" %}{% load piezas %}
+{% block pestana %}Acceso bloqueado{% endblock %}
+{% block cuerpo %}
+<div class="marco-acceso">
+<main class="acceso">
+<div class="acceso__marca">{% icono "tijeras" 22 %}<span>Pedidos del taller</span></div>
+<section class="tarjeta acceso__tarjeta" aria-labelledby="titulo-bloqueo">
+<h1 id="titulo-bloqueo">Acceso bloqueado por un rato</h1>
+<div class="aviso" role="alert"><p>Hubo {{ intentos }} intentos fallidos seguidos con este usuario. Por seguridad, espera {{ minutos }} minutos y vuelve a intentarlo.</p></div>
+<p class="texto-2">Si intentas antes de que pase ese tiempo, la espera vuelve a empezar.</p>
+<a class="boton" href="{% url 'cuentas:entrar' %}">Volver a la página de entrada</a>
+</section>
 </main>
-</body>
-</html>
+</div>
+{% endblock %}

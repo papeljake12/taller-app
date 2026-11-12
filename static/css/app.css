@@ -1,0 +1,1439 @@
+/* ==========================================================================
+   Hoja de estilos de la aplicación.
+
+   Reglas en docs/08-diseno.md; medidas copiadas de las páginas de diseno/.
+   Orden: 1. colores y fuente · 2. base · 3. marco, menú y hoja · 4. piezas ·
+   5. celular (menos de 768 px) · 6. menos movimiento.
+
+   Este archivo es compartido: después de la tanda 2 solo lo cambia el coordinador.
+   ========================================================================== */
+
+
+/* 1. Colores y fuente ------------------------------------------------------ */
+
+:root {
+  /* Colores de docs/08-diseno.md */
+  --negro: #1A1A1A;
+  --texto-2: #555555;
+  --texto-3: #8A8A8A;
+  --hoja: #F1F1F1;
+  --tarjeta: #FFFFFF;
+  --suave: #F7F7F7;
+  --linea: #E1E1E1;
+  --borde-control: #C9C9C9;
+  --riel: #EDEDED;
+  --azul: #2563C9;
+  --gris-grafica: #A6A6A6;
+  --rojo: #B3261E;
+  --verde: #1B6E3C;
+
+  /* Etiquetas: fondo y texto de cada tono */
+  --rojo-fondo: #FBE9E7;
+  --rojo-texto: #8C1D18;
+  --verde-fondo: #E2F1E7;
+  --verde-texto: #14532D;
+  --ambar-fondo: #FFF0C2;
+  --ambar-texto: #5C4500;
+  --azul-fondo: #E3EEFC;
+  --azul-texto: #0B4A8F;
+  --gris-fondo: #F1F1F1;
+  --gris-texto: #1A1A1A;
+
+  /* Tomados de las páginas de diseno/ */
+  --borde-campo: #8A8A8A;                    /* borde de campos y buscador */
+  --menu-actual: rgba(255, 255, 255, 0.18);  /* sección actual del menú */
+  --menu-campo: rgba(255, 255, 255, 0.14);   /* buscador del menú */
+  --apoyo-oscuro: #D4D4D4;                   /* texto de apoyo sobre negro */
+  --marco: linear-gradient(180deg, #000000 0%, #000000 70%, #2563C9 100%);
+  --franja: linear-gradient(90deg, #000000 0%, #000000 55%, #2563C9 100%);
+
+  /* Alto de la barra de abajo en celular (6 + 48 + 8 de relleno, 1 de borde) */
+  --alto-barra: 63px;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fuentes/inter-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fuentes/inter-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fuentes/inter-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fuentes/inter-latin-700-normal.woff2") format("woff2");
+}
+
+
+/* 2. Base ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: #000000;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--negro);
+}
+
+a {
+  color: var(--negro);
+}
+
+a:hover {
+  color: #000000;
+}
+
+h1,
+h2,
+h3,
+p,
+figure {
+  margin: 0;
+}
+
+h1 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.icono {
+  flex: none;
+}
+
+/* Visible solo para lectores de pantalla */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.texto-2 { color: var(--texto-2); }
+.texto-rojo { color: var(--rojo); }
+.texto-verde { color: var(--verde); }
+.nota { font-size: 13px; color: var(--texto-2); }
+.dinero { white-space: nowrap; }
+.tachado { text-decoration: line-through; color: var(--texto-2); }
+
+
+/* 3. Marco, menú y hoja ---------------------------------------------------- */
+
+/* El marco negro que termina en azul. Ocupa toda la pantalla. */
+.marco {
+  display: flex;
+  min-height: 100vh;
+  padding: 8px 8px 8px 0;
+  background: var(--marco);
+}
+
+/* Menú lateral, sobre el marco */
+.menu {
+  flex: 1 1 220px;
+  min-width: 220px;
+  max-width: 236px;
+  position: sticky;
+  top: 8px;
+  align-self: flex-start;
+  height: calc(100vh - 16px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 12px;
+  color: #FFFFFF;
+}
+
+.menu :focus-visible {
+  outline-color: #FFFFFF;
+}
+
+.menu__marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 4px 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.menu__taller {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu__contraer,
+.menu__abrir,
+.menu__lupa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.menu__contraer {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.menu__contraer:hover {
+  background: var(--menu-campo);
+}
+
+.menu__abrir {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.menu__lupa {
+  display: none;
+  width: 44px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--menu-campo);
+}
+
+.menu__buscar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--menu-campo);
+  color: #FFFFFF;
+}
+
+.menu__buscar input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #FFFFFF;
+}
+
+.menu__buscar input::placeholder {
+  color: #FFFFFF;
+  opacity: 0.85;
+}
+
+.menu__buscar input:disabled {
+  cursor: not-allowed;
+}
+
+.menu__lista,
+.menu__pie {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menu__pie {
+  margin-top: auto;
+}
+
+.menu__pie form {
+  margin: 0;
+}
+
+.menu__enlace {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #FFFFFF;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menu__enlace:hover {
+  color: #FFFFFF;
+  background: var(--menu-campo);
+}
+
+/* Secciones que todavía no existen: se ven, pero no llevan a ninguna parte */
+.menu__enlace[aria-disabled="true"] {
+  cursor: default;
+}
+
+.menu__enlace[aria-disabled="true"]:hover {
+  background: transparent;
+}
+
+.menu__enlace.es-actual {
+  background: var(--menu-actual);
+  font-weight: 600;
+}
+
+.menu__contador {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: var(--negro);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Menú contraído: una tira de 60 px con íconos */
+.marco--contraido .menu {
+  flex: 0 0 60px;
+  min-width: 60px;
+  max-width: 60px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.marco--contraido .menu__marca,
+.marco--contraido .menu__buscar {
+  display: none;
+}
+
+.marco--contraido .menu__abrir,
+.marco--contraido .menu__lupa {
+  display: flex;
+}
+
+.marco--contraido .menu__lista,
+.marco--contraido .menu__pie {
+  align-items: center;
+}
+
+.marco--contraido .menu__enlace {
+  position: relative;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  gap: 0;
+}
+
+.marco--contraido .menu__texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.marco--contraido .menu__contador {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 16px;
+  margin: 0;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* La hoja gris de contenido, encima del marco */
+.hoja {
+  flex: 5 1 600px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px 28px;
+  border-radius: 14px;
+  background: var(--hoja);
+}
+
+.hoja__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Encabezado de la hoja: título y dato de apoyo a la izquierda, botones a la derecha */
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px 20px;
+}
+
+.encabezado__titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.encabezado__apoyo {
+  color: var(--texto-2);
+}
+
+.encabezado__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.encabezado__acciones:empty {
+  display: none;
+}
+
+/* La barra de abajo y el panel "Más" solo existen en celular */
+.navegacion-celular,
+.panel-mas {
+  display: none;
+}
+
+/* Página de entrada: una tarjeta centrada sobre el marco */
+.marco-acceso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+  background: var(--marco);
+}
+
+.acceso {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.acceso__marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 8px;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.acceso__tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.acceso__tarjeta .boton {
+  width: 100%;
+}
+
+
+/* 4. Piezas ---------------------------------------------------------------- */
+
+/* Tarjeta: fondo blanco, borde de 1 px, esquinas de 12 px */
+.tarjeta {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  background: var(--tarjeta);
+}
+
+/* Tarjeta con cabeza y filas que llegan hasta el borde */
+.tarjeta--lista {
+  padding: 0;
+  overflow: hidden;
+}
+
+.tarjeta--con-buscador {
+  padding-top: 14px;
+}
+
+.tarjeta__cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.tarjeta__aparte {
+  color: var(--texto-2);
+}
+
+.tarjeta__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.tarjeta__nota {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+/* Tarjeta negra para avisos importantes (aviso de dotación) */
+.tarjeta-oscura {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px 24px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--negro);
+  color: #FFFFFF;
+}
+
+.tarjeta-oscura__titulo {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.tarjeta-oscura__apoyo {
+  color: var(--apoyo-oscuro);
+}
+
+.tarjeta-oscura :focus-visible {
+  outline-color: #FFFFFF;
+}
+
+/* Botones: principal negro (uno por zona) y secundario blanco */
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--borde-control);
+  border-radius: 8px;
+  background: var(--tarjeta);
+  color: var(--negro);
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: var(--suave);
+  color: var(--negro);
+}
+
+.boton--principal {
+  border-color: var(--negro);
+  background: var(--negro);
+  color: #FFFFFF;
+}
+
+.boton--principal:hover {
+  border-color: #000000;
+  background: #000000;
+  color: #FFFFFF;
+}
+
+/* Botón blanco sobre fondo negro */
+.boton--claro,
+.boton--claro:hover {
+  border-color: #FFFFFF;
+  background: #FFFFFF;
+  color: #000000;
+}
+
+.boton:disabled,
+.boton[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Filtro: botón con su conteo; el elegido va en negro */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--borde-control);
+  border-radius: 8px;
+  background: var(--tarjeta);
+  color: var(--negro);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.filtro:hover {
+  background: var(--suave);
+  color: var(--negro);
+}
+
+.filtro.es-elegido,
+.filtro[aria-pressed="true"] {
+  border-color: var(--negro);
+  background: var(--negro);
+  color: #FFFFFF;
+}
+
+/* Etiqueta: píldora de 12 px con uno de los cinco tonos */
+.etiqueta {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.etiqueta--rojo { background: var(--rojo-fondo); color: var(--rojo-texto); }
+.etiqueta--verde { background: var(--verde-fondo); color: var(--verde-texto); }
+.etiqueta--ambar { background: var(--ambar-fondo); color: var(--ambar-texto); }
+.etiqueta--azul { background: var(--azul-fondo); color: var(--azul-texto); }
+.etiqueta--gris { background: var(--gris-fondo); color: var(--gris-texto); }
+
+/* Etiqueta que puede partirse en dos líneas (dentro de los días del calendario) */
+.etiqueta--bloque {
+  white-space: normal;
+  border-radius: 6px;
+}
+
+/* Cifra: nombre, número grande y una línea de apoyo */
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.cifra {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.cifra:hover {
+  border-color: var(--borde-control);
+  color: inherit;
+}
+
+.cifra__nombre {
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.cifra__valor {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.cifra__apoyo {
+  color: var(--texto-2);
+}
+
+.cifra--alerta {
+  border-color: var(--rojo);
+}
+
+.cifra--alerta .cifra__nombre,
+.cifra--alerta .cifra__valor {
+  color: var(--rojo);
+}
+
+.cifra--buena .cifra__nombre,
+.cifra--buena .cifra__valor {
+  color: var(--verde);
+}
+
+/* Cifra grande dentro de una tarjeta, con su apoyo al lado */
+.cifra-grande {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.cifra-grande__apoyo {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texto-2);
+}
+
+/* Fila de lista: relleno de 10 a 14 px por 16 px y una línea arriba */
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.fila--compacta {
+  gap: 8px 12px;
+  padding: 10px 16px;
+}
+
+.fila__texto {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.fila__titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.fila__titulo strong {
+  font-size: 15px;
+}
+
+.fila__detalle {
+  color: var(--texto-2);
+}
+
+.fila__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Renglón de datos: nombre a la izquierda, valor a la derecha */
+.renglon {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--linea);
+}
+
+/* Casilla de marcar (materiales comprados) */
+.casilla {
+  display: flex;
+  flex: 0 0 20px;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--borde-campo);
+  border-radius: 5px;
+  background: var(--tarjeta);
+  color: #FFFFFF;
+}
+
+.casilla--marcada {
+  border-color: var(--verde);
+  background: var(--verde);
+}
+
+/* Tabla: encabezado gris suave y filas con línea; se desplaza dentro de su tarjeta */
+.tabla-contenedor {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla th {
+  padding: 10px 16px;
+  border-top: 1px solid var(--linea);
+  background: var(--suave);
+  color: var(--texto-2);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: 12px 16px;
+  border-top: 1px solid var(--linea);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.tabla .num {
+  text-align: right;
+}
+
+/* Buscador dentro de una tarjeta */
+.buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin: 0 16px 14px;
+  padding: 0 10px;
+  border: 1px solid var(--borde-campo);
+  border-radius: 8px;
+}
+
+.buscador:focus-within {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
+
+.buscador input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+
+.buscador input:focus {
+  outline: none;
+}
+
+/* Campo: etiqueta visible arriba y control con borde */
+.campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Campos en fila: se reparten el ancho y bajan solos cuando no caben */
+.campos > .campo {
+  flex: 1 1 150px;
+}
+
+.campo__control {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--borde-campo);
+  border-radius: 8px;
+  background: var(--tarjeta);
+  color: var(--negro);
+  font: inherit;
+  font-weight: 400;
+}
+
+textarea.campo__control {
+  min-height: 80px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.campo__ayuda {
+  font-weight: 400;
+  color: var(--texto-2);
+}
+
+.campo__error {
+  color: var(--ambar-texto);
+}
+
+.campo--error .campo__control {
+  border-color: var(--ambar-texto);
+}
+
+/* Aviso: mensajes de un formulario ("faltan datos", "usuario o contraseña") */
+.aviso {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--ambar-fondo);
+  color: var(--ambar-texto);
+  font-weight: 600;
+}
+
+/* Barra de progreso: riel gris y relleno azul (rojo si está atrasado) */
+.progreso {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--riel);
+}
+
+.progreso--alta {
+  height: 10px;
+}
+
+.progreso__relleno {
+  display: block;
+  height: 100%;
+  background: var(--azul);
+}
+
+.progreso--atrasado .progreso__relleno {
+  background: var(--rojo);
+}
+
+/* Barra proporcional sin riel ("Quién te debe") */
+.proporcion {
+  display: block;
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--azul);
+}
+
+.proporcion--atrasado {
+  background: var(--rojo);
+}
+
+/* Filas con barra */
+.fila-proporcion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.fila-talla {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 10px;
+}
+
+.fila-medida {
+  display: grid;
+  grid-template-columns: minmax(80px, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Gráfica de barras: azul y gris, esquinas de 4 px, con leyenda */
+.grafica {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: inherit;
+}
+
+.leyenda {
+  display: flex;
+  gap: 14px;
+  color: var(--texto-2);
+}
+
+.leyenda__serie {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.leyenda__color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.leyenda__color--cobrado { background: var(--azul); }
+.leyenda__color--gastado { background: var(--gris-grafica); }
+
+/* Pasos de etapa: seis círculos; cumplidos en negro, el actual con punto */
+.pasos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.paso {
+  display: flex;
+  flex: 1 1 80px;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  color: var(--negro);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.paso__circulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--tarjeta);
+}
+
+.paso--hecho .paso__circulo {
+  background: var(--negro);
+  color: #FFFFFF;
+}
+
+.paso--actual {
+  font-weight: 700;
+}
+
+.paso--actual .paso__circulo {
+  border: 2px solid var(--negro);
+}
+
+.paso--actual .paso__circulo::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--negro);
+}
+
+.paso--pendiente {
+  color: var(--texto-2);
+}
+
+.paso--pendiente .paso__circulo {
+  border: 1.5px solid var(--borde-control);
+}
+
+/* Fotos que pasan ("Trabajos del taller") */
+.tarjeta--fotos {
+  display: flex;
+  flex-direction: column;
+}
+
+.fotos {
+  flex: none;
+  position: relative;
+  height: 264px;
+  border-top: 1px solid var(--linea);
+  border-bottom: 1px solid var(--linea);
+  background: var(--riel);
+}
+
+.fotos__foto {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.64s linear;
+}
+
+.fotos__foto.es-visible {
+  opacity: 1;
+}
+
+.fotos__foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fotos__nombre {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--negro);
+  font-weight: 600;
+}
+
+.fotos__puntos {
+  display: flex;
+  gap: 6px;
+}
+
+.fotos__punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--negro);
+  opacity: 0.3;
+  transition: opacity 0.64s linear;
+}
+
+.fotos__punto.es-visible {
+  opacity: 1;
+}
+
+/* Sin fotos: la tarjeta invita a subir la primera */
+.fotos-vacio {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 264px;
+  padding: 16px;
+  border-top: 1px solid var(--linea);
+  border-bottom: 1px solid var(--linea);
+  background: var(--suave);
+  color: var(--texto-2);
+  text-align: center;
+}
+
+/* Dos columnas de tarjetas que se reparten 3 a 2 y terminan a la misma altura */
+.dos-columnas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.columna-ancha {
+  flex: 3 1 440px;
+  min-width: 0;
+}
+
+.columna-angosta {
+  flex: 2 1 300px;
+  min-width: 0;
+}
+
+/* Una columna con varias tarjetas apiladas: la última crece para llenar */
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.columna > :last-child {
+  flex-grow: 1;
+}
+
+
+/* 5. Celular (menos de 768 px) --------------------------------------------- */
+
+@media (max-width: 767.98px) {
+  html {
+    background: var(--hoja);
+  }
+
+  .marco {
+    display: block;
+    padding: 0;
+    background: var(--hoja);
+  }
+
+  .menu {
+    display: none;
+  }
+
+  .hoja {
+    min-height: 100vh;
+    gap: 0;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  /* Arriba, una franja con el título y el botón principal */
+  .encabezado {
+    flex-wrap: nowrap;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--franja);
+    color: #FFFFFF;
+  }
+
+  .encabezado :focus-visible {
+    outline-color: #FFFFFF;
+  }
+
+  .encabezado__titulo {
+    display: block;
+  }
+
+  .encabezado h1 {
+    font-size: 18px;
+  }
+
+  .encabezado__apoyo {
+    display: block;
+    font-size: 13px;
+    color: var(--apoyo-oscuro);
+  }
+
+  .encabezado__acciones .boton:not(.boton--principal) {
+    display: none;
+  }
+
+  .encabezado__acciones .boton--principal {
+    flex: none;
+    padding: 0 16px;
+    border-color: #FFFFFF;
+    background: #FFFFFF;
+    color: #000000;
+  }
+
+  .hoja__contenido {
+    gap: 12px;
+    padding: 14px 14px calc(14px + var(--alto-barra) + env(safe-area-inset-bottom));
+  }
+
+  /* Botones de al menos 44 px de alto */
+  .boton,
+  .filtro {
+    min-height: 44px;
+  }
+
+  /* 16 px en los campos para que el celular no agrande la pantalla al escribir */
+  .campo__control,
+  .buscador input {
+    font-size: 16px;
+  }
+
+  .cifras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .cifra {
+    padding: 10px 12px;
+  }
+
+  .cifra__nombre {
+    font-size: 13px;
+  }
+
+  .cifra__valor {
+    font-size: 22px;
+  }
+
+  .cifra__apoyo {
+    display: none;
+  }
+
+  .tarjeta__cabeza {
+    padding: 12px 14px;
+  }
+
+  .tarjeta__aparte,
+  .fila__detalle {
+    font-size: 13px;
+  }
+
+  .fila {
+    padding: 12px 14px;
+  }
+
+  .fila__acciones {
+    flex: 1 1 100%;
+  }
+
+  .fila__acciones .boton {
+    flex: 1;
+  }
+
+  /* Barra fija de abajo: Hoy, Pedidos, Calendario, Clientes y Más */
+  .navegacion-celular {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    padding: 6px 4px calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--borde-control);
+    background: #FFFFFF;
+  }
+
+  .navegacion-celular__enlace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 48px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--texto-2);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .navegacion-celular__enlace:hover {
+    color: var(--negro);
+  }
+
+  .navegacion-celular__enlace.es-actual {
+    color: var(--negro);
+    font-weight: 700;
+  }
+
+  .navegacion-celular__enlace.es-actual .icono {
+    stroke-width: 2;
+  }
+
+  .navegacion-celular__enlace[aria-disabled="true"] {
+    cursor: default;
+  }
+
+  /* Panel "Más": Cotizador, Telas, Resumen, Mi taller y Salir */
+  .panel-mas {
+    display: block;
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: calc(var(--alto-barra) + 8px + env(safe-area-inset-bottom));
+    z-index: 21;
+  }
+
+  .panel-mas form {
+    margin: 0;
+  }
+
+  .panel-mas__enlace {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 0;
+    border-top: 1px solid var(--linea);
+    background: none;
+    color: var(--negro);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .panel-mas__enlace:first-child {
+    border-top: 0;
+  }
+
+  .panel-mas form .panel-mas__enlace {
+    border-top: 1px solid var(--linea);
+  }
+
+  .panel-mas__enlace:hover {
+    background: var(--suave);
+    color: var(--negro);
+  }
+
+  .panel-mas__enlace.es-actual {
+    background: var(--hoja);
+    font-weight: 700;
+  }
+
+  .panel-mas__enlace[aria-disabled="true"] {
+    color: var(--texto-2);
+    cursor: default;
+  }
+}
+
+
+/* 6. Menos movimiento ------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fotos__foto,
+  .fotos__punto {
+    transition: none;
+  }
+}

@@ -5,10 +5,14 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from config.vistas import piezas
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("cuentas.urls")),
     path("", include("pedidos.urls")),
+    # Página interna con todas las piezas del diseño. Solo responde en desarrollo.
+    path("piezas/", piezas, name="piezas"),
 ]
 
 # En el computador de desarrollo, Django mismo entrega los archivos subidos (logos, fotos).
