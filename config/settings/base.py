@@ -43,6 +43,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # Sin sesión, toda pantalla lleva a "Entrar", salvo las marcadas como públicas.
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
+    # Deja a mano el taller de la usuaria (request.taller). Ver cuentas/aislamiento.py.
+    "cuentas.aislamiento.TallerMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # django-axes va de último: muestra el aviso de bloqueo cuando corresponde.

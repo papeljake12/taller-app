@@ -8,6 +8,8 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.db.models import Q
 
+from cuentas.aislamiento import DelTallerQuerySet
+
 
 class Taller(models.Model):
     nombre = models.CharField("nombre", max_length=50)
@@ -25,8 +27,8 @@ class Taller(models.Model):
         return self.nombre
 
 
-class UsuarioManager(UserManager):
-    """Maneja la creación de usuarios (create_user, create_superuser)."""
+class UsuarioManager(UserManager.from_queryset(DelTallerQuerySet)):
+    """Crea usuarios (create_user, create_superuser) y filtra por taller (del_taller)."""
 
 
 class Usuario(AbstractUser):

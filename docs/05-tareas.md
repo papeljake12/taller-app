@@ -28,7 +28,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
   `diseno/hoy-celular.html` en 390 px; y se cumple "Menú" de `docs/03-pantallas.md`, salvo el
   buscador, que llega con T05.
 
-- [ ] **T03. Aislamiento entre talleres.** Una forma única y reutilizable de filtrar por el
+- [x] **T03. Aislamiento entre talleres.** Una forma única y reutilizable de filtrar por el
   taller de la usuaria, y una prueba que cree dos talleres y confirme que ninguno ve al otro.
   Lista cuando: la prueba de aislamiento pasa y queda como plantilla para las tareas siguientes.
 

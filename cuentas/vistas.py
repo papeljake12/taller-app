@@ -3,7 +3,9 @@
 from django.conf import settings
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 
+from cuentas.aislamiento import sin_taller
 from cuentas.formularios import EntrarForm
 
 
@@ -14,8 +16,12 @@ class Entrar(LoginView):
     redirect_authenticated_user = True
 
 
+@method_decorator(sin_taller, name="dispatch")
 class Salir(LogoutView):
-    """Cierra la sesión. Solo acepta formularios (POST), nunca un simple enlace."""
+    """Cierra la sesión. Solo acepta formularios (POST), nunca un simple enlace.
+
+    También la usa el administrador, que no tiene taller.
+    """
 
 
 def bloqueado(request, original_response=None, credentials=None):
