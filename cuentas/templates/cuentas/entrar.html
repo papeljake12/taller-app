@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar</title>
+</head>
+<body>
+<main>
+<h1>Entrar</h1>
+<form method="post" action="{% url 'cuentas:entrar' %}" novalidate>
+{% csrf_token %}
+{% if form.non_field_errors %}
+<div role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+{% endif %}
+<p><label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label> {{ form.username }}</p>
+<p><label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label> {{ form.password }}</p>
+<input type="hidden" name="next" value="{{ next }}">
+<button type="submit">Entrar</button>
+</form>
+</main>
+</body>
+</html>

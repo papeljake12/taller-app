@@ -84,6 +84,9 @@ El detalle está en "Reglas para los agentes" de `docs/09-plan-de-construccion.m
 - Pruebas: `uv run pytest` (usa `config/settings/pruebas.py` y la base temporal `test_taller`).
 - Revisar la configuración: `uv run python manage.py check`
 - Migraciones: `uv run python manage.py makemigrations` y `uv run python manage.py migrate`
+- Crear el usuario administrador: `uv run python manage.py createsuperuser`. Los talleres y
+  sus usuarias se crean en el panel `/admin/`.
+- Desbloquear a alguien antes de tiempo: `uv run python manage.py axes_reset`
 - Datos de ejemplo: `uv run python manage.py cargar_ejemplos` (se crea en la tanda 2, con T22).
 
 ## Lo que no debes hacer

@@ -7,6 +7,7 @@ Cada entorno tiene su archivo, que parte de este:
 Los valores secretos (claves y contraseñas) no se escriben aquí: se leen del archivo .env.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 from config import entorno
@@ -29,6 +30,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "axes",
+    "cuentas",
     "pedidos",
 ]
 
@@ -38,8 +41,12 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Sin sesión, toda pantalla lleva a "Entrar", salvo las marcadas como públicas.
+    "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # django-axes va de último: muestra el aviso de bloqueo cuando corresponde.
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -76,6 +83,34 @@ DATABASES = {
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Usuarias, inicio de sesión y bloqueo por intentos fallidos
+
+AUTH_USER_MODEL = "cuentas.Usuario"
+
+AUTHENTICATION_BACKENDS = [
+    # Primero django-axes, que cuenta los intentos fallidos y bloquea.
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+LOGIN_URL = "cuentas:entrar"
+LOGIN_REDIRECT_URL = "pedidos:hoy"
+LOGOUT_REDIRECT_URL = "cuentas:entrar"
+
+# La sesión se cierra sola después de 7 días sin usar la aplicación. Cada visita
+# vuelve a contar los 7 días desde cero.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Después de 5 intentos fallidos seguidos, ese usuario queda bloqueado en ese equipo
+# (misma dirección de internet) durante 15 minutos.
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(minutes=15)
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_CALLABLE = "cuentas.vistas.bloqueado"
 
 
 # Contraseñas

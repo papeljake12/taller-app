@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceso bloqueado</title>
+</head>
+<body>
+<main>
+<h1>Acceso bloqueado por un rato</h1>
+<p>Hubo {{ intentos }} intentos fallidos seguidos con este usuario. Por seguridad, espera {{ minutos }} minutos y vuelve a intentarlo.</p>
+<p>Si intentas antes de que pase ese tiempo, la espera vuelve a empezar.</p>
+<p><a href="{% url 'cuentas:entrar' %}">Volver a la página de entrada</a></p>
+</main>
+</body>
+</html>

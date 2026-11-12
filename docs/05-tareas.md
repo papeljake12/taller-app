@@ -13,7 +13,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
   idioma `es-co`. Completar la sección "Comandos" de `CLAUDE.md`.
   Lista cuando: `uv run pytest` pasa con una prueba de humo y la página de inicio responde.
 
-- [ ] **T01. Talleres y usuarias.** Modelos `Taller` y `Usuario` (propio, desde la primera
+- [x] **T01. Talleres y usuarias.** Modelos `Taller` y `Usuario` (propio, desde la primera
   migración), panel de administración para crearlos, inicio y cierre de sesión con
   `django-axes`.
   Lista cuando: se cumple la pantalla "Inicio de sesión" de `docs/03-pantallas.md`.

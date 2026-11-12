@@ -13,8 +13,11 @@ Necesitas Python 3.12, `uv` y PostgreSQL.
 1. Copia `.env.example` como `.env` y llena los valores (clave de Django y datos de la base).
 2. Instala las librerías: `uv sync`
 3. Prepara la base de datos: `uv run python manage.py migrate`
-4. Enciende la aplicación: `uv run python manage.py runserver` y abre http://127.0.0.1:8000
-5. Corre las pruebas: `uv run pytest`
+4. Crea tu usuario administrador: `uv run python manage.py createsuperuser`
+5. Enciende la aplicación: `uv run python manage.py runserver` y abre http://127.0.0.1:8000
+6. En http://127.0.0.1:8000/admin/ crea un taller y una usuaria dueña para ese taller.
+   Con ella se entra a la aplicación.
+7. Corre las pruebas: `uv run pytest`
 
 ## Qué hay en este repositorio
 
@@ -35,6 +38,7 @@ Necesitas Python 3.12, `uv` y PostgreSQL.
 | `.env.example` | Variables de configuración, sin valores reales |
 | `pyproject.toml` y `uv.lock` | Las librerías del proyecto y sus versiones exactas |
 | `config/` | Ajustes de Django por entorno y las direcciones principales |
+| `cuentas/` | Talleres, usuarias, inicio y cierre de sesión |
 | `pedidos/` | La app de pedidos. Por ahora solo trae la pantalla Hoy |
 | `tests/` | Pruebas automáticas generales del proyecto |
 | `docs/bitacora/` | Una explicación sencilla por cada tarea terminada |

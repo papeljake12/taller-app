@@ -4,16 +4,22 @@ from datetime import date
 
 import pytest
 from django.conf import settings
+from django.core.management import call_command
 from django.db import connection
 from django.utils.formats import date_format
 
 
-@pytest.mark.django_db
-def test_la_pagina_de_inicio_responde(client):
-    respuesta = client.get("/")
+def test_la_pagina_de_inicio_responde(sesion_duena):
+    respuesta = sesion_duena.get("/")
 
     assert respuesta.status_code == 200
     assert "Hoy" in respuesta.text
+
+
+@pytest.mark.django_db
+def test_no_faltan_migraciones():
+    # Si alguien cambia un modelo y olvida crear la migración, esta prueba falla.
+    call_command("makemigrations", "--check", "--dry-run", verbosity=0)
 
 
 @pytest.mark.django_db
