@@ -77,13 +77,14 @@ El detalle está en "Reglas para los agentes" de `docs/09-plan-de-construccion.m
 
 ## Comandos
 
-Se completan en la tarea 0, cuando exista el proyecto:
-
-- Instalar: `uv sync`
-- Correr en local: `uv run python manage.py runserver`
-- Pruebas: `uv run pytest`
+- Instalar: `uv sync` (crea `.venv` con Python 3.12 y las librerías de `uv.lock`).
+- Configurar: copiar `.env.example` como `.env` y llenar los valores. El usuario de
+  PostgreSQL necesita el permiso `CREATEDB`, porque las pruebas crean una base temporal.
+- Correr en local: `uv run python manage.py runserver` (usa `config/settings/local.py`).
+- Pruebas: `uv run pytest` (usa `config/settings/pruebas.py` y la base temporal `test_taller`).
+- Revisar la configuración: `uv run python manage.py check`
 - Migraciones: `uv run python manage.py makemigrations` y `uv run python manage.py migrate`
-- Datos de ejemplo: `uv run python manage.py cargar_ejemplos`
+- Datos de ejemplo: `uv run python manage.py cargar_ejemplos` (se crea en la tanda 2, con T22).
 
 ## Lo que no debes hacer
 

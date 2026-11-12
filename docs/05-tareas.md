@@ -8,7 +8,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 
 ## Cimientos
 
-- [ ] **T00. Preparar el proyecto.** Proyecto Django 5.2 con `uv`, configuración por entorno
+- [x] **T00. Preparar el proyecto.** Proyecto Django 5.2 con `uv`, configuración por entorno
   leída de `.env`, PostgreSQL local, `pytest` funcionando, zona horaria `America/Bogota`,
   idioma `es-co`. Completar la sección "Comandos" de `CLAUDE.md`.
   Lista cuando: `uv run pytest` pasa con una prueba de humo y la página de inicio responde.
