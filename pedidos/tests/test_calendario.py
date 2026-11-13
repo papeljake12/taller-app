@@ -145,9 +145,19 @@ def test_la_leyenda_va_debajo(sesion_duena, ejemplo):
     html = tarjeta(sesion_duena.get(PAGINA).text, "t-mes")
 
     leyenda = html[html.index('<div class="calendario__leyenda">'):]
-    assert re.findall(r'etiqueta--(\w+)" aria-hidden="true">&nbsp;</span> ([\w ]+?) ?<', leyenda) == [
-        ("ambar", "Por entregar"), ("rojo", "Atrasado"), ("verde", "Entregado")
-    ]
+    # Cada cuadrito va junto a su palabra, para que en el celular no queden en líneas distintas.
+    assert re.findall(
+        r'<span class="calendario__clave"><span class="etiqueta etiqueta--(\w+)" aria-hidden="true">&nbsp;</span>'
+        r' ?([\w ]+?)</span>', leyenda
+    ) == [("ambar", "Por entregar"), ("rojo", "Atrasado"), ("verde", "Entregado")]
+
+
+def test_las_columnas_reparten_el_ancho_como_el_diseno(sesion_duena, ejemplo):
+    # El diseño le da al mes un poco más de ancho que en las demás pantallas de dos columnas.
+    html = sesion_duena.get(PAGINA).text
+
+    assert 'class="tarjeta tarjeta--lista columna-ancha columna-ancha--calendario"' in html
+    assert '<div class="columna-angosta columna-angosta--calendario columna">' in html
 
 
 def test_la_lista_trae_las_entregas_del_mes(sesion_duena, ejemplo):

@@ -13,14 +13,15 @@ Las partes que cambian al tocar un día viven aparte, porque la vista las devuel
 {% block contenido %}
 <nav class="navegacion-mes" aria-label="Cambiar de mes"><a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a></nav>
 <div class="dos-columnas">
-<section class="tarjeta tarjeta--lista columna-ancha" aria-labelledby="t-mes">
+<section class="tarjeta tarjeta--lista columna-ancha columna-ancha--calendario" aria-labelledby="t-mes">
 <h2 class="oculto" id="t-mes">{{ mes|mes_y_anio }}</h2>
 {# Sin JavaScript, cada día con entregas envía este formulario con su ?dia=. #}
 <form id="calendario-elegir-dia" action="{% url 'pedidos:calendario' %}" method="get"><input type="hidden" name="mes" value="{{ texto_mes }}"></form>
 {% include "pedidos/_calendario_dias.html" %}
-<div class="calendario__leyenda"><span class="etiqueta etiqueta--ambar" aria-hidden="true">&nbsp;</span> Por entregar <span class="etiqueta etiqueta--rojo" aria-hidden="true">&nbsp;</span> Atrasado <span class="etiqueta etiqueta--verde" aria-hidden="true">&nbsp;</span> Entregado</div>
+{# Cada cuadrito va con su palabra en un mismo .calendario__clave, para que no se separen al partirse la línea. #}
+<div class="calendario__leyenda"><span class="calendario__clave"><span class="etiqueta etiqueta--ambar" aria-hidden="true">&nbsp;</span> Por entregar</span><span class="calendario__clave"><span class="etiqueta etiqueta--rojo" aria-hidden="true">&nbsp;</span> Atrasado</span><span class="calendario__clave"><span class="etiqueta etiqueta--verde" aria-hidden="true">&nbsp;</span> Entregado</span></div>
 </section>
-<div class="columna-angosta columna">
+<div class="columna-angosta columna-angosta--calendario columna">
 {% include "pedidos/_calendario_entregas.html" %}
 <section class="tarjeta tarjeta--lista" aria-labelledby="t-semana">
 <div class="tarjeta__cabeza"><h2 id="t-semana">Semana más cargada</h2></div>
