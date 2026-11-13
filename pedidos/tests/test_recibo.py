@@ -121,6 +121,21 @@ def test_un_detalle_largo_se_parte_en_lineas_sin_salirse(taller):
     assert all(stringWidth(linea, "Helvetica", 12) <= 348 for linea in lineas)
 
 
+def test_las_letras_que_la_hoja_no_sabe_dibujar_salen_como_signo_de_pregunta(taller):
+    # Las fuentes que trae ReportLab solo tienen las letras de la codificación de Windows
+    # (con tildes, ñ, comillas y "…"); un emoji o una flecha no se dibujaría bien.
+    taller.nombre = "Taller 🧵 Ana"
+    cliente = fabricas.crear_cliente(taller, nombre="Comparsa “La Ñapa” → 2027")
+    pedido = fabricas.crear_pedido(taller, cliente=cliente, detalle="Vestidos 👗 de reina…")
+    abono = fabricas.crear_abono(pedido)
+
+    textos = textos_del_pdf(recibo_en_pdf(pedido, abono))
+
+    assert textos[0] == "Taller ? Ana"
+    assert "Comparsa “La Ñapa” ? 2027" in textos
+    assert "Vestidos ? de reina…" in textos
+
+
 def test_el_nombre_del_archivo_no_lleva_tildes_ni_espacios(taller):
     cliente = fabricas.crear_cliente(taller, nombre="Grupo de danza Tambores del Río / Ñ")
     pedido = fabricas.crear_pedido(taller, cliente=cliente)

@@ -6,9 +6,12 @@ datosRecibo y pdfRecibo): una hoja de 420 por 595 puntos (A5) con el nombre del 
 lo abonado hasta ese recibo y el saldo que quedó.
 
 Solo usa las fuentes que trae ReportLab (Helvetica y Times), así que no descarga nada.
+Esas fuentes solo tienen las letras de la codificación de Windows (cp1252): tildes, ñ,
+comillas y "…" sí; un emoji o una flecha no. Esas se cambian por "?", como en la demo.
 El PDF va sin comprimir: pesa poco y así las pruebas pueden leer su texto.
 """
 
+import re
 from io import BytesIO
 
 from django.utils import timezone
@@ -68,6 +71,16 @@ def nombre_del_recibo(pedido, abono):
     return f"recibo-{cliente}-{abono.fecha.isoformat()}.pdf"
 
 
+def para_la_hoja(texto):
+    """El texto con solo las letras que las fuentes de ReportLab saben dibujar.
+
+    Lo que no está en cp1252 (un emoji, una flecha) queda como "?", y los saltos de línea o
+    tabulaciones como un espacio, para que el recibo siempre se vea igual.
+    """
+    texto = re.sub(r"\s", " ", str(texto))
+    return texto.encode("cp1252", "replace").decode("cp1252")
+
+
 def _tamano_que_cabe(texto, fuente, tamano, minimo=8):
     """El tamaño de letra más grande (hasta `tamano`) con el que el texto cabe en la hoja."""
     ancho = DERECHA - IZQUIERDA
@@ -87,7 +100,8 @@ def _lineas(texto, fuente, tamano, maximo):
 
 def recibo_en_pdf(pedido, abono, hoy=None):
     """Los bytes del PDF del recibo."""
-    datos = datos_del_recibo(pedido, abono, hoy)
+    datos = {clave: para_la_hoja(valor) for clave, valor in
+             datos_del_recibo(pedido, abono, hoy).items()}
     archivo = BytesIO()
     hoja = Canvas(archivo, pagesize=(ANCHO, ALTO), pageCompression=0)
     hoja.setTitle(f"Recibo de abono · {datos['cliente']}")
