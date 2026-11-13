@@ -567,3 +567,10 @@ def test_la_ventana_puede_cambiar_cancelar_por_cerrar():
     html = plantilla.render({"accion": "/x/"})
 
     assert "data-cerrar-ventana>Cerrar</button>" in html
+
+
+
+def test_en_celular_las_entregas_del_calendario_son_barritas_sin_partir_nombres():
+    regla = re.search(r"\.calendario__entregas \.etiqueta \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
+    assert regla and "font-size: 0;" in regla.group(1) and "height: 6px;" in regla.group(1)
+    assert "overflow-wrap: anywhere" not in _reglas_de_celular()
