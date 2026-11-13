@@ -50,7 +50,8 @@ Se definen una sola vez como variables de CSS y no se escriben a mano en cada pa
 | `--tarjeta` | `#FFFFFF` | Fondo de tarjetas |
 | `--suave` | `#F7F7F7` | Encabezado de tablas, celdas apagadas |
 | `--linea` | `#E1E1E1` | Borde de tarjetas y divisores |
-| `--borde-control` | `#C9C9C9` | Borde de botones secundarios y campos |
+| `--borde-control` | `#C9C9C9` | Borde de botones secundarios |
+| `--borde-campo` | `#8A8A8A` | Borde de campos y del buscador |
 | `--riel` | `#EDEDED` | Fondo de las barras de progreso |
 | `--azul` | `#2563C9` | Barras de gráficas, barras de progreso, final del marco |
 | `--gris-grafica` | `#A6A6A6` | Segunda serie de las gráficas ("Gastado") |
@@ -133,7 +134,7 @@ Cada pieza se construye una vez (clase de CSS y, si aplica, plantilla parcial) y
 | Etiqueta | Píldora de 12 px con uno de los cinco tonos |
 | Fila de lista | Relleno 10 a 14 px por 16 px y una línea `--linea` arriba |
 | Tabla | Encabezado `--suave`, filas con línea, dentro de una tarjeta con desplazamiento horizontal |
-| Campo | Etiqueta visible arriba, borde `--borde-control`, esquinas de 8 px |
+| Campo | Etiqueta visible arriba, borde `--borde-campo`, esquinas de 8 px |
 | Filtro | Botón con su conteo; el elegido va en negro |
 | Barra de progreso | Riel `--riel`, relleno `--azul` (rojo si está atrasado) |
 | Gráfica de barras | Barras `--azul` y `--gris-grafica`, esquinas de 4 px, ejes discretos, con leyenda |

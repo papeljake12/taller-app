@@ -3,7 +3,21 @@
 Aplicación para que un taller de confección lleve pedidos, pagos, tallas, clientes, telas y
 gastos desde el celular.
 
-Estado: en planeación. Todavía no hay código de la aplicación; solo la demo y los documentos.
+Estado: en construcción, por tandas (ver `docs/09-plan-de-construccion.md`). Lo que cambió
+en cada tarea está explicado en `docs/bitacora/`.
+
+## Cómo correrla en tu computador
+
+Necesitas Python 3.12, `uv` y PostgreSQL.
+
+1. Copia `.env.example` como `.env` y llena los valores (clave de Django y datos de la base).
+2. Instala las librerías: `uv sync`
+3. Prepara la base de datos: `uv run python manage.py migrate`
+4. Crea tu usuario administrador: `uv run python manage.py createsuperuser`
+5. Enciende la aplicación: `uv run python manage.py runserver` y abre http://127.0.0.1:8000
+6. En http://127.0.0.1:8000/admin/ crea un taller y una usuaria dueña para ese taller.
+   Con ella se entra a la aplicación.
+7. Corre las pruebas: `uv run pytest`
 
 ## Qué hay en este repositorio
 
@@ -22,6 +36,14 @@ Estado: en planeación. Todavía no hay código de la aplicación; solo la demo 
 | `diseno/` | El diseño aprobado, una página por pantalla. Se abre en el navegador |
 | `demo/index.html` | La primera demo, como referencia de comportamiento y textos |
 | `.env.example` | Variables de configuración, sin valores reales |
+| `pyproject.toml` y `uv.lock` | Las librerías del proyecto y sus versiones exactas |
+| `config/` | Ajustes de Django por entorno y las direcciones principales |
+| `cuentas/` | Talleres, usuarias, inicio y cierre de sesión |
+| `pedidos/` | La app de pedidos. Por ahora solo trae la pantalla Hoy |
+| `templates/` | La plantilla base (marco y menú) y las piezas del diseño |
+| `static/` | Estilos, JavaScript, la fuente Inter, HTMX y los íconos, todo guardado aquí |
+| `tests/` | Pruebas automáticas generales del proyecto |
+| `docs/bitacora/` | Una explicación sencilla por cada tarea terminada |
 
 ## Cómo empezar a trabajar
 

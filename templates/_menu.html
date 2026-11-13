@@ -1,0 +1,24 @@
+{% load piezas %}{# El menú en sus tres formas: lateral (normal o contraído), barra de abajo en celular y panel "Más". Las secciones salen de config/menu.py. #}
+<nav class="menu" aria-label="Secciones">
+<div class="menu__marca">{% icono "tijeras" 22 %}<span class="menu__taller">{{ request.taller.nombre|default:"Taller" }}</span><button type="button" class="menu__contraer" aria-label="Contraer el menú" data-menu-contraer>{% icono "contraer" %}</button></div>
+<button type="button" class="menu__abrir" aria-label="Abrir el menú" title="Abrir el menú" data-menu-abrir>{% icono "tijeras" 22 %}</button>
+<label class="menu__buscar">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar</span><input type="search" placeholder="Buscar" disabled title="El buscador llega con la tarea T05"></label>
+<button type="button" class="menu__lupa" aria-label="Buscar" title="Buscar" data-menu-abrir>{% icono "buscar" 16 "2" %}</button>
+<div class="menu__lista">
+{% for entrada in menu.secciones %}{% include "_menu_entrada.html" %}
+{% endfor %}</div>
+<div class="menu__pie">
+{% include "_menu_entrada.html" with entrada=menu.mi_taller %}
+<form method="post" action="{% url 'cuentas:salir' %}">{% csrf_token %}<button type="submit" class="menu__enlace" data-nombre="Salir"{% if menu_contraido %} title="Salir"{% endif %}>{% icono "salir" %}<span class="menu__texto">Salir</span></button></form>
+</div>
+</nav>
+<nav class="navegacion-celular" aria-label="Secciones">
+{% for entrada in menu.barra %}{% if entrada.url %}<a class="navegacion-celular__enlace{% if entrada.actual %} es-actual{% endif %}" href="{{ entrada.url }}"{% if entrada.actual %} aria-current="page"{% endif %}>{% else %}<a class="navegacion-celular__enlace" aria-disabled="true">{% endif %}{% icono entrada.icono 22 %}{{ entrada.nombre }}</a>
+{% endfor %}<button type="button" class="navegacion-celular__enlace{% if menu.mas_actual %} es-actual{% endif %}" aria-expanded="false" aria-controls="panel-mas" data-mas>{% icono "mas" 22 %}Más</button>
+</nav>
+<div class="panel-mas" id="panel-mas" hidden data-panel-mas>
+<div class="tarjeta tarjeta--lista">
+{% for entrada in menu.mas %}{% if entrada.url %}<a class="panel-mas__enlace{% if entrada.actual %} es-actual{% endif %}" href="{{ entrada.url }}"{% if entrada.actual %} aria-current="page"{% endif %}>{% else %}<a class="panel-mas__enlace" aria-disabled="true">{% endif %}{% icono entrada.icono %}{{ entrada.nombre }}</a>
+{% endfor %}<form method="post" action="{% url 'cuentas:salir' %}">{% csrf_token %}<button type="submit" class="panel-mas__enlace">{% icono "salir" %}Salir</button></form>
+</div>
+</div>

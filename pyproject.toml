@@ -1,0 +1,27 @@
+[project]
+name = "taller-app"
+version = "0.1.0"
+description = "Pedidos, pagos, tallas, clientes, telas y gastos de un taller de confección"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "django>=5.2,<5.3",
+    "django-axes>=9.0.0",
+    "pillow>=13.0.0",
+    "psycopg[binary]>=3.2",
+]
+
+[dependency-groups]
+dev = [
+    "playwright>=1.65.1",
+    "pytest>=9.2.0",
+    "pytest-django>=4.14.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.pruebas"
+python_files = ["test_*.py"]
+addopts = "--strict-markers"

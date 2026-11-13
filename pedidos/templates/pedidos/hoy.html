@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Pantalla Hoy. Sus tarjetas (cifras, qué hacer hoy, trabajos, gráfica, quién te debe y pedidos por etapa) llegan con T06 y T13.{% endcomment %}
+{% block pestana %}Hoy{% endblock %}
+{% block titulo %}Hoy{% endblock %}
+{% block apoyo %}<span class="encabezado__apoyo">{{ hoy|fecha_larga }}</span>{% endblock %}

@@ -8,17 +8,17 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 
 ## Cimientos
 
-- [ ] **T00. Preparar el proyecto.** Proyecto Django 5.2 con `uv`, configuración por entorno
+- [x] **T00. Preparar el proyecto.** Proyecto Django 5.2 con `uv`, configuración por entorno
   leída de `.env`, PostgreSQL local, `pytest` funcionando, zona horaria `America/Bogota`,
   idioma `es-co`. Completar la sección "Comandos" de `CLAUDE.md`.
   Lista cuando: `uv run pytest` pasa con una prueba de humo y la página de inicio responde.
 
-- [ ] **T01. Talleres y usuarias.** Modelos `Taller` y `Usuario` (propio, desde la primera
+- [x] **T01. Talleres y usuarias.** Modelos `Taller` y `Usuario` (propio, desde la primera
   migración), panel de administración para crearlos, inicio y cierre de sesión con
   `django-axes`.
   Lista cuando: se cumple la pantalla "Inicio de sesión" de `docs/03-pantallas.md`.
 
-- [ ] **T02. Base visual.** Según `docs/08-diseno.md`: hoja de estilos con las variables de
+- [x] **T02. Base visual.** Según `docs/08-diseno.md`: hoja de estilos con las variables de
   color y todas las piezas (tarjeta, botones, cifra, etiqueta, tabla, campo, filtro, barra),
   plantilla base con el marco, el menú lateral que se contrae y la barra de abajo en celular.
   Inter, HTMX y los íconos guardados en el proyecto, sin CDN. Incluye una página interna
@@ -28,7 +28,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
   `diseno/hoy-celular.html` en 390 px; y se cumple "Menú" de `docs/03-pantallas.md`, salvo el
   buscador, que llega con T05.
 
-- [ ] **T03. Aislamiento entre talleres.** Una forma única y reutilizable de filtrar por el
+- [x] **T03. Aislamiento entre talleres.** Una forma única y reutilizable de filtrar por el
   taller de la usuaria, y una prueba que cree dos talleres y confirme que ninguno ve al otro.
   Lista cuando: la prueba de aislamiento pasa y queda como plantilla para las tareas siguientes.
 

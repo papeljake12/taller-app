@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% load piezas %}
+{% block pestana %}Entrar{% endblock %}
+{% block cuerpo %}
+<div class="marco-acceso">
+<main class="acceso">
+<div class="acceso__marca">{% icono "tijeras" 22 %}<span>Pedidos del taller</span></div>
+<section class="tarjeta acceso__tarjeta" aria-labelledby="titulo-entrar">
+<h1 id="titulo-entrar">Entrar</h1>
+<form class="acceso__tarjeta" method="post" action="{% url 'cuentas:entrar' %}" novalidate>
+{% csrf_token %}
+{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+{% include "piezas/_campo.html" with campo=form.username %}
+{% include "piezas/_campo.html" with campo=form.password %}
+<input type="hidden" name="next" value="{{ next }}">
+<button type="submit" class="boton boton--principal">Entrar</button>
+</form>
+</section>
+</main>
+</div>
+{% endblock %}
