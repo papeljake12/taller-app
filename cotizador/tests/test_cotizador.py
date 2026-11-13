@@ -402,6 +402,21 @@ def test_guardar_con_el_mismo_nombre_cambia_la_prenda_en_vez_de_repetirla(
     assert camisa.nombre == "camisa POLO bordada"
 
 
+@pytest.mark.parametrize("escrito", ["Camisa", "camisa"])
+def test_guardar_prefiere_la_prenda_con_el_nombre_exacto(sesion_duena, taller, escrito):
+    """Desde /admin/ puede haber "Camisa" y "camisa": se cambia la que se escribió igual."""
+    otro_nombre = "camisa" if escrito == "Camisa" else "Camisa"
+    fabricas.crear_prenda(taller, nombre="Camisa", mano_obra=1)
+    fabricas.crear_prenda(taller, nombre="camisa", mano_obra=1)
+
+    respuesta = sesion_duena.post(URL_GUARDAR, con(prenda=escrito, mano_obra="15000"))
+
+    assert respuesta.status_code == 200
+    prendas = PrendaGuardada.objects.filter(taller=taller)
+    assert prendas.get(nombre=escrito).mano_obra == 15_000
+    assert prendas.get(nombre=otro_nombre).mano_obra == 1
+
+
 def test_guardar_sin_nombre_pide_la_prenda(sesion_duena, taller):
     respuesta = sesion_duena.post(URL_GUARDAR, con(prenda="  "), headers=BOTON)
 
@@ -603,6 +618,35 @@ def test_crear_pedido_sin_lo_necesario_lo_pide(sesion_duena, taller, cambios, me
     assert "Revisa los campos marcados." in respuesta.text
     assert not Pedido.objects.filter(taller=taller).exists()
     assert not Cliente.objects.filter(taller=taller).exists()
+
+
+@pytest.mark.parametrize(
+    "cambios",
+    [
+        # $ 26.000.000.000: no cabe en el total del pedido.
+        {"cantidad": "2000", "metros": "10", "precio_metro": "1.000.000"},
+        # $ 1.560.000.000: cabe, pero "Nuevo pedido" tampoco lo acepta.
+        {"cantidad": "2000", "metros": "", "precio_metro": "", "insumos": "", "extra": "",
+         "mano_obra": "600.000"},
+    ],
+)
+def test_crear_pedido_con_un_total_demasiado_grande_lo_avisa(sesion_duena, taller, cambios):
+    respuesta = sesion_duena.post(URL_CREAR, con(**cambios), headers=BOTON)
+
+    assert respuesta.status_code == 422
+    assert "Revisa los valores: el total pasa de $ 1.000.000.000." in respuesta.text
+    assert not Pedido.objects.filter(taller=taller).exists()
+    assert not Cliente.objects.filter(taller=taller).exists()
+
+
+def test_crear_pedido_con_un_total_de_mil_millones_justos_se_acepta(sesion_duena, taller):
+    sesion_duena.post(
+        URL_CREAR,
+        con(cantidad="1000", metros="", precio_metro="", insumos="", extra="", ganancia="0",
+            mano_obra="1.000.000"),
+    )
+
+    assert Pedido.objects.get(taller=taller).total == 1_000_000_000
 
 
 def test_crear_pedido_sin_lo_necesario_y_sin_javascript_muestra_la_pagina(sesion_duena, taller):

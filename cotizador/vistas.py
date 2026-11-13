@@ -156,7 +156,13 @@ def guardar_prenda(request, datos):
     valores = {nombre: datos[nombre] or 0 for nombre in CAMPOS_DE_LA_PRENDA}
     nombre = datos["prenda"]
     for _intento in range(2):
-        prenda = prendas_del_taller(request).filter(nombre__iexact=nombre).first()
+        # Primero la que se llama exactamente igual: desde /admin/ puede haber "Camisa" y
+        # "camisa", y cambiarle el nombre a la otra chocaría con la que ya se llama así.
+        prendas = prendas_del_taller(request)
+        prenda = (
+            prendas.filter(nombre=nombre).first()
+            or prendas.filter(nombre__iexact=nombre).first()
+        )
         if prenda is None:
             prenda = PrendaGuardada(taller=request.taller)
         prenda.nombre = nombre

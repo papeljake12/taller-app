@@ -22,7 +22,7 @@ from django import forms
 from cotizador.models import PrendaGuardada
 from pedidos import calculos
 from pedidos.formularios.comun import MAXIMO_PESOS, CampoPesos
-from pedidos.formularios.lista import NuevoPedidoForm
+from pedidos.formularios.lista import TOTAL_MAXIMO, NuevoPedidoForm
 from pedidos.models import Cliente
 
 # Los metros de tela por prenda caben en PrendaGuardada.metros: hasta 9999,99.
@@ -273,8 +273,14 @@ class FormularioCotizacion(forms.Form):
             self.add_error("prenda", "Escribe qué prenda es.")
         if not self.cleaned_data["cantidad"]:
             self.add_error("cantidad", "Escribe cuántas prendas son.")
-        if not self.errors and self.cotizacion().precio_unidad <= 0:
-            self.add_error(None, "Escribe lo que cuesta hacer una para calcular el precio.")
+        if not self.errors:
+            cotizacion = self.cotizacion()
+            if cotizacion.precio_unidad <= 0:
+                self.add_error(None, "Escribe lo que cuesta hacer una para calcular el precio.")
+            elif cotizacion.total > TOTAL_MAXIMO:
+                # El mismo tope de "Nuevo pedido": un total más grande es un error al escribir
+                # (y no cabría en el pedido).
+                self.add_error(None, "Revisa los valores: el total pasa de $ 1.000.000.000.")
         return not self.errors
 
     def exigir_nombre(self):
