@@ -2913,6 +2913,17 @@ details > summary.fila::after {
 
 /* --- Telas (inicio) --- */
 
+/* La tarjeta de la tabla llega hasta abajo (.llenar, en telas/_tabla.html) y solo la tabla se
+   desplaza por dentro (.desplazable), con su encabezado fijo; las cifras quedan quietas.
+   Con pocas telas la tabla mide lo suyo y la nota "Toca el nombre de una tela..." va justo
+   debajo, como antes (no al fondo de la tarjeta). Con muchas, la tabla se encoge hasta el
+   espacio que queda y la nota se queda quieta abajo. */
+@media (min-width: 768px) {
+  #telas > .desplazable {
+    flex: 0 1 auto;
+  }
+}
+
 /* --- Telas (fin) --- */
 
 

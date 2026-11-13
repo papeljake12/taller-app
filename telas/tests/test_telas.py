@@ -1,5 +1,9 @@
-"""T16. Telas: la pantalla, "Entró" y "Usé" con su historial, agregar y quitar una tela."""
+"""T16. Telas: la pantalla, "Entró" y "Usé" con su historial, agregar y quitar una tela.
 
+Y el ajuste "pantalla fija y animaciones": la tabla llena su tarjeta y se desplaza por dentro,
+cada fila lleva el id de su tela y cada acción que guarda trae su aviso corto."""
+
+import json
 import re
 from datetime import date, datetime
 from decimal import Decimal
@@ -262,7 +266,7 @@ def test_al_guardar_cierra_la_ventana_y_trae_la_tabla_las_cifras_y_el_apoyo(sesi
     assert respuesta.headers["HX-Retarget"] == "#telas"
     assert respuesta.headers["HX-Reswap"] == "outerHTML"
     html = respuesta.text
-    assert html.startswith('<section class="tarjeta tarjeta--lista" id="telas"')
+    assert html.startswith('<section class="tarjeta tarjeta--lista llenar" id="telas"')
     # Con 16 m ya no se está acabando.
     assert '<span class="etiqueta etiqueta--verde">Suficiente</span>' in fila(html, "Piqué blanco")
     cifras = re.search(r'<section class="cifras" id="telas-cifras"[^>]*>', html).group(0)
@@ -270,7 +274,9 @@ def test_al_guardar_cierra_la_ventana_y_trae_la_tabla_las_cifras_y_el_apoyo(sesi
     assert ('<span class="encabezado__apoyo" id="telas-apoyo" hx-swap-oob="true">'
             "1 tela, 16 m en total</span>") in html
     assert "Ninguna por ahora" in html
-    assert respuesta.headers["HX-Trigger"] == "cerrar-ventana"
+    # Cierra la ventana y avisa cuánto quedó (config/avisos.py).
+    assert json.loads(respuesta.headers["HX-Trigger"]) == {
+        "cerrar-ventana": "", "aviso": "Piqué blanco: quedan 16 m."}
 
 
 def menu_lateral(html):
@@ -609,3 +615,136 @@ def test_no_se_puede_quitar_la_tela_de_otro_taller(sesion_duena):
     assert sesion_duena.post(url_quitar(ajena), headers=HTMX).status_code == 404
     assert Tela.objects.filter(pk=ajena.pk).exists()
     assert MovimientoTela.objects.filter(tela=ajena).exists()
+
+
+# --- Pantalla fija y animaciones (ajuste) ---------------------------------------------------
+
+
+def aviso(respuesta):
+    """El aviso corto que trae una respuesta de HTMX (cabecera HX-Trigger), o None."""
+    return json.loads(respuesta.headers.get("HX-Trigger", "{}")).get("aviso")
+
+
+def avisos_pendientes(html):
+    """Los avisos que una página trae de la acción anterior (base.html, #avisos-pendientes)."""
+    return re.findall(r"<p data-aviso>([^<]*)</p>", html)
+
+
+def test_la_tabla_llena_su_tarjeta_y_se_desplaza_por_dentro(sesion_duena, pique):
+    """docs/08-diseno.md, "Pantalla fija": la tarjeta llega hasta abajo y, si hay muchas telas,
+    solo la tabla se desplaza (con el encabezado fijo); las cifras se quedan quietas."""
+    html = sesion_duena.get(URL).text
+
+    assert '<section class="tarjeta tarjeta--lista llenar" id="telas"' in html
+    assert '<div class="tabla-contenedor desplazable">' in html
+    # Las cifras van antes de la tarjeta, fuera de lo que se desplaza.
+    assert html.index('id="telas-cifras"') < html.index('id="telas"')
+
+
+def test_sin_telas_la_tarjeta_tambien_llena(sesion_duena):
+    html = sesion_duena.get(URL).text
+
+    assert '<section class="tarjeta tarjeta--lista llenar" id="telas"' in html
+    assert "desplazable" not in html
+
+
+def test_cada_fila_lleva_el_id_de_su_tela(sesion_duena, taller, pique):
+    """El id no cambia de una respuesta a otra: así la fila que se mueve no parpadea, la nueva
+    aparece y la que se quita se va (static/js/app.js, sección 11)."""
+    dril = fabricas.crear_tela(taller, nombre="Dril azul", metros=18, minimo=10)
+
+    html = sesion_duena.get(URL).text
+
+    assert re.findall(r'<tr class="tabla__fila" id="(tela-\d+)">', html) == [
+        f"tela-{pique.pk}", f"tela-{dril.pk}"]
+
+
+def test_al_mover_una_tela_su_fila_conserva_el_id(sesion_duena, taller, pique):
+    dril = fabricas.crear_tela(taller, nombre="Dril azul", metros=18, minimo=10)
+
+    # Usé 9 m de dril: ahora se está acabando y cambia de lugar, pero sigue siendo la misma.
+    html = mover(sesion_duena, dril, "uso", "9").text
+
+    assert f'<tr class="tabla__fila" id="tela-{dril.pk}">' in html
+    assert f'<tr class="tabla__fila" id="tela-{pique.pk}">' in html
+    assert html.count('<tr class="tabla__fila"') == 2
+
+
+def test_la_tela_nueva_llega_con_su_id_y_la_quitada_se_va(sesion_duena, pique):
+    html = sesion_duena.post(reverse("telas:nueva"), {"nombre": "Lino", "metros": "2"},
+                             headers=HTMX).text
+    lino = Tela.objects.get(nombre="Lino")
+    assert f'id="tela-{lino.pk}"' in html and f'id="tela-{pique.pk}"' in html
+
+    html = sesion_duena.post(url_quitar(lino), headers=HTMX).text
+    assert f'id="tela-{lino.pk}"' not in html and f'id="tela-{pique.pk}"' in html
+
+
+def test_entro_y_use_avisan_cuanto_queda(sesion_duena, pique):
+    """El texto de la demo: '<tela>: quedan <metros>.'. Son metros, no plata."""
+    assert aviso(mover(sesion_duena, pique, "entro", "4")) == "Piqué blanco: quedan 10 m."
+    assert aviso(mover(sesion_duena, pique, "uso", "2,5")) == "Piqué blanco: quedan 7,5 m."
+    assert aviso(mover(sesion_duena, pique, "uso", "7,5")) == "Piqué blanco: quedan 0 m."
+
+
+def test_la_costurera_tambien_ve_el_aviso_de_use(client, taller, pique):
+    client.force_login(fabricas.crear_usuaria(taller, rol="costurera"))
+
+    assert aviso(mover(client, pique, "uso", "1")) == "Piqué blanco: quedan 5 m."
+
+
+def test_agregar_una_tela_avisa(sesion_duena):
+    respuesta = sesion_duena.post(reverse("telas:nueva"), {"nombre": "Lino", "metros": "2"},
+                                  headers=HTMX)
+
+    assert json.loads(respuesta.headers["HX-Trigger"]) == {
+        "cerrar-ventana": "", "aviso": "Tela agregada."}
+
+
+def test_quitar_una_tela_avisa(sesion_duena, pique):
+    """La demo no tenía texto para quitar una tela: uno corto del mismo estilo."""
+    respuesta = sesion_duena.post(url_quitar(pique), headers=HTMX)
+
+    assert json.loads(respuesta.headers["HX-Trigger"]) == {
+        "cerrar-ventana": "", "aviso": "Tela quitada."}
+
+
+def test_sin_javascript_el_aviso_sale_en_telas(sesion_duena, pique):
+    """Si la acción lleva a otra página, el aviso llega con ella (mensaje de Django)."""
+    respuesta = mover(sesion_duena, pique, "uso", "1", headers={})
+    assert respuesta.status_code == 302
+    assert avisos_pendientes(sesion_duena.get(URL).text) == ["Piqué blanco: quedan 5 m."]
+
+    sesion_duena.post(reverse("telas:nueva"), {"nombre": "Seda", "metros": "3"})
+    assert avisos_pendientes(sesion_duena.get(URL).text) == ["Tela agregada."]
+
+    sesion_duena.post(url_quitar(pique))
+    html = sesion_duena.get(URL).text
+    assert avisos_pendientes(html) == ["Tela quitada."]
+    # Se ve una sola vez.
+    assert avisos_pendientes(sesion_duena.get(URL).text) == []
+
+
+def test_desde_otra_pagina_el_aviso_llega_a_telas(sesion_duena, pique):
+    headers = {**HTMX, "HX-Current-URL": f"http://testserver{url_movimiento(pique, 'uso')}"}
+
+    respuesta = mover(sesion_duena, pique, "uso", "1", headers=headers)
+
+    assert respuesta.headers["HX-Redirect"] == URL
+    assert "aviso" not in respuesta.headers.get("HX-Trigger", "")
+    assert avisos_pendientes(sesion_duena.get(URL).text) == ["Piqué blanco: quedan 5 m."]
+
+
+def test_lo_que_no_se_guarda_no_avisa(sesion_duena, pique):
+    """Un formulario con errores no lleva aviso: solo lo que de verdad se guardó."""
+    sin_guardar = [
+        mover(sesion_duena, pique, "uso", "6,5"),
+        mover(sesion_duena, pique, "entro", "no sé"),
+        sesion_duena.post(reverse("telas:nueva"), {"nombre": ""}, headers=HTMX),
+        sesion_duena.get(url_quitar(pique), headers=HTMX),
+        sesion_duena.get(url_movimiento(pique), headers=HTMX),
+    ]
+
+    for respuesta in sin_guardar:
+        assert aviso(respuesta) is None, respuesta.request["PATH_INFO"]
+    assert avisos_pendientes(sesion_duena.get(URL).text) == []
