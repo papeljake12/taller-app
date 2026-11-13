@@ -20,11 +20,36 @@ from django.test import RequestFactory
 from django.urls import URLPattern, URLResolver, get_resolver
 
 from cuentas.aislamiento import del_taller, obtener_o_404
+from cotizador.models import PrendaGuardada
 from cuentas.models import Usuario
+from finanzas.models import Gasto
+from pedidos.models import Abono, Cliente, Material, Pedido, Talla
+from telas.models import MovimientoTela, Tela
 from tests import fabricas
 
 MODELOS_DE_TALLER = [
     pytest.param(Usuario, lambda taller: fabricas.crear_usuaria(taller), id="Usuario"),
+    pytest.param(Cliente, lambda taller: fabricas.crear_cliente(taller), id="Cliente"),
+    pytest.param(Pedido, lambda taller: fabricas.crear_pedido(taller), id="Pedido"),
+    pytest.param(
+        Abono, lambda taller: fabricas.crear_abono(fabricas.crear_pedido(taller)), id="Abono"
+    ),
+    pytest.param(
+        Talla, lambda taller: fabricas.crear_talla(fabricas.crear_pedido(taller)), id="Talla"
+    ),
+    pytest.param(
+        Material,
+        lambda taller: fabricas.crear_material(fabricas.crear_pedido(taller)),
+        id="Material",
+    ),
+    pytest.param(Tela, lambda taller: fabricas.crear_tela(taller), id="Tela"),
+    pytest.param(
+        MovimientoTela,
+        lambda taller: fabricas.crear_movimiento(fabricas.crear_tela(taller)),
+        id="MovimientoTela",
+    ),
+    pytest.param(Gasto, lambda taller: fabricas.crear_gasto(taller), id="Gasto"),
+    pytest.param(PrendaGuardada, lambda taller: fabricas.crear_prenda(taller), id="PrendaGuardada"),
 ]
 
 

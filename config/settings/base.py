@@ -33,6 +33,9 @@ INSTALLED_APPS = [
     "axes",
     "cuentas",
     "pedidos",
+    "telas",
+    "finanzas",
+    "cotizador",
 ]
 
 MIDDLEWARE = [
