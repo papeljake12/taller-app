@@ -92,6 +92,11 @@ En la página donde compraste el dominio, busca la sección **DNS** y crea un re
 |---|---|---|
 | `A` | `taller` (o `@` si la aplicación va en el dominio principal) | `TU_IP` |
 
+Lo más sencillo es usar un subdominio propio para la aplicación, como
+`taller.midominio.com`. Si la pones en el dominio principal (`@`) y tienes otras cosas en
+subdominios (`www`, un panel de correo) que solo funcionan con `http`, no prendas
+`DJANGO_HSTS_SUBDOMINIOS` en el `.env` (paso 16): esas otras cosas dejarían de abrir.
+
 Si el proveedor del servidor te dio también una dirección IPv6, crea además un registro
 `AAAA` con ese valor. El cambio puede tardar desde minutos hasta unas horas en verse. Para
 comprobarlo, en PowerShell de tu computador:
@@ -141,7 +146,15 @@ deja la opción que viene marcada y oprime Enter.
 timedatectl set-timezone America/Bogota
 ```
 
-La hora del servidor queda en la de Bogotá: así la copia de las 2:30 es a las 2:30 de aquí.
+La hora del servidor queda en la de Bogotá.
+
+```
+systemctl restart cron
+```
+
+Reinicia cron, el programa que corre la copia de cada noche. Ya estaba encendido con la hora
+anterior (la de Londres, UTC) y no se entera del cambio hasta reiniciarse: sin esto, la copia
+"de las 2:30" saldría a las 9:30 de la noche de aquí, en plena jornada.
 
 ```
 dpkg-reconfigure -plow unattended-upgrades
@@ -162,10 +175,15 @@ Crea tu usuario. Pide una contraseña (guárdala en tu gestor: `sudo` la pedirá
 que puedes dejar en blanco con Enter.
 
 ```
-usermod -aG sudo TU_USUARIO
+usermod -aG sudo,adm TU_USUARIO
 ```
 
-Le da permiso de usar `sudo`.
+Le da permiso de usar `sudo` (grupo `sudo`) y de leer los registros de todo el servidor (grupo
+`adm`). Sin `adm`, `journalctl -u taller` (pasos 12 y 22) solo muestra una parte y esconde
+justo los avisos de systemd del tipo "Failed to start", que son los que necesitas cuando la
+aplicación no arranca. Como todavía no has entrado con ese usuario, los grupos ya valen la
+primera vez que entres. (Si algún día agregas un grupo a un usuario que ya está dentro, debe
+salir con `exit` y volver a entrar para que valga.)
 
 ```
 rsync --archive --chown=TU_USUARIO:TU_USUARIO ~/.ssh /home/TU_USUARIO
@@ -383,7 +401,9 @@ que pasa es que todas tienen que volver a entrar).
 nano .env
 ```
 
-Deja el archivo así (quita el `#` de la primera línea y llena los valores):
+Deja el archivo así: quita el `#` del comienzo de la línea
+`# DJANGO_SETTINGS_MODULE=config.settings.produccion` (está debajo de "Qué ajustes usar",
+no es la primera del archivo) y llena los valores:
 
 ```
 DJANGO_SETTINGS_MODULE=config.settings.produccion
@@ -392,6 +412,7 @@ DJANGO_DEBUG=False
 DJANGO_ALLOWED_HOSTS=TU_DOMINIO
 DJANGO_CSRF_TRUSTED_ORIGINS=https://TU_DOMINIO
 DJANGO_HSTS_SEGUNDOS=3600
+DJANGO_HSTS_SUBDOMINIOS=
 DJANGO_MEDIA_ROOT=/srv/taller/media
 DJANGO_STATIC_ROOT=
 DB_NAME=taller
@@ -410,8 +431,10 @@ Qué hace cada una, en corto (la explicación larga está en `docs/bitacora/T24.
 - `DJANGO_SETTINGS_MODULE`: usar los ajustes de producción (`config/settings/produccion.py`).
 - `DJANGO_ALLOWED_HOSTS` y `DJANGO_CSRF_TRUSTED_ORIGINS`: el dominio. Django rechaza las
   visitas y los formularios que lleguen con otro nombre.
-- `DJANGO_HSTS_SEGUNDOS`: ver el paso 16.
-- `DJANGO_MEDIA_ROOT`: dónde se guardan las fotos y los logos.
+- `DJANGO_HSTS_SEGUNDOS` y `DJANGO_HSTS_SUBDOMINIOS`: ver el paso 16.
+- `DJANGO_MEDIA_ROOT`: dónde se guardan las fotos y los logos. Es obligatoria y debe ser
+  `/srv/taller/media`, la misma carpeta que entrega NGINX (paso 13) y que guarda la copia de
+  seguridad (paso 17).
 
 ## 11. Instalar las librerías y preparar la base de datos
 
@@ -432,8 +455,8 @@ por fuera las de las pruebas; `--locked` se niega a seguir si `uv.lock` no coinc
 ```
 
 Revisa que los ajustes estén listos para publicar. Debe terminar en
-`System check identified no issues (1 silenced).` Si habla de `DEBUG` o de la clave, revisa
-la primera línea del `.env` (`DJANGO_SETTINGS_MODULE`). Si dice "Falta la variable...", falta
+`System check identified no issues (2 silenced).` Si habla de `DEBUG` o de la clave, revisa
+en el `.env` la línea `DJANGO_SETTINGS_MODULE` (que no tenga `#` al comienzo). Si dice "Falta la variable...", falta
 esa línea en el `.env`.
 
 ```
@@ -606,6 +629,13 @@ curl -sI https://TU_DOMINIO/entrar/ | grep -i strict
 
 Reinicia la aplicación y muestra el encabezado: debe decir `max-age=31536000`.
 
+`DJANGO_HSTS_SUBDOMINIOS` queda vacío (apagado): HSTS vale solo para `TU_DOMINIO` y no para
+sus subdominios. Si la aplicación va en un subdominio propio (`taller.midominio.com`) o si
+todos tus subdominios tienen https, puedes ponerlo en `True`. Si la aplicación va en el
+dominio principal y tienes otras páginas en subdominios sin https, déjalo vacío: con un año
+de HSTS, esas páginas no abrirían en los celulares que ya entraron al taller durante todo
+ese año.
+
 ## 17. Copia de seguridad diaria
 
 El script `herramientas/servidor/copia-de-seguridad.sh` hace, cada vez:
@@ -745,25 +775,31 @@ Aparta las fotos de ahora (no las borra) y saca las de la copia en `/srv/taller/
 ```
 cd /srv/taller/app
 .venv/bin/python manage.py migrate
+.venv/bin/python manage.py collectstatic --noinput
 sudo systemctl start taller
 ```
 
 Si la copia es de antes de una actualización, `migrate` pone la base al día con el código
-actual (si no hay nada que hacer, dice `No migrations to apply`). Luego enciende la
-aplicación. Entra y revisa los últimos pedidos. Cuando estés seguro de que todo está bien,
+actual (si no hay nada que hacer, dice `No migrations to apply`). `collectstatic` deja los
+estilos y archivos que corresponden al código que está ahora (si volviste a una versión
+anterior en el paso 21, sin esto las pantallas viejas buscarían archivos de la nueva y
+fallarían). Luego enciende la aplicación. Entra y revisa los últimos pedidos. Cuando estés seguro de que todo está bien,
 borra las fotos apartadas con `rm -r /srv/taller/media-antes-de-restaurar`.
 
 ### En un servidor nuevo (si se perdió el servidor)
 
 1. Haz los pasos 1 a 10 en el servidor nuevo (con el mismo dominio; en el paso 2 cambias la
-   IP del registro `A` por la del servidor nuevo).
+   IP del registro `A` por la del servidor nuevo). Antes de entrar por SSH con el dominio,
+   corre en PowerShell de tu computador `ssh-keygen -R TU_DOMINIO`: borra la huella del
+   servidor viejo que tu computador recuerda. Sin esto, `ssh` se niega a entrar con el aviso
+   `REMOTE HOST IDENTIFICATION HAS CHANGED` (es normal: el servidor es otro).
 2. Del paso 11, haz solo `uv sync --no-dev --locked` y el `check --deploy`.
 3. Desde tu computador, sube las copias más recientes que tengas (paso 18):
    `scp $HOME\copias-taller\base-FECHA.dump $HOME\copias-taller\media-FECHA.tar.gz TU_USUARIO@TU_IP:/srv/taller/copias/`
 4. En el servidor nuevo: `COPIA=FECHA`, luego el `pg_restore` y el `tar -xzf` de arriba (la
    base ya está vacía: no hace falta `dropdb` ni `createdb`, ni el `mv` de las fotos).
 5. Luego `migrate`, `createcachetable` y `collectstatic` del paso 11 (no `createsuperuser`:
-   tu administrador viene en la copia), y sigue con los pasos 12, 13, 14 y 17.
+   tu administrador viene en la copia), y sigue con los pasos 12, 13, 14, 16, 17 y 18.
 
 ### Probar que las copias sirven
 
@@ -828,8 +864,16 @@ sudo systemctl restart taller
 
 **Si muestra archivos de `migrations`**, la base ya cambió y el código anterior no la
 entiende. Lo más seguro es restaurar la copia que hizo `actualizar.sh` justo antes (la más
-reciente antes de la actualización): haz `git checkout VERSION_ANTERIOR` y
-`uv sync --no-dev --locked`, y luego el paso 19 completo con esa copia. Lo que las usuarias
+reciente antes de la actualización):
+
+```
+git checkout VERSION_ANTERIOR
+uv sync --no-dev --locked
+.venv/bin/python manage.py collectstatic --noinput
+```
+
+Vuelve al código anterior, a sus librerías y a sus estilos. Luego haz el paso 19 completo
+("En el mismo servidor") con esa copia. Lo que las usuarias
 hayan escrito desde la actualización se pierde, así que decide pronto.
 
 En los dos casos el código queda "suelto" (git dice `detached HEAD`): es normal. Cuando el
@@ -851,6 +895,9 @@ journalctl -u taller -f
 Lo que va escribiendo la aplicación, en vivo (errores con todo el detalle, intentos fallidos
 de entrar y bloqueos). Sal con Ctrl+C. Variantes útiles:
 `journalctl -u taller --since "1 hour ago"` y `journalctl -u taller -p err` (solo errores).
+Si `journalctl` dice "you are currently not seeing messages from other users and the
+system", a tu usuario le falta el grupo `adm` (paso 4): mientras tanto, ponle `sudo` delante
+(`sudo journalctl -u taller -f`).
 
 ```
 sudo tail -n 50 /var/log/nginx/error.log

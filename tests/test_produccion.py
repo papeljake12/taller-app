@@ -31,13 +31,14 @@ VALIDAS = {
     "DJANGO_CSRF_TRUSTED_ORIGINS": f"https://{DOMINIO}",
     "DB_NAME": "base_falsa",
     "DB_USER": "usuario_falso",
+    "DJANGO_MEDIA_ROOT": "/srv/taller/media",
 }
 VARIABLES = [
     *VALIDAS,
     "DJANGO_DEBUG",
     "DJANGO_HSTS_SEGUNDOS",
+    "DJANGO_HSTS_SUBDOMINIOS",
     "DJANGO_STATIC_ROOT",
-    "DJANGO_MEDIA_ROOT",
 ]
 
 
@@ -79,6 +80,13 @@ def test_sin_clave_secreta_no_arranca_y_dice_cual_falta(cargar_produccion):
 def test_una_clave_corta_o_de_ejemplo_no_sirve(cargar_produccion, clave):
     with pytest.raises(ImproperlyConfigured, match="DJANGO_SECRET_KEY es muy corta"):
         cargar_produccion(**{**VALIDAS, "DJANGO_SECRET_KEY": clave})
+
+
+def test_la_carpeta_de_fotos_es_obligatoria(cargar_produccion):
+    # Sin valor por defecto: si faltara, Django guardaría las fotos en otra carpeta que la que
+    # entregan NGINX y la copia de seguridad, y nadie lo notaría.
+    with pytest.raises(ImproperlyConfigured, match="Falta la variable DJANGO_MEDIA_ROOT"):
+        cargar_produccion(**{**VALIDAS, "DJANGO_MEDIA_ROOT": ""})
 
 
 @pytest.mark.parametrize("nombre", ["DJANGO_ALLOWED_HOSTS", "DJANGO_CSRF_TRUSTED_ORIGINS"])
@@ -129,6 +137,16 @@ def test_hsts_se_sube_desde_el_env(cargar_produccion):
     assert produccion.SECURE_HSTS_SECONDS == 31536000
 
 
+def test_hsts_no_incluye_subdominios_salvo_que_se_pida(cargar_produccion):
+    # Si la aplicación va en el dominio principal, HSTS con subdominios obligaría a todos los
+    # subdominios a tener https. Por eso viene apagado.
+    assert cargar_produccion(**VALIDAS).SECURE_HSTS_INCLUDE_SUBDOMAINS is False
+
+    produccion = cargar_produccion(**VALIDAS, DJANGO_HSTS_SUBDOMINIOS="True")
+
+    assert produccion.SECURE_HSTS_INCLUDE_SUBDOMAINS is True
+
+
 def test_whitenoise_va_justo_despues_de_security_middleware(cargar_produccion):
     produccion = cargar_produccion(**VALIDAS)
     seguridad = produccion.MIDDLEWARE.index("django.middleware.security.SecurityMiddleware")
@@ -143,11 +161,12 @@ def test_whitenoise_va_justo_despues_de_security_middleware(cargar_produccion):
 
 def test_las_carpetas_se_pueden_escoger_en_el_env(cargar_produccion):
     produccion = cargar_produccion(
-        **VALIDAS, DJANGO_STATIC_ROOT="/srv/taller/static", DJANGO_MEDIA_ROOT="/srv/taller/media"
+        **{**VALIDAS, "DJANGO_MEDIA_ROOT": "/datos/fotos"},
+        DJANGO_STATIC_ROOT="/srv/taller/static",
     )
 
     assert produccion.STATIC_ROOT == "/srv/taller/static"
-    assert produccion.MEDIA_ROOT == "/srv/taller/media"
+    assert produccion.MEDIA_ROOT == "/datos/fotos"
 
 
 def test_la_cache_es_compartida_entre_los_procesos_de_gunicorn(cargar_produccion):

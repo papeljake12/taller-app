@@ -8,19 +8,19 @@
 #   media-2026-11-13_0230.tar.gz   la carpeta de fotos y logos
 # y borra los de hace más de 14 días.
 #
-# Lee el nombre, el usuario y la contraseña de la base del .env de la aplicación, así que no
-# hay que escribir la contraseña en otro lado. Lo corre cron todas las noches (ver
-# herramientas/servidor/cron-copia.txt y el paso 17 de docs/guia-publicacion.md).
+# Lee el nombre, el usuario y la contraseña de la base, y la carpeta de fotos
+# (DJANGO_MEDIA_ROOT), del .env de la aplicación, así que no hay que escribirlos en otro
+# lado. Lo corre cron todas las noches (ver herramientas/servidor/cron-copia.txt y el paso 17
+# de docs/guia-publicacion.md).
 #
 # Las rutas de abajo son las de la guía. Si usaste otras, cámbialas aquí (o pásalas como
-# TALLER_APP, TALLER_MEDIA y TALLER_COPIAS al correr el script).
+# TALLER_APP y TALLER_COPIAS al correr el script; TALLER_MEDIA reemplaza la del .env).
 
 set -euo pipefail
 # Las copias solo las puede leer tu usuario: tienen todos los datos del taller.
 umask 077
 
 APP=${TALLER_APP:-/srv/taller/app}
-MEDIA=${TALLER_MEDIA:-/srv/taller/media}
 COPIAS=${TALLER_COPIAS:-/srv/taller/copias}
 DIAS=14
 
@@ -32,6 +32,13 @@ leer() {
     printf '%s' "${valor:-$2}"
 }
 
+# La carpeta de fotos es la misma que usa la aplicación (DJANGO_MEDIA_ROOT del .env). No
+# tiene valor por defecto: si falta, es mejor fallar que copiar otra carpeta, vacía.
+MEDIA=${TALLER_MEDIA:-$(leer DJANGO_MEDIA_ROOT "")}
+if [ -z "$MEDIA" ]; then
+    echo "ERROR: falta DJANGO_MEDIA_ROOT en $APP/.env" >&2
+    exit 1
+fi
 BASE=$(leer DB_NAME "")
 export PGUSER=$(leer DB_USER "")
 export PGPASSWORD=$(leer DB_PASSWORD "")
@@ -55,7 +62,8 @@ mv "$DUMP.parcial" "$DUMP"
 
 # 2. Las fotos y los logos.
 MEDIA_TAR="$COPIAS/media-$FECHA.tar.gz"
-mkdir -p "$MEDIA"
+# Si la carpeta no existe, la ruta está mal: es mejor fallar que guardar una copia vacía.
+[ -d "$MEDIA" ] || { echo "ERROR: no existe la carpeta de fotos $MEDIA" >&2; exit 1; }
 tar --create --gzip --file="$MEDIA_TAR.parcial" \
     --directory="$(dirname "$MEDIA")" "$(basename "$MEDIA")"
 mv "$MEDIA_TAR.parcial" "$MEDIA_TAR"

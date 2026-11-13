@@ -62,11 +62,16 @@ CSRF_COOKIE_SECURE = True
 # lo olvida pronto. Cuando todo lleve una semana funcionando, se sube a un año (31536000)
 # cambiando DJANGO_HSTS_SEGUNDOS en el .env. Ver la guía, paso 16.
 SECURE_HSTS_SECONDS = int(entorno.texto("DJANGO_HSTS_SEGUNDOS", "3600"))
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# Incluir los subdominios obliga también a www.TU_DOMINIO, correo.TU_DOMINIO, etc. a ir por
+# https. Solo conviene si todos lo tienen. Si la aplicación va en el dominio principal (@) y
+# hay otras cosas en subdominios que solo van por http, se romperían durante todo el tiempo
+# de HSTS. Por eso viene apagado y se prende con DJANGO_HSTS_SUBDOMINIOS=True en el .env.
+SECURE_HSTS_INCLUDE_SUBDOMAINS = entorno.booleano("DJANGO_HSTS_SUBDOMINIOS", False)
 # "Preload" inscribe el dominio en una lista que viene dentro de los navegadores y es muy
-# difícil de deshacer. No se usa; por eso se calla el aviso de Django que lo sugiere.
+# difícil de deshacer. No se usa; por eso se calla el aviso de Django que lo sugiere (W021).
+# W005 es el aviso de que los subdominios no están incluidos: es a propósito (ver arriba).
 SECURE_HSTS_PRELOAD = False
-SILENCED_SYSTEM_CHECKS = ["security.W021"]
+SILENCED_SYSTEM_CHECKS = ["security.W021", "security.W005"]
 
 # Ninguna otra página puede mostrar la aplicación dentro de un recuadro (iframe): evita que
 # una página falsa la ponga debajo de botones engañosos.
@@ -99,7 +104,10 @@ STORAGES = {
 
 # Conviene que estén fuera de la carpeta del código, por ejemplo /srv/taller/media: así una
 # actualización con git nunca los toca y la copia de seguridad los encuentra en un solo lugar.
-MEDIA_ROOT = entorno.texto("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media"))
+# Es obligatoria y sin valor por defecto: NGINX y la copia de seguridad leen las fotos de esa
+# misma carpeta. Si por un olvido en el .env Django las guardara en otra, NGINX no las
+# mostraría y la copia de cada noche saldría vacía sin que nadie lo notara.
+MEDIA_ROOT = entorno.texto("DJANGO_MEDIA_ROOT")
 
 
 # Caché compartida

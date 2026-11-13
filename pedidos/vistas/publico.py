@@ -57,8 +57,10 @@ def _ip(request):
 def _demasiados_envios(request, token):
     """Cuenta este envío y dice si ya pasó el límite del minuto.
 
-    La cuenta vive en la caché de Django: hoy es la memoria de cada proceso del servidor
-    (ver docs/bitacora/T11.md). El minuto empieza con el primer envío.
+    La cuenta vive en la caché de Django. En el servidor es la caché en la base de datos
+    (tabla cache_django), que comparten todos los procesos de Gunicorn; en el computador es
+    la memoria del proceso (ver docs/bitacora/T11.md y T24.md). El minuto empieza con el
+    primer envío.
     """
     clave = f"tallas-publico:{token}:{_ip(request)}"
     cache.add(clave, 0, timeout=VENTANA_SEGUNDOS)
