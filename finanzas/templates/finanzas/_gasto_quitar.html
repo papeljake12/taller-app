@@ -1,0 +1,8 @@
+{% extends "piezas/ventana.html" %}{% load piezas %}
+{% comment %}
+La pregunta antes de quitar un gasto, como página aparte: solo se ve sin JavaScript. Con
+JavaScript sale dentro de la tarjeta de gastos (_gasto_confirmar.html).
+{% endcomment %}
+{% block titulo %}Quitar gasto{% endblock %}
+{% block cuerpo %}<p>¿Quitar el gasto «{{ gasto.concepto }}» de <span class="dinero">{{ gasto.valor|pesos }}</span> del {{ gasto.fecha|fecha_corta }}?</p>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Sí, quitar el gasto</button>{% endblock %}

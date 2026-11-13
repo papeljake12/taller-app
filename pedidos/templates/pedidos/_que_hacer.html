@@ -1,4 +1,10 @@
-{% comment %}Tarjeta "Qué hacer hoy" (T06). La rellena el carril B de la tanda 4.{% endcomment %}<section class="tarjeta tarjeta--lista" aria-labelledby="t-que-hacer">
-<div class="tarjeta__cabeza"><h2 id="t-que-hacer">Qué hacer hoy</h2></div>
-<p class="tarjeta__nota">Llega con T06.</p>
-</section>
+{% comment %}
+Tarjeta "Qué hacer hoy" (T06): los atrasados, los listos sin entregar, los que se entregan en
+7 días y los cotizados sin confirmar (calculos.que_hacer_hoy), cada uno con la acción que
+sigue (_hoy_pendiente.html). Las acciones responden esta tarjeta entera: así cambian juntas
+la fila y la cuenta de pendientes.
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="hoy-que-hacer" aria-labelledby="t-que-hacer">
+<div class="tarjeta__cabeza"><h2 id="t-que-hacer">Qué hacer hoy</h2><span class="tarjeta__aparte">{% if pendientes %}{{ pendientes|length }} pendiente{{ pendientes|length|pluralize }}{% else %}Sin pendientes{% endif %}</span></div>
+{% for fila in pendientes %}{% include "pedidos/_hoy_pendiente.html" %}
+{% empty %}<p class="tarjeta__nota">No hay nada por hacer hoy.</p>
+{% endfor %}</section>

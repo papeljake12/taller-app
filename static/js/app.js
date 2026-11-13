@@ -193,12 +193,14 @@
     }
     if (!texto || !navigator.clipboard) return;
     navigator.clipboard.writeText(texto).then(function () {
-      if (boton.dataset.textoOriginal) return;
-      boton.dataset.textoOriginal = boton.textContent;
+      if (boton.dataset.htmlOriginal) return;
+      // Se guarda el contenido entero: un botón puede traer su texto de computador y el
+      // de celular (.texto-computador y .texto-celular).
+      boton.dataset.htmlOriginal = boton.innerHTML;
       boton.textContent = "Copiado";
       window.setTimeout(function () {
-        boton.textContent = boton.dataset.textoOriginal;
-        delete boton.dataset.textoOriginal;
+        boton.innerHTML = boton.dataset.htmlOriginal;
+        delete boton.dataset.htmlOriginal;
       }, COPIADO_MS);
     });
   });

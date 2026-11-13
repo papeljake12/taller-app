@@ -1,24 +1,306 @@
 """Pantalla Hoy (T06): la de entrada, y sus acciones sin recargar la página.
 
-Esqueleto de la tanda 2: la pantalla abre con sus tarjetas vacías y las acciones responden
-"todavía no".
+Todas las cuentas salen de pedidos/calculos.py y los mensajes de pedidos/mensajes.py. Aquí
+solo se arman las frases y los botones de cada tarjeta, siempre con los datos del taller de
+la usuaria (request.taller).
+
+Las acciones de "Qué hacer hoy" ("Marcar como listo" y "Marcar como entregado") cambian la
+etapa del pedido. Con HTMX responden la tarjeta "Qué hacer hoy" y, con hx-swap-oob, las
+otras partes que dependen de ella: las cifras, "Quién te debe", "Pedidos por etapa" y el
+contador de atrasados del menú. Sin JavaScript, vuelven a Hoy.
+
+"Trabajos del taller" (_trabajos.html) es de T13.
 """
 
-from django.shortcuts import render
+from dataclasses import dataclass, replace
+from urllib.parse import urlencode
+
+from django.http import Http404, HttpResponse
+from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.dates import MONTHS
 from django.views.decorators.http import require_POST
 
-from config.esqueleto import todavia_no
+from config.menu import construir_menu
+from config.piezas import pesos
+from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
+from pedidos import calculos, fotos, mensajes
+from pedidos.calculos import Etiqueta
 from pedidos.models import Pedido
+
+Estado = Pedido.Estado
+
+# Las acciones de "Qué hacer hoy": a qué etapa pasa el pedido y desde cuáles se puede.
+# Desde otra etapa no cambia nada (por ejemplo, si alguien ya lo entregó desde otro
+# celular): la tarjeta se vuelve a dibujar con lo que hay.
+ACCIONES = {
+    "listo": (Estado.LISTO, (Estado.CONFIRMADO, Estado.CORTE, Estado.CONFECCION)),
+    "entregado": (Estado.ENTREGADO, (Estado.LISTO,)),
+}
+
+# Las partes que cambian, además de "Qué hacer hoy", cuando se hace una acción.
+CAMBIAN_CON_UNA_ACCION = ("cifras", "quien_debe", "etapas", "hoy_menu")
+
+
+# --- Las cuatro cifras ------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Cifra:
+    nombre: str
+    valor: object
+    apoyo: str
+    url: str
+    alerta: bool
+    # En celular van 2 por 2 en otro orden (diseno/hoy-celular.html): clase orden-celular-N.
+    orden_celular: int
+
+    @property
+    def clase(self):
+        return f"orden-celular-{self.orden_celular}"
+
+
+def _plural(cantidad, singular, plural):
+    return f"{cantidad} {singular if cantidad == 1 else plural}"
+
+
+def apoyo_mas_cercana(dias):
+    """'La más cercana: en 3 días', 'hoy' o 'mañana'. Sin entregas: 'Nada para esta semana'."""
+    if dias is None:
+        return "Nada para esta semana"
+    if dias == 0:
+        return "La más cercana: hoy"
+    if dias == 1:
+        return "La más cercana: mañana"
+    return f"La más cercana: en {dias} días"
+
+
+def cifras(taller, hoy):
+    """Las cuatro cifras de arriba, en el orden del computador, cada una con su filtro."""
+    datos = calculos.cifras_de_hoy(taller, hoy)
+    lista = reverse("pedidos:lista")
+
+    def filtro(clave):
+        return f"{lista}?{urlencode({'filtro': clave})}"
+
+    return [
+        Cifra(
+            "En producción",
+            datos["en_produccion"],
+            f"{datos['por_confirmar']} por confirmar"
+            if datos["por_confirmar"]
+            else "Sin cotizaciones pendientes",
+            filtro("produccion"),
+            alerta=False,
+            orden_celular=1,
+        ),
+        Cifra(
+            "Entregas en 7 días",
+            datos["entregas_7_dias"],
+            apoyo_mas_cercana(datos["dias_mas_cercana"]),
+            filtro("semana"),
+            alerta=False,
+            orden_celular=3,
+        ),
+        Cifra(
+            "Atrasados",
+            datos["atrasados"],
+            "Pasó la fecha de entrega" if datos["atrasados"] else "Todo va a tiempo",
+            filtro("atrasados"),
+            alerta=datos["atrasados"] > 0,
+            orden_celular=2,
+        ),
+        Cifra(
+            "Por cobrar",
+            pesos(datos["por_cobrar"]),
+            _plural(datos["pedidos_con_saldo"], "pedido con saldo", "pedidos con saldo"),
+            filtro("saldo"),
+            alerta=False,
+            orden_celular=4,
+        ),
+    ]
+
+
+# --- Qué hacer hoy ----------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class FilaPendiente:
+    """Un pedido de "Qué hacer hoy" con lo que dice su fila y la acción que sigue.
+
+    siguiente:
+      - "listo": atrasado y sin terminar: "Marcar como listo" y "Avisar al cliente".
+      - "entregar": listo: "Cobrar el saldo" (si debe) y "Marcar como entregado".
+      - "ver": se entrega pronto: abrir el pedido.
+      - "confirmar": cotizado: "Preguntar si confirma".
+    mensaje: {"texto", "enlace"} para "Avisar al cliente" o "Preguntar si confirma". Sin
+    WhatsApp guardado, el enlace es "" y el botón copia el texto.
+    """
+
+    pedido: Pedido
+    motivo: str
+    etiqueta: Etiqueta | None
+    detalle: str
+    etapa: str
+    saldo: int
+    siguiente: str
+    mensaje: dict | None
+
+
+def frase_de_etapa(pedido):
+    """'En confección con Carmen', 'Ya está listo'... Vacía para un cotizado."""
+    if pedido.estado == Estado.COTIZADO:
+        return ""
+    if pedido.estado == Estado.LISTO:
+        return "Ya está listo"
+    if pedido.estado == Estado.ENTREGADO:
+        return "Ya se entregó"
+    nombre = Estado(pedido.estado).label
+    return f"{nombre} con {pedido.encargada.nombre}" if pedido.encargada else nombre
+
+
+def _mensaje(pedido, texto):
+    return {"texto": texto, "enlace": mensajes.enlace_whatsapp(pedido.cliente.whatsapp, texto)}
+
+
+def fila_pendiente(pendiente, hoy):
+    pedido = pendiente.pedido
+    if pedido.estado == Estado.LISTO:
+        # Un listo atrasado sigue en el grupo de los atrasados, pero lo que sigue es entregarlo.
+        siguiente, mensaje = "entregar", None
+    elif pendiente.motivo == "atrasado":
+        siguiente, mensaje = "listo", _mensaje(pedido, mensajes.texto_atraso(pedido))
+    elif pendiente.motivo == "cotizado":
+        siguiente, mensaje = "confirmar", _mensaje(pedido, mensajes.texto_confirmar(pedido))
+    else:
+        siguiente, mensaje = "ver", None
+    return FilaPendiente(
+        pedido=pedido,
+        motivo=pendiente.motivo,
+        etiqueta=calculos.etiqueta_entrega(pedido, hoy),
+        # El detalle termina en punto en la frase: si ya trae uno, no se repite.
+        detalle=pedido.detalle.strip().rstrip("."),
+        etapa=frase_de_etapa(pedido),
+        saldo=calculos.saldo(pedido),
+        siguiente=siguiente,
+        mensaje=mensaje,
+    )
+
+
+def pendientes(taller, hoy):
+    return [fila_pendiente(p, hoy) for p in calculos.que_hacer_hoy(taller, hoy)]
+
+
+# --- Cobrado y gastado ------------------------------------------------------------------------
+
+
+def nota_de_la_grafica(meses):
+    """Cómo leer los números del eje. Sin datos, lo dice.
+
+    Con un millón o más, el eje puede mezclar "500 mil" y "1 M": la nota solo explica la M.
+    """
+    maximo = max((max(m.cobrado, m.gastado) for m in meses), default=0)
+    if maximo >= 1_000_000:
+        return "M = millones de pesos."
+    if maximo > 0:
+        return "Valores en miles de pesos."
+    return "Todavía no hay cobros ni gastos en estos seis meses."
+
+
+def grafica(taller, hoy):
+    meses = calculos.grafica_cobrado_y_gastado(taller, hoy)
+    return {
+        "meses": meses,
+        "cobrado_del_mes": meses[-1].cobrado,
+        "nombre_del_mes": str(MONTHS[hoy.month]).lower(),
+        "nota_grafica": nota_de_la_grafica(meses),
+    }
+
+
+# --- Quién te debe y pedidos por etapa ----------------------------------------------------------
+
+
+def deudores(taller, hoy):
+    """Los que deben, cada uno con el enlace a sus pedidos con saldo en Pedidos."""
+    lista = reverse("pedidos:lista")
+    return [
+        {
+            "deudor": deudor,
+            "url": f"{lista}?{urlencode({'filtro': 'saldo', 'q': deudor.cliente.nombre})}",
+        }
+        for deudor in calculos.quien_te_debe(taller, hoy)
+    ]
+
+
+def aviso_de_etapa(etapa):
+    """La etiqueta debajo del número de una etapa: "1 atrasado" en rojo; en Entregado,
+    "Pagado" en verde si ninguno debe, o cuántos deben en rojo. None si no hay nada que decir.
+    """
+    if etapa.atrasados:
+        return Etiqueta(_plural(etapa.atrasados, "atrasado", "atrasados"), "rojo")
+    if etapa.estado == Estado.ENTREGADO and etapa.cantidad:
+        if etapa.con_saldo:
+            return Etiqueta(f"{etapa.con_saldo} con saldo", "rojo")
+        return Etiqueta("Pagado", "verde")
+    return None
+
+
+def etapas(taller, hoy):
+    return [
+        {"nombre": etapa.nombre, "cantidad": etapa.cantidad, "aviso": aviso_de_etapa(etapa)}
+        for etapa in calculos.pedidos_por_etapa(taller, hoy)
+    ]
+
+
+# --- La página y las acciones -------------------------------------------------------------------
+
+
+def contexto_de_hoy(request, hoy):
+    """Todo lo que necesitan las tarjetas de Hoy."""
+    taller = request.taller
+    contexto = {
+        "hoy": hoy,
+        "cifras": cifras(taller, hoy),
+        "pendientes": pendientes(taller, hoy),
+        "deudores": deudores(taller, hoy),
+        "etapas": etapas(taller, hoy),
+        "trabajos": fotos.trabajos(request),  # T13
+    }
+    contexto.update(grafica(taller, hoy))
+    return contexto
+
+
+def menu_de_hoy(request):
+    """Las entradas del menú lateral, para cambiar su contador de atrasados con hx-swap-oob.
+
+    La acción tiene su propia dirección: se marca "Hoy" como la sección actual, que es la
+    pantalla donde está la usuaria.
+    """
+    return [replace(e, actual=e.clave == "hoy") for e in construir_menu(request)["secciones"]]
 
 
 def hoy(request):
-    return render(request, "pedidos/hoy.html", {"hoy": timezone.localdate()})
+    return render(request, "pedidos/hoy.html", contexto_de_hoy(request, timezone.localdate()))
 
 
 @require_POST
 def accion(request, pk, accion):
-    """Marcar como listo, marcar como entregado... desde "Qué hacer hoy"."""
-    obtener_o_404(request, Pedido, pk=pk)
-    return todavia_no("T06")
+    """Marcar como listo o como entregado desde "Qué hacer hoy"."""
+    if accion not in ACCIONES:
+        raise Http404("Esa acción no existe.")
+    pedido = obtener_o_404(request, Pedido, pk=pk)
+    nueva, desde = ACCIONES[accion]
+    if pedido.estado in desde:
+        pedido.estado = nueva
+        pedido.save(update_fields=["estado", "actualizado"])
+    if not es_htmx(request):
+        return redirect(reverse("pedidos:hoy") + "#hoy-que-hacer")
+    contexto = contexto_de_hoy(request, timezone.localdate())
+    contexto["menu_lateral"] = menu_de_hoy(request)
+    html = render_to_string("pedidos/_que_hacer.html", contexto, request=request)
+    for parte in CAMBIAN_CON_UNA_ACCION:
+        html += render_to_string(f"pedidos/_{parte}.html", {**contexto, "oob": True}, request)
+    return HttpResponse(html)

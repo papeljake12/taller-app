@@ -3,8 +3,9 @@ Pieza Cifra: nombre, número grande y una línea de apoyo.
   {% include "piezas/_cifra.html" with nombre="Atrasados" valor=1 apoyo="Pasó la fecha de entrega" alerta=True url=... %}
 - alerta: borde y número en rojo (solo para atrasos y deudas).
 - buena: nombre y número en verde (solo para "Te quedó").
+- clase: clases de más (por ejemplo, orden-celular-2 para su turno en celular).
 - url: si se da, la cifra entera es un enlace (por ejemplo, a Pedidos con ese filtro).
-{% endcomment %}{% if url %}<a class="tarjeta cifra{% if alerta %} cifra--alerta{% endif %}{% if buena %} cifra--buena{% endif %}" href="{{ url }}">{% else %}<div class="tarjeta cifra{% if alerta %} cifra--alerta{% endif %}{% if buena %} cifra--buena{% endif %}">{% endif %}
+{% endcomment %}{% if url %}<a class="tarjeta cifra{% if alerta %} cifra--alerta{% endif %}{% if buena %} cifra--buena{% endif %}{% if clase %} {{ clase }}{% endif %}" href="{{ url }}">{% else %}<div class="tarjeta cifra{% if alerta %} cifra--alerta{% endif %}{% if buena %} cifra--buena{% endif %}{% if clase %} {{ clase }}{% endif %}">{% endif %}
 <div class="cifra__nombre">{{ nombre }}</div>
 <div class="cifra__valor">{{ valor }}</div>
 {% if apoyo %}<div class="cifra__apoyo">{{ apoyo }}</div>{% endif %}

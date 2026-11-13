@@ -68,6 +68,9 @@ PANTALLAS = {
         Pantalla("pedidos-atrasados", "/pedidos/?filtro=atrasados"),
         Pantalla("buscar", "/buscar/?q=esquina"),
     ],
+    4: [
+        Pantalla("resumen-octubre", "/resumen/?mes={mes_anterior}"),
+    ],
 }
 
 DESBORDE = """(ancho) => {
@@ -136,7 +139,16 @@ def datos_para_direcciones(usuario):
     pedido = pedidos.filter(detalle__startswith="18 camisas").first() or pedidos.first()
     if pedido is None:
         return {}
-    return {"pedido": pedido.pk, "token": pedido.token_tallas}
+    from django.utils import timezone
+
+    from pedidos.calculos import sumar_meses
+
+    anterior = sumar_meses(timezone.localdate(), -1)
+    return {
+        "pedido": pedido.pk,
+        "token": pedido.token_tallas,
+        "mes_anterior": f"{anterior.year}-{anterior.month:02d}",
+    }
 
 
 def cerrar_sesion(clave):

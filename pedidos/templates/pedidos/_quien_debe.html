@@ -1,4 +1,11 @@
-{% comment %}Tarjeta "Quién te debe" (T06). La rellena el carril B de la tanda 4.{% endcomment %}<section class="tarjeta tarjeta--lista" aria-labelledby="t-quien-debe">
+{% load piezas %}{% comment %}
+Tarjeta "Quién te debe" (T06): los clientes con saldo, del que más debe al que menos, con una
+barra proporcional (calculos.quien_te_debe). El que tiene un pedido atrasado va en rojo:
+nombre, valor y barra (el rojo va en cada uno, porque un enlace no toma el color de la fila). El
+nombre abre Pedidos con sus pedidos con saldo. Con `oob`, HTMX la cambia después de una
+acción de "Qué hacer hoy".
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="hoy-quien-debe" aria-labelledby="t-quien-debe"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-quien-debe">Quién te debe</h2></div>
-<p class="tarjeta__nota">Llega con T06.</p>
-</section>
+{% for fila in deudores %}{% with d=fila.deudor %}<div class="fila-proporcion"><a class="fila-proporcion__nombre{% if d.atrasado %} texto-rojo{% endif %}" href="{{ fila.url }}">{{ d.cliente.nombre }}</a><strong class="dinero{% if d.atrasado %} texto-rojo{% endif %}">{{ d.saldo|pesos }}</strong><span class="proporcion{% if d.atrasado %} proporcion--atrasado{% endif %}" style="width: {{ d.porcentaje }}%"></span></div>{% endwith %}
+{% empty %}<p class="tarjeta__nota">Nadie te debe: todos los pedidos están pagados.</p>
+{% endfor %}</section>

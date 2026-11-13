@@ -1,0 +1,8 @@
+{% extends "piezas/ventana.html" %}
+{% comment %}
+La pregunta antes de quitar la foto, como página aparte: solo se ve sin JavaScript. Con
+JavaScript sale dentro de la tarjeta "Foto del pedido" (_foto_confirmar.html).
+{% endcomment %}
+{% block titulo %}Quitar la foto{% endblock %}
+{% block cuerpo %}<p>¿Quitar la foto del pedido de {{ pedido.cliente.nombre }} ({{ pedido.detalle }})? Deja de salir en "Trabajos del taller" y no se puede recuperar.</p>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Sí, quitar la foto</button>{% endblock %}
