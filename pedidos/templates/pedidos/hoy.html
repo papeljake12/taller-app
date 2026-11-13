@@ -7,15 +7,20 @@ después de la tanda 2. Cada tarjeta vive en su propia parte:
 En celular las filas se abren y las tarjetas van en este orden (diseno/hoy-celular.html):
 cifras, qué hacer hoy, quién te debe, trabajos del taller, gráfica y pedidos por etapa.
 La costurera no ve la fila de la plata (gráfica y "Quién te debe"; T21, docs/04-permisos.md).
+Pantalla fija del computador (docs/08-diseno.md): el tablero toma el alto de la hoja (llenar)
+y la fila de "Qué hacer hoy" y "Trabajos del taller" toma lo que dejan las demás (llenar):
+su lista se desplaza por dentro y la foto crece o se achica. La fila de la plata mide lo que
+mide la gráfica; "Quién te debe" se desplaza por dentro si no cabe. Las medidas están en el
+apartado "Hoy" de static/css/app.css. En celular nada de esto aplica.
 {% endcomment %}
 {% block pestana %}Hoy{% endblock %}
 {% block titulo %}Hoy{% endblock %}
 {% block apoyo %}<span class="encabezado__apoyo">{{ hoy|fecha_larga }}</span>{% endblock %}
 {% block acciones %}{% include "piezas/_boton_excel.html" %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
-<div class="tablero">
+<div class="tablero llenar">
 {% include "pedidos/_cifras.html" %}
-<div class="dos-columnas">
+<div class="dos-columnas llenar">
 <div class="columna-ancha columna orden-celular-1">{% include "pedidos/_que_hacer.html" %}</div>
 <div class="columna-angosta columna orden-celular-3">{% include "pedidos/_trabajos.html" %}</div>
 </div>

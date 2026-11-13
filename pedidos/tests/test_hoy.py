@@ -57,6 +57,12 @@ def parte(html, id_):
     return html[inicio : html.index("</section>", inicio)]
 
 
+def lista_de(respuesta):
+    """Lo de adentro de la lista de "Qué hacer hoy" en la respuesta de una acción: lo que va
+    antes de las partes que llegan aparte (hx-swap-oob)."""
+    return respuesta[: respuesta.index("hx-swap-oob")]
+
+
 def filas(html):
     """Los clientes de "Qué hacer hoy", en el orden en que salen."""
     return re.findall(r'<div class="fila[^"]*" id="pendiente-\d+">\s*<div class="fila__texto">'
@@ -100,7 +106,7 @@ def test_en_celular_las_cifras_van_en_el_orden_del_diseno(taller):
 def test_que_hacer_hoy_sale_como_en_el_diseno(sesion_duena, ejemplo):
     tarjeta = parte(sesion_duena.get(PAGINA).text, "hoy-que-hacer")
 
-    assert '<span class="tarjeta__aparte">3 pendientes</span>' in tarjeta
+    assert '<span class="tarjeta__aparte" id="hoy-pendientes">3 pendientes</span>' in tarjeta
     assert filas(tarjeta) == [
         "Ferretería La Esquina", "Grupo de danza Tambores del Río", "Marcela P."
     ]
@@ -142,7 +148,8 @@ def test_quien_te_debe_sale_como_en_el_diseno(sesion_duena, ejemplo):
     tarjeta = parte(sesion_duena.get(PAGINA).text, "hoy-quien-debe")
 
     filas_ = re.findall(
-        r'<div class="fila-proporcion"><a class="fila-proporcion__nombre( texto-rojo)?" '
+        r'<div class="fila-proporcion" id="deudor-\d+"><a class="fila-proporcion__nombre'
+        r'( texto-rojo)?" '
         r'href="[^"]+">([^<]+)</a><strong class="dinero( texto-rojo)?">([^<]+)</strong>'
         r'<span class="proporcion( proporcion--atrasado)?" style="width: (\d+)%">',
         tarjeta,
@@ -237,7 +244,7 @@ def test_sin_pendientes_dice_que_no_hay_nada_por_hacer(sesion_duena, taller):
 
     tarjeta = parte(sesion_duena.get(PAGINA).text, "hoy-que-hacer")
 
-    assert '<span class="tarjeta__aparte">Sin pendientes</span>' in tarjeta
+    assert '<span class="tarjeta__aparte" id="hoy-pendientes">Sin pendientes</span>' in tarjeta
     assert "No hay nada por hacer hoy." in tarjeta
 
 
@@ -253,7 +260,7 @@ def test_el_orden_es_atrasados_listos_prontos_y_cotizados(sesion_duena, taller):
     tarjeta = parte(sesion_duena.get(PAGINA).text, "hoy-que-hacer")
 
     assert filas(tarjeta) == ["A atrasado", "B listo", "C pronto", "D cotizado"]
-    assert '<span class="tarjeta__aparte">4 pendientes</span>' in tarjeta
+    assert '<span class="tarjeta__aparte" id="hoy-pendientes">4 pendientes</span>' in tarjeta
     assert '<span class="etiqueta etiqueta--rojo">Atrasado 1 día</span>' in tarjeta
     assert '<span class="etiqueta etiqueta--ambar">Faltan 2 días</span>' in tarjeta
 
@@ -261,7 +268,8 @@ def test_el_orden_es_atrasados_listos_prontos_y_cotizados(sesion_duena, taller):
 def test_un_pendiente_se_dice_en_singular(sesion_duena, taller):
     pedido_de(taller, estado=Estado.COTIZADO)
 
-    assert '<span class="tarjeta__aparte">1 pendiente</span>' in sesion_duena.get(PAGINA).text
+    html = sesion_duena.get(PAGINA).text
+    assert '<span class="tarjeta__aparte" id="hoy-pendientes">1 pendiente</span>' in html
 
 
 def test_el_que_se_entrega_pronto_lleva_a_su_pedido(sesion_duena, taller, duena):
@@ -357,10 +365,12 @@ def test_las_acciones_funcionan_sin_javascript_y_con_htmx(sesion_duena, taller):
 
     tarjeta = parte(sesion_duena.get(PAGINA).text, "hoy-que-hacer")
 
+    # Con HTMX cambia lo de adentro de la lista (no la tarjeta entera): así la lista, que en el
+    # computador se desplaza por dentro, no vuelve arriba.
     url = accion(pedido, "listo")
     assert (
         f'<form class="fila__acciones" method="post" action="{url}" hx-post="{url}" '
-        'hx-target="#hoy-que-hacer" hx-swap="outerHTML"><input type="hidden" '
+        'hx-target="#hoy-que-hacer-lista" hx-swap="innerHTML"><input type="hidden" '
         'name="csrfmiddlewaretoken"'
     ) in tarjeta
 
@@ -379,17 +389,21 @@ def test_marcar_como_listo_cambia_la_fila_y_lo_que_depende(sesion_duena, taller)
     pedido.refresh_from_db()
     assert pedido.estado == Estado.LISTO
     html = respuesta.text
-    tarjeta = parte(html, "hoy-que-hacer")
-    assert html.startswith('<section class="tarjeta tarjeta--lista" id="hoy-que-hacer"')
+    lista = lista_de(html)
+    # Llega lo de adentro de la lista: la fila, con el mismo id que tenía en la página.
+    assert html.startswith(f'<div class="fila fila--acciones-abajo" id="pendiente-{pedido.pk}">')
     # Sigue atrasado, pero lo que sigue ahora es cobrar y entregar.
-    assert '<span class="etiqueta etiqueta--rojo">Atrasado 2 días</span>' in tarjeta
-    assert "Ya está listo. Debe" in tarjeta
-    assert "Cobrar el saldo" in tarjeta
-    assert "Marcar como listo" not in tarjeta
+    assert '<span class="etiqueta etiqueta--rojo">Atrasado 2 días</span>' in lista
+    assert "Ya está listo. Debe" in lista
+    assert "Cobrar el saldo" in lista
+    assert "Marcar como listo" not in lista
     # Las otras partes llegan marcadas para que HTMX las cambie donde están.
-    for id_ in ("hoy-cifras", "hoy-quien-debe", "hoy-etapas"):
+    for id_ in ("hoy-pendientes", "hoy-cifras", "hoy-quien-debe", "hoy-etapas"):
         assert re.search(f'id="{id_}"[^>]*hx-swap-oob="true"', html), id_
-    assert html.count('hx-swap-oob="true"') == 3
+    assert html.count('hx-swap-oob="true"') == 4
+    assert (
+        '<span class="tarjeta__aparte" id="hoy-pendientes" hx-swap-oob="true">1 pendiente</span>'
+    ) in html
     assert '<div hx-swap-oob="innerHTML:.menu__lista">' in html
     etapas = parte(html, "hoy-etapas")
     assert (
@@ -408,15 +422,17 @@ def test_marcar_como_entregado_quita_la_fila_y_cambia_las_cuentas(sesion_duena, 
 
     pedido.refresh_from_db()
     assert pedido.estado == Estado.ENTREGADO
-    tarjeta = parte(html, "hoy-que-hacer")
-    assert filas(tarjeta) == ["Cotizado"]
-    assert '<span class="tarjeta__aparte">1 pendiente</span>' in tarjeta
+    assert filas(lista_de(html)) == ["Cotizado"]
+    assert (
+        '<span class="tarjeta__aparte" id="hoy-pendientes" hx-swap-oob="true">1 pendiente</span>'
+    ) in html
     cifras = parte(html, "hoy-cifras")
     assert "cifra--alerta" not in cifras
     assert "Todo va a tiempo" in cifras
     # Ya no va atrasado: en "Quién te debe" deja de estar en rojo, pero sigue debiendo.
     quien = parte(html, "hoy-quien-debe")
-    assert '<div class="fila-proporcion"><a class="fila-proporcion__nombre"' in quien
+    assert re.search(r'<div class="fila-proporcion" id="deudor-\d+">'
+                     r'<a class="fila-proporcion__nombre"', quien)
     assert "$ 750.000" in quien
     assert '1 con saldo' in parte(html, "hoy-etapas")
     # El menú se dibuja de nuevo: Hoy sigue resaltado y Pedidos ya no tiene contador.
@@ -600,3 +616,73 @@ def test_en_celular_las_cifras_llevan_su_orden_en_la_pagina(sesion_duena, ejempl
 
     # En el orden del computador, cada cifra lleva el turno que toma en celular.
     assert re.findall(r"orden-celular-(\d)", cifras) == ["1", "3", "2", "4"]
+
+
+# --- Ajuste: pantalla fija y animaciones ----------------------------------------------------
+
+
+def test_hoy_se_arma_para_la_pantalla_fija(sesion_duena, ejemplo):
+    """En el computador el tablero toma el alto de la hoja; la fila de "Qué hacer hoy" toma lo
+    que queda, y las listas largas se desplazan por dentro (docs/08-diseno.md)."""
+    html = sesion_duena.get(PAGINA).text
+
+    assert '<div class="tablero llenar">' in html
+    assert html.count('<div class="dos-columnas llenar">') == 1
+    assert '<div class="desplazable" id="hoy-que-hacer-lista">' in parte(html, "hoy-que-hacer")
+    assert 'class="tarjeta tarjeta--lista llenar" id="hoy-que-hacer"' in html
+    assert 'class="tarjeta tarjeta--lista tarjeta--fotos llenar"' in html
+    assert 'class="tarjeta tarjeta--lista llenar" id="hoy-quien-debe"' in html
+    assert '<div class="desplazable">' in parte(html, "hoy-quien-debe")
+    # La gráfica baja para el computador y la de siempre para el celular.
+    grafica = parte(html, "hoy-grafica")
+    assert '<svg class="grafica grafica--computador" role="img"' in grafica
+    assert 'viewBox="0 0 600 114"' in grafica
+    assert '<svg class="grafica grafica--celular" role="img"' in grafica
+    assert 'viewBox="0 0 600 200"' in grafica
+
+
+def test_las_filas_conservan_su_id_despues_de_una_accion(sesion_duena, taller):
+    """Lo que sigue en la lista tiene el mismo id antes y después: no parpadea. Lo que se va
+    (el entregado) ya no está: su fila se cierra (static/js/app.js, sección 11)."""
+    entregar = pedido_de(taller, cliente="Para entregar", estado=Estado.LISTO, total=500_000)
+    sigue = pedido_de(taller, cliente="Sigue", fecha_entrega=HOY - timedelta(days=1),
+                      total=300_000)
+    pagina = sesion_duena.get(PAGINA).text
+    ids_pagina = re.findall(r'id="(pendiente-\d+)"', parte(pagina, "hoy-que-hacer"))
+    deudores_pagina = re.findall(r'id="(deudor-\d+)"', parte(pagina, "hoy-quien-debe"))
+
+    html = sesion_duena.post(accion(entregar, "entregado"), headers=HTMX).text
+
+    assert ids_pagina == [f"pendiente-{sigue.pk}", f"pendiente-{entregar.pk}"]
+    assert re.findall(r'id="(pendiente-\d+)"', lista_de(html)) == [f"pendiente-{sigue.pk}"]
+    # Quién te debe: cada fila lleva el id de su cliente, el mismo en la página y en la respuesta.
+    assert deudores_pagina == [f"deudor-{entregar.cliente.pk}", f"deudor-{sigue.cliente.pk}"]
+    assert re.findall(r'id="(deudor-\d+)"', parte(html, "hoy-quien-debe")) == deudores_pagina
+
+
+def test_la_ultima_accion_deja_la_nota_dentro_de_la_lista(sesion_duena, taller):
+    pedido = pedido_de(taller, estado=Estado.LISTO)
+
+    html = sesion_duena.post(accion(pedido, "entregado"), headers=HTMX).text
+
+    assert html.startswith('<p class="tarjeta__nota">No hay nada por hacer hoy.</p>')
+    assert (
+        '<span class="tarjeta__aparte" id="hoy-pendientes" hx-swap-oob="true">Sin pendientes'
+    ) in html
+    # En la página, la nota también va dentro de la lista (que es la que cambia la acción).
+    assert (
+        '<div class="desplazable" id="hoy-que-hacer-lista"><p class="tarjeta__nota">'
+        "No hay nada por hacer hoy.</p>"
+    ) in parte(sesion_duena.get(PAGINA).text, "hoy-que-hacer")
+
+
+def test_las_acciones_de_hoy_no_llevan_aviso_corto(sesion_duena, taller):
+    """Cambiar de etapa no lleva aviso: el cambio se ve justo donde se tocó (la fila cambia o
+    se cierra) y la demo tampoco lo tiene (docs/bitacora/ajuste-pantalla-fija/hoy.md)."""
+    listo = pedido_de(taller, fecha_entrega=HOY - timedelta(days=1))
+    entregar = pedido_de(taller, cliente="Otro", estado=Estado.LISTO)
+
+    for pedido, nombre in ((listo, "listo"), (entregar, "entregado")):
+        respuesta = sesion_duena.post(accion(pedido, nombre), headers=HTMX)
+        assert respuesta.status_code == 200
+        assert "aviso" not in respuesta.get("HX-Trigger", "")

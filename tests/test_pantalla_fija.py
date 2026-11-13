@@ -50,8 +50,6 @@ PANTALLAS = [
 # Pantallas que no caben completas en algún tamaño, con su razón. Si una empieza a caber, o
 # una nueva deja de caber, la prueba falla y dice cuál: se corrige la pantalla o esta lista.
 NO_CABEN = {
-    "hoy": "Todavía sin ajustar a la pantalla fija.",
-    "hoy-menu-contraido": "Todavía sin ajustar a la pantalla fija.",
     "pedido": "Todavía sin ajustar a la pantalla fija.",
     "pedido-costurera": "Todavía sin ajustar a la pantalla fija.",
 }

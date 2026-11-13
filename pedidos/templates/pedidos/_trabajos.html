@@ -10,4 +10,6 @@ La nota de abajo reemplaza la del diseño ("Fotos de ejemplo hechas con IA..."),
 del diseño: ocupa el mismo lugar, para que la tarjeta termine igual que en la referencia.
 `id_titulo` da nombre a la tarjeta para los lectores de pantalla, cuando la pieza lo use
 (pedido al coordinador).
-{% endcomment %}{% url 'pedidos:lista' as url_lista %}{% include "piezas/_fotos.html" with fotos=trabajos titulo="Trabajos del taller" id_titulo="t-trabajos" url_subir=url_lista nota="Son las fotos de tus pedidos. Cada pedido tiene la suya: se sube dentro del pedido." %}
+En la pantalla fija del computador la tarjeta toma el alto de su fila (llenar) y la foto toma
+lo que queda, con un mínimo (docs/08-diseno.md, "Fotos que pasan").
+{% endcomment %}{% url 'pedidos:lista' as url_lista %}{% include "piezas/_fotos.html" with fotos=trabajos titulo="Trabajos del taller" id_titulo="t-trabajos" clase="llenar" url_subir=url_lista nota="Son las fotos de tus pedidos. Cada pedido tiene la suya: se sube dentro del pedido." %}
