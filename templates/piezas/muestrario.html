@@ -11,6 +11,25 @@ Los textos y valores son de ejemplo, copiados de las páginas de diseno/.
 
 <p class="aviso">Página interna para revisar las piezas de un vistazo. Solo existe en el computador de desarrollo. El menú de esta página muestra contadores de ejemplo (Pedidos 1 y Telas 2); en las demás, sin pendientes, no se muestran.</p>
 
+<section class="tarjeta tarjeta--lista" aria-labelledby="p-animaciones">
+<div class="tarjeta__cabeza"><h2 id="p-animaciones">Animaciones</h2><span class="tarjeta__aparte">150, 200 y 250 ms: variables de static/css/app.css</span></div>
+<div class="tarjeta__cuerpo">
+<p>Pasa el mouse por cualquier botón y presiónalo: responde. Los botones de esta tarjeta y de las dos de abajo tardan un segundo a propósito, para ver el "cargando"; al guardar sale un aviso corto abajo. El menú se contrae y se abre con su botón, y al cambiar de sección el contenido pasa con un desvanecido.</p>
+<div class="botones"><a class="boton" href="{% url 'piezas_ventana' %}" hx-get="{% url 'piezas_ventana' %}" hx-target="#ventana">Abrir una ventana</a></div>
+<p class="nota">Si el equipo tiene pedido "menos movimiento", no se ve ninguna animación: todo llega directo a su lugar.</p>
+</div>
+</section>
+
+<div class="dos-columnas">
+<div class="columna columna-ancha">
+{% include "piezas/_animaciones_filas.html" %}
+{% include "piezas/_animaciones_etapa.html" %}
+</div>
+<div class="columna columna-angosta">
+{% include "piezas/_animaciones_barras.html" %}
+</div>
+</div>
+
 <section class="tarjeta tarjeta--lista" aria-labelledby="p-colores">
 <div class="tarjeta__cabeza"><h2 id="p-colores">Colores</h2><span class="tarjeta__aparte">Variables de static/css/app.css</span></div>
 <div class="tarjeta__cuerpo">

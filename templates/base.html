@@ -29,5 +29,8 @@
 {# Ventana para formularios cortos ("Nuevo pedido"...). La llena HTMX: ver static/js/app.js. #}
 <dialog class="ventana" id="ventana" aria-label="Ventana"></dialog>
 {% endblock %}
+{# Aviso corto de confirmación ("Abono registrado."): lo pone static/js/app.js (sección 12). Los lectores de pantalla lo oyen por otra caja; por eso esta lleva aria-hidden. Los avisos que llegan de la página anterior (config/avisos.py) esperan en #avisos-pendientes. #}
+<div class="avisos" id="avisos" aria-hidden="true"></div>
+{% if messages %}<div id="avisos-pendientes" hidden>{% for mensaje in messages %}<p data-aviso>{{ mensaje }}</p>{% endfor %}</div>{% endif %}
 </body>
 </html>

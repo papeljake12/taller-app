@@ -4,13 +4,15 @@ Solo existe en el computador de desarrollo (DEBUG). En el servidor responde 404.
 Los valores que muestra son de ejemplo, copiados de las páginas de diseno/.
 """
 
+import time
 from datetime import date
 
 from django import forms
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils import timezone
 
 from config.menu import construir_menu
@@ -42,6 +44,15 @@ class EjemploForm(forms.Form):
 
 
 ETAPAS = ["Cotizado", "Confirmado", "En corte", "En confección", "Listo", "Entregado"]
+
+# Los valores de ejemplo de la gráfica de diseno/hoy.html, de junio a noviembre.
+MESES_GRAFICA = [
+    MesDeGrafica(date(2026, mes, 1), cobrado, gastado)
+    for mes, cobrado, gastado in (
+        (6, 2_100_000, 800_000), (7, 2_900_000, 1_100_000), (8, 3_600_000, 1_300_000),
+        (9, 1_900_000, 700_000), (10, 2_660_000, 600_000), (11, 4_460_000, 939_000),
+    )
+]
 
 
 def piezas(request):
@@ -77,14 +88,8 @@ def piezas(request):
         "con_errores": con_errores,
         "pasos": pasos,
         "fotos": fotos,
-        # Los valores de ejemplo de la gráfica de diseno/hoy.html, de junio a noviembre.
-        "meses_grafica": [
-            MesDeGrafica(date(2026, mes, 1), cobrado, gastado)
-            for mes, cobrado, gastado in (
-                (6, 2_100_000, 800_000), (7, 2_900_000, 1_100_000), (8, 3_600_000, 1_300_000),
-                (9, 1_900_000, 700_000), (10, 2_660_000, 600_000), (11, 4_460_000, 939_000),
-            )
-        ],
+        "meses_grafica": MESES_GRAFICA,
+        "filas": _filas_de_ejemplo(request),
         "colores": [
             ("--negro", "#1A1A1A"), ("--texto-2", "#555555"), ("--texto-3", "#8A8A8A"),
             ("--hoja", "#F1F1F1"), ("--tarjeta", "#FFFFFF"), ("--suave", "#F7F7F7"),
@@ -98,3 +103,73 @@ def piezas(request):
                    "visto", "salir"],
     }
     return render(request, "piezas/muestrario.html", contexto)
+
+
+# --- Animaciones de ejemplo en /piezas/ ---------------------------------------------------
+# Pequeñas acciones de mentira para ver las animaciones: un botón que tarda ("cargando"),
+# filas que entran y salen, el cambio de etapa, la ventana y el aviso corto. Solo en
+# desarrollo; no guardan nada en la base (las filas viven en la sesión).
+
+DEMORA_EJEMPLO = 1.0  # segundos: lo bastante para ver el botón "cargando"
+
+
+def _solo_desarrollo(request):
+    if not settings.DEBUG:
+        raise Http404
+
+
+def _filas_de_ejemplo(request):
+    return request.session.get("piezas_filas", [1, 2, 3])
+
+
+def piezas_filas(request):
+    """Agrega una fila al final (?accion=agregar) o quita una (?quitar=N). Tarda un segundo."""
+    from config.avisos import avisar
+
+    _solo_desarrollo(request)
+    filas = _filas_de_ejemplo(request)
+    texto = ""
+    if request.method == "POST":
+        time.sleep(DEMORA_EJEMPLO)
+        if request.POST.get("quitar"):
+            numero = int(request.POST["quitar"])
+            filas = [fila for fila in filas if fila != numero]
+            texto = "Fila quitada (ejemplo)."
+        else:
+            filas = filas + [max(filas, default=0) + 1]
+            texto = "Fila agregada (ejemplo)."
+        request.session["piezas_filas"] = filas
+    respuesta = render(request, "piezas/_animaciones_filas.html", {"filas": filas})
+    return avisar(request, respuesta, texto) if texto else respuesta
+
+
+def piezas_etapa(request):
+    """Mueve los pasos de ejemplo a la etapa tocada (para ver la transición del paso)."""
+    _solo_desarrollo(request)
+    actual = int(request.POST.get("estado", 2)) if request.method == "POST" else 2
+    pasos = [
+        {"nombre": nombre, "valor": i,
+         "estado": "hecho" if i < actual else "actual" if i == actual else "pendiente"}
+        for i, nombre in enumerate(ETAPAS)
+    ]
+    return render(request, "piezas/_animaciones_etapa.html", {"pasos": pasos})
+
+
+def piezas_barras(request):
+    """La tarjeta de barras otra vez: al llegar, las barras crecen hasta su valor."""
+    _solo_desarrollo(request)
+    return render(request, "piezas/_animaciones_barras.html", {"meses_grafica": MESES_GRAFICA})
+
+
+def piezas_ventana(request):
+    """Una ventana de ejemplo. "Guardar" la cierra (con su transición) y muestra el aviso."""
+    from config.avisos import avisar
+    from config.ventanas import CERRAR_VENTANA, responder_ventana
+
+    _solo_desarrollo(request)
+    if request.method == "POST":
+        time.sleep(DEMORA_EJEMPLO)
+        respuesta = HttpResponse(status=200, headers=CERRAR_VENTANA)
+        return avisar(request, respuesta, "Guardado (ejemplo).")
+    return responder_ventana(request, "piezas/_animaciones_ventana.html",
+                             {"accion": reverse("piezas_ventana"), "objetivo": "#ventana"})

@@ -1,0 +1,9 @@
+{% load piezas %}{% comment %}
+Ejemplo de /piezas/: filas que entran y salen sin recargar (config/vistas.py, piezas_filas).
+Cada fila lleva su id ("p-fila-3"): la que llega aparece con un desvanecido y la que se quita
+se cierra suavemente. Los botones tardan un segundo, para ver el "cargando".
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="p-animaciones-filas" aria-labelledby="p-filas-titulo">
+<div class="tarjeta__cabeza"><h2 id="p-filas-titulo">Filas que entran y salen</h2><form method="post" action="{% url 'piezas_filas' %}" hx-post="{% url 'piezas_filas' %}" hx-target="#p-animaciones-filas" hx-swap="outerHTML">{% csrf_token %}<button type="submit" class="boton boton--principal" id="p-filas-agregar">Agregar una fila</button></form></div>
+{% for fila in filas %}<div class="fila fila--compacta" id="p-fila-{{ fila }}"><span>Fila de ejemplo número {{ fila }}</span><form method="post" action="{% url 'piezas_filas' %}" hx-post="{% url 'piezas_filas' %}" hx-target="#p-animaciones-filas" hx-swap="outerHTML" data-foco-despues="p-filas-agregar">{% csrf_token %}<input type="hidden" name="quitar" value="{{ fila }}"><button type="submit" class="boton boton--icono" aria-label="Quitar la fila {{ fila }}">{% icono "cerrar" %}</button></form></div>
+{% empty %}<p class="tarjeta__nota" id="p-filas-vacio">No quedan filas. Agrega una.</p>
+{% endfor %}</section>

@@ -8,11 +8,54 @@
    7. Elegir un archivo (en celular).
    8. El cursor no se pierde cuando HTMX cambia una parte de la página.
    9. Un enlace a algo que está dentro de una fila plegada (<details>) la abre.
+   10. Botones que esperan: "cargando" si la acción tarda.
+   11. Lo que entra y sale sin recargar (HTMX): se desvanece, y una fila que se va se cierra.
+   12. Aviso corto de confirmación ("Abono registrado.").
+
+   Las duraciones de las animaciones se leen de static/css/app.css (:root), donde se definen
+   una sola vez. Si la persona pidió menos movimiento en su equipo, valen 0 y nada se anima.
 
    Este archivo es compartido: después de la tanda 2 solo lo cambia el coordinador. */
 
 (function () {
   "use strict";
+
+  /* 0. Movimiento ---------------------------------------------------------- */
+
+  // Milisegundos de una variable de app.css ("200ms" o "0.2s"). 0 si no existe.
+  function milisegundos(variable) {
+    const valor = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    const numero = parseFloat(valor);
+    if (!valor || isNaN(numero)) return 0;
+    return /ms$/.test(valor) ? numero : numero * 1000;
+  }
+
+  function curva(variable) {
+    return getComputedStyle(document.documentElement).getPropertyValue(variable).trim() || "ease";
+  }
+
+  // Con "menos movimiento" pedido, app.css deja las duraciones en 0: no se anima nada.
+  function hayMovimiento() {
+    return milisegundos("--duracion") > 0 &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  // Ejecuta `despues` cuando termina la animación de CSS del elemento (o, si no llega el
+  // aviso del navegador, cuando pasa su duración).
+  function alTerminar(elemento, duracion, despues) {
+    let hecho = false;
+    function terminar() {
+      if (hecho) return;
+      hecho = true;
+      elemento.removeEventListener("animationend", alFin);
+      despues();
+    }
+    function alFin(evento) {
+      if (evento.target === elemento) terminar();
+    }
+    elemento.addEventListener("animationend", alFin);
+    window.setTimeout(terminar, duracion + 50);
+  }
 
   /* 1. Menú que se contrae ------------------------------------------------- */
 
@@ -29,9 +72,20 @@
     });
   }
 
+  let menuCambia = null;
+
   function contraerMenu(contraido) {
     const marco = document.querySelector("[data-marco]");
     if (!marco) return;
+    // Mientras cambia, el menú pasa de ancho a angosto (o al revés) con transición
+    // (.menu-cambia en app.css). Solo entonces: al abrir cada página no se anima.
+    if (hayMovimiento()) {
+      marco.classList.add("menu-cambia");
+      window.clearTimeout(menuCambia);
+      menuCambia = window.setTimeout(function () {
+        marco.classList.remove("menu-cambia");
+      }, milisegundos("--duracion") + 50);
+    }
     marco.classList.toggle("marco--contraido", contraido);
     ponerTitulos(marco, contraido);
     // La elección se guarda en una cookie para que el servidor dibuje el menú igual.
@@ -62,8 +116,22 @@
     if (!boton) return;
     const panel = document.getElementById(boton.getAttribute("aria-controls"));
     if (!panel) return;
-    panel.hidden = !abierto;
     boton.setAttribute("aria-expanded", String(abierto));
+    if (abierto) {
+      // Al abrirlo sube (app.css: .panel-mas:not([hidden])).
+      panel.classList.remove("se-cierra");
+      panel.hidden = false;
+    } else if (!panel.hidden && hayMovimiento()) {
+      // Al cerrarlo baja y después se esconde.
+      panel.classList.add("se-cierra");
+      alTerminar(panel, milisegundos("--duracion-corta"), function () {
+        if (boton.getAttribute("aria-expanded") === "true") return;  // se volvió a abrir
+        panel.hidden = true;
+        panel.classList.remove("se-cierra");
+      });
+    } else {
+      panel.hidden = true;
+    }
   }
 
   document.addEventListener("click", function (evento) {
@@ -158,9 +226,35 @@
     return document.getElementById("ventana");
   }
 
+  // Abre con transición (app.css: .ventana[open]). Cierra con transición: primero se
+  // desvanece (.se-cierra) y al terminar se cierra de verdad.
+  function cerrarVentana() {
+    const dialogo = ventana();
+    if (!dialogo || !dialogo.open || dialogo.classList.contains("se-cierra")) return;
+    if (!hayMovimiento()) {
+      dialogo.close();
+      return;
+    }
+    dialogo.classList.add("se-cierra");
+    alTerminar(dialogo, milisegundos("--duracion-corta"), function () {
+      dialogo.classList.remove("se-cierra");
+      dialogo.close();
+    });
+  }
+
+  // Una respuesta vacía para la ventana (la que solo la cierra con "cerrar-ventana") no la
+  // vacía de golpe mientras se cierra, ni la vuelve a abrir vacía.
+  document.addEventListener("htmx:beforeSwap", function (evento) {
+    const detalle = evento.detail;
+    if (detalle.target === ventana() && !String(detalle.serverResponse || "").trim()) {
+      detalle.shouldSwap = false;
+    }
+  });
+
   document.addEventListener("htmx:afterSwap", function (evento) {
     const dialogo = ventana();
-    if (!dialogo || evento.detail.target !== dialogo) return;
+    if (!dialogo || evento.detail.target !== dialogo || !dialogo.firstElementChild) return;
+    dialogo.classList.remove("se-cierra");
     if (!dialogo.open) dialogo.showModal();
     // El cursor va al primer campo con error (después de "Guardar" con algo mal), al
     // marcado con autofocus o, si no hay, al primer campo (no a la X de cerrar, que va
@@ -178,15 +272,19 @@
     if (!dialogo || !dialogo.open) return;
     // Tocar el fondo oscuro (fuera de la ventana) también la cierra.
     if (evento.target.closest("[data-cerrar-ventana]") || evento.target === dialogo) {
-      dialogo.close();
+      cerrarVentana();
     }
   });
 
+  // Escape también la cierra con su transición (sin esto, el navegador la cierra de golpe).
+  document.addEventListener("cancel", function (evento) {
+    if (evento.target !== ventana() || !hayMovimiento()) return;
+    evento.preventDefault();
+    cerrarVentana();
+  }, true);
+
   // El servidor puede cerrarla después de guardar con la cabecera "HX-Trigger: cerrar-ventana".
-  document.body.addEventListener("cerrar-ventana", function () {
-    const dialogo = ventana();
-    if (dialogo && dialogo.open) dialogo.close();
-  });
+  document.body.addEventListener("cerrar-ventana", cerrarVentana);
 
   document.addEventListener("close", function (evento) {
     if (evento.target === ventana()) evento.target.replaceChildren();
@@ -307,5 +405,277 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     if (window.location.hash) abrirHasta(decodeURIComponent(window.location.hash.slice(1)));
+  });
+
+  /* 10. Botones que esperan ------------------------------------------------ */
+
+  // Si una acción tarda más que --espera-cargando, el botón que la pidió muestra un círculo
+  // que gira en lugar de su texto, sin cambiar de ancho (.esta-cargando en app.css). Al
+  // llegar la respuesta vuelve a ser el de antes, o lo reemplaza la parte nueva.
+  // Un formulario que no debe mostrarlo (porque no cambia de página) lleva data-sin-cargando.
+
+  function empezarEspera(boton) {
+    terminarEspera(boton);
+    boton.esperaCargando = window.setTimeout(function () {
+      if (!boton.isConnected) return;
+      boton.classList.add("esta-cargando");
+      boton.setAttribute("aria-busy", "true");
+    }, milisegundos("--espera-cargando"));
+  }
+
+  function terminarEspera(boton) {
+    if (!boton) return;
+    window.clearTimeout(boton.esperaCargando);
+    boton.classList.remove("esta-cargando");
+    boton.removeAttribute("aria-busy");
+  }
+
+  // Qué botón pidió la acción: el mismo elemento si es un botón o un enlace; en un
+  // formulario, el botón con el que se envió. Un campo (el buscador mientras se escribe) no.
+  function botonQuePide(elemento, origen) {
+    if (!elemento || !elemento.matches) return null;
+    if (elemento.matches("button, a, .filtro, .paso")) return elemento;
+    if (elemento.tagName === "FORM" && origen && origen.type === "submit") {
+      return origen.submitter || elemento.querySelector('[type="submit"]');
+    }
+    return null;
+  }
+
+  document.addEventListener("htmx:beforeRequest", function (evento) {
+    const detalle = evento.detail;
+    if (detalle.elt && detalle.elt.closest && detalle.elt.closest("[data-sin-cargando]")) return;
+    const origen = detalle.requestConfig && detalle.requestConfig.triggeringEvent;
+    const boton = botonQuePide(detalle.elt, origen);
+    if (!boton || !detalle.xhr) return;
+    detalle.xhr.botonQueEspera = boton;
+    empezarEspera(boton);
+  });
+
+  document.addEventListener("htmx:afterRequest", function (evento) {
+    if (evento.detail.xhr) terminarEspera(evento.detail.xhr.botonQueEspera);
+  });
+
+  // Un formulario normal (sin HTMX): el botón espera mientras llega la página siguiente.
+  document.addEventListener("submit", function (evento) {
+    const formulario = evento.target;
+    if (evento.defaultPrevented || formulario.closest("[data-sin-cargando]")) return;
+    if (formulario.target && formulario.target !== "_self") return;
+    if (evento.submitter) empezarEspera(evento.submitter);
+  });
+
+  // Al volver con el botón "atrás", la página guardada no queda con botones esperando.
+  window.addEventListener("pageshow", function () {
+    document.querySelectorAll(".esta-cargando").forEach(terminarEspera);
+  });
+
+  /* 11. Lo que entra y sale sin recargar (HTMX) ---------------------------- */
+
+  // Cuando HTMX cambia una parte de la página:
+  //  - lo que se va se desvanece; si es un bloque (una fila de una lista), además se cierra
+  //    suavemente. HTMX espera --duracion-corta antes de cambiar la página;
+  //  - lo que llega aparece con un desvanecido de --duracion.
+  // Se reconoce por su id: lo que tiene el mismo id antes y después "sigue" y no se anima
+  // (solo cambia su contenido). Por eso las filas de las listas llevan id (id="abono-12"), y
+  // un bloque que se cambia por otro en el mismo lugar (una fila por su pregunta "¿Quitar?")
+  // conserva el id. Una parte que se actualiza mientras se escribe y no debe parpadear lleva
+  // data-sin-animar.
+
+  let idsAntes = null;    // ids que había antes del cambio
+  let zonasNuevas = [];   // zonas cuyo contenido cambia entero (sin nada que siga)
+  let saliendo = [];      // animaciones de lo que se va
+
+  function seVe(elemento) {
+    return elemento.isConnected && elemento.getClientRects().length > 0;
+  }
+
+  // Sin los que están dentro de otro de la lista (se anima el de afuera).
+  function deAfuera(elementos) {
+    return elementos.filter(function (elemento) {
+      return !elementos.some(function (otro) {
+        return otro !== elemento && otro.contains(elemento);
+      });
+    });
+  }
+
+  function esBloque(elemento) {
+    return /^(block|flex|grid|list-item|flow-root)$/.test(getComputedStyle(elemento).display);
+  }
+
+  // El modo de HTMX (outerHTML, innerHTML...) con que se cambia el objetivo.
+  function modoDeCambio(detalle) {
+    const elemento = detalle.elt || (detalle.requestConfig && detalle.requestConfig.elt);
+    const conModo = elemento && elemento.closest && elemento.closest("[hx-swap]");
+    const texto = detalle.swapOverride || (conModo && conModo.getAttribute("hx-swap")) ||
+      (window.htmx && window.htmx.config.defaultSwapStyle) || "innerHTML";
+    return texto.trim().split(/\s+/)[0];
+  }
+
+  const SIN_REEMPLAZO = /^(beforebegin|afterbegin|beforeend|afterend|none)$/i;
+
+  // Las zonas que cambian: el objetivo y las partes que llegan aparte (hx-swap-oob).
+  // `entera` dice si la zona misma se reemplaza (outerHTML) o solo su contenido.
+  function zonasQueCambian(detalle, respuesta) {
+    const zonas = [];
+    const modo = modoDeCambio(detalle);
+    if (detalle.target && !SIN_REEMPLAZO.test(modo)) {
+      zonas.push({ zona: detalle.target, entera: /^(outerHTML|delete)$/i.test(modo) });
+    }
+    respuesta.querySelectorAll("[hx-swap-oob]").forEach(function (parte) {
+      const valor = parte.getAttribute("hx-swap-oob");
+      const dos = valor.indexOf(":");
+      const modoParte = dos > -1 ? valor.slice(0, dos) : (valor === "true" ? "outerHTML" : valor);
+      const zona = dos > -1 ? document.querySelector(valor.slice(dos + 1))
+        : (parte.id ? document.getElementById(parte.id) : null);
+      if (zona && !SIN_REEMPLAZO.test(modoParte)) {
+        zonas.push({ zona: zona, entera: /^outerHTML$/i.test(modoParte) });
+      }
+    });
+    return zonas.filter(function (z) {
+      return seVe(z.zona) && !z.zona.closest("[data-sin-animar]");
+    });
+  }
+
+  function cerrarBloque(elemento, duracion) {
+    const estilo = getComputedStyle(elemento);
+    const desde = {
+      height: elemento.offsetHeight + "px",
+      opacity: 1,
+      paddingTop: estilo.paddingTop,
+      paddingBottom: estilo.paddingBottom,
+      marginTop: estilo.marginTop,
+      marginBottom: estilo.marginBottom,
+    };
+    const hasta = {
+      height: "0px", opacity: 0, paddingTop: "0px", paddingBottom: "0px",
+      marginTop: "0px", marginBottom: "0px",
+    };
+    elemento.style.overflow = "hidden";
+    return elemento.animate([desde, hasta], {
+      duration: duracion, easing: curva("--curva-salida"), fill: "forwards",
+    });
+  }
+
+  function desvanecer(elemento, duracion) {
+    return elemento.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: duracion, easing: curva("--curva-salida"), fill: "forwards",
+    });
+  }
+
+  function aparecer(elemento, duracion) {
+    elemento.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: duracion, easing: curva("--curva"),
+    });
+  }
+
+  document.addEventListener("htmx:beforeSwap", function (evento) {
+    const detalle = evento.detail;
+    if (window.htmx) window.htmx.config.defaultSwapDelay = 0;
+    idsAntes = null;
+    zonasNuevas = [];
+    if (!detalle.shouldSwap || !hayMovimiento()) return;
+    const plantilla = document.createElement("template");
+    plantilla.innerHTML = typeof detalle.serverResponse === "string" ? detalle.serverResponse : "";
+    const respuesta = plantilla.content;
+    const zonas = zonasQueCambian(detalle, respuesta);
+    if (!zonas.length) return;
+    const idsNuevos = new Set(Array.from(respuesta.querySelectorAll("[id]"), function (e) {
+      return e.id;
+    }));
+    idsAntes = new Set(Array.from(document.querySelectorAll("[id]"), function (e) {
+      return e.id;
+    }));
+    let seVan = [];
+    zonas.forEach(function (z) {
+      const conId = Array.from(z.zona.querySelectorAll("[id]"));
+      if (z.entera) conId.unshift(z.zona);
+      const siguen = conId.filter(function (e) { return idsNuevos.has(e.id); });
+      if (!z.entera && !siguen.length) {
+        // Nada de lo que había sigue (o estaba vacía): todo el contenido sale y el nuevo entra.
+        seVan = seVan.concat(Array.from(z.zona.children));
+        zonasNuevas.push(z.zona);
+        return;
+      }
+      seVan = seVan.concat(conId.filter(function (e) {
+        return !idsNuevos.has(e.id) && seVe(e);
+      }));
+    });
+    seVan = deAfuera(seVan);
+    if (!seVan.length) return;
+    const duracion = milisegundos("--duracion-corta");
+    saliendo = seVan.map(function (elemento) {
+      // Una fila (un bloque) se cierra; lo demás (una fila de tabla, un texto) se desvanece.
+      const animacion = esBloque(elemento) && elemento.tagName !== "TR"
+        ? cerrarBloque(elemento, duracion) : desvanecer(elemento, duracion);
+      return { elemento: elemento, animacion: animacion };
+    });
+    // HTMX lee la espera justo después de este aviso; enseguida vuelve a 0 para los demás.
+    if (window.htmx) {
+      window.htmx.config.defaultSwapDelay = duracion;
+      Promise.resolve().then(function () { window.htmx.config.defaultSwapDelay = 0; });
+    }
+  });
+
+  document.addEventListener("htmx:afterSwap", function () {
+    // Lo que debía irse y sigue en la página (no era parte del cambio) vuelve a verse.
+    saliendo.forEach(function (s) {
+      if (s.elemento.isConnected) {
+        s.animacion.cancel();
+        s.elemento.style.overflow = "";
+      }
+    });
+    saliendo = [];
+    if (!idsAntes) return;
+    const antes = idsAntes;
+    const zonas = zonasNuevas;
+    idsAntes = null;
+    zonasNuevas = [];
+    const duracion = milisegundos("--duracion");
+    let llegan = Array.from(
+      document.querySelectorAll("#contenido [id], #ventana [id], .menu [id]")
+    ).filter(function (e) { return !antes.has(e.id) && seVe(e); });
+    zonas.forEach(function (zona) {
+      if (zona.isConnected) llegan = llegan.concat(Array.from(zona.children));
+    });
+    deAfuera(llegan).forEach(function (elemento) { aparecer(elemento, duracion); });
+  });
+
+  /* 12. Aviso corto de confirmación --------------------------------------- */
+
+  // Después de guardar, el servidor manda el texto con config/avisos.py:
+  //  - si la página se queda, en la cabecera de HTMX: HX-Trigger: {"aviso": "Abono registrado."};
+  //  - si se va a otra página, como mensaje de Django, que base.html deja en #avisos-pendientes.
+  // Se ve una píldora negra abajo durante --tiempo-aviso y se va. Los lectores de pantalla lo
+  // oyen por la caja de avisar() (la píldora lleva aria-hidden).
+
+  function mostrarAviso(texto) {
+    const caja = document.getElementById("avisos");
+    if (!texto || !caja) return;
+    const aviso = document.createElement("p");
+    aviso.className = "aviso-corto";
+    aviso.textContent = texto;
+    caja.appendChild(aviso);
+    avisar(texto);
+    window.setTimeout(function () {
+      if (!hayMovimiento()) {
+        aviso.remove();
+        return;
+      }
+      aviso.classList.add("se-va");
+      alTerminar(aviso, milisegundos("--duracion-corta"), function () { aviso.remove(); });
+    }, milisegundos("--tiempo-aviso"));
+  }
+
+  document.body.addEventListener("aviso", function (evento) {
+    const detalle = evento.detail || {};
+    mostrarAviso(typeof detalle.value === "string" ? detalle.value : "");
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const pendientes = document.getElementById("avisos-pendientes");
+    if (!pendientes) return;
+    pendientes.querySelectorAll("[data-aviso]").forEach(function (mensaje) {
+      mostrarAviso(mensaje.textContent.trim());
+    });
+    pendientes.remove();
   });
 })();

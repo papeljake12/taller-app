@@ -1,0 +1,5 @@
+{% extends "piezas/ventana.html" %}
+{% comment %}Ejemplo de /piezas/: una ventana que abre y cierra con transición. "Guardar" tarda un segundo, la cierra y muestra el aviso corto (config/vistas.py, piezas_ventana).{% endcomment %}
+{% block titulo %}Ventana de ejemplo{% endblock %}
+{% block cuerpo %}<p>Así abren y cierran las ventanas, como "Nuevo pedido". Se cierra con la X, con Cancelar, con Escape o tocando afuera.</p>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Guardar</button>{% endblock %}
