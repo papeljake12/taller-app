@@ -3,6 +3,7 @@
 Cada entorno tiene su archivo, que parte de este:
 - local.py: el computador de desarrollo.
 - pruebas.py: cuando se corre `uv run pytest`.
+- produccion.py: el servidor (VPS). Ver docs/guia-publicacion.md.
 
 Los valores secretos (claves y contraseñas) no se escriben aquí: se leen del archivo .env.
 """
@@ -120,6 +121,13 @@ AXES_COOLOFF_TIME = timedelta(minutes=15)
 AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
 AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_CALLABLE = "cuentas.vistas.bloqueado"
+
+# Direcciones desde las que llega NGINX (el "portero" del servidor). Solo cuando la petición
+# viene de una de ellas se cree en el encabezado X-Forwarded-For, que dice la dirección real
+# del celular. Ver config/red.py.
+PROXIES_DE_CONFIANZA = ["127.0.0.1", "::1"]
+# django-axes cuenta los intentos por usuario y dirección real, no por la de NGINX.
+AXES_CLIENT_IP_CALLABLE = "config.red.ip_del_cliente"
 
 
 # Contraseñas

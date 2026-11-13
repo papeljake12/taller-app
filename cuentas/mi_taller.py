@@ -1,6 +1,7 @@
 """Mi taller (T20): el nombre, el teléfono y el logo del taller, y las costureras.
 
-Solo la usa la dueña (docs/04-permisos.md; el permiso se aplica con T21).
+Solo la usa la dueña (docs/04-permisos.md, T21): la costurera recibe 403 en todas sus
+direcciones; el número de una usuaria de otro taller, 404.
 
 - "Tu taller" (cuentas/_mi_taller_taller.html): guardar devuelve la tarjeta y, con
   hx-swap-oob, el nombre del taller en el menú y en la pestaña del navegador.
@@ -34,6 +35,7 @@ from cuentas.formularios_mi_taller import (
     enfocar,
 )
 from cuentas.models import Taller, Usuario
+from cuentas.permisos import exigir_duena, solo_duena
 
 # El cuadro en el que se muestra el logo en la tarjeta (en px). El logo se achica para
 # caber sin deformarse.
@@ -96,11 +98,14 @@ def contexto_taller(taller, form=None, guardado=False):
 
 
 def contexto_costureras(request, form_nueva=None, editando=None, form_nombre=None,
-                        agregada=None):
+                        agregada=None, enfocar_en=None):
     """Los datos de la tarjeta "Costureras".
 
     `editando` es la costurera que tiene abierto el formulario para cambiar su nombre, y
     `agregada`, la que se acaba de crear (para el mensaje de listo).
+    `enfocar_en` es (costurera, "nombre" o "estado"): después de cancelar, guardar el nombre
+    o activar y desactivar, el cursor vuelve a su botón ("Cambiar nombre" o el de activar),
+    para no perder el lugar con el teclado.
     """
     costureras = list(
         _costureras(request).order_by("-is_active", Lower("nombre_visible"), "username")
@@ -116,6 +121,8 @@ def contexto_costureras(request, form_nueva=None, editando=None, form_nombre=Non
         "editando": editando,
         "form_nombre": form_nombre,
         "agregada": agregada,
+        "enfocar_pk": enfocar_en[0].pk if enfocar_en else None,
+        "enfocar_que": enfocar_en[1] if enfocar_en else None,
     }
 
 
@@ -147,6 +154,7 @@ def _pagina(request, status=200, **contexto):
 # --- Tu taller ---------------------------------------------------------------------------------
 
 
+@solo_duena
 @require_http_methods(["GET", "POST"])
 def mi_taller(request):
     """La pantalla. Con POST guarda la tarjeta "Tu taller" (nombre, teléfono y logo)."""
@@ -179,6 +187,7 @@ def _tarjeta_costureras(request, status=200, **extra):
                   contexto_costureras(request, **extra), status=status)
 
 
+@solo_duena
 @require_POST
 def costurera_nueva(request):
     """Agregar una costurera: entra con su usuario y su contraseña desde ese momento."""
@@ -214,11 +223,12 @@ def costurera_editar(request, pk):
     Desactivar no borra nada: ella ya no puede entrar, pero sus pedidos y lo que anotó
     siguen ahí, y se puede volver a activar cuando se quiera.
     """
+    exigir_duena(request)  # antes de buscar: así una costurera no averigua qué números existen
     costurera = obtener_o_404(request, _costureras(request), pk=pk)
     if request.method == "GET":
         if "cancelar" in request.GET:
             if _con_tarjeta(request):
-                return _tarjeta_costureras(request)
+                return _tarjeta_costureras(request, enfocar_en=(costurera, "nombre"))
             return _volver(request, "#costureras")
         if _con_tarjeta(request):
             return _tarjeta_costureras(request, editando=costurera)
@@ -226,6 +236,7 @@ def costurera_editar(request, pk):
             instance=costurera, taller=request.taller))
 
     accion = request.POST.get("accion")
+    enfocar_en = (costurera, "estado" if accion in ("desactivar", "activar") else "nombre")
     if accion in ("desactivar", "activar"):
         costurera.is_active = accion == "activar"
         costurera.save(update_fields=["is_active"])
@@ -240,7 +251,7 @@ def costurera_editar(request, pk):
     else:
         return HttpResponseBadRequest("No se entendió qué cambiar.")
     if _con_tarjeta(request):
-        return _tarjeta_costureras(request)
+        return _tarjeta_costureras(request, enfocar_en=enfocar_en)
     return _volver(request, "#costureras")
 
 

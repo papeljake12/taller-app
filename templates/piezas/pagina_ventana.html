@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% comment %}El contenido de una ventana abierto como página completa (sin JavaScript).{% endcomment %}
+{% comment %}El contenido de una ventana abierto como página completa (sin JavaScript). Sin la X
+y con "Cancelar" como enlace a `volver` (ver piezas/ventana.html).{% endcomment %}
 {% block pestana %}{{ titulo_pagina|default:"Formulario" }}{% endblock %}
 {% block titulo %}{{ titulo_pagina|default:"" }}{% endblock %}
-{% block contenido %}<section class="tarjeta tarjeta--lista ventana ventana--pagina">{% include plantilla_ventana %}</section>{% endblock %}
+{% block contenido %}<section class="tarjeta tarjeta--lista ventana ventana--pagina">{% include plantilla_ventana with en_pagina=True %}</section>{% endblock %}

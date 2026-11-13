@@ -4,5 +4,5 @@ La pregunta antes de quitar un gasto, en el lugar del gasto dentro de la tarjeta
 Usa las mismas clases que la pregunta de quitar un abono (pagos__confirmar).
 {% endcomment %}{% url 'finanzas:gasto_quitar' gasto.pk as url_quitar %}<div class="tarjeta__cuerpo pagos__confirmar">
 <div class="aviso" role="alert"><p>¿Quitar el gasto «{{ gasto.concepto }}» de <span class="dinero">{{ gasto.valor|pesos }}</span> del {{ gasto.fecha|fecha_corta }}?</p></div>
-<form class="botones" method="post" action="{{ url_quitar }}" hx-post="{{ url_quitar }}" hx-target="#gastos" hx-swap="outerHTML">{% csrf_token %}<button type="submit" class="boton boton--principal" autofocus>Sí, quitar el gasto</button><a class="boton" href="{{ url_quitar }}?cancelar=1" hx-get="{{ url_quitar }}?cancelar=1" hx-target="#gastos" hx-swap="outerHTML">Cancelar</a></form>
+<form class="botones" method="post" action="{{ url_quitar }}" hx-post="{{ url_quitar }}" hx-target="#gastos" hx-swap="outerHTML">{% csrf_token %}<button type="submit" class="boton boton--principal" autofocus>Sí, quitar el gasto</button><a class="boton" href="{{ url_quitar }}?cancelar=1" hx-get="{{ url_quitar }}?cancelar=1" hx-target="#gastos" hx-swap="outerHTML" data-foco-despues="gasto-{{ gasto.pk }}-quitar">Cancelar</a></form>
 </div>

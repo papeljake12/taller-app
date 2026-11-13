@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% comment %}
+Sin permiso (T21): lo que ve una costurera si abre una parte que es solo para la dueña, o si
+quiere cambiar la etapa de un pedido que no es suyo (docs/04-permisos.md). Django la muestra
+sola cuando una vista dice "sin permiso" (cuentas/permisos.py); `exception` trae la razón.
+{% endcomment %}
+{% block pestana %}Sin permiso{% endblock %}
+{% block titulo %}Sin permiso{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-sin-permiso">
+<div class="tarjeta__cabeza"><h2 id="t-sin-permiso">{{ exception|default:"Esta parte es solo para la dueña del taller." }}</h2></div>
+<div class="tarjeta__cuerpo">
+<p class="texto-2">Si necesitas algo de aquí, pídeselo a la dueña del taller.</p>
+<div class="botones"><a class="boton boton--principal" href="{% url 'pedidos:hoy' %}">Volver a Hoy</a><a class="boton" href="{% url 'pedidos:lista' %}">Ver los pedidos</a></div>
+</div>
+</section>
+{% endblock %}

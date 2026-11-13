@@ -218,11 +218,17 @@ textarea {
   font-weight: 700;
 }
 
+/* El nombre del taller se parte en dos líneas antes que cortarse ("Taller de ejemplo").
+   Si es más largo todavía, se corta en la segunda línea; el nombre completo va en title. */
 .menu__taller {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  line-height: 1.1;  /* dos líneas caben en los 36 px del botón de al lado: el menú no baja */
 }
 
 .menu__contraer,
@@ -436,6 +442,8 @@ textarea {
   justify-content: space-between;
   align-items: center;
   gap: 10px 20px;
+  /* El alto de un botón: sin botones (la costurera) el contenido empieza en el mismo lugar */
+  min-height: 36px;
 }
 
 .encabezado__titulo {
@@ -552,6 +560,11 @@ textarea {
   color: var(--texto-2);
 }
 
+/* Justo debajo de la cabeza, la nota no suma su relleno al de la cabeza (Mi taller) */
+.tarjeta__cabeza + .tarjeta__nota {
+  padding-top: 0;
+}
+
 /* Tarjeta negra para avisos importantes (aviso de dotación) */
 .tarjeta-oscura {
   display: flex;
@@ -568,6 +581,7 @@ textarea {
 .tarjeta-oscura__titulo {
   font-size: 16px;
   font-weight: 700;
+  text-wrap: balance;  /* sin una palabra sola en la segunda línea */
 }
 
 .tarjeta-oscura__apoyo {
@@ -793,6 +807,11 @@ a.cifra:hover {
   gap: 8px;
 }
 
+/* Fila con los botones debajo de la frase (Qué hacer hoy), aunque quepan al lado */
+.fila--acciones-abajo > .fila__texto {
+  flex-basis: 100%;
+}
+
 /* Renglón de datos: nombre a la izquierda, valor a la derecha */
 .renglon {
   display: flex;
@@ -800,6 +819,12 @@ a.cifra:hover {
   gap: 12px;
   padding: 10px 0;
   border-top: 1px solid var(--linea);
+}
+
+/* Un botón en un renglón de dos líneas (Escribirles por la dotación) no se estira: mide lo
+   mismo que los demás botones */
+.renglon > .boton {
+  align-self: center;
 }
 
 /* Casilla de marcar (materiales comprados) */
@@ -858,7 +883,7 @@ a.cifra:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 36px;
+  min-height: 38px;  /* diseno/pedidos.html: 36 px de contenido más el borde */
   margin: 0 16px 14px;
   padding: 0 10px;
   border: 1px solid var(--borde-campo);
@@ -879,6 +904,22 @@ a.cifra:hover {
 
 .buscador input:focus {
   outline: none;
+}
+
+/* La X del navegador para borrar lo escrito: gris, con el trazo de los íconos del proyecto
+   (la de Chrome es azul, y el azul es solo para gráficas y "en proceso") */
+.buscador input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: url("../iconos/borrar.svg") center / 16px no-repeat;
+  cursor: pointer;
+}
+
+/* Vacío no hay nada que borrar: la X no aparta su lugar y el texto de ejemplo cabe entero */
+.buscador input:placeholder-shown::-webkit-search-cancel-button {
+  display: none;
 }
 
 /* Campo: etiqueta visible arriba y control con borde */
@@ -912,6 +953,23 @@ a.cifra:hover {
   color: var(--negro);
   font: inherit;
   font-weight: 400;
+}
+
+/* Al llegar a un campo con un enlace (#registrar-abono) queda espacio arriba para su
+   etiqueta: no aparece una caja vacía pegada al borde de la pantalla */
+.campo__control {
+  scroll-margin-top: 48px;
+}
+
+/* Campo que no se puede cambiar (la costurera en la Entrega del pedido): apagado, como las
+   celdas apagadas, para que no parezca que se puede escribir */
+.campo__control:disabled {
+  border-color: var(--linea);
+  background: var(--suave);
+  color: var(--texto-2);
+  -webkit-text-fill-color: var(--texto-2);
+  opacity: 1;
+  cursor: not-allowed;
 }
 
 textarea.campo__control {
@@ -996,9 +1054,15 @@ textarea.campo__control {
 
 .fila-medida {
   display: grid;
-  grid-template-columns: minmax(80px, auto) minmax(0, 1fr) auto;
+  /* El valor con un ancho mínimo y a la derecha: las barras de todas las filas terminan en el
+     mismo lugar aunque un valor sea más largo ("$ 4.650.000" y "$ 960.000") */
+  grid-template-columns: minmax(80px, auto) minmax(0, 1fr) minmax(7.5em, auto);
   align-items: center;
   gap: 12px;
+}
+
+.fila-medida > :last-child {
+  text-align: right;
 }
 
 /* Gráfica de barras: azul y gris, esquinas de 4 px, con leyenda */
@@ -1171,6 +1235,13 @@ textarea.campo__control {
   text-align: center;
 }
 
+/* Sin foto en el pedido por dentro: la invitación es más baja y no crece. Si la columna de
+   al lado es más alta, lo que sobra queda en blanco al final de la tarjeta, no en gris. */
+.fotos-vacio--compacto {
+  flex: none;
+  min-height: 120px;
+}
+
 /* Dos columnas de tarjetas que se reparten 3 a 2 y terminan a la misma altura */
 .dos-columnas {
   display: flex;
@@ -1211,25 +1282,39 @@ textarea.campo__control {
   background: var(--suave);
 }
 
-.tabla__enlace {
+.tabla__enlace,
+.fila__enlace {
   color: inherit;
   text-decoration: none;
 }
 
-.tabla__enlace::after {
+.tabla__enlace::after,
+.fila__enlace::after {
   content: "";
   position: absolute;
   inset: 0;
 }
 
 .tabla__enlace:hover strong,
-.tabla__enlace:focus-visible strong {
+.tabla__enlace:focus-visible strong,
+.fila__enlace:hover strong,
+.fila__enlace:focus-visible strong {
   text-decoration: underline;
 }
 
 /* Fila con un formulario: el botón queda a la altura de los campos, no de las etiquetas */
 .fila--formulario {
   align-items: flex-end;
+}
+
+/* Si el campo lleva ayuda debajo (Mi taller: cambiar el nombre), los botones van a la altura
+   del campo y no de la ayuda: arriba, bajados lo que mide la etiqueta (13 px) y su espacio */
+.fila--formulario:has(.campo__ayuda) {
+  align-items: flex-start;
+}
+
+.fila--formulario:has(.campo__ayuda) > .fila__acciones {
+  margin-top: calc(13px * 1.45 + 4px);
 }
 
 /* Botón de solo ícono, liviano, dentro de una fila (quitar un material). Lleva aria-label. */
@@ -1247,10 +1332,18 @@ textarea.campo__control {
   color: var(--negro);
 }
 
-/* La casilla también puede ser un botón (materiales comprados) */
+/* La casilla también puede ser un botón (materiales comprados). Se ve de 20 px, pero se
+   puede tocar en un cuadro de 44 px alrededor. */
 button.casilla {
+  position: relative;
   padding: 0;
   cursor: pointer;
+}
+
+button.casilla::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
 }
 
 /* Tallas: el número de cada talla va a la derecha, como en el diseño */
@@ -1349,6 +1442,17 @@ details[open] > summary.fila::after {
   text-decoration: underline;
 }
 
+/* La fila entera se puede tocar, no solo el nombre */
+.fila-proporcion:has(.fila-proporcion__nombre) {
+  position: relative;
+}
+
+.fila-proporcion__nombre::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
 .fila-proporcion__nombre.texto-rojo:hover {
   color: var(--rojo);
 }
@@ -1436,6 +1540,8 @@ input[type="file"].campo__control::file-selector-button:hover {
 
 /* Botones de una fila de tabla (Telas: "Entró" y "Usé"): en una línea, con 8 px entre ellos */
 .tabla__acciones {
+  position: relative;
+  z-index: 1;  /* por encima del enlace que cubre la fila (.tabla__enlace) */
   display: inline-flex;
   gap: 8px;
 }
@@ -1593,9 +1699,19 @@ input[type="file"].campo__control::file-selector-button:hover {
   border-right: 0;
 }
 
-/* Un día con entregas es un botón: tocarlo filtra la lista */
+/* Un día con entregas es un botón: tocarlo filtra la lista. Un botón centra su contenido
+   de arriba abajo; este lo pone arriba, para que su número quede a la altura de los demás. */
 button.calendario__dia {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
   cursor: pointer;
+}
+
+/* El anillo del foco va por dentro del día: por fuera lo cortaría el borde de la tarjeta */
+button.calendario__dia:focus-visible {
+  outline-offset: -4px;  /* por dentro también del marco negro del día elegido (2 px) */
 }
 
 button.calendario__dia:hover {
@@ -1630,11 +1746,23 @@ button.calendario__dia:hover {
 .calendario__entregas {
   display: flex;
   flex-direction: column;
+  align-self: stretch;  /* todo el ancho del día, también dentro del botón */
   align-items: flex-start;
   gap: 2px;
   margin-top: 4px;
   font-size: 12px;
   line-height: 1.25;
+}
+
+/* Un nombre muy largo ("Grupo de danza Tambores del Río") se corta en la tercera línea:
+   así una semana no queda más alta que las otras. El nombre entero va en la lista de al lado
+   y en lo que lee el lector de pantalla (aria-label del día). */
+.calendario__entregas .etiqueta {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
 .calendario__leyenda {
@@ -1653,11 +1781,76 @@ button.calendario__dia:hover {
   gap: 16px;
 }
 
+/* Agregado en la revisión final (T23) ---------------------------------------- */
+
+/* La etiqueta gris (Cotizado, Confirmado, Listo) junto al título de la hoja: el gris de la
+   etiqueta es el mismo de la hoja, así que ahí va en blanco con una línea para que se vea.
+   En celular la franja es negra y vuelve a su gris (sección 5). */
+.encabezado .etiqueta--gris {
+  background: var(--tarjeta);
+  box-shadow: inset 0 0 0 1px var(--linea);
+}
+
+/* Un menú para elegir que se ve como botón secundario ("Mis prendas guardadas" en el
+   cotizador, que en diseno/cotizador.html es un botón), con una flechita que dice que abre */
+select.boton-select {
+  width: auto;
+  padding: 0 32px 0 14px;
+  border-color: var(--borde-control);
+  background: var(--tarjeta) url("../iconos/abrir-lista.svg") right 10px center / 16px no-repeat;
+  font-weight: 600;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+select.boton-select:hover {
+  background-color: var(--suave);
+}
+
+/* Chrome le suma unos 4 px por dentro a la lista: así su texto queda a 10 px del borde,
+   como el de los demás campos */
+select.campo__control:not(.boton-select) {
+  padding-left: 6px;
+}
+
+/* La tabla de Pedidos con columnas de ancho fijo (las de diseno/pedidos.html): no saltan
+   al cambiar de filtro ni al buscar. "Cliente y pedido" toma lo que sobra. */
+.tabla--pedidos {
+  table-layout: fixed;
+}
+
+.tabla--pedidos .col-etapa { width: 144px; }
+.tabla--pedidos .col-entrega { width: 152px; }
+.tabla--pedidos .col-encargada { width: 114px; }
+.tabla--pedidos .col-tallas { width: 93px; }
+.tabla--pedidos .col-saldo { width: 200px; }
+
+/* Filas de una lista que se abren con su enlace (clientes en Buscar): el enlace
+   (.fila__enlace) cubre toda la fila, como en las tablas */
+.fila--enlace {
+  position: relative;
+}
+
+.fila--enlace:hover {
+  background: var(--suave);
+}
+
+/* Lo que solo se ve en celular (el estado de una tela debajo de su nombre). Su pareja,
+   .solo-computador, se esconde en la sección 5 (columnas de Telas que en celular no caben). */
+.solo-celular {
+  display: none;
+}
+
+
 /* 5. Celular (menos de 768 px) --------------------------------------------- */
 
 @media (max-width: 767.98px) {
+  /* Al llegar con el teclado a algo de abajo, la página sube lo suficiente para que no
+     quede detrás de la barra fija */
   html {
     background: var(--hoja);
+    scroll-padding-bottom: calc(var(--alto-barra) + 16px + env(safe-area-inset-bottom));
   }
 
   .marco {
@@ -1726,18 +1919,126 @@ button.calendario__dia:hover {
     padding: 14px 14px calc(14px + var(--alto-barra) + env(safe-area-inset-bottom));
   }
 
-  /* Botones de al menos 44 px de alto */
+  /* Botones de al menos 44 px de alto. Los campos y el buscador también: se tocan igual. */
   .boton,
-  .filtro {
+  .filtro,
+  .buscador,
+  .campo__control {
     min-height: 44px;
   }
 
-  .texto-computador {
+  .ventana__cerrar {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Qué prenda (cotizador), con una prenda elegida: la lista y "Quitar de mi lista" van
+     juntas en una fila debajo del título, la lista estirada hasta el botón */
+  .tarjeta__cabeza > .botones:has(> .boton) {
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+  }
+
+  .tarjeta__cabeza > .botones:has(> .boton) > div {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .tarjeta__cabeza > .botones:has(> .boton) select {
+    width: 100%;
+  }
+
+  /* Un campo para nombres largos (Cliente y Prenda del cotizador) toma toda la fila */
+  .campos > .campo--ancho-celular {
+    flex-basis: 100%;
+  }
+
+  .texto-computador,
+  .solo-computador {
     display: none;
   }
 
   .texto-celular {
     display: inline;
+  }
+
+  .solo-celular {
+    display: block;
+  }
+
+  /* El texto que se escribe va en 16 px (ver abajo); el de ejemplo, en 14, para que quepa
+     entero ("Buscar por cliente, prenda o encargada") */
+  .buscador input::placeholder {
+    font-size: 14px;
+  }
+
+  /* La etiqueta gris vuelve a su gris sobre la franja negra */
+  .encabezado .etiqueta--gris {
+    background: var(--gris-fondo);
+    box-shadow: none;
+  }
+
+  /* Tablas: un poco menos de relleno a los lados, y la primera columna con ancho para que
+     los nombres no se partan palabra por palabra */
+  .tabla th,
+  .tabla td {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .tabla td:first-child {
+    min-width: 150px;
+  }
+
+  .tabla--pedidos {
+    table-layout: auto;
+  }
+
+  .tabla--pedidos col {
+    width: auto !important;
+  }
+
+  .tabla--pedidos td:first-child {
+    min-width: 190px;
+  }
+
+  /* Telas: sin las columnas de computador, la primera toma lo que sobra */
+  .tabla--telas td:first-child {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* ... y un poco menos de relleno, para que "Entró" y "Usé" quepan sin correr la tabla */
+  .tabla--telas th,
+  .tabla--telas td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .tabla--telas .tabla__acciones .boton {
+    padding: 0 10px;
+  }
+
+  /* Pagos: cada abono en una línea ("7 de nov", el valor, Recibo y la X), como en el
+     diseño. "Abono del" se esconde (texto-computador) y los botones van más juntos. */
+  .pagos__acciones {
+    gap: 8px;
+  }
+
+  /* Mi taller, cambiar el nombre: en celular los botones bajan solos a su propia línea */
+  .fila--formulario:has(.campo__ayuda) > .fila__acciones {
+    margin-top: 0;
+  }
+
+  /* Elegir una foto: el texto "Ningún archivo seleccionado" no cabe y el navegador lo corta
+     por la mitad. Se esconde hasta que se elige uno (static/js/app.js marca data-elegido). */
+  input[type="file"].campo__control:not([data-elegido]) {
+    color: transparent;
+  }
+
+  /* Su botón no toma los 16 px de los campos: mide como los demás botones */
+  input[type="file"].campo__control::file-selector-button {
+    font-size: 14px;
   }
 
   /* Una sola acción corta: el botón queda al lado de la frase ("Preguntar" en Hoy) */
@@ -1795,6 +2096,40 @@ button.calendario__dia:hover {
 
   .cifra__apoyo {
     display: none;
+  }
+
+  /* Si son tres (la costurera en Hoy, Telas), la última va a lo ancho: no queda un hueco */
+  .cifras > .cifra:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  /* La línea de apoyo que sí dice algo necesario ("Piqué blanco y popelina blanca", "Gastaste
+     más de lo que cobraste") se queda también en celular */
+  .cifra--apoyo-celular .cifra__apoyo {
+    display: block;
+    font-size: 13px;
+  }
+
+  /* La plata, un poco más pequeña que los conteos (diseno/hoy-celular.html: "Por cobrar") */
+  .cifra--dinero .cifra__valor {
+    font-size: 20px;
+    line-height: 1.45;
+  }
+
+  /* Quién te debe, como en diseno/hoy-celular.html: una lista apretada, sin líneas */
+  #hoy-quien-debe .tarjeta__cabeza:has(+ .fila-proporcion) {
+    padding-bottom: 3px;
+  }
+
+  #hoy-quien-debe .fila-proporcion {
+    gap: 3px 12px;
+    padding: 3px 14px;
+    border-top: 0;
+    font-size: 13px;
+  }
+
+  #hoy-quien-debe .fila-proporcion:last-child {
+    padding-bottom: 12px;
   }
 
   .tarjeta__cabeza {
@@ -1972,12 +2307,22 @@ button.calendario__dia:hover {
   /* En celular cada día mide unos 50 px: cada entrega es una barrita de su color (el nombre
      queda para los lectores de pantalla y en la lista "Entregas del mes", justo debajo) */
   .calendario__entregas .etiqueta {
+    display: block;
     width: 100%;
     height: 6px;
     padding: 0;
     overflow: hidden;
     font-size: 0;
     color: transparent;
+  }
+
+  /* La leyenda en una sola línea: los tres colores caben con menos espacio */
+  .calendario__leyenda {
+    gap: 8px 12px;
+  }
+
+  .calendario__clave {
+    gap: 8px;
   }
 }
 

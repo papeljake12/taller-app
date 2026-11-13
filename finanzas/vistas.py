@@ -8,6 +8,10 @@ el taller de la usuaria.
 Registrar y quitar un gasto: con HTMX, la acción devuelve solo la tarjeta "Gastos del mes"
 (finanzas/_gastos.html) y, con hx-swap-oob, las cifras y la gráfica, que cambian con el
 gasto. Sin JavaScript, los formularios hacen un envío normal y vuelven al resumen.
+
+Permisos (T21, docs/04-permisos.md): Resumen, gastos y Excel son solo de la dueña. La
+costurera recibe 403 (también al bajar el Excel desde cualquier pantalla); el número de un
+gasto de otro taller, 404.
 """
 
 import re
@@ -23,6 +27,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
+from cuentas.permisos import exigir_duena, solo_duena
 from finanzas.excel import TIPO_DE_ARCHIVO, libro_del_taller, nombre_del_archivo
 from finanzas.formularios import PRIMER_ANIO, FormularioGasto
 from finanzas.models import Gasto
@@ -110,6 +115,7 @@ def contexto_resumen(request, mes):
     }
 
 
+@solo_duena
 @require_GET
 def resumen(request):
     mes = mes_elegido(request.GET.get("mes"))
@@ -157,6 +163,7 @@ def _pagina_del_formulario(request, form, mes, status=200):
     return responder_ventana(request, "finanzas/_gasto_nuevo.html", contexto, status=status)
 
 
+@solo_duena
 @require_http_methods(["GET", "POST"])
 def gasto_nuevo(request):
     """Registrar un gasto, del mes que se está viendo o de otra fecha, si se cambia.
@@ -199,6 +206,7 @@ def gasto_quitar(request, pk):
     POST lo quita.
     """
     gasto = obtener_o_404(request, Gasto, pk=pk)
+    exigir_duena(request)
     mes = gasto.fecha.replace(day=1)
     if request.method == "POST":
         gasto.delete()
@@ -222,6 +230,7 @@ def gasto_quitar(request, pk):
 # --- Descarga para Excel ------------------------------------------------------------------
 
 
+@solo_duena
 @require_GET
 def excel(request):
     """Todo lo del taller en un archivo de Excel (finanzas/excel.py), para descargar.

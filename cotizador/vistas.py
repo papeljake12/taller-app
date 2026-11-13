@@ -12,6 +12,9 @@ Sin JavaScript todo funciona igual con envíos normales: cada respuesta es la p�
 
 Todo se busca en el taller de la usuaria (cuentas/aislamiento.py): una prenda de otro taller
 no se puede elegir, ni guardar encima, ni quitar.
+
+Permisos (T21, docs/04-permisos.md): el cotizador es solo de la dueña (habla de precios). La
+costurera recibe 403 en todas sus direcciones; el número de una prenda de otro taller, 404.
 """
 
 from datetime import timedelta
@@ -32,6 +35,7 @@ from cotizador.formularios import (
 )
 from cotizador.models import PrendaGuardada
 from cuentas.aislamiento import del_taller, obtener_o_404
+from cuentas.permisos import exigir_duena, solo_duena
 from pedidos import mensajes
 from pedidos.models import Material, Pedido
 from pedidos.vistas.lista import crear_pedido as crear_pedido_cotizado
@@ -54,7 +58,10 @@ def formulario(request, datos=None):
 def contexto_cotizador(request, form, **extra):
     """Lo que dibuja la pantalla: el formulario, el resultado y los mensajes para enviar."""
     cotizacion = form.cotizacion()
-    lista = form.lista(cotizacion)
+    errores_del_precio = form.errores_del_precio()
+    # Con un valor del precio mal escrito, ese valor cuenta como 0 y el total sale mal: no se
+    # puede copiar, enviar ni crear el pedido hasta que se corrija.
+    lista = form.lista(cotizacion) and not errores_del_precio
     texto = ""
     enlace = ""
     if lista:
@@ -72,7 +79,7 @@ def contexto_cotizador(request, form, **extra):
         "hay_prendas": prendas_del_taller(request).exists(),
         # La prenda guardada que está elegida en "Mis prendas" (para "Quitar de mi lista").
         "elegida": form.dato("guardada") or None,
-        "errores_del_precio": form.errores_del_precio(),
+        "errores_del_precio": errores_del_precio,
         **extra,
     }
 
@@ -98,12 +105,14 @@ def _datos(request):
     return request.POST if request.method == "POST" else request.GET
 
 
+@solo_duena
 @require_http_methods(["GET"])
 def inicio(request):
     contexto = contexto_cotizador(request, formulario(request))
     return render(request, "cotizador/inicio.html", contexto)
 
 
+@solo_duena
 @require_http_methods(["GET", "POST"])
 def calcular(request):
     """El resultado, que se actualiza mientras se escribe.
@@ -130,6 +139,7 @@ def _prenda_elegida(request, texto):
 # --- Mis prendas ----------------------------------------------------------------------------
 
 
+@solo_duena
 @require_POST
 def prenda_guardar(request):
     """Guarda en "Mis prendas" la prenda con sus costos. Si ya hay una con ese nombre (sin
@@ -187,6 +197,7 @@ def prenda_quitar(request, pk):
     cotizador se queda como estaba.
     """
     prenda = obtener_o_404(request, PrendaGuardada, pk=pk)
+    exigir_duena(request)
     datos = request.POST
     if datos.get("confirmar") == "si":
         prenda.delete()
@@ -201,6 +212,7 @@ def prenda_quitar(request, pk):
 # --- Crear el pedido ------------------------------------------------------------------------
 
 
+@solo_duena
 @require_POST
 def crear_pedido(request):
     """Crea el pedido en "cotizado" con el total de la cotización y la tela que lleva."""

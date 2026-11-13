@@ -5,8 +5,7 @@
 {% include "piezas/_aviso.html" with mensajes=aviso %}
 <div class="campos">{% include "piezas/_campo.html" with campo=form.cliente %}{% include "piezas/_campo.html" with campo=form.tipo %}</div>
 <div class="campos">{% include "piezas/_campo.html" with campo=form.detalle %}</div>
-<div class="campos">{% include "piezas/_campo.html" with campo=form.cantidad %}</div>
-<div class="campos">{% include "piezas/_campo.html" with campo=form.tallaje %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.cantidad %}{% include "piezas/_campo.html" with campo=form.tallaje %}</div>
 <div class="campos">{% include "piezas/_campo.html" with campo=form.fecha_entrega %}{% include "piezas/_campo.html" with campo=form.total %}</div>
 <div class="campos">{% include "piezas/_campo.html" with campo=form.whatsapp %}</div>
 {% endblock %}

@@ -1,11 +1,11 @@
 {% load piezas %}{% comment %}
 Una fila de la tabla de pedidos. El nombre del cliente es el enlace que abre el pedido.
-`fila` sale de pedidos/vistas/lista.py (FilaPedido).
+`fila` sale de pedidos/vistas/lista.py (FilaPedido). La columna Saldo solo la ve la dueña (T21).
 {% endcomment %}{% with p=fila.pedido %}<tr class="tabla__fila">
 <td><a class="tabla__enlace" href="{% url 'pedidos:detalle' p.pk %}"><strong>{{ p.cliente.nombre }}</strong></a><br><span class="texto-2">{{ p.detalle }}</span></td>
 <td>{% include "piezas/_etiqueta.html" with texto=fila.etapa.texto tono=fila.etapa.tono %}</td>
 <td>{{ p.fecha_entrega|fecha_corta }}{% if fila.urgencia %}<br>{% include "piezas/_etiqueta.html" with texto=fila.urgencia.texto tono=fila.urgencia.tono %}{% endif %}</td>
 <td>{% if p.encargada %}{{ p.encargada.nombre }}{% else %}<span class="texto-2">Sin asignar</span>{% endif %}</td>
 <td>{{ fila.tallas_recibidas }} de {{ fila.tallas_esperadas }}</td>
-<td class="num">{% if fila.cotizado %}<span class="texto-2">Cotizado en <span class="dinero">{{ p.total|pesos }}</span></span>{% elif fila.saldo %}<strong class="texto-rojo dinero">{{ fila.saldo|pesos }}</strong>{% else %}<strong class="texto-verde">Pagado</strong>{% endif %}</td>
+{% if puede_ver_plata %}<td class="num">{% if fila.cotizado %}<span class="texto-2">Cotizado en <span class="dinero">{{ p.total|pesos }}</span></span>{% elif fila.saldo %}<strong class="texto-rojo dinero">{{ fila.saldo|pesos }}</strong>{% else %}<strong class="texto-verde">Pagado</strong>{% endif %}</td>{% endif %}
 </tr>{% endwith %}

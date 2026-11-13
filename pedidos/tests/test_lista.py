@@ -140,7 +140,7 @@ def test_la_tabla_se_desplaza_dentro_de_su_tarjeta(sesion_duena, ejemplo):
     html = sesion_duena.get(LISTA).text
 
     assert '<div class="tabla-contenedor">' in html
-    assert '<table class="tabla">' in html
+    assert '<table class="tabla tabla--pedidos">' in html
 
 
 def test_sin_pedidos_invita_a_crear_el_primero(sesion_duena):
@@ -282,7 +282,10 @@ def test_la_ventana_trae_todos_los_campos(sesion_duena):
     assert 'type="date"' in html
     assert f'hx-post="{NUEVO}" hx-target="#ventana"' in html
     assert "Guardar pedido" in html
-    assert "IA" not in html  # el cuadro de la IA es de la etapa 3
+    # El cuadro de la IA es de la etapa 3. Se buscan sus marcas, no las letras "IA" sueltas,
+    # que pueden salir por azar en la clave del formulario (csrfmiddlewaretoken).
+    for marca in ("ia-caja", "la IA", "con IA", "Dictar"):
+        assert marca not in html, marca
 
 
 def test_crear_un_pedido_con_htmx_lo_deja_cotizado_y_abre_su_detalle(sesion_duena, taller, duena):

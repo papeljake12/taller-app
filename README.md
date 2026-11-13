@@ -19,6 +19,11 @@ Necesitas Python 3.12, `uv` y PostgreSQL.
    Con ella se entra a la aplicación.
 7. Corre las pruebas: `uv run pytest`
 
+## Cómo publicarla en el servidor
+
+La guía paso a paso para el VPS (Ubuntu 24.04 con NGINX, Gunicorn y PostgreSQL), con la copia
+de seguridad diaria, cómo restaurar y cómo actualizar, está en `docs/guia-publicacion.md`.
+
 ## Qué hay en este repositorio
 
 | Ruta | Qué es |
@@ -33,6 +38,7 @@ Necesitas Python 3.12, `uv` y PostgreSQL.
 | `docs/07-forma-de-trabajo.md` | Ramas, commits y tareas de David |
 | `docs/08-diseno.md` | Colores, tipografía, piezas y reglas de alineación |
 | `docs/09-plan-de-construccion.md` | Orden de construcción por tandas, reparto entre varios agentes (ultracode) y las instrucciones listas para Claude Code |
+| `docs/guia-publicacion.md` | Cómo publicar la aplicación en el servidor y sacarle copia de seguridad |
 | `diseno/` | El diseño aprobado, una página por pantalla. Se abre en el navegador |
 | `demo/index.html` | La primera demo, como referencia de comportamiento y textos |
 | `.env.example` | Variables de configuración, sin valores reales |
@@ -43,6 +49,7 @@ Necesitas Python 3.12, `uv` y PostgreSQL.
 | `templates/` | La plantilla base (marco y menú) y las piezas del diseño |
 | `static/` | Estilos, JavaScript, la fuente Inter, HTMX y los íconos, todo guardado aquí |
 | `tests/` | Pruebas automáticas generales del proyecto |
+| `herramientas/servidor/` | Los archivos de configuración del servidor (Gunicorn, NGINX, copia de seguridad), con valores para reemplazar |
 | `docs/bitacora/` | Una explicación sencilla por cada tarea terminada |
 
 ## Cómo empezar a trabajar

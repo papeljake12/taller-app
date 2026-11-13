@@ -32,6 +32,10 @@ class EjemploForm(forms.Form):
     cantidad = forms.IntegerField(
         label="Para cuántas personas", min_value=1, max_value=2000,
         help_text="De 1 a 2000.",
+        # Los mismos mensajes del formulario de verdad (pedidos/formularios/lista.py), en tú.
+        error_messages={"min_value": "Escribe un número entre 1 y 2000.",
+                        "max_value": "Escribe un número entre 1 y 2000.",
+                        "invalid": "Escribe un número entero, por ejemplo 20."},
     )
     whatsapp = forms.CharField(label="WhatsApp (opcional)", required=False)
     notas = forms.CharField(label="Notas", required=False, widget=forms.Textarea(attrs={"rows": 3}))

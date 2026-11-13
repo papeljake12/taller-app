@@ -15,6 +15,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import obtener_o_404
+from cuentas.permisos import exigir_duena
 from pedidos import fotos
 from pedidos.models import Pedido
 
@@ -70,6 +71,8 @@ def quitar(request, pk):
     POST la quita y borra el archivo.
     """
     pedido = obtener_o_404(request, Pedido, pk=pk)
+    # La costurera sube o cambia la foto, pero no la quita (docs/04-permisos.md).
+    exigir_duena(request)
     if request.method == "POST":
         fotos.quitar(pedido)
         return _responder(request, pedido)

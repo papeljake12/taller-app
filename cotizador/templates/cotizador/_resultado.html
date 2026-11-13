@@ -2,7 +2,8 @@
 Tarjeta del resultado del cotizador (T15, diseno/cotizador.html). La devuelve, sola,
 cotizador:calcular mientras se escribe (id="resultado"). Todas las cifras salen de
 calculos.cotizar (`cotizacion`); aquí no se hace ninguna cuenta.
-Los botones se apagan hasta que hay prenda, cantidad y precio (`lista`). "Enviar por
+Los botones se apagan hasta que hay prenda, cantidad y precio (`lista`), y mientras haya un
+valor del precio mal escrito (el aviso lo dice). "Enviar por
 WhatsApp" necesita un número que sirva; si no hay, una nota lo pide.
 El aviso dice lo que hay que corregir: al crear el pedido o guardar la prenda (`aviso`) o,
 mientras se escribe, un valor del precio mal escrito (`errores_del_precio`).
@@ -17,7 +18,7 @@ mientras se escribe, un valor del precio mal escrito (`errores_del_precio`).
 <div class="renglon"><span>Abono para empezar</span><span class="dinero">{{ cotizacion.abono|pesos }}</span></div>
 </div>
 {% include "piezas/_aviso.html" with mensajes=aviso|default:errores_del_precio %}
-{% if not lista %}<p class="nota">Escribe la prenda, la cantidad y los costos para ver el precio.</p>
+{% if not lista and not errores_del_precio %}<p class="nota">Escribe la prenda, la cantidad y los costos para ver el precio.</p>
 {% endif %}<noscript><button type="submit" class="boton">Calcular</button></noscript>
 <button type="submit" class="boton boton--principal" formaction="{{ url_crear }}" hx-post="{{ url_crear }}" hx-target="#cotizador" hx-swap="outerHTML" hx-sync="this:drop"{% if not lista %} disabled{% endif %}>Crear pedido con esta cotización</button>
 {% if enlace_whatsapp %}<a class="boton" href="{{ enlace_whatsapp }}" target="_blank" rel="noopener">Enviar por WhatsApp</a>{% else %}<button type="button" class="boton" disabled>Enviar por WhatsApp</button>{% endif %}

@@ -1,0 +1,9 @@
+# Línea para cron: corre la copia de seguridad todos los días a las 2:30 de la madrugada
+# (hora de Bogotá, si pusiste esa zona horaria en el paso 3 de docs/guia-publicacion.md).
+#
+# Se agrega con `crontab -e` (con tu usuario, sin sudo) pegando la última línea de este
+# archivo al final. Lo que escribe la copia queda en el registro del sistema; se lee con:
+#   journalctl -t copia-taller
+#
+# minuto hora día mes día-de-la-semana  comando
+30 2 * * * bash /srv/taller/app/herramientas/servidor/copia-de-seguridad.sh 2>&1 | logger -t copia-taller

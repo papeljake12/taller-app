@@ -2,8 +2,10 @@
 La tarjeta "Entregas de <mes>" (calculos.entregas_del_mes) o, con un día elegido,
 "Entregas del 9 de nov" con "Ver todo el mes". Cada entrega abre su pedido.
 `filas` sale de pedidos/vistas/calendario.py (FilaEntrega).
+"Ver todo el mes" desaparece al tocarlo: el cursor vuelve al día que estaba elegido
+(data-foco-despues, ver static/js/app.js).
 {% endcomment %}<section class="tarjeta tarjeta--lista" id="calendario-entregas" aria-labelledby="t-entregas">
-<div class="tarjeta__cabeza"><h2 id="t-entregas">{{ titulo_lista }}</h2>{% if dia %}<a class="boton" href="{{ url_mes }}" hx-get="{{ url_mes }}" hx-target="#calendario-entregas" hx-swap="outerHTML" hx-push-url="true">Ver todo el mes</a>{% endif %}</div>
+<div class="tarjeta__cabeza"><h2 id="t-entregas">{{ titulo_lista }}</h2>{% if dia %}<a class="boton" href="{{ url_mes }}" hx-get="{{ url_mes }}" hx-target="#calendario-entregas" hx-swap="outerHTML" hx-push-url="true" data-foco-despues="{{ id_dia }}">Ver todo el mes</a>{% endif %}</div>
 {% for fila in filas %}<div class="fila fila--compacta tabla__fila"><a class="tabla__enlace" href="{% url 'pedidos:detalle' fila.pedido.pk %}"><strong>{{ fila.pedido.fecha_entrega|fecha_corta }}</strong><br><span class="texto-2">{{ fila.pedido.cliente.nombre }}</span></a>{% include "piezas/_etiqueta.html" with texto=fila.etiqueta.texto tono=fila.etiqueta.tono %}</div>
 {% empty %}<div class="tarjeta__cuerpo"><p class="texto-2">{% if dia %}No hay entregas ese día.{% else %}No hay entregas en este mes.{% endif %}</p></div>
 {% endfor %}</section>

@@ -151,7 +151,9 @@ def test_el_formulario_se_calcula_mientras_se_escribe(sesion_duena):
     formulario = re.search(r'<form[^>]*id="cotizador"[^>]*>', html).group(0)
 
     assert f'hx-post="{URL_CALCULAR}"' in formulario
-    assert 'hx-trigger="input changed delay:300ms, change, submit"' in formulario
+    # Sin "change": al salir del campo para tocar "Copiar cotización" no se vuelve a
+    # calcular, y el botón no pierde su "Copiado" (T23).
+    assert 'hx-trigger="input changed delay:300ms, submit"' in formulario
     assert 'hx-target="#resultado"' in formulario and f'action="{URL_CALCULAR}"' in formulario
     # Sin JavaScript, el botón "Calcular".
     assert '<noscript><button type="submit" class="boton">Calcular</button></noscript>' in html
@@ -227,6 +229,20 @@ def test_un_valor_mal_escrito_se_avisa_y_cuenta_como_0(sesion_duena, campo, valo
 
     assert '<div class="aviso" role="alert">' in html
     assert mensaje in html
+
+
+def test_con_un_valor_mal_escrito_no_se_puede_copiar_enviar_ni_crear(sesion_duena):
+    # "abc" en los metros cuenta como 0: el total saldría sin la tela. Hasta que se corrija,
+    # los tres botones quedan apagados y no llevan ningún texto (revisión final, T23).
+    html = sesion_duena.post(URL_CALCULAR, con(metros="abc"), headers=HTMX).text
+
+    assert "Metros de tela: Escribe los metros con números, por ejemplo 1,2." in html
+    assert "disabled" in boton(html, "Crear pedido con esta cotización")
+    assert "disabled" in boton(html, "Enviar por WhatsApp")
+    copiar = boton(html, "Copiar cotización")
+    assert "disabled" in copiar and 'data-copiar=""' in copiar
+    # El aviso ya dice qué corregir: no se repite "Escribe la prenda, la cantidad...".
+    assert "Escribe la prenda, la cantidad y los costos" not in html
 
 
 def test_un_whatsapp_a_medio_escribir_no_se_avisa_mientras_se_escribe(sesion_duena):

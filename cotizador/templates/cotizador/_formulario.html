@@ -7,16 +7,19 @@ Mientras se escribe, HTMX lo manda a cotizador:calcular y cambia solo el resulta
 dirección (formaction) y reciben el formulario entero (id="cotizador").
 hx-sync: si se escribe mientras un cálculo no ha vuelto, se hace uno más al final (el resultado
 siempre es el de lo último escrito). Los botones van aparte (this:drop).
+No se calcula también con "change": al salir de un campo (por ejemplo, para tocar "Copiar
+cotización") llegaba otro resultado igual y el botón perdía su "Copiado". Las listas y las
+fechas también avisan con "input", así que se siguen calculando al elegir.
 Sin JavaScript, "Calcular" (en el resultado) hace un envío normal.
 El primer botón del formulario es un "Calcular" escondido: Enter en un campo calcula, en
 vez de tocar el primer botón que se vea (que podría ser "Quitar de mi lista").
-{% endcomment %}{% url 'cotizador:calcular' as url_calcular %}{% url 'cotizador:prenda_guardar' as url_guardar %}<form class="dos-columnas" id="cotizador" method="post" action="{{ url_calcular }}" hx-post="{{ url_calcular }}" hx-trigger="input changed delay:300ms, change, submit" hx-target="#resultado" hx-swap="outerHTML" hx-sync="this:queue last" novalidate>
+{% endcomment %}{% url 'cotizador:calcular' as url_calcular %}{% url 'cotizador:prenda_guardar' as url_guardar %}<form class="dos-columnas" id="cotizador" method="post" action="{{ url_calcular }}" hx-post="{{ url_calcular }}" hx-trigger="input changed delay:300ms, submit" hx-target="#resultado" hx-swap="outerHTML" hx-sync="this:queue last" novalidate>
 {% csrf_token %}{{ form.aplicada }}<button type="submit" class="oculto" tabindex="-1" aria-hidden="true">Calcular</button>
 <div class="columna-ancha columna">
 <section class="tarjeta tarjeta--lista" aria-labelledby="t-para-quien">
 <div class="tarjeta__cabeza"><h2 id="t-para-quien">Para quién</h2></div>
 <div class="tarjeta__cuerpo">
-<div class="campos">{% include "piezas/_campo.html" with campo=form.cliente %}{% include "piezas/_campo.html" with campo=form.tipo %}{% include "piezas/_campo.html" with campo=form.whatsapp %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.cliente clase_campo="campo--ancho-celular" %}{% include "piezas/_campo.html" with campo=form.tipo %}{% include "piezas/_campo.html" with campo=form.whatsapp %}</div>
 </div>
 </section>
 {% include "cotizador/_que_prenda.html" %}

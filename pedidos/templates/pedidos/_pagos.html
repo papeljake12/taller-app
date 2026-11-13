@@ -4,12 +4,15 @@ Tarjeta "Pagos" del pedido por dentro (T08, diseno/pedido.html).
 La dibuja el pedido por dentro y la devuelven, sola, las acciones de pedidos/vistas/abonos.py:
 con HTMX reemplaza a la tarjeta entera (id="pagos"). Los datos llegan en `pagos`, que arma
 abonos.contexto_pagos.
+Solo la ve la dueña (T21, docs/04-permisos.md): para la costurera no se dibuja nada.
 - Falta por pagar (o "Pedido pagado" en verde), la barra y lo abonado frente al total.
 - Cada abono con su recibo en PDF y el botón para quitarlo, que primero pregunta.
 - El recordatorio del saldo por WhatsApp, o el botón para copiarlo si no hay número.
-- El formulario para registrar un abono. Su campo de valor tiene id="registrar-abono":
-  allá lleva el botón "Registrar abono" de arriba del pedido.
-{% endcomment %}<section class="tarjeta tarjeta--lista" id="pagos" aria-labelledby="t-pagos"{% if oob %} hx-swap-oob="true"{% endif %}>
+- Al final, la fila plegada "Registrar un abono" con el formulario (_abono_form.html). Va
+  plegada para que la tarjeta mida lo del diseño (que no trae el formulario a la vista). Su
+  campo de valor tiene id="registrar-abono": allá llevan "Registrar abono" de arriba del
+  pedido y "Cobrar el saldo" de Hoy, que abren la fila (static/js/app.js, sección 9).
+{% endcomment %}{% if puede_ver_plata %}<section class="tarjeta tarjeta--lista" id="pagos" aria-labelledby="t-pagos"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-pagos">Pagos</h2></div>
 {% if pagos %}<div class="tarjeta__cuerpo">
 {% if pagos.saldo > 0 %}<div class="pagos__nombre texto-rojo">Falta por pagar</div>
@@ -21,6 +24,6 @@ abonos.contexto_pagos.
 {% empty %}<p class="pagos__vacio texto-2">Todavía no hay abonos registrados.</p>
 {% endfor %}{% if pagos.saldo > 0 %}{% if pagos.enlace_cobro %}<a class="boton" href="{{ pagos.enlace_cobro }}" target="_blank" rel="noopener">Recordar el saldo por WhatsApp</a>{% else %}<button type="button" class="boton" data-copiar="{{ pagos.texto_cobro }}">Copiar recordatorio de saldo</button>
 <p class="nota">Escribe abajo el WhatsApp del cliente y aquí aparece el botón para enviarle el mensaje.</p>{% endif %}
-{% endif %}{% include "pedidos/_abono_form.html" with form=pagos.form %}
-</div>{% endif %}
-</section>
+{% endif %}</div>
+{% include "pedidos/_abono_form.html" with form=pagos.form abierto=pagos.form_abierto %}{% endif %}
+</section>{% endif %}

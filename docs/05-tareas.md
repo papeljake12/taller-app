@@ -66,14 +66,14 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 
 ## Cierre
 
-- [ ] **T21. Permisos por rol.** Aplicar la tabla de `docs/04-permisos.md` en todas las
+- [x] **T21. Permisos por rol.** Aplicar la tabla de `docs/04-permisos.md` en todas las
   vistas, con una prueba por cada fila de la tabla.
 - [x] **T22. Datos de ejemplo.** Comando `cargar_ejemplos` con los mismos pedidos, tallas,
   telas y gastos de las páginas de `diseno/`, marcados como ejemplo. Se construye temprano
   (ver el plan de construcción) y se completa a medida que aparecen los modelos.
-- [ ] **T23. Revisión final.** Recorrer todas las pantallas en 390 px y en 1280 px, comparar
+- [x] **T23. Revisión final.** Recorrer todas las pantallas en 390 px y en 1280 px, comparar
   cada una con su página de `diseno/` y corregir: colores, alineación de tarjetas y textos.
-- [ ] **T24. Preparar la publicación.** Configuración de producción, archivos estáticos con
+- [x] **T24. Preparar la publicación.** Configuración de producción, archivos estáticos con
   Whitenoise, guía paso a paso para el VPS (NGINX y Gunicorn) y copia de seguridad diaria de
   la base de datos. La guía la ejecuta David; Claude Code no toca el servidor.
 
