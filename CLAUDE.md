@@ -55,8 +55,15 @@ Lee estos documentos antes de escribir código:
 9. **Pruebas.** Cada tarea trae sus pruebas. No se da por terminada si alguna falla.
 10. **Explicaciones.** Por cada tarea, escribir en `docs/bitacora/TNN.md`, en lenguaje sencillo
     y sin tecnicismos, qué cambió y por qué. David está aprendiendo y quiere entender cada
-    decisión. Se trabaja por tandas: al final de cada una hay que detenerse para que David
-    revise, y nada se une a la rama principal sin su aprobación.
+    decisión. Se trabaja por tandas y Claude Code hace también las pruebas a mano: al final
+    de cada tanda levanta el servidor, recorre las pantallas en 1280 px y en 390 px con un
+    navegador automático (`herramientas/capturas.py`), las compara con `diseno/` y corrige
+    lo que encuentre. Deja las capturas en `docs/capturas/tanda-N/` y un resumen corto en
+    `docs/bitacora/tanda-N.md` (qué probó, qué corrigió y qué no pudo comprobar). Si todas
+    las pruebas pasan, sube la rama a GitHub, la une a `main` y sigue con la siguiente tanda
+    sin esperar, hasta terminar la tanda 6. Solo se detiene en los casos de "Cuándo
+    detenerse y preguntar" de `docs/07-forma-de-trabajo.md`, o si algo necesita una clave o
+    una decisión de David.
 11. **Datos inventados.** No inventar datos reales (precios, teléfonos, nombres de clientes).
     Los datos de ejemplo van marcados como ejemplo y solo en el comando de datos de prueba.
 
@@ -88,6 +95,8 @@ El detalle está en "Reglas para los agentes" de `docs/09-plan-de-construccion.m
   sus usuarias se crean en el panel `/admin/`.
 - Desbloquear a alguien antes de tiempo: `uv run python manage.py axes_reset`
 - Datos de ejemplo: `uv run python manage.py cargar_ejemplos` (se crea en la tanda 2, con T22).
+- Capturas de una tanda: `uv run python herramientas/capturas.py --tanda N` (levanta el
+  servidor, toma cada pantalla en 1280 px y 390 px y las guarda en `docs/capturas/tanda-N/`).
 
 ## Lo que no debes hacer
 

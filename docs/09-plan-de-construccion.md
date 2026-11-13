@@ -63,7 +63,8 @@ En las tandas 1 y 2 se puede apagar ultracode y trabajar con el esfuerzo normal.
    partes vacías. Cada agente solo rellena lo suyo.
 6. **Copiar, no reinventar.** Cada plantilla empieza copiando el HTML de su página de
    `diseno/`. Lo que cambia: los estilos en línea pasan a clases y los ejemplos a datos.
-7. **Aprobar por tandas.** David revisa 6 veces, no 25.
+7. **Probar por tandas.** Al final de cada tanda, Claude Code hace las pruebas a mano con un
+   navegador automático, deja las capturas y sigue solo. David revisa cuando quiera.
 
 ## Estructura del proyecto
 
@@ -90,6 +91,9 @@ finanzas/      Gasto, la pantalla Resumen y la descarga para Excel
 templates/     base.html, _menu.html y la carpeta piezas/
 static/        css/app.css, js/app.js, fuentes/ (Inter), htmx y los íconos
 docs/bitacora/ Una explicación por tarea: T00.md, T01.md...
+               y un resumen por tanda: tanda-1.md, tanda-2.md...
+docs/capturas/ Capturas finales de cada tanda, en computador y en celular
+herramientas/  capturas.py: recorre las pantallas con un navegador automático
 diseno/        Referencia visual (no es código de la aplicación)
 ```
 
@@ -213,18 +217,23 @@ y la guía lista para que David la ejecute.
 
 ## Cómo trabaja el coordinador dentro de una tanda
 
-1. Propone el plan de la tanda (carriles, agentes y archivos) y espera el visto bueno de David.
+1. Anota el plan de la tanda (carriles, agentes y archivos) al comienzo de
+   `docs/bitacora/tanda-N.md` y sigue sin esperar.
 2. Crea la rama de la tanda: `tanda-3-pedidos`.
 3. Lanza un agente por carril, cada uno en su propia copia.
 4. Cuando un carril termina, lo pasa al revisor. Si el revisor encuentra algo, vuelve al
    agente del carril.
 5. Une los carriles uno por uno y corre `uv run pytest` después de cada unión.
 6. Marca las tareas como hechas en `docs/05-tareas.md`.
-7. Se detiene y le presenta a David un resumen corto y la lista de cosas para probar a mano.
-   No une la rama de la tanda a la principal: eso lo decide David.
+7. Hace las pruebas a mano de "Al terminar la tanda" de `docs/07-forma-de-trabajo.md`:
+   capturas en 1280 px y 390 px con `herramientas/capturas.py`, comparación con `diseno/`,
+   arreglos, capturas finales en `docs/capturas/tanda-N/` y resumen en
+   `docs/bitacora/tanda-N.md`.
+8. Si todas las pruebas pasan, sube la rama, la une a `main` y empieza la tanda siguiente,
+   hasta terminar la tanda 6.
 
-Se detiene antes solo en los casos de "Cuándo detenerse y preguntar" de
-`docs/07-forma-de-trabajo.md`.
+Se detiene solo en los casos de "Cuándo detenerse y preguntar" de
+`docs/07-forma-de-trabajo.md`, o si algo necesita una clave o una decisión de David.
 
 ## En qué no se ahorra
 
@@ -245,60 +254,24 @@ Ir rápido no cambia estas reglas:
 
 ## Instrucciones listas para pegar
 
-Una por tanda. Se pega en Claude Code tal cual.
-
-### Tanda 1 (sin ultracode)
-
-```
-Lee CLAUDE.md, docs/08-diseno.md, docs/09-plan-de-construccion.md y docs/07-forma-de-trabajo.md.
-Abre diseno/hoy.html, diseno/hoy-menu-contraido.html y diseno/hoy-celular.html.
-Haz la tanda 1 (T00, T01, T03 y T02, en ese orden) con un solo agente.
-Antes de escribir código, dime en pocas líneas qué vas a crear y espera mi visto bueno.
-Al final, detente y dime qué probar.
-```
-
-### Tanda 2 (sin ultracode)
+Desde la tanda 2 no hace falta pegar una instrucción por tanda: Claude Code sigue solo de
+una tanda a la siguiente. Si hay que retomar en una sesión nueva, pegar:
 
 ```
-Lee docs/02-modelo-de-datos.md y la tanda 2 de docs/09-plan-de-construccion.md.
-Con un solo agente crea, en orden: todos los modelos, pedidos/calculos.py con sus pruebas,
-el comando cargar_ejemplos con los datos de las páginas de diseno/, y el esqueleto de todas
-las pantallas como dice "Estructura del proyecto".
-Después lanza un revisor que compruebe modelos y cálculos.
-Antes de escribir código, dime qué vas a crear y espera mi visto bueno.
-Al final, detente y dime qué probar.
+Lee CLAUDE.md, docs/07-forma-de-trabajo.md y docs/09-plan-de-construccion.md completos, y
+docs/05-tareas.md para ver dónde vamos. Sigue con la tanda que falta como dice el plan
+(desde la tanda 3, un agente por carril según "Reglas para los agentes"), haz tú las
+pruebas a mano al final de cada tanda, únela a main y continúa hasta terminar la tanda 6.
+Detente solo en los casos de "Cuándo detenerse y preguntar" o si necesitas una clave o
+una decisión mía. En T24 escribe la guía; no toques ningún servidor.
 ```
 
-### Tandas 3, 4 y 5 (con ultracode)
+## Qué queda para revisar al final de cada tanda
 
-Encender ultracode antes de pegarla. Cambiar el número de la tanda:
+Claude Code hace las pruebas a mano y une la rama sin esperar. Para David queda, cuando
+quiera:
 
-```
-Lee CLAUDE.md, docs/09-plan-de-construccion.md completo y las secciones de
-docs/03-pantallas.md de las pantallas de la tanda 3. Abre sus páginas de diseno/.
-Tú eres el coordinador. Haz la tanda 3 con un agente por carril, cada uno en su propio
-worktree, respetando "Reglas para los agentes": cada agente toca solo los archivos de su
-carril y los archivos congelados solo los cambias tú.
-Cada carril pasa por un revisor antes de unirse.
-Antes de lanzar los agentes, muéstrame el plan de carriles y espera mi visto bueno.
-Al final, detente y dime qué probar.
-```
-
-### Tanda 6 (con ultracode para T23)
-
-Encender ultracode antes de pegarla.
-
-```
-Lee docs/04-permisos.md, docs/06-pruebas.md y la tanda 6 de docs/09-plan-de-construccion.md.
-Haz T21 con un solo agente. Para T23, lanza un revisor por pantalla, al tiempo y solo
-leyendo, que compare cada pantalla con su página de diseno/; dame la lista de diferencias y
-luego corrígelas. En T24 escribe la guía; no toques el servidor.
-```
-
-## Qué revisa David al final de cada tanda
-
-1. Leer las explicaciones nuevas en `docs/bitacora/`.
-2. Correr la aplicación y hacer las pruebas a mano que Claude Code indicó.
-3. Comparar las pantallas nuevas con sus páginas de `diseno/`.
-4. Si todo está bien, unir la rama a la principal y pasar a la siguiente tanda. Si no,
-   decirle a Claude Code qué corregir en esa misma rama.
+1. Leer el resumen de la tanda en `docs/bitacora/tanda-N.md` y las explicaciones de cada
+   tarea en `docs/bitacora/`.
+2. Mirar las capturas en `docs/capturas/tanda-N/` junto a sus páginas de `diseno/`.
+3. Si algo no le gusta, decírselo a Claude Code, que lo corrige en una rama nueva.
