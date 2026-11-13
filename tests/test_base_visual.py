@@ -145,6 +145,27 @@ def test_sin_pendientes_no_se_muestra_ningun_contador(sesion_duena):
     assert html.con_clase("menu__contador") == []
 
 
+def test_los_contadores_cuentan_pedidos_atrasados_y_telas_que_se_acaban(sesion_duena, taller):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from tests import fabricas
+
+    ayer = timezone.localdate() - timedelta(days=1)
+    fabricas.crear_pedido(taller, estado="confeccion", fecha_entrega=ayer)
+    fabricas.crear_pedido(taller, estado="entregado", fecha_entrega=ayer)  # no cuenta
+    fabricas.crear_tela(taller, metros=2, minimo=5)
+    fabricas.crear_tela(taller, metros=3, minimo=5)
+    fabricas.crear_tela(taller, metros=9, minimo=5)  # suficiente
+    otro = fabricas.crear_taller()
+    fabricas.crear_pedido(otro, estado="corte", fecha_entrega=ayer)  # de otro taller
+
+    html = Elementos(sesion_duena.get("/").text)
+
+    assert [texto(e) for e in html.con_clase("menu__contador")] == ["1", "2"]
+
+
 def test_con_pendientes_se_muestran_los_contadores(sesion_duena, settings):
     settings.DEBUG = True  # la página Piezas trae contadores de ejemplo
     html = Elementos(sesion_duena.get("/piezas/").text)

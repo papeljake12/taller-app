@@ -3,8 +3,7 @@
 Las secciones se definen una sola vez aquí. `_menu.html` las dibuja en tres lugares: el
 menú lateral, la barra de abajo en celular y el panel "Más".
 
-Si la dirección de una sección todavía no existe (se crean en la tanda 2), la entrada se
-ve pero no lleva a ninguna parte.
+Si la dirección de una sección no existe, la entrada se ve pero no lleva a ninguna parte.
 """
 
 from dataclasses import dataclass
@@ -52,10 +51,11 @@ class Entrada:
 def contar_pendientes(request):
     """Los contadores del menú: pedidos atrasados y telas que se están acabando.
 
-    Llegan en la tanda 2, cuando existan los pedidos y las telas. Sin pendientes no se
-    muestra el contador.
+    Las cuentas viven en pedidos/calculos.py. Sin pendientes no se muestra el contador.
     """
-    return {}
+    from pedidos.calculos import contadores_del_menu
+
+    return contadores_del_menu(getattr(request, "taller", None))
 
 
 def _direccion(seccion):
