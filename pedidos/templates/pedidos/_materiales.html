@@ -2,14 +2,19 @@
 Tarjeta "Materiales" (T12): la lista de compras del pedido. Tocar la casilla (o el nombre)
 marca o desmarca el material como comprado; la X lo quita; abajo se agrega uno. Cada acción
 vuelve solo esta tarjeta (HTMX); sin JavaScript, la página del pedido.
+
+"boton--icono" (la X, más liviana) y "fila--formulario" (el botón de agregar a la altura de
+los campos) se le pidieron al coordinador para static/css/app.css; mientras no estén, la X
+es un botón normal y el botón de agregar queda centrado.
 {% endcomment %}<section class="tarjeta tarjeta--lista" id="pedido-materiales" aria-labelledby="t-materiales">
 <div class="tarjeta__cabeza"><h2 id="t-materiales">Materiales</h2>{% if materiales_total %}<span class="tarjeta__aparte">{{ materiales_comprados }} de {{ materiales_total }} comprados</span>{% endif %}</div>
+{% if avisos_materiales %}<div class="tarjeta__cuerpo">{% include "piezas/_aviso.html" with mensajes=avisos_materiales %}</div>{% endif %}
 {% for material in materiales %}<div class="fila fila--compacta">
 <form class="fila__titulo" method="post" action="{% url 'pedidos:material_comprado' pedido.pk material.pk %}" hx-post="{% url 'pedidos:material_comprado' pedido.pk material.pk %}" hx-target="#pedido-materiales" hx-swap="outerHTML" novalidate>{% csrf_token %}<input type="hidden" name="comprado" value="{% if material.comprado %}no{% else %}si{% endif %}"><button type="submit" class="casilla{% if material.comprado %} casilla--marcada{% endif %}" id="material-{{ material.pk }}-comprado" aria-pressed="{% if material.comprado %}true{% else %}false{% endif %}">{% if material.comprado %}{% icono "visto" 14 %}{% endif %}</button><label for="material-{{ material.pk }}-comprado">{% if material.comprado %}<span class="tachado">{{ material.nombre }}</span>{% else %}<b>{{ material.nombre }}</b>{% endif %}</label></form>
-<span class="fila__titulo">{% if material.cantidad %}<span class="texto-2">{{ material.cantidad }}</span>{% endif %}<form method="post" action="{% url 'pedidos:material_quitar' pedido.pk material.pk %}" hx-post="{% url 'pedidos:material_quitar' pedido.pk material.pk %}" hx-target="#pedido-materiales" hx-swap="outerHTML" novalidate>{% csrf_token %}<button type="submit" class="boton" aria-label="Quitar {{ material.nombre }}">{% icono "cerrar" %}</button></form></span>
+<span class="fila__titulo">{% if material.cantidad %}<span class="texto-2">{{ material.cantidad }}</span>{% endif %}<form method="post" action="{% url 'pedidos:material_quitar' pedido.pk material.pk %}" hx-post="{% url 'pedidos:material_quitar' pedido.pk material.pk %}" hx-target="#pedido-materiales" hx-swap="outerHTML" novalidate>{% csrf_token %}<button type="submit" class="boton boton--icono" aria-label="Quitar {{ material.nombre }}">{% icono "cerrar" %}</button></form></span>
 </div>
 {% empty %}<p class="tarjeta__nota">Anota aquí la tela y los insumos de este pedido, y márcalos cuando los compres.</p>
-{% endfor %}<form class="fila" method="post" action="{% url 'pedidos:material_nuevo' pedido.pk %}" hx-post="{% url 'pedidos:material_nuevo' pedido.pk %}" hx-target="#pedido-materiales" hx-swap="outerHTML" novalidate>
+{% endfor %}<form class="fila fila--formulario" method="post" action="{% url 'pedidos:material_nuevo' pedido.pk %}" hx-post="{% url 'pedidos:material_nuevo' pedido.pk %}" hx-target="#pedido-materiales" hx-swap="outerHTML" novalidate>
 {% csrf_token %}
 <div class="fila__texto campos">{% include "piezas/_campo.html" with campo=form_material.nombre %}{% include "piezas/_campo.html" with campo=form_material.cantidad %}</div>
 <div class="fila__acciones"><button type="submit" class="boton">Agregar material</button></div>

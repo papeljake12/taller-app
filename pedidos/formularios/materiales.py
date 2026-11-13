@@ -28,3 +28,17 @@ class MaterialForm(forms.ModelForm):
         # "material-nombre" en la página, para no chocar con el nombre de una talla.
         kwargs.setdefault("auto_id", "material-%s")
         super().__init__(*args, **kwargs)
+
+
+class CompradoForm(forms.Form):
+    """Cómo debe quedar el material al tocar su casilla: "si" (comprado) o "no".
+
+    La casilla lo manda sola; si llega otra cosa (o nada), no se adivina: no se cambia.
+    """
+
+    MENSAJE = "No se pudo marcar el material. Toca la casilla otra vez."
+
+    comprado = forms.ChoiceField(
+        choices=[("si", "Comprado"), ("no", "No comprado")],
+        error_messages={"required": MENSAJE, "invalid_choice": MENSAJE},
+    )

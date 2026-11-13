@@ -12,19 +12,22 @@ from django.views.decorators.http import require_POST
 from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
 from pedidos import calculos
-from pedidos.formularios.materiales import MaterialForm
+from pedidos.formularios.materiales import CompradoForm, MaterialForm
 from pedidos.models import Material, Pedido
-from pedidos.vistas import detalle
 
 
-def contexto_de_materiales(pedido, form=None):
-    """La lista de compras del pedido, "N de M comprados" y el formulario para agregar."""
+def contexto_de_materiales(pedido, form=None, avisos=()):
+    """La lista de compras del pedido, "N de M comprados" y el formulario para agregar.
+
+    `avisos`: un mensaje arriba de la lista, cuando no se pudo marcar un material.
+    """
     comprados, total = calculos.materiales_comprados(pedido)
     return {
         "materiales": pedido.materiales.all(),
         "materiales_comprados": comprados,
         "materiales_total": total,
         "form_material": form or MaterialForm(),
+        "avisos_materiales": avisos,
     }
 
 
@@ -33,15 +36,19 @@ def _material(request, pedido, pk):
     return obtener_o_404(request, Material.objects.filter(pedido=pedido), pk=pk)
 
 
-def _responder(request, pedido, form=None, status=200):
+def _responder(request, pedido, form=None, avisos=(), status=200):
     if es_htmx(request):
-        contexto = {"pedido": pedido, **contexto_de_materiales(pedido, form)}
+        contexto = {"pedido": pedido, **contexto_de_materiales(pedido, form, avisos)}
         return render(request, "pedidos/_materiales.html", contexto, status=status)
     if status == 200:
         return redirect(reverse("pedidos:detalle", args=[pedido.pk]) + "#pedido-materiales")
     # Sin JavaScript y con errores: la página completa, con los mensajes en su tarjeta.
+    # detalle.py usa este módulo para armar la página; se importa aquí adentro para que
+    # los dos módulos no se importen el uno al otro al arrancar.
+    from pedidos.vistas import detalle
+
     contexto = detalle.contexto_del_pedido(request, detalle.obtener_pedido(request, pedido.pk))
-    contexto.update(contexto_de_materiales(pedido, form))
+    contexto.update(contexto_de_materiales(pedido, form, avisos))
     return render(request, "pedidos/pedido.html", contexto, status=status)
 
 
@@ -62,7 +69,10 @@ def comprado(request, pk, material):
     """Marca o desmarca: el formulario dice cómo debe quedar ("si" o "no")."""
     pedido = obtener_o_404(request, Pedido, pk=pk)
     material = _material(request, pedido, material)
-    material.comprado = request.POST.get("comprado") == "si"
+    form = CompradoForm(request.POST)
+    if not form.is_valid():
+        return _responder(request, pedido, avisos=form.errors["comprado"], status=422)
+    material.comprado = form.cleaned_data["comprado"] == "si"
     material.save(update_fields=["comprado", "actualizado"])
     return _responder(request, pedido)
 

@@ -21,7 +21,8 @@ def url_nuevo(pedido):
 
 
 def url_de(nombre, material, pedido=None):
-    return reverse(f"pedidos:material_{nombre}", args=[(pedido or material.pedido).pk, material.pk])
+    pedido = pedido or material.pedido
+    return reverse(f"pedidos:material_{nombre}", args=[pedido.pk, material.pk])
 
 
 # --- La tarjeta ------------------------------------------------------------------------------
@@ -52,7 +53,8 @@ def test_sin_materiales_invita_a_anotarlos(sesion_duena, pedido):
 
 def test_no_muestra_los_materiales_de_otro_pedido(sesion_duena, taller, pedido):
     fabricas.crear_material(fabricas.crear_pedido(taller), nombre="De otro pedido")
-    fabricas.crear_material(fabricas.crear_pedido(fabricas.crear_taller()), nombre="De otro taller")
+    de_otro_taller = fabricas.crear_pedido(fabricas.crear_taller())
+    fabricas.crear_material(de_otro_taller, nombre="De otro taller")
 
     html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
 
@@ -153,6 +155,31 @@ def test_marcar_dos_veces_no_lo_desmarca(sesion_duena, pedido):
 
     material.refresh_from_db()
     assert material.comprado is True
+
+
+@pytest.mark.parametrize("datos", [{}, {"comprado": ""}, {"comprado": "tal vez"}])
+def test_marcar_sin_decir_como_queda_se_rechaza_y_no_cambia(sesion_duena, pedido, datos):
+    material = fabricas.crear_material(pedido, comprado=True)
+
+    respuesta = sesion_duena.post(url_de("comprado", material), datos, headers=HTMX)
+
+    material.refresh_from_db()
+    assert respuesta.status_code == 422
+    assert "No se pudo marcar el material. Toca la casilla otra vez." in respuesta.text
+    assert respuesta.text.startswith(
+        '<section class="tarjeta tarjeta--lista" id="pedido-materiales"'
+    )
+    assert material.comprado is True
+
+
+def test_sin_javascript_marcar_sin_decir_como_queda_muestra_la_pagina(sesion_duena, pedido):
+    material = fabricas.crear_material(pedido)
+
+    respuesta = sesion_duena.post(url_de("comprado", material), {"comprado": "x"})
+
+    assert respuesta.status_code == 422
+    assert "<html" in respuesta.text
+    assert "No se pudo marcar el material." in respuesta.text
 
 
 def test_sin_javascript_marcar_vuelve_al_pedido(sesion_duena, pedido):
