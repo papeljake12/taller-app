@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Resultados del buscador del menú (pedidos y clientes), T05. La rellena el carril A de la tanda 3.{% endcomment %}
+{% block pestana %}Buscar{% endblock %}
+{% block titulo %}Buscar{% endblock %}
+{% block apoyo %}{% if q %}<span class="encabezado__apoyo">«{{ q }}»</span>{% endif %}{% endblock %}
+{% block acciones %}{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-resultados">
+<div class="tarjeta__cabeza"><h2 id="t-resultados">Resultados</h2></div>
+<p class="tarjeta__nota">Llega con T05.</p>
+</section>
+{% endblock %}

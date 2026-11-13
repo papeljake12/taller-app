@@ -68,7 +68,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 
 - [ ] **T21. Permisos por rol.** Aplicar la tabla de `docs/04-permisos.md` en todas las
   vistas, con una prueba por cada fila de la tabla.
-- [ ] **T22. Datos de ejemplo.** Comando `cargar_ejemplos` con los mismos pedidos, tallas,
+- [x] **T22. Datos de ejemplo.** Comando `cargar_ejemplos` con los mismos pedidos, tallas,
   telas y gastos de las páginas de `diseno/`, marcados como ejemplo. Se construye temprano
   (ver el plan de construcción) y se completa a medida que aparecen los modelos.
 - [ ] **T23. Revisión final.** Recorrer todas las pantallas en 390 px y en 1280 px, comparar

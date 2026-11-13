@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Calendario (diseno/calendario.html), T14. La rellena el carril A de la tanda 5.{% endcomment %}
+{% block pestana %}Calendario{% endblock %}
+{% block titulo %}Calendario{% endblock %}
+{% block apoyo %}{% endblock %}
+{% block acciones %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
+{% block contenido %}
+<div class="dos-columnas">
+<div class="columna-ancha columna"><section class="tarjeta tarjeta--lista" aria-labelledby="t-mes">
+<div class="tarjeta__cabeza"><h2 id="t-mes">Mes</h2></div>
+<p class="tarjeta__nota">Llega con T14.</p>
+</section></div>
+<div class="columna-angosta columna"><section class="tarjeta tarjeta--lista" aria-labelledby="t-entregas">
+<div class="tarjeta__cabeza"><h2 id="t-entregas">Entregas del mes</h2></div>
+<p class="tarjeta__nota">Llega con T14.</p>
+</section><section class="tarjeta tarjeta--lista" aria-labelledby="t-semana">
+<div class="tarjeta__cabeza"><h2 id="t-semana">Semana más cargada</h2></div>
+<p class="tarjeta__nota">Llega con T14.</p>
+</section></div>
+</div>
+{% endblock %}

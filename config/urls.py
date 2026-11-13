@@ -11,6 +11,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("cuentas.urls")),
     path("", include("pedidos.urls")),
+    path("cotizador/", include("cotizador.urls")),
+    path("telas/", include("telas.urls")),
+    path("resumen/", include("finanzas.urls")),
     # Página interna con todas las piezas del diseño. Solo responde en desarrollo.
     path("piezas/", piezas, name="piezas"),
 ]

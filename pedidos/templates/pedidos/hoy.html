@@ -1,5 +1,27 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Pantalla Hoy. Sus tarjetas (cifras, qué hacer hoy, trabajos, gráfica, quién te debe y pedidos por etapa) llegan con T06 y T13.{% endcomment %}
+{% comment %}
+Pantalla Hoy (diseno/hoy.html). Esta plantilla solo reúne las partes y queda congelada
+después de la tanda 2. Cada tarjeta vive en su propia parte:
+  _cifras (T06), _que_hacer (T06), _trabajos (T13), _grafica (T06), _quien_debe (T06),
+  _etapas (T06).
+En celular las filas se abren y las tarjetas van en este orden (diseno/hoy-celular.html):
+cifras, qué hacer hoy, quién te debe, trabajos del taller, gráfica y pedidos por etapa.
+{% endcomment %}
 {% block pestana %}Hoy{% endblock %}
 {% block titulo %}Hoy{% endblock %}
 {% block apoyo %}<span class="encabezado__apoyo">{{ hoy|fecha_larga }}</span>{% endblock %}
+{% block acciones %}{% include "piezas/_boton_excel.html" %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
+{% block contenido %}
+<div class="tablero">
+{% include "pedidos/_cifras.html" %}
+<div class="dos-columnas">
+<div class="columna-ancha columna orden-celular-1">{% include "pedidos/_que_hacer.html" %}</div>
+<div class="columna-angosta columna orden-celular-3">{% include "pedidos/_trabajos.html" %}</div>
+</div>
+<div class="dos-columnas">
+<div class="columna-ancha columna orden-celular-4">{% include "pedidos/_grafica.html" %}</div>
+<div class="columna-angosta columna orden-celular-2">{% include "pedidos/_quien_debe.html" %}</div>
+</div>
+<div class="columna orden-celular-5">{% include "pedidos/_etapas.html" %}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% load piezas %}{% comment %}
+Contenido de la ventana (<dialog id="ventana"> de base.html). Una vista lo devuelve así:
+
+  {% extends "piezas/ventana.html" %}
+  {% block titulo %}Nuevo pedido{% endblock %}
+  {% block cuerpo %} ...campos... {% endblock %}
+  {% block pie %}<button type="submit" class="boton boton--principal">Guardar</button>{% endblock %}
+
+Todo va dentro de un formulario. `accion` es la dirección a la que se envía y `objetivo`,
+dónde se dibuja la respuesta (por defecto, la misma ventana, para mostrar los errores).
+La vista responde con config.ventanas.responder_ventana: dentro de la ventana si la pidió
+HTMX, o como página completa si se abrió el enlace sin JavaScript.
+{% endcomment %}<form class="ventana__formulario" method="post" action="{{ accion }}"{% if accion %} hx-post="{{ accion }}" hx-target="{{ objetivo|default:'#ventana' }}"{% endif %}{% if con_archivos %} enctype="multipart/form-data"{% endif %} novalidate>
+{% csrf_token %}
+<div class="ventana__cabeza"><h2 id="ventana-titulo">{% block titulo %}{% endblock %}</h2><button type="button" class="ventana__cerrar" data-cerrar-ventana aria-label="Cerrar">{% icono "cerrar" %}</button></div>
+<div class="ventana__cuerpo">{% block cuerpo %}{% endblock %}</div>
+<div class="ventana__pie"><button type="button" class="boton" data-cerrar-ventana>Cancelar</button>{% block pie %}{% endblock %}</div>
+</form>

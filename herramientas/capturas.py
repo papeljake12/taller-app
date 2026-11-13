@@ -9,6 +9,7 @@ Uso:
     uv run python herramientas/capturas.py --tanda 1
     uv run python herramientas/capturas.py --tanda 1 --usuario david
     uv run python herramientas/capturas.py --tanda 1 --referencias carpeta/   (también las de diseno/)
+    uv run python herramientas/capturas.py --tanda 3 --solo pedidos pedido --salida carpeta/
 
 Solo se usa en el computador de desarrollo. Necesita Google Chrome instalado.
 """
@@ -50,6 +51,18 @@ PANTALLAS = {
         Pantalla("hoy-menu-contraido", "/", "hoy-menu-contraido.html", menu="contraido",
                  solo_computador=True),
         Pantalla("piezas", "/piezas/"),
+    ],
+    2: [
+        Pantalla("pedidos", "/pedidos/", "pedidos.html"),
+        Pantalla("pedido", "/pedidos/{pedido}/", "pedido.html"),
+        Pantalla("nuevo-pedido", "/pedidos/nuevo/"),
+        Pantalla("calendario", "/calendario/", "calendario.html"),
+        Pantalla("clientes", "/clientes/", "clientes.html"),
+        Pantalla("cotizador", "/cotizador/", "cotizador.html"),
+        Pantalla("telas", "/telas/", "telas.html"),
+        Pantalla("resumen", "/resumen/", "resumen.html"),
+        Pantalla("mi-taller", "/mi-taller/"),
+        Pantalla("tallas-publico", "/tallas/{token}/", sin_sesion=True),
     ],
 }
 
@@ -111,6 +124,17 @@ def abrir_sesion(usuario):
     return cliente.cookies["sessionid"].value, persona.username
 
 
+def datos_para_direcciones(usuario):
+    """Lo que va en las direcciones con número: el pedido del diseño (el del Restaurante)."""
+    from pedidos.models import Pedido
+
+    pedidos = Pedido.objects.filter(taller__usuarias__username=usuario)
+    pedido = pedidos.filter(detalle__startswith="18 camisas").first() or pedidos.first()
+    if pedido is None:
+        return {}
+    return {"pedido": pedido.pk, "token": pedido.token_tallas}
+
+
 def cerrar_sesion(clave):
     from django.contrib.sessions.models import Session
 
@@ -144,18 +168,28 @@ def main():
     argumentos.add_argument("--usuario", help="usuario con el que se entra (por defecto, la primera dueña)")
     argumentos.add_argument("--referencias", type=Path,
                             help="carpeta donde guardar también las capturas de diseno/")
+    argumentos.add_argument("--solo", nargs="+", metavar="PANTALLA",
+                            help="capturar solo estas pantallas (por su nombre)")
+    argumentos.add_argument("--salida", type=Path,
+                            help="carpeta de las capturas (por defecto, docs/capturas/tanda-N/)")
     opciones = argumentos.parse_args()
 
     pantallas = [p for n in sorted(PANTALLAS) if n <= opciones.tanda for p in PANTALLAS[n]]
-    salida = RAIZ / "docs" / "capturas" / f"tanda-{opciones.tanda}"
+    if opciones.solo:
+        pantallas = [p for p in pantallas if p.nombre in opciones.solo]
+    salida = opciones.salida or RAIZ / "docs" / "capturas" / f"tanda-{opciones.tanda}"
 
     from playwright.sync_api import sync_playwright
 
     clave, usuario = abrir_sesion(opciones.usuario)
+    datos = datos_para_direcciones(usuario)
+    faltan = [p.nombre for p in pantallas if "{" in p.url and not datos]
+    if faltan:
+        raise SystemExit(f"Faltan pedidos para {faltan}: carga los ejemplos (cargar_ejemplos).")
     puerto = puerto_libre()
     servidor = levantar_servidor(puerto)
     base = f"http://127.0.0.1:{puerto}"
-    print(f"Servidor en {base}, sesión de {usuario}. Capturas en {salida.relative_to(RAIZ)}")
+    print(f"Servidor en {base}, sesión de {usuario}. Capturas en {salida}")
     total = 0
     try:
         with sync_playwright() as p:
@@ -171,7 +205,7 @@ def main():
                 for nombre_formato, formato, referencia in formatos:
                     ancho = formato["viewport"]["width"]
                     archivo = salida / f"{pantalla.nombre}-{nombre_formato}.png"
-                    problemas = capturar(navegador, base + pantalla.url, archivo, formato,
+                    problemas = capturar(navegador, base + pantalla.url.format(**datos), archivo, formato,
                                          cookies, ancho)
                     total += len(problemas)
                     estado = "bien" if not problemas else "REVISAR"

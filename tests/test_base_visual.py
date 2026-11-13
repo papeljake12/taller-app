@@ -145,6 +145,27 @@ def test_sin_pendientes_no_se_muestra_ningun_contador(sesion_duena):
     assert html.con_clase("menu__contador") == []
 
 
+def test_los_contadores_cuentan_pedidos_atrasados_y_telas_que_se_acaban(sesion_duena, taller):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from tests import fabricas
+
+    ayer = timezone.localdate() - timedelta(days=1)
+    fabricas.crear_pedido(taller, estado="confeccion", fecha_entrega=ayer)
+    fabricas.crear_pedido(taller, estado="entregado", fecha_entrega=ayer)  # no cuenta
+    fabricas.crear_tela(taller, metros=2, minimo=5)
+    fabricas.crear_tela(taller, metros=3, minimo=5)
+    fabricas.crear_tela(taller, metros=9, minimo=5)  # suficiente
+    otro = fabricas.crear_taller()
+    fabricas.crear_pedido(otro, estado="corte", fecha_entrega=ayer)  # de otro taller
+
+    html = Elementos(sesion_duena.get("/").text)
+
+    assert [texto(e) for e in html.con_clase("menu__contador")] == ["1", "2"]
+
+
 def test_con_pendientes_se_muestran_los_contadores(sesion_duena, settings):
     settings.DEBUG = True  # la página Piezas trae contadores de ejemplo
     html = Elementos(sesion_duena.get("/piezas/").text)
@@ -389,3 +410,42 @@ def test_en_celular_la_letra_de_la_grafica_se_agranda():
     # letra de 12 de computador quedaría en ~6 px; con 20 queda en ~11 px.
     regla = re.search(r"\.grafica text \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
     assert regla and "font-size: 20px;" in regla.group(1)
+
+
+def test_en_celular_las_columnas_del_tablero_miden_lo_que_su_contenido():
+    # Con las filas abiertas (display: contents), el "flex: 3 1 440px" de cada columna se
+    # volvería un alto de 440 px y las tarjetas de Hoy quedarían enormes.
+    regla = re.search(r"\.tablero > \.dos-columnas > \* \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
+    assert regla and "flex: none;" in regla.group(1)
+
+
+
+# --- Formatos de plata, fechas y metros (config/piezas.py) --------------------------------
+
+
+@pytest.mark.parametrize(
+    ("valor", "esperado"),
+    [(1260000, "$ 1.260.000"), (0, "$ 0"), (500, "$ 500"), (-200000, "-$ 200.000"), (None, "")],
+)
+def test_la_plata_se_escribe_como_en_el_diseno(valor, esperado):
+    from config.piezas import pesos
+
+    assert pesos(valor) == esperado
+
+
+def test_las_fechas_cortas_y_de_mes_como_en_el_diseno():
+    from config.piezas import dia_y_mes, fecha_corta, mes_y_anio
+
+    assert fecha_corta(date(2026, 11, 9)) == "9 de nov"
+    assert fecha_corta(date(2027, 1, 12)) == "12 de ene"
+    assert dia_y_mes(date(2026, 12, 20)) == "20 de diciembre"
+    assert mes_y_anio(date(2026, 11, 1)) == "Noviembre de 2026"
+
+
+@pytest.mark.parametrize(
+    ("valor", "esperado"), [("60", "60 m"), ("6.50", "6,5 m"), ("0.25", "0,25 m"), (18, "18 m")]
+)
+def test_los_metros_se_escriben_con_coma(valor, esperado):
+    from config.piezas import metros
+
+    assert metros(valor) == esperado

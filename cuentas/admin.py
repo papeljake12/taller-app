@@ -11,6 +11,17 @@ admin.site.site_title = "Administración"
 admin.site.index_title = "Talleres y usuarios"
 
 
+class SinAgregar:
+    """Para los datos de un taller: se ven y se corrigen aquí, pero nacen en la aplicación.
+
+    El taller de cada registro no se puede elegir en el panel (lo pone siempre la
+    aplicación), así que crear uno desde aquí no tendría taller.
+    """
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Taller)
 class TallerAdmin(admin.ModelAdmin):
     list_display = ["nombre", "telefono", "creado"]

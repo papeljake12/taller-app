@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% comment %}El contenido de una ventana abierto como página completa (sin JavaScript).{% endcomment %}
+{% block pestana %}{{ titulo_pagina|default:"Formulario" }}{% endblock %}
+{% block titulo %}{{ titulo_pagina|default:"" }}{% endblock %}
+{% block contenido %}<section class="tarjeta tarjeta--lista ventana ventana--pagina">{% include plantilla_ventana %}</section>{% endblock %}
