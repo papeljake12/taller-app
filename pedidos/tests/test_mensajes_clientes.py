@@ -34,7 +34,7 @@ def dia_fijo(monkeypatch):
 
 def fila_de(html, nombre):
     """El HTML de la fila de la tabla de ese cliente."""
-    inicio = html.index(f"<strong>{nombre}</strong>")
+    inicio = html.index(f'<span class="fuerte">{nombre}</span>')
     return html[inicio:html.index("</tr>", inicio)]
 
 
@@ -57,12 +57,12 @@ def test_el_aviso_sale_como_el_diseno(client, dia_fijo):
 
     html = client.get(URL).text
 
-    inicio = html.index('class="tarjeta-oscura"')
+    inicio = html.index('class="banner"')
     aviso = html[inicio:html.index("</section>", inicio)]
     assert "Dotación del 20 de diciembre: faltan 39 días" in aviso
     assert f"{FECHAS} Tienes 2 clientes empresa." in aviso
     assert ">Escribirles a los 2</a>" in aviso
-    assert 'class="boton boton--claro"' in aviso
+    assert 'class="boton"' in aviso
     assert f'hx-get="{URL_EMPRESAS}" hx-target="#ventana"' in aviso
     assert f'href="{URL_EMPRESAS}"' in aviso  # sin JavaScript, abre la lista como página
 
@@ -85,7 +85,8 @@ def test_los_dias_que_faltan_alrededor_de_cada_fecha(taller, hoy, titulo):
     assert aviso_de_dotacion(taller, hoy).titulo == titulo
 
 
-def test_el_aviso_usa_la_fecha_de_hoy_en_bogota(sesion_duena, monkeypatch):
+def test_el_aviso_usa_la_fecha_de_hoy_en_bogota(sesion_duena, taller, monkeypatch):
+    fabricas.crear_cliente(taller, nombre="Cualquiera")
     monkeypatch.setattr("django.utils.timezone.localdate", lambda *a, **k: date(2026, 12, 20))
 
     html = sesion_duena.get(URL).text
@@ -109,7 +110,7 @@ def test_sin_clientes_empresa_no_hay_boton(sesion_duena, taller, dia_fijo):
     html = sesion_duena.get(URL).text
 
     assert f"{FECHAS} Todavía no tienes clientes empresa." in html
-    assert "boton--claro" not in html
+    assert "?escribir=empresas" not in html
     assert "?escribir=empresas" not in html
 
 
@@ -245,7 +246,7 @@ def test_escribirle_tambien_sale_en_el_buscador(sesion_duena, taller):
     respuesta = sesion_duena.get(URL, {"q": "busc"},
                                  headers={**HTMX, "HX-Target": "clientes-lista"})
 
-    assert "tarjeta-oscura" not in respuesta.text  # solo la tabla
+    assert "banner" not in respuesta.text  # solo la tabla
     assert "https://wa.me/573001234567?text=" in fila_de(respuesta.text, "Buscada")
     assert "Otra" not in respuesta.text
 
