@@ -2974,6 +2974,82 @@ details > summary.fila::after {
 
 /* --- Calendario (inicio) --- */
 
+/* Las dos columnas llegan hasta abajo, sin hueco (las .dos-columnas llevan .llenar):
+   - el mes llena su tarjeta: sus semanas (4, 5 o 6) se reparten el alto que deja la
+     leyenda. Si un día tiene más entregas de las que caben en su cuadro, se ven las
+     primeras; la lista de la derecha las trae todas;
+   - a la derecha, "Entregas del mes" mide lo que sus filas; si son muchas, se encoge y solo
+     su lista se desplaza. "Semana más cargada" llega hasta abajo, como en el diseño. */
+@media (min-width: 768px) {
+  /* Una ventana muy baja no aplasta las semanas (cada una sigue midiendo al menos 56 px):
+     36 (días de la semana) + 6 x 56 + 46 (leyenda) + 2 (borde). Por debajo, se desplaza
+     la hoja. */
+  .dos-columnas--calendario {
+    min-height: 420px;
+  }
+
+  /* En una ventana angosta (de 768 a unos 1080 px con el menú abierto) las dos columnas se
+     angostan juntas: si no, la de la derecha se saldría de la hoja y no se vería. */
+  .dos-columnas--calendario > * {
+    flex-shrink: 1;
+  }
+
+  .columna-ancha--calendario {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .columna-ancha--calendario > .calendario {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-rows: auto;          /* Lun, Mar... */
+    grid-auto-rows: minmax(0, 1fr);    /* las semanas, todas del mismo alto */
+  }
+
+  .columna-ancha--calendario > .calendario__leyenda {
+    flex: none;
+  }
+
+  .calendario__dia {
+    min-height: 0;
+  }
+
+  /* Al tocar un día, la cuadrícula llega nueva (con el día marcado) y el día tocado sigue
+     bajo el mouse: si su fondo gris se animara, ese día parpadearía. El fondo cambia
+     directo; "cargando" sigue igual. */
+  button.calendario__dia {
+    transition-property: opacity;
+  }
+
+  .calendario__numero {
+    flex: none;
+  }
+
+  /* Un día con más entregas de las que caben muestra las primeras; tocarlo las trae todas a
+     la lista. No se desplaza por dentro: Chrome haría de esa parte una parada más del
+     tabulador dentro del botón del día. */
+  .calendario__entregas {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Cada entrega mide lo que su nombre (hasta tres líneas): no se aplasta para caber */
+  .calendario__entregas > .etiqueta {
+    flex: none;
+  }
+
+  .columna > .calendario-lista {
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .calendario-lista > .desplazable {
+    flex: 0 1 auto;
+  }
+}
+
 /* --- Calendario (fin) --- */
 
 
