@@ -44,6 +44,10 @@ def enviar(client, pedido, **datos):
     return client.post(direccion(pedido), datos)
 
 
+def listo(pedido):
+    return f"{direccion(pedido)}?listo=1"
+
+
 def texto(respuesta):
     """El texto de la página sin etiquetas, para buscar frases."""
     return " ".join(unescape(re.sub(r"<[^>]+>", " ", respuesta.text)).split())
@@ -135,7 +139,8 @@ def test_el_selector_de_talla_pide_las_medidas_a_la_misma_pagina(client, pedido)
 def test_guarda_la_talla_en_ese_pedido_como_enviada_por_el_cliente(client, pedido):
     respuesta = enviar(client, pedido, nombre="  Ana Gómez ", talla="M", nota="Manga larga")
 
-    assert respuesta.status_code == 200
+    assert respuesta.status_code == 302
+    assert respuesta["Location"] == listo(pedido)
     talla = Talla.objects.get()
     assert talla.pedido == pedido
     assert talla.nombre == "Ana Gómez"
@@ -146,12 +151,55 @@ def test_guarda_la_talla_en_ese_pedido_como_enviada_por_el_cliente(client, pedid
 
 
 def test_muestra_la_confirmacion_y_el_boton_para_otra_persona(client, pedido):
-    respuesta = enviar(client, pedido, nombre="Ana Gómez", talla="M")
+    enviar(client, pedido, nombre="Ana Gómez", talla="M")
 
+    respuesta = client.get(listo(pedido))
+
+    assert respuesta.status_code == 200
     pagina = texto(respuesta)
     assert "¡Listo, Ana Gómez!" in pagina
     assert "Tu talla M quedó registrada para el pedido de Colegio de prueba." in pagina
-    assert f'href="{direccion(pedido)}">Registrar a otra persona</a>' in respuesta.text
+    assert (
+        f'<a class="boton" href="{direccion(pedido)}">Registrar a otra persona</a>'
+        in respuesta.text
+    )
+
+
+def test_recargar_la_confirmacion_no_guarda_otra_vez_y_muestra_el_formulario(client, pedido):
+    enviar(client, pedido, nombre="Ana Gómez", talla="M")
+    client.get(listo(pedido))
+
+    respuesta = client.get(listo(pedido))
+
+    assert respuesta.status_code == 200
+    assert Talla.objects.count() == 1
+    pagina = texto(respuesta)
+    assert "¡Listo" not in pagina
+    assert "Enviar mi talla" in pagina
+
+
+def test_la_confirmacion_no_se_abre_sin_haber_enviado(client, pedido):
+    fabricas.crear_talla(pedido, nombre="Persona que ya envió", talla="L")
+
+    respuesta = client.get(listo(pedido))
+
+    assert respuesta.status_code == 200
+    assert "Persona que ya envió" not in respuesta.text
+    assert "Enviar mi talla" in texto(respuesta)
+
+
+def test_la_confirmacion_solo_muestra_una_talla_de_ese_pedido(client, pedido):
+    ajena = fabricas.crear_talla(
+        fabricas.crear_pedido(fabricas.crear_taller()), nombre="Persona de otro pedido"
+    )
+    sesion = client.session
+    sesion["talla_publica"] = ajena.pk
+    sesion.save()
+
+    respuesta = client.get(listo(pedido))
+
+    assert "Persona de otro pedido" not in respuesta.text
+    assert "Enviar mi talla" in texto(respuesta)
 
 
 def test_a_la_medida_guarda_las_medidas_con_coma_o_punto(client, pedido):
@@ -159,13 +207,13 @@ def test_a_la_medida_guarda_las_medidas_con_coma_o_punto(client, pedido):
         client, pedido, talla="medida", pecho="92,5", cintura="80.5", cadera="98", largo=""
     )
 
-    assert respuesta.status_code == 200
+    assert respuesta.status_code == 302
     talla = Talla.objects.get()
     assert (talla.pecho, talla.cintura, talla.cadera) == (
         Decimal("92.5"), Decimal("80.5"), Decimal("98"),
     )
     assert talla.largo is None
-    assert "Tu talla a la medida quedó registrada" in texto(respuesta)
+    assert "Tu talla a la medida quedó registrada" in texto(client.get(listo(pedido)))
 
 
 def test_a_la_medida_sin_pecho_cintura_y_cadera_no_se_guarda(client, pedido):
@@ -191,7 +239,7 @@ def test_una_medida_fuera_de_rango_o_que_no_es_numero_se_rechaza(client, pedido)
 def test_con_otra_talla_las_medidas_no_se_guardan_ni_se_revisan(client, pedido):
     respuesta = enviar(client, pedido, talla="L", pecho="esto no es un número", cintura="80")
 
-    assert respuesta.status_code == 200
+    assert respuesta.status_code == 302
     talla = Talla.objects.get()
     assert (talla.talla, talla.pecho, talla.cintura) == ("L", None, None)
 
@@ -265,7 +313,7 @@ def test_el_formulario_no_acepta_el_numero_de_otro_pedido(client, pedido):
 
     respuesta = client.post(direccion(pedido), datos)
 
-    assert respuesta.status_code == 200
+    assert respuesta.status_code == 302
     talla = Talla.objects.get()
     assert talla.pedido == pedido
     assert talla.origen == Talla.Origen.ENLACE
@@ -317,12 +365,37 @@ def test_un_enlace_cerrado_no_trae_las_medidas(client, pedido):
     assert 'name="pecho"' not in respuesta.text
 
 
+def test_si_cierran_el_enlace_con_el_formulario_abierto_la_pagina_se_recarga(client, pedido):
+    # HTMX pondría la página entera de "enlace cerrado" dentro del formulario: mejor que el
+    # navegador recargue y la muestre completa.
+    pedido.tallas_abiertas = False
+    pedido.save()
+
+    respuesta = client.get(direccion(pedido), {"talla": "medida"}, headers=HTMX)
+
+    assert respuesta.status_code == 200
+    assert respuesta["HX-Refresh"] == "true"
+    assert "marco-acceso" not in respuesta.text
+
+
+def test_si_borran_el_pedido_con_el_formulario_abierto_la_pagina_se_recarga(client, pedido):
+    # HTMX no dibuja un 404: sin recargar, cambiar la talla no haría nada.
+    url = direccion(pedido)
+    pedido.delete()
+
+    respuesta = client.get(url, {"talla": "medida"}, headers=HTMX)
+
+    assert respuesta.status_code == 200
+    assert respuesta["HX-Refresh"] == "true"
+    assert "marco-acceso" not in respuesta.text
+
+
 # --- Límite de envíos por minuto ----------------------------------------------------------------
 
 
 def test_despues_del_limite_en_un_minuto_responde_429_y_no_guarda(client, pedido):
     for numero in range(publico.LIMITE):
-        assert enviar(client, pedido, nombre=f"Persona {numero}").status_code == 200
+        assert enviar(client, pedido, nombre=f"Persona {numero}").status_code == 302
 
     respuesta = enviar(client, pedido, nombre="Una de más")
 
@@ -346,16 +419,16 @@ def test_el_limite_es_por_celular_y_por_enlace(client, pedido, taller):
     for numero in range(publico.LIMITE + 1):
         enviar(client, pedido, nombre=f"Persona {numero}")
 
-    assert enviar(client, otro).status_code == 200
+    assert enviar(client, otro).status_code == 302
     otro_celular = Client(REMOTE_ADDR="10.0.0.2")
-    assert enviar(otro_celular, pedido).status_code == 200
+    assert enviar(otro_celular, pedido).status_code == 302
 
 
 def test_abrir_la_pagina_no_cuenta_como_envio(client, pedido):
     for _ in range(publico.LIMITE + 5):
         client.get(direccion(pedido))
 
-    assert enviar(client, pedido).status_code == 200
+    assert enviar(client, pedido).status_code == 302
 
 
 def test_pasado_el_minuto_vuelve_a_aceptar(client, pedido):
@@ -364,7 +437,7 @@ def test_pasado_el_minuto_vuelve_a_aceptar(client, pedido):
 
     cache.clear()  # Lo mismo que pasa cuando se vence el minuto.
 
-    assert enviar(client, pedido).status_code == 200
+    assert enviar(client, pedido).status_code == 302
 
 
 # --- Protección del formulario ------------------------------------------------------------------
@@ -388,7 +461,7 @@ def test_con_la_ficha_csrf_de_la_pagina_si_se_guarda(pedido):
         direccion(pedido), {"nombre": "Ana", "talla": "M", "csrfmiddlewaretoken": ficha}
     )
 
-    assert respuesta.status_code == 200
+    assert respuesta.status_code == 302
     assert Talla.objects.get().pedido == pedido
 
 
