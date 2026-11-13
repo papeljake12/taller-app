@@ -1,0 +1,5 @@
+{% comment %}Las medidas de quien elige "A la medida", con la nota que dice cuándo llenarlas.{% endcomment %}<div class="acceso__tarjeta">
+<div class="campos">{% include "piezas/_campo.html" with campo=form.pecho %}{% include "piezas/_campo.html" with campo=form.cintura %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.cadera %}{% include "piezas/_campo.html" with campo=form.largo %}</div>
+<p class="nota">{{ nota }}</p>
+</div>
