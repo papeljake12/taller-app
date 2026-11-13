@@ -675,6 +675,27 @@
     deAfuera(llegan).forEach(function (elemento) { aparecer(elemento, duracion); });
   });
 
+  // Una lista que se desplaza por dentro (.desplazable con id) no vuelve arriba cuando HTMX
+  // trae otra vez la tarjeta que la contiene: queda donde estaba (lo pidió el carril de Mi
+  // taller). No es una animación: vale también con menos movimiento.
+  let desplazamientos = new Map();
+
+  document.addEventListener("htmx:beforeSwap", function (evento) {
+    desplazamientos = new Map();
+    if (!evento.detail.shouldSwap) return;
+    document.querySelectorAll(".desplazable[id]").forEach(function (lista) {
+      if (lista.scrollTop) desplazamientos.set(lista.id, lista.scrollTop);
+    });
+  });
+
+  document.addEventListener("htmx:afterSwap", function () {
+    desplazamientos.forEach(function (arriba, id) {
+      const lista = document.getElementById(id);
+      if (lista && lista.scrollTop === 0) lista.scrollTop = arriba;
+    });
+    desplazamientos = new Map();
+  });
+
   /* 12. Aviso corto de confirmación --------------------------------------- */
 
   // Después de guardar, el servidor manda el texto con config/avisos.py:

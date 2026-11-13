@@ -196,9 +196,10 @@ def test_la_grafica_puede_venir_baja_para_el_computador():
     # La del celular es igual a la de siempre.
     assert dos.split("</svg>")[1] + "</svg>" == sola.replace(
         'class="grafica"', 'class="grafica grafica--celular"')
-    # En la baja, la barra más alta nace en la base (100) y mide 130 - 66 = 64.
+    # En la baja, la base va en 100 y el espacio libre de arriba se achica en proporción
+    # (36 * 130 / 200 = 23): la barra más alta mide 100 - 23 = 77.
     baja = dos.split("</svg>")[0]
-    assert 'y="36" width="22" height="64"' in baja
+    assert 'y="23" width="22" height="77"' in baja
 
 
 # --- Ejemplos de /piezas/ ------------------------------------------------------------------

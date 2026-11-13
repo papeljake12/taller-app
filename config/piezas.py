@@ -167,10 +167,13 @@ def grafica_barras(meses, alto_computador=None):
 
 def _dibujar_grafica(meses, alto_lienzo, clase):
     """Un <svg> de 600 de ancho por `alto_lienzo` de alto. Con el alto de siempre (200), las
-    medidas son las de diseno/hoy.html. Más bajo, solo se acortan las barras: el espacio de
-    arriba, el de los meses y las letras quedan iguales."""
+    medidas son las de diseno/hoy.html. Más bajo, se acortan las barras y, en la misma
+    proporción, el espacio libre sobre la más alta (así las barras aprovechan el alto); el
+    espacio de los meses y las letras quedan iguales (lo pidió el carril de Hoy)."""
     base = alto_lienzo - (_ALTO_LIENZO - _BASE)            # la línea de abajo: 170 en 200
-    alto_maximo = alto_lienzo - (_ALTO_LIENZO - _ALTO_MAXIMO)  # la barra más alta: 134 en 200
+    arriba_de_siempre = _ALTO_LIENZO - _ALTO_MAXIMO - (_ALTO_LIENZO - _BASE)  # 36 en 200
+    arriba = max(16, round(arriba_de_siempre * alto_lienzo / _ALTO_LIENZO))
+    alto_maximo = base - arriba                             # la barra más alta: 134 en 200
     y_meses = alto_lienzo - 10                              # los nombres de los meses: 190
     maximo = max(max(m.cobrado, m.gastado) for m in meses)
     paso_x = 94 * 6 / len(meses)
