@@ -317,7 +317,7 @@ def test_los_colores_de_la_hoja_de_estilos_son_los_del_documento_de_diseno():
     css = (ESTATICOS / "css/app.css").read_text("utf-8")
 
     colores = re.findall(r"^\| `(--[a-z0-9-]+)` \| `(#[0-9A-F]{6})` \|", documento, re.MULTILINE)
-    assert len(colores) == 13
+    assert len(colores) == 14
     for variable, valor in colores:
         assert f"{variable}: {valor};" in css, variable
 
@@ -335,3 +335,46 @@ def test_el_marco_y_la_franja_usan_los_degradados_del_documento():
 
     assert "linear-gradient(180deg, #000000 0%, #000000 70%, #2563C9 100%)" in css
     assert "linear-gradient(90deg, #000000 0%, #000000 55%, #2563C9 100%)" in css
+
+
+def test_los_campos_usan_el_borde_de_campo_y_los_botones_el_de_control():
+    css = (ESTATICOS / "css/app.css").read_text("utf-8")
+
+    for selector in (".campo__control", ".buscador"):
+        regla = re.search(re.escape(selector) + r" \{(.*?)\}", css, re.DOTALL).group(1)
+        assert "border: 1px solid var(--borde-campo);" in regla, selector
+    regla = re.search(r"^\.boton \{(.*?)\}", css, re.DOTALL | re.MULTILINE).group(1)
+    assert "var(--borde-control)" in regla
+
+
+def test_piezas_muestra_todos_los_colores_del_documento(sesion_duena, settings):
+    settings.DEBUG = True
+    documento = (RAIZ / "docs/08-diseno.md").read_text("utf-8")
+    pagina = sesion_duena.get("/piezas/").text
+
+    for variable, valor in re.findall(r"^\| `(--[a-z0-9-]+)` \| `(#[0-9A-F]{6})` \|",
+                                      documento, re.MULTILINE):
+        assert variable in pagina and valor in pagina, variable
+
+
+# --- Celular: nada se sale de los 390 px ---------------------------------------------------
+
+
+def _reglas_de_celular():
+    css = (ESTATICOS / "css/app.css").read_text("utf-8")
+    inicio = css.index("@media (max-width: 767.98px) {")
+    return css[inicio:css.index("\n}\n", inicio)]
+
+
+def test_en_celular_los_botones_del_encabezado_no_se_encogen():
+    # Si la caja de botones se encoge, "Nuevo pedido" (que no se parte) se sale de la
+    # pantalla cuando el título es largo. El que cede espacio debe ser el título.
+    regla = re.search(r"\.encabezado__acciones \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
+    assert regla and "flex: none;" in regla.group(1)
+
+
+def test_en_celular_la_letra_de_la_grafica_se_agranda():
+    # La gráfica se dibuja a 600 de ancho y en celular se achica a unos 330 px. Con la
+    # letra de 12 de computador quedaría en ~6 px; con 20 queda en ~11 px.
+    regla = re.search(r"\.grafica text \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
+    assert regla and "font-size: 20px;" in regla.group(1)

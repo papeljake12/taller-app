@@ -73,7 +73,8 @@ def piezas(request):
         "colores": [
             ("--negro", "#1A1A1A"), ("--texto-2", "#555555"), ("--texto-3", "#8A8A8A"),
             ("--hoja", "#F1F1F1"), ("--tarjeta", "#FFFFFF"), ("--suave", "#F7F7F7"),
-            ("--linea", "#E1E1E1"), ("--borde-control", "#C9C9C9"), ("--riel", "#EDEDED"),
+            ("--linea", "#E1E1E1"), ("--borde-control", "#C9C9C9"), ("--borde-campo", "#8A8A8A"),
+            ("--riel", "#EDEDED"),
             ("--azul", "#2563C9"), ("--gris-grafica", "#A6A6A6"), ("--rojo", "#B3261E"),
             ("--verde", "#1B6E3C"),
         ],
