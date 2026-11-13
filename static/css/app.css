@@ -2908,6 +2908,10 @@ details > summary.fila::after {
 
 /* --- Cotizador (inicio) --- */
 
+/* Sin reglas propias: con el relleno menor de la sección 6 cabe en 1366 x 768 (también con
+   una prenda elegida y el resultado lleno; sobran 36 px) y las dos columnas terminan juntas
+   al final de la hoja. Lo comprueba cotizador/tests/test_pantalla_fija_cotizador.py. */
+
 /* --- Cotizador (fin) --- */
 
 
