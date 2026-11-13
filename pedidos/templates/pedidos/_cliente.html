@@ -1,13 +1,13 @@
 {% comment %}
 Tarjeta "Cliente" (T07): nombre, tipo y cuántos pedidos tiene, y su WhatsApp, que se guarda
-solo al salir del campo (pedidos:whatsapp). Con la etapa en "listo", el aviso de pedido
-listo: el botón abre WhatsApp si hay número; si no, copia el texto. El recordatorio del
-saldo está en la tarjeta Pagos.
+solo al salir del campo o con Enter (pedidos:whatsapp; hx-sync evita que Enter lo envíe dos
+veces). Con la etapa en "listo", el aviso de pedido listo: el botón abre WhatsApp si hay
+número; si no, copia el texto. El recordatorio del saldo está en la tarjeta Pagos.
 {% endcomment %}<section class="tarjeta tarjeta--lista" id="pedido-cliente" aria-labelledby="t-cliente"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-cliente">Cliente</h2></div>
 <div class="tarjeta__cuerpo">
 <div><div class="fila__titulo"><strong>{{ pedido.cliente.nombre }}</strong></div><div class="texto-2">{{ pedido.cliente.get_tipo_display }}, {{ pedidos_del_cliente }} pedido{{ pedidos_del_cliente|pluralize }}</div></div>
-<form method="post" action="{% url 'pedidos:whatsapp' pedido.pk %}" hx-post="{% url 'pedidos:whatsapp' pedido.pk %}" hx-trigger="change, submit" hx-target="#pedido-cliente" hx-swap="outerHTML" novalidate>
+<form method="post" action="{% url 'pedidos:whatsapp' pedido.pk %}" hx-post="{% url 'pedidos:whatsapp' pedido.pk %}" hx-trigger="change, submit" hx-sync="this:drop" hx-target="#pedido-cliente" hx-swap="outerHTML" novalidate>
 {% csrf_token %}
 {% include "piezas/_campo.html" with campo=form_whatsapp.whatsapp %}
 <noscript><div class="botones"><button type="submit" class="boton">Guardar el número</button></div></noscript>

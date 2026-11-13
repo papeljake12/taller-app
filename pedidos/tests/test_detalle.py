@@ -266,7 +266,9 @@ def test_una_fecha_que_no_sirve_se_rechaza(sesion_duena, pedido, valor, mensaje)
     assert "Se entrega en 33 días." in respuesta.text
 
 
-def test_sin_javascript_una_fecha_que_no_sirve_muestra_la_pagina_con_el_error(sesion_duena, pedido):
+def test_sin_javascript_una_fecha_que_no_sirve_muestra_la_pagina_con_el_error(
+    sesion_duena, pedido
+):
     respuesta = sesion_duena.post(url("entrega", pedido), {"fecha_entrega": ""})
 
     assert respuesta.status_code == 422
@@ -298,7 +300,9 @@ def test_quitar_la_encargada(sesion_duena, taller, pedido):
 def test_no_se_puede_elegir_una_usuaria_de_otro_taller(sesion_duena, pedido):
     de_otro = fabricas.crear_usuaria(fabricas.crear_taller(), rol=Usuario.Rol.COSTURERA)
 
-    respuesta = sesion_duena.post(url("encargada", pedido), {"encargada": de_otro.pk}, headers=HTMX)
+    respuesta = sesion_duena.post(
+        url("encargada", pedido), {"encargada": de_otro.pk}, headers=HTMX
+    )
 
     pedido.refresh_from_db()
     assert respuesta.status_code == 422
@@ -309,7 +313,9 @@ def test_no_se_puede_elegir_una_usuaria_de_otro_taller(sesion_duena, pedido):
 def test_no_se_puede_elegir_una_usuaria_desactivada(sesion_duena, taller, pedido):
     inactiva = fabricas.crear_usuaria(taller, rol=Usuario.Rol.COSTURERA, is_active=False)
 
-    respuesta = sesion_duena.post(url("encargada", pedido), {"encargada": inactiva.pk}, headers=HTMX)
+    respuesta = sesion_duena.post(
+        url("encargada", pedido), {"encargada": inactiva.pk}, headers=HTMX
+    )
 
     pedido.refresh_from_db()
     assert respuesta.status_code == 422
@@ -344,6 +350,14 @@ def test_guardar_el_whatsapp_lo_deja_en_el_cliente(sesion_duena, pedido):
     assert "Número guardado." in respuesta.text
     # Con número, "Avisar al cliente" abre WhatsApp.
     assert 'id="pedido-avisar" href="https://wa.me/573000000000' in respuesta.text
+
+
+def test_enter_en_el_whatsapp_no_lo_envia_dos_veces(sesion_duena, pedido):
+    # Al salir del campo se envía ("change"); Enter dispara "change" y "submit" a la vez:
+    # hx-sync deja pasar el primero y descarta el otro.
+    html = sesion_duena.get(url("detalle", pedido)).text
+
+    assert 'hx-trigger="change, submit" hx-sync="this:drop"' in html
 
 
 def test_borrar_el_whatsapp(sesion_duena, pedido):

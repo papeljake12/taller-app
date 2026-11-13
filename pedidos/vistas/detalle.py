@@ -21,14 +21,20 @@ from pedidos.vistas import materiales
 
 Estado = Pedido.Estado
 
+# Las partes de la página que cambian, además de la tarjeta tocada, cuando cambia la etapa o
+# el WhatsApp del cliente (se mandan con hx-swap-oob). Al unir la tarjeta Pagos (T08), que
+# tiene el botón "Recordar el saldo por WhatsApp", se agrega aquí "pagos" a las dos.
+CAMBIAN_CON_LA_ETAPA = ("pedido_apoyo", "detalle_avisar", "entrega", "cliente")
+CAMBIAN_CON_EL_WHATSAPP = ("detalle_avisar",)
+
 
 # --- Los datos de cada parte ----------------------------------------------------------------
 
 
 def obtener_pedido(request, pk):
     """El pedido de la usuaria, con su cliente, su encargada y sus cuentas (abonado y saldo)."""
-    consulta = calculos.con_cuentas(Pedido.objects.select_related("cliente", "encargada", "taller"))
-    return obtener_o_404(request, consulta, pk=pk)
+    consulta = Pedido.objects.select_related("cliente", "encargada", "taller")
+    return obtener_o_404(request, calculos.con_cuentas(consulta), pk=pk)
 
 
 def pasos_de_etapa(pedido):
@@ -84,14 +90,11 @@ def aviso_de_listo(pedido):
     return {"texto": texto, "enlace": mensajes.enlace_whatsapp(pedido.cliente.whatsapp, texto)}
 
 
-def contexto_de_la_ficha(request, pedido, **extra):
-    """Lo que necesitan las partes de T07: encabezado, Etapa, Entrega, Cliente y Eliminar.
-
-    Lo que llega en `extra` (por ejemplo, un formulario con sus errores) reemplaza lo de aquí.
-    """
+def contexto_de_la_ficha(request, pedido):
+    """Lo que necesitan las partes de T07: encabezado, Etapa, Entrega, Cliente y Eliminar."""
     frase, atrasado = frase_de_entrega(pedido)
     pedidos_del_cliente = del_taller(request, Pedido).filter(cliente=pedido.cliente_id).count()
-    contexto = {
+    return {
         "pedido": pedido,
         "etiqueta": calculos.etiqueta_etapa(pedido),
         "pasos": pasos_de_etapa(pedido),
@@ -111,14 +114,17 @@ def contexto_de_la_ficha(request, pedido, **extra):
         ),
         "form_whatsapp": WhatsappForm(initial={"whatsapp": pedido.cliente.whatsapp}),
     }
-    contexto.update(extra)
-    return contexto
 
 
 def contexto_del_pedido(request, pedido, **extra):
-    """Todo lo que necesita la página completa. Cada tarea agrega aquí lo de sus partes."""
-    contexto = contexto_de_la_ficha(request, pedido, **extra)
+    """Todo lo que necesita la página completa. Cada tarea agrega aquí lo de sus partes.
+
+    Lo que llega en `extra` (por ejemplo, un formulario con sus errores) va de último y
+    reemplaza lo de cualquier parte.
+    """
+    contexto = contexto_de_la_ficha(request, pedido)
     contexto.update(materiales.contexto_de_materiales(pedido))  # T12
+    contexto.update(extra)
     return contexto
 
 
@@ -132,12 +138,13 @@ def responder(request, pedido, parte, otras=(), status=200, **extra):
       también cambiaron. Con errores, status 422 (HTMX la dibuja igual, con los mensajes).
     - Sin JavaScript: si se guardó, vuelve al pedido; con errores, la página completa.
     """
+    if not es_htmx(request) and status == 200:
+        return redirect(reverse("pedidos:detalle", args=[pedido.pk]) + f"#pedido-{parte}")
+    # Siempre el contexto de la página completa: así también se puede mandar una parte de
+    # otra tarea (por ejemplo, Pagos) con sus datos.
+    contexto = contexto_del_pedido(request, pedido, **extra)
     if not es_htmx(request):
-        if status == 200:
-            return redirect(reverse("pedidos:detalle", args=[pedido.pk]) + f"#pedido-{parte}")
-        contexto = contexto_del_pedido(request, pedido, **extra)
         return render(request, "pedidos/pedido.html", contexto, status=status)
-    contexto = contexto_de_la_ficha(request, pedido, **extra)
     html = render_to_string(f"pedidos/_{parte}.html", contexto, request=request)
     for otra in otras:
         html += render_to_string(f"pedidos/_{otra}.html", {**contexto, "oob": True}, request)
@@ -162,9 +169,7 @@ def etapa(request, pk):
         return responder(request, pedido, "etapa", status=422, form_etapa=form)
     pedido.estado = form.cleaned_data["estado"]
     pedido.save(update_fields=["estado", "actualizado"])
-    return responder(
-        request, pedido, "etapa", otras=("pedido_apoyo", "detalle_avisar", "entrega", "cliente")
-    )
+    return responder(request, pedido, "etapa", otras=CAMBIAN_CON_LA_ETAPA)
 
 
 @require_POST
@@ -202,7 +207,7 @@ def whatsapp(request, pk):
     cliente.whatsapp = form.cleaned_data["whatsapp"]
     cliente.save(update_fields=["whatsapp", "actualizado"])
     return responder(
-        request, pedido, "cliente", otras=("detalle_avisar",), whatsapp_guardado=True
+        request, pedido, "cliente", otras=CAMBIAN_CON_EL_WHATSAPP, whatsapp_guardado=True
     )
 
 
