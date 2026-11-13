@@ -1,13 +1,17 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Formulario público de tallas (T11): sin menú ni nada del panel. Lo rellena el carril E de la tanda 5.{% endcomment %}
-{% block pestana %}Tallas{% endblock %}
+{% comment %}
+Formulario público de tallas (T11, pedidos/vistas/publico.py): una tarjeta centrada, como la
+página de entrar, sin menú ni nada del panel. Arriba va el nombre del taller; dentro de la
+tarjeta, una de sus partes (`parte`): el formulario, la confirmación, el enlace cerrado, el
+de "espera un minuto" o el de "este enlace no existe".
+{% endcomment %}
+{% block pestana %}Envía tu talla{% endblock %}
 {% block cuerpo %}
 <div class="marco-acceso">
 <main class="acceso">
-<div class="acceso__marca">{% icono "tijeras" 22 %}<span>{{ pedido.taller.nombre }}</span></div>
+<div class="acceso__marca">{% icono "tijeras" 22 %}<span>{% if pedido %}{{ pedido.taller.nombre }}{% else %}Pedidos del taller{% endif %}</span></div>
 <section class="tarjeta acceso__tarjeta" aria-labelledby="titulo-tallas">
-<h1 id="titulo-tallas">Tallas</h1>
-<p class="texto-2">Llega con T11.</p>
+{% include parte %}
 </section>
 </main>
 </div>

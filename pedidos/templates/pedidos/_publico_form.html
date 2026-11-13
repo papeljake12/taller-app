@@ -1,0 +1,14 @@
+{% comment %}
+Parte del formulario público: nombre, talla (con las medidas si es a la medida) y
+observaciones. Se envía normal, sin HTMX (ver pedidos/vistas/publico.py). Con errores vuelve
+con status 422 y el mensaje junto a cada campo.
+{% endcomment %}<h1 id="titulo-tallas">Envía tu talla</h1>
+{% include "pedidos/_publico_pedido.html" %}
+<form class="acceso__tarjeta" method="post" action="{% url 'pedidos:publico_tallas' pedido.token_tallas %}" novalidate>
+{% csrf_token %}
+{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+{% include "piezas/_campo.html" with campo=form.nombre %}
+{% include "pedidos/_publico_talla.html" %}
+{% include "piezas/_campo.html" with campo=form.nota %}
+<button type="submit" class="boton boton--principal">Enviar mi talla</button>
+</form>

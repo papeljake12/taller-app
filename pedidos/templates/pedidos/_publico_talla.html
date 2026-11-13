@@ -1,0 +1,10 @@
+{% comment %}
+Parte del formulario público: la talla y, debajo, las medidas. Al cambiar la talla, HTMX pide
+esta parte otra vez a la misma página (?talla=...) y la pone en el lugar de la vieja: si
+eligió "A la medida" aparecen pecho, cintura, cadera y largo; si no, no se ven. Sin
+JavaScript, las medidas se ven siempre (dentro de <noscript>) con una nota que lo explica.
+{% endcomment %}<div class="acceso__tarjeta" id="publico-talla">
+{% include "piezas/_campo.html" with campo=form.talla %}
+{% if form.es_a_la_medida %}{% include "pedidos/_publico_medidas.html" with nota="Anota tus medidas en centímetros. El largo es opcional." %}
+{% else %}<noscript>{% include "pedidos/_publico_medidas.html" with nota="Solo si eliges «A la medida»: pecho, cintura y cadera en centímetros. El largo es opcional." %}</noscript>
+{% endif %}</div>
