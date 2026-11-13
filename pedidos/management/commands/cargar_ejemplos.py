@@ -11,6 +11,7 @@ from datetime import date
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
 from cuentas.models import Taller
 from pedidos import ejemplos
@@ -38,9 +39,11 @@ class Command(BaseCommand):
                 "Esto borra y vuelve a cargar los datos del taller de ejemplo. Solo corre en "
                 "desarrollo; para correrlo aquí, agrega --forzar."
             )
-        taller, creado = Taller.objects.get_or_create(nombre=opciones["taller"])
         try:
-            ejemplos.cargar(taller, hoy=opciones["fecha"])
+            # Todo o nada: si algo falla, tampoco queda creado el taller.
+            with transaction.atomic():
+                taller, creado = Taller.objects.get_or_create(nombre=opciones["taller"])
+                ejemplos.cargar(taller, hoy=opciones["fecha"])
         except ValueError as error:
             raise CommandError(str(error)) from error
         accion = "Creé" if creado else "Recargué"

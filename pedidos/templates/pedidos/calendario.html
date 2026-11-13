@@ -1,21 +1,32 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Calendario (diseno/calendario.html), T14. La rellena el carril A de la tanda 5.{% endcomment %}
+{% comment %}
+Calendario (diseno/calendario.html), T14. Muestra el mes de ?mes=AAAA-MM (si falta o no
+sirve, el de hoy) y, con ?dia=AAAA-MM-DD, solo las entregas de ese día en la lista.
+Las partes que cambian al tocar un día viven aparte, porque la vista las devuelve solas
+(pedidos/vistas/calendario.py):
+  _calendario_dias (la cuadrícula del mes) y _calendario_entregas (la lista de entregas).
+{% endcomment %}
 {% block pestana %}Calendario{% endblock %}
 {% block titulo %}Calendario{% endblock %}
-{% block apoyo %}{% endblock %}
-{% block acciones %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
+{% block apoyo %}<span class="encabezado__apoyo">{{ mes|mes_y_anio }}</span>{% endblock %}
+{% block acciones %}<a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a>{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
+<nav class="navegacion-mes" aria-label="Cambiar de mes"><a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a></nav>
 <div class="dos-columnas">
-<div class="columna-ancha columna"><section class="tarjeta tarjeta--lista" aria-labelledby="t-mes">
-<div class="tarjeta__cabeza"><h2 id="t-mes">Mes</h2></div>
-<p class="tarjeta__nota">Llega con T14.</p>
-</section></div>
-<div class="columna-angosta columna"><section class="tarjeta tarjeta--lista" aria-labelledby="t-entregas">
-<div class="tarjeta__cabeza"><h2 id="t-entregas">Entregas del mes</h2></div>
-<p class="tarjeta__nota">Llega con T14.</p>
-</section><section class="tarjeta tarjeta--lista" aria-labelledby="t-semana">
+<section class="tarjeta tarjeta--lista columna-ancha columna-ancha--calendario" aria-labelledby="t-mes">
+<h2 class="oculto" id="t-mes">{{ mes|mes_y_anio }}</h2>
+{# Sin JavaScript, cada día con entregas envía este formulario con su ?dia=. #}
+<form id="calendario-elegir-dia" action="{% url 'pedidos:calendario' %}" method="get"><input type="hidden" name="mes" value="{{ texto_mes }}"></form>
+{% include "pedidos/_calendario_dias.html" %}
+{# Cada cuadrito va con su palabra en un mismo .calendario__clave, para que no se separen al partirse la línea. #}
+<div class="calendario__leyenda"><span class="calendario__clave"><span class="etiqueta etiqueta--ambar" aria-hidden="true">&nbsp;</span> Por entregar</span><span class="calendario__clave"><span class="etiqueta etiqueta--rojo" aria-hidden="true">&nbsp;</span> Atrasado</span><span class="calendario__clave"><span class="etiqueta etiqueta--verde" aria-hidden="true">&nbsp;</span> Entregado</span></div>
+</section>
+<div class="columna-angosta columna-angosta--calendario columna">
+{% include "pedidos/_calendario_entregas.html" %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-semana">
 <div class="tarjeta__cabeza"><h2 id="t-semana">Semana más cargada</h2></div>
-<p class="tarjeta__nota">Llega con T14.</p>
-</section></div>
+<div class="tarjeta__cuerpo"><p class="texto-2">{{ frase_semana }}</p></div>
+</section>
+</div>
 </div>
 {% endblock %}

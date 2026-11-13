@@ -1,0 +1,6 @@
+{% comment %}
+Lo que responde el calendario al tocar un día (o "Ver todo el mes") con HTMX: la lista de
+entregas, que reemplaza la de la página, y la cuadrícula del mes con hx-swap-oob, para
+marcar el día elegido.
+{% endcomment %}{% include "pedidos/_calendario_entregas.html" %}
+{% include "pedidos/_calendario_dias.html" with oob=True %}

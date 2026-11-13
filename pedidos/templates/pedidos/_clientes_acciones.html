@@ -1,1 +1,6 @@
-{% comment %}La celda "Acción" de un cliente en la tabla. T04: "Editar" abre la ventana. T19 (tanda 5) agrega "Escribirle".{% endcomment %}<div class="botones"><a class="boton" href="{% url 'pedidos:cliente_editar' cliente.pk %}" hx-get="{% url 'pedidos:cliente_editar' cliente.pk %}" hx-target="#ventana" aria-label="Editar a {{ cliente.nombre }}">Editar</a></div>
+{% comment %}
+La celda "Acción" de un cliente en la tabla. T04: "Editar" abre la ventana. T19:
+"Escribirle" abre WhatsApp con el mensaje escrito (mensajes.texto_oferta) si el cliente
+tiene un número que sirve; si no, el mismo botón copia el mensaje. La vista deja el texto y
+el enlace en cliente.mensaje.
+{% endcomment %}<div class="botones botones--en-linea"><a class="boton" href="{% url 'pedidos:cliente_editar' cliente.pk %}" hx-get="{% url 'pedidos:cliente_editar' cliente.pk %}" hx-target="#ventana" aria-label="Editar a {{ cliente.nombre }}">Editar</a>{% if cliente.mensaje.enlace %}<a class="boton" href="{{ cliente.mensaje.enlace }}" target="_blank" rel="noopener" aria-label="Escribirle a {{ cliente.nombre }} por WhatsApp">Escribirle</a>{% elif cliente.mensaje %}<button type="button" class="boton" data-copiar="{{ cliente.mensaje.texto }}" title="Copia el mensaje para pegarlo en WhatsApp" aria-label="Escribirle a {{ cliente.nombre }} (copia el mensaje)">Escribirle</button>{% endif %}</div>

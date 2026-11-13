@@ -1,0 +1,17 @@
+{% comment %}
+Tarjeta "Costureras" de Mi taller (T20): las costureras del taller, cada una con su usuario
+y si puede entrar, y el formulario para agregar otra.
+
+La dibuja mi_taller.html y la devuelven, sola, las acciones de cuentas/mi_taller.py: con HTMX
+reemplaza a la tarjeta entera (id="costureras").
+- Cada costurera (_mi_taller_costurera.html) con "Cambiar nombre" y "Desactivar" (o
+  "Activar"). La que está cambiando de nombre (`editando`) trae el formulario en su fila
+  (_mi_taller_costurera_nombre.html).
+- Al final, "Agregar costurera" (_mi_taller_nueva.html).
+{% endcomment %}<section class="tarjeta tarjeta--lista columna-ancha" id="costureras" aria-labelledby="t-costureras">
+<div class="tarjeta__cabeza"><h2 id="t-costureras">Costureras</h2>{% if costureras %}<span class="tarjeta__aparte">{{ activas }} {% if activas == 1 %}activa{% else %}activas{% endif %}</span>{% endif %}</div>
+<p class="tarjeta__nota">Las personas que cosen contigo. Cada una entra con su usuario y su contraseña, y así puedes anotar quién hace cada pedido.</p>
+{% for costurera in costureras %}{% if costurera == editando %}{% include "cuentas/_mi_taller_costurera_nombre.html" %}{% else %}{% include "cuentas/_mi_taller_costurera.html" %}{% endif %}
+{% empty %}<p class="tarjeta__nota">Todavía no has agregado a nadie.</p>
+{% endfor %}{% include "cuentas/_mi_taller_nueva.html" with form=form_nueva %}
+</section>

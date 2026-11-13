@@ -1,0 +1,10 @@
+{% load piezas %}{% comment %}
+Las tres cifras de Telas (calculos.resumen_de_telas): cuántas hay, cuántos metros suman y
+cuáles se están acabando. "Se están acabando" va con borde y número en rojo cuando hay
+alguna, como en diseno/telas.html; si no hay ninguna, queda en negro.
+Al cambiar una tela vuelve con hx-swap-oob (id="telas-cifras").
+{% endcomment %}<section class="cifras" id="telas-cifras" aria-label="Resumen"{% if oob %} hx-swap-oob="true"{% endif %}>
+{% include "piezas/_cifra.html" with nombre="Telas" valor=resumen.cantidad apoyo="En inventario" %}
+{% include "piezas/_cifra.html" with nombre="Metros en total" valor=resumen.metros|metros apoyo="Suma de todas" %}
+{% if resumen.bajas %}{% include "piezas/_cifra.html" with nombre="Se están acabando" valor=resumen.bajas|length apoyo=acabandose ambar=True %}{% else %}{% include "piezas/_cifra.html" with nombre="Se están acabando" valor=0 apoyo="Ninguna por ahora" %}{% endif %}
+</section>

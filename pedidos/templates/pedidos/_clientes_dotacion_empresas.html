@@ -1,0 +1,12 @@
+{% extends "piezas/ventana.html" %}
+{% block cerrar %}Cerrar{% endblock %}
+{% comment %}
+Ventana del botón "Escribirles a los 2" del aviso de dotación (T19): cada cliente empresa
+con su botón. Con WhatsApp guardado abre el chat con el mensaje de dotación escrito
+(mensajes.texto_dotacion); sin WhatsApp, copia el mensaje. Como en la demo (vistaClientes).
+{% endcomment %}
+{% block titulo %}Escribirles por la dotación{% endblock %}
+{% block cuerpo %}<p>{{ aviso.titulo }}. Con WhatsApp guardado, el botón abre el chat con este mensaje escrito y tú lo envías; si no, lo copia.</p>
+<p class="texto-2">«{{ aviso.texto }}»</p>
+{% if aviso.empresas %}<div>{% for empresa in aviso.empresas %}{% include "pedidos/_clientes_dotacion_empresa.html" %}{% endfor %}</div>
+{% else %}<p class="texto-2">Todavía no tienes clientes de tipo Empresa.</p>{% endif %}{% endblock %}

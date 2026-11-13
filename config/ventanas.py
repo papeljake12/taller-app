@@ -9,9 +9,14 @@
 Si la petición viene de HTMX, devuelve solo el contenido de la ventana. Si no (el enlace se
 abrió sin JavaScript), devuelve una página completa con el mismo contenido en una tarjeta.
 Un formulario con errores se responde con status=422: HTMX lo dibuja igual.
+Para cerrar la ventana después de guardar, la respuesta lleva la cabecera
+CERRAR_VENTANA (static/js/app.js la escucha).
 """
 
 from django.shortcuts import render
+
+
+CERRAR_VENTANA = {"HX-Trigger": "cerrar-ventana"}
 
 
 def es_htmx(request):

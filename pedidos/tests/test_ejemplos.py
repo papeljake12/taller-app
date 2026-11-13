@@ -98,6 +98,8 @@ def test_avisa_si_una_costurera_de_ejemplo_es_de_otro_taller():
 
     with pytest.raises(CommandError, match="ya existe en otro taller"):
         call_command("cargar_ejemplos", taller="Otro taller")
+    # Si falla, no deja creado el taller a medias.
+    assert not Taller.objects.filter(nombre="Otro taller").exists()
 
 
 def test_fuera_de_desarrollo_no_corre_sin_forzar(settings):

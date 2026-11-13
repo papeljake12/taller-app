@@ -1,1 +1,9 @@
-{% comment %}Aviso de la próxima fecha de dotación (tarjeta oscura de diseno/clientes.html). Lo llena T19 en la tanda 5; en la tanda 3 queda vacío.{% endcomment %}
+{% comment %}
+Aviso de la próxima fecha de dotación (tarjeta oscura de diseno/clientes.html), T19. Los
+textos los arma la vista (pedidos/vistas/clientes.py, aviso_de_dotacion). El botón abre la
+ventana con los clientes empresa (_clientes_dotacion_empresas.html); sin JavaScript abre la
+misma lista como página. Sin clientes empresa no hay botón.
+{% endcomment %}<section class="tarjeta-oscura" aria-labelledby="t-dotacion">
+<div class="tarjeta-oscura__texto"><h2 class="tarjeta-oscura__titulo" id="t-dotacion">{{ aviso.titulo }}</h2><p class="tarjeta-oscura__apoyo">{{ aviso.apoyo }}</p></div>
+{% if aviso.boton %}<a class="boton boton--claro" href="{% url 'pedidos:clientes' %}?escribir=empresas" hx-get="{% url 'pedidos:clientes' %}?escribir=empresas" hx-target="#ventana">{{ aviso.boton }}</a>{% endif %}
+</section>
