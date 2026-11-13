@@ -59,7 +59,7 @@ def parte(html, id_):
 
 def filas(html):
     """Los clientes de "Qué hacer hoy", en el orden en que salen."""
-    return re.findall(r'<div class="fila" id="pendiente-\d+">\s*<div class="fila__texto">'
+    return re.findall(r'<div class="fila[^"]*" id="pendiente-\d+">\s*<div class="fila__texto">'
                       r'<div class="fila__titulo"><strong>([^<]+)</strong>', html)
 
 
@@ -117,7 +117,8 @@ def test_que_hacer_hoy_sale_como_en_el_diseno(sesion_duena, ejemplo):
         '<span class="texto-celular">Entregado</span>',
         '<span class="etiqueta etiqueta--ambar">Por confirmar</span>',
         'Vestido de grado a la medida. Cotizado en <span class="dinero">$ 380.000</span>.',
-        ">Preguntar si confirma</button>",
+        '<span class="texto-computador">Preguntar si confirma</span>'
+        '<span class="texto-celular">Preguntar</span></button>',
     ):
         assert texto in tarjeta, texto
 
@@ -131,7 +132,7 @@ def test_la_grafica_dice_lo_cobrado_en_el_mes(sesion_duena, ejemplo):
     ) in tarjeta
     assert "Barras de cobrado y gastado de junio a noviembre." in tarjeta
     assert "En noviembre: cobrado 4,46 millones y gastado 0,94 millones." in tarjeta
-    assert '<p class="nota">Valores en millones de pesos (M).</p>' in tarjeta
+    assert '<p class="nota">M = millones de pesos.</p>' in tarjeta
     assert "Valores de ejemplo" not in tarjeta
 
 
@@ -139,17 +140,21 @@ def test_quien_te_debe_sale_como_en_el_diseno(sesion_duena, ejemplo):
     tarjeta = parte(sesion_duena.get(PAGINA).text, "hoy-quien-debe")
 
     filas_ = re.findall(
-        r'<div class="fila-proporcion( texto-rojo)?"><a class="fila-proporcion__nombre" '
-        r'href="[^"]+">([^<]+)</a><strong class="dinero">([^<]+)</strong><span class="proporcion'
-        r'( proporcion--atrasado)?" style="width: (\d+)%">',
+        r'<div class="fila-proporcion"><a class="fila-proporcion__nombre( texto-rojo)?" '
+        r'href="[^"]+">([^<]+)</a><strong class="dinero( texto-rojo)?">([^<]+)</strong>'
+        r'<span class="proporcion( proporcion--atrasado)?" style="width: (\d+)%">',
         tarjeta,
     )
     assert filas_ == [
-        ("", "Colegio Nuevo Amanecer", "$ 3.300.000", "", "100"),
-        ("", "Restaurante El Fogón Costeño", "$ 1.260.000", "", "38"),
-        ("", "Grupo de danza Tambores del Río", "$ 750.000", "", "23"),
-        # Tiene un pedido atrasado: nombre, valor y barra en rojo.
-        (" texto-rojo", "Ferretería La Esquina", "$ 480.000", " proporcion--atrasado", "15"),
+        ("", "Colegio Nuevo Amanecer", "", "$ 3.300.000", "", "100"),
+        ("", "Restaurante El Fogón Costeño", "", "$ 1.260.000", "", "38"),
+        ("", "Grupo de danza Tambores del Río", "", "$ 750.000", "", "23"),
+        # Tiene un pedido atrasado: nombre, valor y barra en rojo. El rojo va en el nombre
+        # mismo, porque un enlace no toma el color de la fila.
+        (
+            " texto-rojo", "Ferretería La Esquina", " texto-rojo", "$ 480.000",
+            " proporcion--atrasado", "15",
+        ),
     ]
 
 
@@ -309,8 +314,16 @@ def test_preguntar_si_confirma_abre_el_chat_o_copia_el_mensaje(sesion_duena, tal
     tarjeta = parte(sesion_duena.get(PAGINA).text, "hoy-que-hacer")
 
     enlace = mensajes.enlace_whatsapp("3001234567", mensajes.texto_confirmar(con))
-    assert f'href="{enlace}" target="_blank" rel="noopener">Preguntar si confirma</a>' in tarjeta
+    # En celular el botón se acorta a "Preguntar", como en diseno/hoy-celular.html.
+    nombre = (
+        '<span class="texto-computador">Preguntar si confirma</span>'
+        '<span class="texto-celular">Preguntar</span>'
+    )
+    assert f'href="{enlace}" target="_blank" rel="noopener">{nombre}</a>' in tarjeta
     assert f'data-copiar="{mensajes.texto_confirmar(sin)}"' in tarjeta
+    assert f'title="Copia el mensaje para pegarlo en WhatsApp">{nombre}</button>' in tarjeta
+    # Y en celular queda al lado de la frase, no debajo.
+    assert tarjeta.count('<div class="fila fila--accion-al-lado" id="pendiente-') == 2
 
 
 def test_listo_y_pagado_solo_ofrece_entregar(sesion_duena, taller):
@@ -499,8 +512,10 @@ def test_la_grafica_suma_lo_cobrado_este_mes(sesion_duena, taller):
 @pytest.mark.parametrize(
     "cobrado, gastado, nota",
     [
-        (4_460_000, 940_000, "Valores en millones de pesos (M)."),
-        (0, 1_000_000, "Valores en millones de pesos (M)."),
+        (4_460_000, 940_000, "M = millones de pesos."),
+        (0, 1_000_000, "M = millones de pesos."),
+        # Con 1,5 M el eje dice "500 mil" y "1 M": la nota no puede decir que todo va en M.
+        (1_500_000, 0, "M = millones de pesos."),
         (500_000, 20_000, "Valores en miles de pesos."),
         (0, 0, "Todavía no hay cobros ni gastos en estos seis meses."),
     ],

@@ -198,10 +198,13 @@ def pendientes(taller, hoy):
 
 
 def nota_de_la_grafica(meses):
-    """En qué van los números del eje: millones o miles. Sin datos, lo dice."""
+    """Cómo leer los números del eje. Sin datos, lo dice.
+
+    Con un millón o más, el eje puede mezclar "500 mil" y "1 M": la nota solo explica la M.
+    """
     maximo = max((max(m.cobrado, m.gastado) for m in meses), default=0)
     if maximo >= 1_000_000:
-        return "Valores en millones de pesos (M)."
+        return "M = millones de pesos."
     if maximo > 0:
         return "Valores en miles de pesos."
     return "Todavía no hay cobros ni gastos en estos seis meses."
