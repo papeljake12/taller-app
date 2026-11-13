@@ -53,7 +53,7 @@ class Pantalla:
     nombre: str
     url: str
     referencia: str | None = None  # página de diseno/ en computador
-    referencia_celular: str | None = None  # página de diseno/ en celular, si existe
+    referencia_celular: str | None = None  # página de diseno/ en celular, si es otra
     menu: str | None = None  # "contraido" para el menú contraído
     sin_sesion: bool = False
     solo_computador: bool = False
@@ -62,8 +62,8 @@ class Pantalla:
 # Cada tanda agrega aquí sus pantallas.
 PANTALLAS = {
     1: [
-        Pantalla("entrar", "/entrar/", sin_sesion=True),
-        Pantalla("hoy", "/", "hoy.html", "hoy-celular.html"),
+        Pantalla("entrar", "/entrar/", "entrar.html", sin_sesion=True),
+        Pantalla("hoy", "/", "hoy.html"),
         Pantalla("hoy-menu-contraido", "/", "hoy-menu-contraido.html", menu="contraido",
                  solo_computador=True),
         Pantalla("piezas", "/piezas/"),
@@ -71,14 +71,14 @@ PANTALLAS = {
     2: [
         Pantalla("pedidos", "/pedidos/", "pedidos.html"),
         Pantalla("pedido", "/pedidos/{pedido}/", "pedido.html"),
-        Pantalla("nuevo-pedido", "/pedidos/nuevo/"),
+        Pantalla("nuevo-pedido", "/pedidos/nuevo/", "nuevo-pedido.html"),
         Pantalla("calendario", "/calendario/", "calendario.html"),
         Pantalla("clientes", "/clientes/", "clientes.html"),
         Pantalla("cotizador", "/cotizador/", "cotizador.html"),
         Pantalla("telas", "/telas/", "telas.html"),
         Pantalla("resumen", "/resumen/", "resumen.html"),
-        Pantalla("mi-taller", "/mi-taller/"),
-        Pantalla("tallas-publico", "/tallas/{token}/", sin_sesion=True),
+        Pantalla("mi-taller", "/mi-taller/", "mi-taller.html"),
+        Pantalla("tallas-publico", "/tallas/{token}/", "tallas-publico.html", sin_sesion=True),
     ],
     3: [
         Pantalla("pedidos-atrasados", "/pedidos/?filtro=atrasados"),
@@ -187,7 +187,7 @@ def cerrar_sesion(clave):
     Session.objects.filter(session_key=clave).delete()
 
 
-def capturar(navegador, url, archivo, formato, cookies, ancho, avisos=None):
+def capturar(navegador, url, archivo, formato, cookies, ancho, avisos=None, completa=False):
     contexto = navegador.new_context(device_scale_factor=1, **formato)
     if cookies:
         contexto.add_cookies(cookies)
@@ -207,6 +207,8 @@ def capturar(navegador, url, archivo, formato, cookies, ancho, avisos=None):
         if quieta["pagina"] > quieta["ventana"] + 1:
             problemas.append(f"la página se desplaza: mide {quieta['pagina']} px de alto en una "
                              f"ventana de {quieta['ventana']} px")
+        completa = True
+    if completa and not formato.get("is_mobile"):
         pagina.add_style_tag(content=HOJA_COMPLETA)
         pagina.wait_for_timeout(100)
     archivo.parent.mkdir(parents=True, exist_ok=True)
@@ -261,7 +263,7 @@ def main():
                     celular = formato.get("is_mobile", False)
                     if celular and pantalla.solo_computador:
                         continue
-                    referencia = pantalla.referencia_celular if celular else pantalla.referencia
+                    referencia = (pantalla.referencia_celular or pantalla.referencia) if celular                         else pantalla.referencia
                     formatos.append((nombre_formato, formato, referencia))
                 for nombre_formato, formato, referencia in formatos:
                     ancho = formato["viewport"]["width"]
@@ -277,7 +279,7 @@ def main():
                     if opciones.referencias and referencia:
                         destino = opciones.referencias / f"{pantalla.nombre}-{nombre_formato}-diseno.png"
                         capturar(navegador, (RAIZ / "diseno" / referencia).as_uri(), destino,
-                                 formato, [], ancho)
+                                 formato, [], ancho, completa=completo)
             navegador.close()
     finally:
         servidor.terminate()
