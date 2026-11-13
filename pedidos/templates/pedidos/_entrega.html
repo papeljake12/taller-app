@@ -1,4 +1,13 @@
-{% comment %}Tarjeta "Entrega" (T07). La rellena el carril B de la tanda 3.{% endcomment %}<section class="tarjeta tarjeta--lista" aria-labelledby="t-entrega">
+{% comment %}
+Tarjeta "Entrega" (T07): la fecha de entrega y quién lo está haciendo. Cada campo se guarda
+solo al cambiar (HTMX, a pedidos:entrega o pedidos:encargada) y vuelve esta tarjeta con la
+frase al día. Sin JavaScript aparecen los botones para guardar.
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="pedido-entrega" aria-labelledby="t-entrega"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-entrega">Entrega</h2></div>
-<p class="tarjeta__nota">Llega con T07.</p>
+<form class="tarjeta__cuerpo" method="post" action="{% url 'pedidos:entrega' pedido.pk %}" hx-post="{% url 'pedidos:entrega' pedido.pk %}" hx-target="#pedido-entrega" hx-swap="outerHTML" novalidate>
+{% csrf_token %}
+<div class="campos">{% include "piezas/_campo.html" with campo=form_entrega.fecha_entrega %}{% include "piezas/_campo.html" with campo=form_encargada.encargada %}</div>
+<noscript><div class="botones"><button type="submit" class="boton">Guardar la fecha</button><button type="submit" class="boton" formaction="{% url 'pedidos:encargada' pedido.pk %}">Guardar quién lo hace</button></div></noscript>
+<div class="{% if entrega_atrasada %}texto-rojo{% else %}texto-2{% endif %}">{{ frase_entrega }}</div>
+</form>
 </section>

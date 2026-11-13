@@ -1,1 +1,4 @@
-{% comment %}Debajo del nombre del cliente: la etiqueta de la etapa y el detalle (T07). La rellena el carril B de la tanda 3.{% endcomment %}<span class="encabezado__apoyo" id="pedido-apoyo">{{ pedido.detalle }}</span>
+{% comment %}
+Debajo del nombre del cliente: la etiqueta de la etapa y el detalle (T07).
+Cuando cambia la etapa, la vista la manda otra vez con oob=True (hx-swap-oob).
+{% endcomment %}<span class="encabezado__apoyo" id="pedido-apoyo"{% if oob %} hx-swap-oob="true"{% endif %}>{% include "piezas/_etiqueta.html" with texto=etiqueta.texto tono=etiqueta.tono %} &nbsp;{{ pedido.detalle }}</span>
