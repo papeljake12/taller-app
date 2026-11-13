@@ -1,4 +1,5 @@
 {% comment %}
 Botón "Nuevo pedido": abre la ventana desde cualquier pantalla (sin JavaScript, abre la página).
   {% include "piezas/_boton_nuevo_pedido.html" %}
-{% endcomment %}<a class="boton boton--principal" href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}" hx-target="#ventana">Nuevo pedido</a>
+Solo lo ve la dueña: la costurera no crea pedidos (T21, docs/04-permisos.md).
+{% endcomment %}{% if es_duena %}<a class="boton boton--principal" href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}" hx-target="#ventana">Nuevo pedido</a>{% endif %}

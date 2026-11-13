@@ -1,6 +1,7 @@
 """Mi taller (T20): el nombre, el teléfono y el logo del taller, y las costureras.
 
-Solo la usa la dueña (docs/04-permisos.md; el permiso se aplica con T21).
+Solo la usa la dueña (docs/04-permisos.md, T21): la costurera recibe 403 en todas sus
+direcciones; el número de una usuaria de otro taller, 404.
 
 - "Tu taller" (cuentas/_mi_taller_taller.html): guardar devuelve la tarjeta y, con
   hx-swap-oob, el nombre del taller en el menú y en la pestaña del navegador.
@@ -34,6 +35,7 @@ from cuentas.formularios_mi_taller import (
     enfocar,
 )
 from cuentas.models import Taller, Usuario
+from cuentas.permisos import exigir_duena, solo_duena
 
 # El cuadro en el que se muestra el logo en la tarjeta (en px). El logo se achica para
 # caber sin deformarse.
@@ -147,6 +149,7 @@ def _pagina(request, status=200, **contexto):
 # --- Tu taller ---------------------------------------------------------------------------------
 
 
+@solo_duena
 @require_http_methods(["GET", "POST"])
 def mi_taller(request):
     """La pantalla. Con POST guarda la tarjeta "Tu taller" (nombre, teléfono y logo)."""
@@ -179,6 +182,7 @@ def _tarjeta_costureras(request, status=200, **extra):
                   contexto_costureras(request, **extra), status=status)
 
 
+@solo_duena
 @require_POST
 def costurera_nueva(request):
     """Agregar una costurera: entra con su usuario y su contraseña desde ese momento."""
@@ -215,6 +219,7 @@ def costurera_editar(request, pk):
     siguen ahí, y se puede volver a activar cuando se quiera.
     """
     costurera = obtener_o_404(request, _costureras(request), pk=pk)
+    exigir_duena(request)
     if request.method == "GET":
         if "cancelar" in request.GET:
             if _con_tarjeta(request):

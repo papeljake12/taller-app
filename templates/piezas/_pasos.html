@@ -6,6 +6,8 @@ punto y los que faltan en blanco.
 y valor (lo que se envía al tocarla). Cada paso es un botón de envío (name="estado"): dentro
 de un formulario guarda la etapa, también sin JavaScript; fuera de uno no hace nada.
 `etiqueta_grupo` (opcional) nombra el grupo para los lectores de pantalla.
+Con `solo_ver=True` los pasos se ven igual pero no se pueden tocar (disabled): así los ve una
+costurera que no es la encargada del pedido (T21).
 {% endcomment %}<div class="pasos"{% if etiqueta_grupo %} role="group" aria-label="{{ etiqueta_grupo }}"{% endif %}>
-{% for paso in pasos %}<button type="submit" class="paso paso--{{ paso.estado }}" name="estado" value="{{ paso.valor }}"{% if paso.estado == "actual" %} aria-current="step"{% endif %}><span class="paso__circulo">{% if paso.estado == "hecho" %}{% icono "visto" 16 %}{% endif %}</span>{{ paso.nombre }}</button>
+{% for paso in pasos %}<button type="submit" class="paso paso--{{ paso.estado }}" name="estado" value="{{ paso.valor }}"{% if solo_ver %} disabled{% endif %}{% if paso.estado == "actual" %} aria-current="step"{% endif %}><span class="paso__circulo">{% if paso.estado == "hecho" %}{% icono "visto" 16 %}{% endif %}</span>{{ paso.nombre }}</button>
 {% endfor %}</div>

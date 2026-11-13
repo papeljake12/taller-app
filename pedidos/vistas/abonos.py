@@ -6,6 +6,10 @@ si alguno no es de ahí, responde 404 y no cambia nada.
 Con HTMX, cada acción devuelve solo la tarjeta Pagos (pedidos/_pagos.html), que reemplaza
 a la que está en la página. Sin JavaScript, los formularios hacen un envío normal y vuelven
 al pedido.
+
+Permisos (T21, docs/04-permisos.md): registrar y quitar abonos y descargar recibos es solo de
+la dueña. Primero se busca el pedido en el taller (el de otro responde 404) y después se
+revisa el rol (la costurera recibe 403, aunque envíe el formulario a mano).
 """
 
 from dataclasses import dataclass
@@ -18,6 +22,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import obtener_o_404
+from cuentas.permisos import exigir_duena
 from pedidos import calculos, mensajes
 from pedidos.formularios.abonos import FormularioAbono
 from pedidos.models import Abono, Pedido
@@ -61,9 +66,14 @@ def contexto_pagos(request, pedido, form=None, por_quitar=None):
 
 
 def _pedido(request, pk):
-    """El pedido del taller, con sus cuentas (abonado y saldo) en la misma consulta."""
+    """El pedido del taller, con sus cuentas (abonado y saldo) en la misma consulta.
+
+    Si es de otro taller: 404. Si es del suyo pero no es la dueña: 403 (T21).
+    """
     consulta = calculos.con_cuentas(Pedido.objects.select_related("cliente", "taller"))
-    return obtener_o_404(request, consulta, pk=pk)
+    pedido = obtener_o_404(request, consulta, pk=pk)
+    exigir_duena(request)
+    return pedido
 
 
 def _abono(request, pedido, pk):

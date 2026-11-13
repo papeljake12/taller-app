@@ -10,6 +10,12 @@ otras partes que dependen de ella: las cifras, "Quién te debe", "Pedidos por et
 contador de atrasados del menú. Sin JavaScript, vuelven a Hoy.
 
 "Trabajos del taller" (_trabajos.html) es de T13.
+
+Permisos (T21, docs/04-permisos.md): la costurera ve las cifras de producción, entregas y
+atrasados, pero no "Por cobrar", ni "Cobrado y gastado", ni "Quién te debe". En "Qué hacer
+hoy" no ve valores ni "Cobrar el saldo", y solo marca como listo o entregado los pedidos de
+los que es la encargada (lo mismo que en el pedido por dentro). Esas partes ni se calculan
+para ella: así no pueden aparecer en ninguna respuesta.
 """
 
 from dataclasses import dataclass, replace
@@ -27,6 +33,7 @@ from config.menu import construir_menu
 from config.piezas import pesos
 from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
+from cuentas.permisos import exigir_mover_etapa, puede_mover_etapa, puede_ver_plata
 from pedidos import calculos, fotos, mensajes
 from pedidos.calculos import Etiqueta
 from pedidos.models import Pedido
@@ -43,6 +50,8 @@ ACCIONES = {
 
 # Las partes que cambian, además de "Qué hacer hoy", cuando se hace una acción.
 CAMBIAN_CON_UNA_ACCION = ("cifras", "quien_debe", "etapas", "hoy_menu")
+# Las que tienen plata: la costurera no las recibe (T21).
+PARTES_CON_PLATA = ("quien_debe",)
 
 
 # --- Las cuatro cifras ------------------------------------------------------------------------
@@ -78,15 +87,18 @@ def apoyo_mas_cercana(dias):
     return f"La más cercana: en {dias} días"
 
 
-def cifras(taller, hoy):
-    """Las cuatro cifras de arriba, en el orden del computador, cada una con su filtro."""
+def cifras(taller, hoy, con_plata=True):
+    """Las cuatro cifras de arriba, en el orden del computador, cada una con su filtro.
+
+    Sin plata (la costurera), son tres: sin "Por cobrar".
+    """
     datos = calculos.cifras_de_hoy(taller, hoy)
     lista = reverse("pedidos:lista")
 
     def filtro(clave):
         return f"{lista}?{urlencode({'filtro': clave})}"
 
-    return [
+    produccion = [
         Cifra(
             "En producción",
             datos["en_produccion"],
@@ -113,6 +125,11 @@ def cifras(taller, hoy):
             alerta=datos["atrasados"] > 0,
             orden_celular=2,
         ),
+    ]
+    if not con_plata:
+        return produccion
+    return [
+        *produccion,
         Cifra(
             "Por cobrar",
             pesos(datos["por_cobrar"]),
@@ -166,16 +183,23 @@ def _mensaje(pedido, texto):
     return {"texto": texto, "enlace": mensajes.enlace_whatsapp(pedido.cliente.whatsapp, texto)}
 
 
-def fila_pendiente(pendiente, hoy):
+def fila_pendiente(pendiente, hoy, request=None):
+    """La fila y su acción. Con el `request` de una costurera (T21): sin saldo; "Marcar como
+    listo" y "Marcar como entregado" solo si es la encargada; y en un cotizado, "Ver el
+    pedido" en vez de "Preguntar si confirma", porque ese mensaje dice el precio."""
     pedido = pendiente.pedido
+    con_plata = request is None or puede_ver_plata(request)
+    puede_mover = request is None or puede_mover_etapa(request, pedido)
     if pedido.estado == Estado.LISTO:
         # Un listo atrasado sigue en el grupo de los atrasados, pero lo que sigue es entregarlo.
         siguiente, mensaje = "entregar", None
     elif pendiente.motivo == "atrasado":
         siguiente, mensaje = "listo", _mensaje(pedido, mensajes.texto_atraso(pedido))
-    elif pendiente.motivo == "cotizado":
+    elif pendiente.motivo == "cotizado" and con_plata:
         siguiente, mensaje = "confirmar", _mensaje(pedido, mensajes.texto_confirmar(pedido))
     else:
+        siguiente, mensaje = "ver", None
+    if siguiente in ("entregar", "listo") and not puede_mover:
         siguiente, mensaje = "ver", None
     return FilaPendiente(
         pedido=pedido,
@@ -184,14 +208,14 @@ def fila_pendiente(pendiente, hoy):
         # El detalle termina en punto en la frase: si ya trae uno, no se repite.
         detalle=pedido.detalle.strip().rstrip("."),
         etapa=frase_de_etapa(pedido),
-        saldo=calculos.saldo(pedido),
+        saldo=calculos.saldo(pedido) if con_plata else 0,
         siguiente=siguiente,
         mensaje=mensaje,
     )
 
 
-def pendientes(taller, hoy):
-    return [fila_pendiente(p, hoy) for p in calculos.que_hacer_hoy(taller, hoy)]
+def pendientes(taller, hoy, request=None):
+    return [fila_pendiente(p, hoy, request) for p in calculos.que_hacer_hoy(taller, hoy)]
 
 
 # --- Cobrado y gastado ------------------------------------------------------------------------
@@ -235,22 +259,27 @@ def deudores(taller, hoy):
     ]
 
 
-def aviso_de_etapa(etapa):
+def aviso_de_etapa(etapa, con_plata=True):
     """La etiqueta debajo del número de una etapa: "1 atrasado" en rojo; en Entregado,
     "Pagado" en verde si ninguno debe, o cuántos deben en rojo. None si no hay nada que decir.
+    Sin plata (la costurera), Entregado no dice si deben.
     """
     if etapa.atrasados:
         return Etiqueta(_plural(etapa.atrasados, "atrasado", "atrasados"), "rojo")
-    if etapa.estado == Estado.ENTREGADO and etapa.cantidad:
+    if etapa.estado == Estado.ENTREGADO and etapa.cantidad and con_plata:
         if etapa.con_saldo:
             return Etiqueta(f"{etapa.con_saldo} con saldo", "rojo")
         return Etiqueta("Pagado", "verde")
     return None
 
 
-def etapas(taller, hoy):
+def etapas(taller, hoy, con_plata=True):
     return [
-        {"nombre": etapa.nombre, "cantidad": etapa.cantidad, "aviso": aviso_de_etapa(etapa)}
+        {
+            "nombre": etapa.nombre,
+            "cantidad": etapa.cantidad,
+            "aviso": aviso_de_etapa(etapa, con_plata),
+        }
         for etapa in calculos.pedidos_por_etapa(taller, hoy)
     ]
 
@@ -259,17 +288,19 @@ def etapas(taller, hoy):
 
 
 def contexto_de_hoy(request, hoy):
-    """Todo lo que necesitan las tarjetas de Hoy."""
+    """Todo lo que necesitan las tarjetas de Hoy. Sin plata para la costurera (T21)."""
     taller = request.taller
+    con_plata = puede_ver_plata(request)
     contexto = {
         "hoy": hoy,
-        "cifras": cifras(taller, hoy),
-        "pendientes": pendientes(taller, hoy),
-        "deudores": deudores(taller, hoy),
-        "etapas": etapas(taller, hoy),
+        "cifras": cifras(taller, hoy, con_plata),
+        "pendientes": pendientes(taller, hoy, request),
+        "etapas": etapas(taller, hoy, con_plata),
         "trabajos": fotos.trabajos(request),  # T13
     }
-    contexto.update(grafica(taller, hoy))
+    if con_plata:
+        contexto["deudores"] = deudores(taller, hoy)
+        contexto.update(grafica(taller, hoy))
     return contexto
 
 
@@ -288,10 +319,15 @@ def hoy(request):
 
 @require_POST
 def accion(request, pk, accion):
-    """Marcar como listo o como entregado desde "Qué hacer hoy"."""
+    """Marcar como listo o como entregado desde "Qué hacer hoy".
+
+    Como cambiar la etapa en el pedido: la dueña siempre, la costurera solo si es la
+    encargada (si no, 403). Primero se busca el pedido en el taller: el de otro, 404.
+    """
     if accion not in ACCIONES:
         raise Http404("Esa acción no existe.")
     pedido = obtener_o_404(request, Pedido, pk=pk)
+    exigir_mover_etapa(request, pedido)
     nueva, desde = ACCIONES[accion]
     if pedido.estado in desde:
         pedido.estado = nueva
@@ -302,5 +338,7 @@ def accion(request, pk, accion):
     contexto["menu_lateral"] = menu_de_hoy(request)
     html = render_to_string("pedidos/_que_hacer.html", contexto, request=request)
     for parte in CAMBIAN_CON_UNA_ACCION:
+        if parte in PARTES_CON_PLATA and not puede_ver_plata(request):
+            continue
         html += render_to_string(f"pedidos/_{parte}.html", {**contexto, "oob": True}, request)
     return HttpResponse(html)

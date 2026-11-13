@@ -12,6 +12,7 @@ Las acciones la devuelven entera, en el lugar de la que había (id="telas").
 {% endfor %}</tbody>
 </table>
 </div>
-<p class="tarjeta__nota">Toca el nombre de una tela para ver su historial o quitarla.</p>
-{% else %}<p class="tarjeta__nota">Todavía no has anotado ninguna tela. Anota la primera con «Nueva tela» y cuántos metros te quedan.</p>
+<p class="tarjeta__nota">Toca el nombre de una tela para ver su historial{% if es_duena %} o quitarla{% endif %}.</p>
+{% elif es_duena %}<p class="tarjeta__nota">Todavía no has anotado ninguna tela. Anota la primera con «Nueva tela» y cuántos metros te quedan.</p>
+{% else %}<p class="tarjeta__nota">Todavía no hay telas anotadas. Cuando la dueña del taller anote una, aparecerá aquí.</p>
 {% endif %}</section>

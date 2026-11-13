@@ -2,4 +2,5 @@
 Botón "Descargar para Excel": el mismo archivo desde Hoy, Pedidos y Resumen (T18).
   {% include "piezas/_boton_excel.html" %}
 Con principal=True va negro (en Resumen es el botón principal, como en diseno/resumen.html).
-{% endcomment %}<a class="boton{% if principal %} boton--principal{% endif %}" href="{% url 'finanzas:excel' %}">Descargar para Excel</a>
+Solo lo ve la dueña: el archivo trae la plata del taller (T21, docs/04-permisos.md).
+{% endcomment %}{% if es_duena %}<a class="boton{% if principal %} boton--principal{% endif %}" href="{% url 'finanzas:excel' %}">Descargar para Excel</a>{% endif %}

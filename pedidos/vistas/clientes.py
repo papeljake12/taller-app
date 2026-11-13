@@ -5,6 +5,9 @@ ventana para escribirles a los clientes empresa (?escribir=empresas), y el botó
 "Escribirle" de cada cliente (_clientes_acciones.html). Los textos salen de
 pedidos/mensajes.py. Con WhatsApp guardado, el botón abre el chat con el mensaje escrito;
 sin WhatsApp, copia el mensaje. Nada se envía solo.
+
+Permisos (T21, docs/04-permisos.md): Clientes es solo de la dueña. La costurera recibe 403
+en la lista, en "Nuevo cliente" y al editar uno de su taller (el de otro taller, 404).
 """
 
 from dataclasses import dataclass
@@ -19,6 +22,7 @@ from django.utils import timezone
 from config.piezas import dia_y_mes
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import obtener_o_404
+from cuentas.permisos import exigir_duena, solo_duena
 from pedidos import calculos, mensajes
 from pedidos.formularios.clientes import MENSAJE_NOMBRE_REPETIDO, ClienteForm
 from pedidos.models import Cliente
@@ -106,6 +110,7 @@ def aviso_de_dotacion(taller, hoy=None):
     )
 
 
+@solo_duena
 def clientes(request):
     hoy = timezone.localdate()
     if request.GET.get("escribir") == "empresas":
@@ -168,6 +173,7 @@ def _formulario(request, form, cliente=None):
     return responder_ventana(request, "pedidos/_cliente_form.html", contexto, status=status)
 
 
+@solo_duena
 def nuevo(request):
     datos = request.POST if request.method == "POST" else None
     return _formulario(request, ClienteForm(datos, taller=request.taller))
@@ -175,6 +181,7 @@ def nuevo(request):
 
 def editar(request, pk):
     cliente = obtener_o_404(request, Cliente, pk=pk)
+    exigir_duena(request)
     datos = request.POST if request.method == "POST" else None
     form = ClienteForm(datos, instance=cliente, taller=request.taller)
     return _formulario(request, form, cliente)
