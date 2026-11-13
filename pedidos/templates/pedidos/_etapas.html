@@ -1,11 +1,8 @@
 {% comment %}
-Tarjeta "Pedidos por etapa" (T06): cuántos pedidos hay en cada una de las seis etapas
-(calculos.pedidos_por_etapa). Debajo, en rojo, cuántos van atrasados. En Entregado, "Pagado"
-en verde si ninguno debe, o en rojo cuántos deben. `etapas` sale de pedidos/vistas/hoy.py.
-Con `oob`, HTMX la cambia después de una acción de "Qué hacer hoy".
-{% endcomment %}<section class="tarjeta tarjeta--lista" id="hoy-etapas" aria-labelledby="t-etapas"{% if oob %} hx-swap-oob="true"{% endif %}>
-<div class="tarjeta__cabeza"><h2 id="t-etapas">Pedidos por etapa</h2></div>
-<div class="etapas">
-{% for etapa in etapas %}<div class="etapas__etapa"><span class="etapas__nombre">{{ etapa.nombre }}</span><strong class="etapas__cantidad">{{ etapa.cantidad }}</strong>{% if etapa.aviso %}{% include "piezas/_etiqueta.html" with texto=etapa.aviso.texto tono=etapa.aviso.tono %}{% endif %}</div>
-{% endfor %}</div>
-</section>
+"Pedidos por etapa": cuántos pedidos hay en cada una de las seis etapas
+(calculos.pedidos_por_etapa), sin título visible. Junto al número, en rojo, cuántos van
+atrasados y, en Entregado, en naranja, cuántos todavía deben (solo la dueña). Nada en verde.
+`etapas` sale de pedidos/vistas/hoy.py. Con `oob`, HTMX la cambia después de una acción.
+{% endcomment %}<section class="etapas" id="hoy-etapas" aria-label="Pedidos por etapa"{% if oob %} hx-swap-oob="true"{% endif %}>
+{% for etapa in etapas %}<a class="etapas__etapa" href="{% url 'pedidos:lista' %}"><span class="etapas__nombre">{{ etapa.nombre }}</span><span class="etapas__cantidad">{{ etapa.cantidad }}{% if etapa.aviso %} {% include "piezas/_etiqueta.html" with insignia=etapa.aviso %}{% endif %}</span></a>
+{% endfor %}</section>

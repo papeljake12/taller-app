@@ -1,0 +1,5 @@
+{% comment %}
+El estado de arriba a la izquierda: "N pedidos atrasados" con su punto rojo, que abre Pedidos
+con ese filtro. Solo en computador y solo si hay atrasados; sin ninguno, queda el sitio vacío
+para que HTMX lo llene si después aparece uno. Con `oob`, HTMX lo cambia después de una acción.
+{% endcomment %}<div id="hoy-estado" class="solo-computador"{% if oob %} hx-swap-oob="true"{% endif %}>{% if atrasados %}<a class="estado" href="{% url 'pedidos:lista' %}?filtro=atrasados"><span class="estado__punto"></span>{{ frase_atrasados }}</a>{% endif %}</div>

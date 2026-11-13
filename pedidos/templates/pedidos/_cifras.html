@@ -1,9 +1,8 @@
 {% comment %}
-Las cuatro cifras de Hoy (T06): en producción, entregas en 7 días, atrasados y por cobrar.
-Cada una abre Pedidos con su filtro. Atrasados va en rojo solo si hay alguno. En celular van
-2 por 2 en el orden de diseno/hoy-celular.html (clase orden-celular-N) y sin la línea de
-apoyo. `cifras` sale de pedidos/vistas/hoy.py. Con `oob`, HTMX la cambia después de una
-acción de "Qué hacer hoy".
-{% endcomment %}<section class="cifras" id="hoy-cifras" aria-label="Cifras del día"{% if oob %} hx-swap-oob="true"{% endif %}>
-{% for cifra in cifras %}{% include "piezas/_cifra.html" with nombre=cifra.nombre valor=cifra.valor apoyo=cifra.apoyo url=cifra.url alerta=cifra.alerta clase=cifra.clase %}
+La tarjeta de cifras de Hoy ("Tu mes"): la dueña ve Cobrado, Gastado, Por cobrar y En
+producción; la costurera, tres cifras sin plata. Cada una abre la pantalla de donde sale y
+dice de dónde sale al pasar el mouse (`explica`). Atrasados va en rojo solo si hay. `cifras`
+sale de pedidos/vistas/hoy.py. Con `oob`, HTMX la cambia después de una acción de las tarjetas.
+{% endcomment %}<section class="cifras" id="hoy-cifras" aria-label="{{ titulo_cifras }}"{% if oob %} hx-swap-oob="true"{% endif %}>
+{% for cifra in cifras %}{% include "piezas/_cifra.html" with nombre=cifra.nombre valor=cifra.valor explica=cifra.explica url=cifra.url alerta=cifra.alerta %}
 {% endfor %}</section>

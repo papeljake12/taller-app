@@ -1,4 +1,4 @@
 {% comment %}
-La cuenta de pendientes en la cabeza de "Qué hacer hoy" ("3 pendientes", "Sin pendientes").
-Con `oob`, HTMX la cambia donde está después de una acción de "Qué hacer hoy".
-{% endcomment %}<span class="tarjeta__aparte" id="hoy-pendientes"{% if oob %} hx-swap-oob="true"{% endif %}>{% if pendientes %}{{ pendientes|length }} pendiente{{ pendientes|length|pluralize }}{% else %}Sin pendientes{% endif %}</span>
+La frase de debajo del saludo, solo en celular: "Tienes 3 cosas pendientes hoy". Con `oob`,
+HTMX la cambia donde está después de una acción de las tarjetas.
+{% endcomment %}<p class="bienvenida__apoyo" id="hoy-pendientes"{% if oob %} hx-swap-oob="true"{% endif %}>{{ frase_pendientes }}</p>
