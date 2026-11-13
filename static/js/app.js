@@ -287,7 +287,18 @@
   document.body.addEventListener("cerrar-ventana", cerrarVentana);
 
   document.addEventListener("close", function (evento) {
-    if (evento.target === ventana()) evento.target.replaceChildren();
+    const dialogo = ventana();
+    if (evento.target !== dialogo) return;
+    // Al cerrarse con transición, HTMX cambió la página mientras la ventana seguía abierta (lo
+    // de atrás no se podía enfocar) y el botón que la abrió puede ya no estar. Entonces el
+    // cursor va al que la respuesta marcó con autofocus (Telas: "Entró" o "Usé"), para que
+    // quien usa el teclado no pierda su lugar.
+    const activo = document.activeElement;
+    if (!activo || activo === document.body || !activo.isConnected || dialogo.contains(activo)) {
+      const marcado = document.querySelector("#contenido [autofocus]");
+      if (marcado) marcado.focus();
+    }
+    dialogo.replaceChildren();
   }, true);
 
   /* 6. Botones "Copiar" ---------------------------------------------------- */
@@ -315,8 +326,8 @@
       // "Copiado" es más corto: el botón guarda su ancho para que los de al lado no se muevan.
       boton.style.minWidth = boton.offsetWidth + "px";
       boton.textContent = "Copiado";
-      // Los lectores de pantalla oyen qué sigue (el texto de la demo).
-      avisar("Copiado. Ya lo puedes pegar en WhatsApp.");
+      // El aviso corto de la demo, que también oyen los lectores de pantalla (sección 12).
+      mostrarAviso("Copiado. Ya lo puedes pegar en WhatsApp.");
       window.setTimeout(function () {
         boton.innerHTML = boton.dataset.htmlOriginal;
         boton.style.minWidth = "";
@@ -483,6 +494,7 @@
   let idsAntes = null;    // ids que había antes del cambio
   let zonasNuevas = [];   // zonas cuyo contenido cambia entero (sin nada que siga)
   let saliendo = [];      // animaciones de lo que se va
+  let posicionesAntes = new Map();  // dónde estaban las filas de tabla vecinas de una que se va
 
   function seVe(elemento) {
     return elemento.isConnected && elemento.getClientRects().length > 0;
@@ -572,6 +584,7 @@
     if (window.htmx) window.htmx.config.defaultSwapDelay = 0;
     idsAntes = null;
     zonasNuevas = [];
+    posicionesAntes = new Map();
     if (!detalle.shouldSwap || !hayMovimiento()) return;
     const plantilla = document.createElement("template");
     plantilla.innerHTML = typeof detalle.serverResponse === "string" ? detalle.serverResponse : "";
@@ -608,6 +621,17 @@
         ? cerrarBloque(elemento, duracion) : desvanecer(elemento, duracion);
       return { elemento: elemento, animacion: animacion };
     });
+    // Una fila de tabla no se puede achicar: se desvanece y, después del cambio, las filas de
+    // abajo suben suave a ocupar su lugar (se anotan dónde estaban).
+    posicionesAntes = new Map();
+    seVan.forEach(function (elemento) {
+      if (elemento.tagName !== "TR" || !elemento.parentElement) return;
+      Array.from(elemento.parentElement.children).forEach(function (fila) {
+        if (fila.id && seVan.indexOf(fila) === -1) {
+          posicionesAntes.set(fila.id, fila.getBoundingClientRect().top);
+        }
+      });
+    });
     // HTMX lee la espera justo después de este aviso; enseguida vuelve a 0 para los demás.
     if (window.htmx) {
       window.htmx.config.defaultSwapDelay = duracion;
@@ -624,6 +648,18 @@
       }
     });
     saliendo = [];
+    // Las filas de tabla que quedaron suben suave desde donde estaban.
+    const posiciones = posicionesAntes;
+    posicionesAntes = new Map();
+    posiciones.forEach(function (arriba, id) {
+      const fila = document.getElementById(id);
+      if (!fila) return;
+      const distancia = arriba - fila.getBoundingClientRect().top;
+      if (Math.abs(distancia) < 1) return;
+      fila.animate([{ transform: "translateY(" + distancia + "px)" }, { transform: "none" }], {
+        duration: milisegundos("--duracion"), easing: curva("--curva"),
+      });
+    });
     if (!idsAntes) return;
     const antes = idsAntes;
     const zonas = zonasNuevas;
