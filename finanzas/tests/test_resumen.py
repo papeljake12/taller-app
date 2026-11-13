@@ -252,7 +252,36 @@ def test_un_mes_sin_gastos_lo_dice(sesion_duena, dos_meses):
     gastos = tarjeta(sesion_duena.get(url("2026-09")).text, "t-gastos")
 
     assert "Gastos de septiembre" in gastos
-    assert "No hay gastos anotados en este mes." in gastos
+    assert '<p class="tarjeta__nota" id="gastos-vacio">No hay gastos anotados en este mes.</p>' in gastos
+
+
+def test_pantalla_fija_la_lista_de_gastos_se_desplaza_en_su_tarjeta(sesion_duena, dos_meses, taller):
+    """Ajuste "pantalla fija": la fila de la gráfica y los gastos llena el alto que queda y la
+    lista de gastos tiene su propia caja, que se desplaza por dentro y nunca se reemplaza (las
+    acciones cambian solo lo de adentro). Cada gasto lleva su id."""
+    html = sesion_duena.get(url("2026-11")).text
+    gastos = tarjeta(html, "t-gastos")
+
+    assert '<div class="dos-columnas llenar resumen__fila-gastos">' in html
+    assert '<div class="dos-columnas resumen__fila-barras">' in html
+    assert gastos.startswith(
+        '<section class="tarjeta tarjeta--lista columna-angosta" id="gastos" aria-labelledby="t-gastos">'
+    )
+    assert '<div class="tarjeta__cabeza" id="gastos-cabeza"><h2 id="t-gastos">' in gastos
+    assert 'hx-swap-oob' not in gastos  # en la página entera la cabeza va en su lugar
+    assert '<div class="desplazable" id="gastos-lista">' in gastos
+    assert 'id="gastos-registrar"' in gastos
+    assert 'hx-target="#gastos-lista" hx-swap="innerHTML scroll:#gastos-lista:bottom"' in gastos
+    for gasto in taller.gasto_set.filter(fecha__month=11):
+        assert f'<div class="fila fila--compacta" id="gasto-{gasto.pk}">' in gastos
+        assert f'id="gasto-{gasto.pk}-quitar"' in gastos
+
+
+def test_la_grafica_va_baja_en_computador_y_la_de_siempre_en_celular(sesion_duena, dos_meses):
+    grafica = tarjeta(sesion_duena.get(url("2026-11")).text, "t-grafica")
+
+    assert re.search(r'<svg class="grafica grafica--computador"[^>]*viewBox="0 0 600 160"', grafica)
+    assert re.search(r'<svg class="grafica grafica--celular"[^>]*viewBox="0 0 600 200"', grafica)
 
 
 # --- Ventas por tipo y quién tiene qué ----------------------------------------------------

@@ -3089,6 +3089,56 @@ details > summary.fila::after {
 
 /* --- Resumen (inicio) --- */
 
+/* Resumen (finanzas/resumen.html). En computador, la fila de la gráfica y los gastos toma el
+   alto que queda (.llenar) y la lista de gastos se desplaza por dentro de su tarjeta
+   (#gastos-lista, .desplazable); las cifras, la gráfica y la fila de abajo quedan quietas. */
+
+/* Sin gastos, la nota va pegada a la cabeza, como antes de que la lista tuviera su caja
+   (#gastos-lista): así queda igual también en celular. */
+#gastos-lista > .tarjeta__nota:first-child {
+  padding-top: 0;
+}
+
+@media (min-width: 768px) {
+  /* La fila nunca es más baja que la gráfica: en una ventana muy baja se desplaza la hoja,
+     como en las demás pantallas, en vez de cortar la gráfica. La lista de gastos no cuenta
+     para ese mínimo: ella se desplaza por dentro. */
+  .resumen__fila-gastos.llenar {
+    min-height: auto;
+  }
+
+  /* Las dos tarjetas de la fila se reparten el ancho (3 a 2) también cuando la hoja es
+     angosta: se encogen en vez de salirse por la derecha (.llenar > * no se encoge) */
+  .resumen__fila-gastos.llenar > * {
+    flex-shrink: 1;
+  }
+
+  /* Ventas por tipo y Quién tiene qué miden lo suyo: el alto que sobra es para los gastos */
+  .hoja__contenido > .resumen__fila-barras {
+    flex-grow: 0;
+  }
+
+  /* La tarjeta de gastos: la cabeza queda quieta y la lista se desplaza debajo de ella */
+  #gastos {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* La gráfica viene en dos versiones (finanzas/_grafica.html): la baja del computador (alto
+   160) y la de siempre (alto 200, la misma del celular y del diseño). La baja solo hace falta
+   en pantallas de poca altura (hasta 900 px), para que quede holgura aunque "Quién tiene qué"
+   tenga más personas. En pantallas más altas sobra espacio: va la de siempre. */
+@media (min-width: 768px) and (min-height: 901px) {
+  #resumen-grafica .grafica--computador {
+    display: none;
+  }
+
+  #resumen-grafica .grafica--celular {
+    display: block;
+  }
+}
+
 /* --- Resumen (fin) --- */
 
 
