@@ -17,6 +17,7 @@ from cuentas.aislamiento import del_taller, obtener_o_404
 from pedidos import calculos, mensajes
 from pedidos.formularios.detalle import EncargadaForm, EntregaForm, EtapaForm, WhatsappForm
 from pedidos.models import Pedido
+from pedidos.vistas import materiales
 
 Estado = Pedido.Estado
 
@@ -117,6 +118,7 @@ def contexto_de_la_ficha(request, pedido, **extra):
 def contexto_del_pedido(request, pedido, **extra):
     """Todo lo que necesita la página completa. Cada tarea agrega aquí lo de sus partes."""
     contexto = contexto_de_la_ficha(request, pedido, **extra)
+    contexto.update(materiales.contexto_de_materiales(pedido))  # T12
     return contexto
 
 
