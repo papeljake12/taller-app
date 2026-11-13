@@ -302,6 +302,17 @@ def test_ninguna_pagina_carga_nada_desde_internet(sesion_duena, settings, direcc
     assert not re.search(r'(?:src|href)="(?:https?:)?//', html)
 
 
+@pytest.mark.parametrize("direccion", ["/", "/entrar/"])
+def test_cada_pagina_trae_el_icono_de_la_pestana(sesion_duena, direccion):
+    # Sin él, el navegador pide /favicon.ico y recibe "no existe".
+    if direccion == "/entrar/":
+        sesion_duena.logout()
+    html = sesion_duena.get(direccion).text
+
+    assert '<link rel="icon" href="/static/iconos/favicon.svg"' in html
+    assert (ESTATICOS / "iconos/favicon.svg").exists()
+
+
 def test_los_estilos_y_el_javascript_no_cargan_nada_desde_internet():
     for archivo in ("css/app.css", "js/app.js"):
         contenido = (ESTATICOS / archivo).read_text("utf-8")
