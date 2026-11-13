@@ -1,18 +1,17 @@
-{% load piezas %}{% comment %}
+{% comment %}
 Tarjeta "Gastos de <mes>" del Resumen (T17, diseno/resumen.html).
 
-La dibuja el resumen y la devuelven, sola, las acciones de finanzas/vistas.py: con HTMX
-reemplaza a la tarjeta entera (id="gastos").
-- Cada gasto del mes, del más nuevo al más viejo: concepto, "9 de nov, servicios" y el
-  valor, con el botón para quitarlo, que primero pregunta.
-- "Registrar gasto" abre el formulario al final de la tarjeta (sin JavaScript, en una
-  página aparte). Cerrado, la tarjeta se ve como en el diseño. Abierto, el botón de arriba
-  lleva al primer campo (id="registrar-gasto").
-- "Cancelar" (del formulario o de la pregunta de quitar) devuelve el cursor al botón de donde
-  se vino: "Registrar gasto" (id="gastos-registrar") o la X del gasto (data-foco-despues).
-{% endcomment %}{% url 'finanzas:gasto_nuevo' as url_nuevo %}<section class="tarjeta tarjeta--lista columna-angosta" id="gastos" aria-labelledby="t-gastos">
-<div class="tarjeta__cabeza"><h2 id="t-gastos">Gastos de {{ mes|date:"F"|lower }}</h2>{% if form %}<a class="boton" href="#registrar-gasto">Registrar gasto</a>{% else %}<a class="boton" id="gastos-registrar" href="{{ url_nuevo }}?mes={{ texto_mes }}" hx-get="{{ url_nuevo }}?mes={{ texto_mes }}" hx-target="#gastos" hx-swap="outerHTML">Registrar gasto</a>{% endif %}</div>
-{% for gasto in gastos %}{% if gasto == por_quitar %}{% include "finanzas/_gasto_confirmar.html" %}{% else %}{% include "finanzas/_gasto_fila.html" %}{% endif %}
-{% empty %}<p class="tarjeta__nota">No hay gastos anotados en este mes.</p>
-{% endfor %}{% if form %}{% include "finanzas/_gasto_form.html" %}{% endif %}
+Tiene dos partes que cambian por su cuenta:
+- la cabeza (_gastos_cabeza.html): el título y el botón "Registrar gasto";
+- la lista (_gastos_lista.html): cada gasto, del más nuevo al más viejo, con el botón para
+  quitarlo (que primero pregunta), y el formulario "Registrar gasto" al final cuando está
+  abierto.
+La tarjeta (id="gastos") y la caja de la lista (id="gastos-lista") no se cambian nunca: las
+acciones de finanzas/vistas.py cambian solo lo de adentro de la lista (hx-swap="innerHTML")
+y traen la cabeza aparte (hx-swap-oob). Así, en computador, donde la lista se desplaza por
+dentro de la tarjeta (pantalla fija, docs/08-diseno.md), la lista no vuelve al principio
+cada vez que se toca algo.
+{% endcomment %}<section class="tarjeta tarjeta--lista columna-angosta" id="gastos" aria-labelledby="t-gastos">
+{% include "finanzas/_gastos_cabeza.html" %}
+<div class="desplazable" id="gastos-lista">{% include "finanzas/_gastos_lista.html" %}</div>
 </section>

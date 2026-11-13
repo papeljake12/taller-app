@@ -1,0 +1,11 @@
+{% comment %}
+Lo de adentro de la lista de gastos (id="gastos-lista" en _gastos.html). Las acciones de
+gastos devuelven esto y HTMX lo pone dentro de la lista (hx-swap="innerHTML").
+- Cada gasto lleva su id (id="gasto-12"); su pregunta "¿Quitar?" lleva el mismo, porque va
+  en su lugar. Así el gasto que llega aparece suave, el que se quita se cierra suave y el que
+  cambia por su pregunta no se cierra ni se vuelve a abrir (static/js/app.js).
+- Sin gastos, la nota (id="gastos-vacio").
+- Abierto, el formulario "Registrar gasto" al final (id="gastos-formulario").
+{% endcomment %}{% for gasto in gastos %}{% if gasto == por_quitar %}{% include "finanzas/_gasto_confirmar.html" %}{% else %}{% include "finanzas/_gasto_fila.html" %}{% endif %}
+{% empty %}<p class="tarjeta__nota" id="gastos-vacio">No hay gastos anotados en este mes.</p>
+{% endfor %}{% if form %}{% include "finanzas/_gasto_form.html" %}{% endif %}
