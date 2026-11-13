@@ -31,19 +31,25 @@ from cuentas.aislamiento import obtener_o_404
 from cuentas.permisos import exigir_duena, solo_duena
 from pedidos import calculos, mensajes
 from pedidos.formularios.clientes import MENSAJE_NOMBRE_REPETIDO, ClienteForm
-from pedidos.models import Cliente
+from pedidos.models import Cliente, Pedido
 
 
 def apoyo(cuentas):
-    """La línea junto al título: "6 clientes, 4 te deben"."""
+    """La línea junto al título: "6 clientes · 4 te deben"."""
     total = len(cuentas)
     if not total:
         return "Todavía no tienes clientes"
     deben = sum(1 for c in cuentas if c.debe > 0)
     clientes = "1 cliente" if total == 1 else f"{total} clientes"
     if not deben:
-        return f"{clientes}, ninguno te debe"
-    return f"{clientes}, {deben} te {'debe' if deben == 1 else 'deben'}"
+        return f"{clientes} · ninguno te debe"
+    return f"{clientes} · {deben} te {'debe' if deben == 1 else 'deben'}"
+
+
+def clientes_con_deuda_vencida(taller, hoy):
+    """Ids de los clientes con un pedido atrasado que todavía tiene saldo: su deuda va en rojo."""
+    pedidos = calculos.con_cuentas(Pedido.objects.del_taller(taller))
+    return {p.cliente_id for p in pedidos if p.saldo > 0 and calculos.esta_atrasado(p, hoy)}
 
 
 def mensaje(numero, texto):
@@ -76,7 +82,7 @@ class EmpresaParaEscribir:
 
 @dataclass(frozen=True)
 class AvisoDeDotacion:
-    """La tarjeta negra de Clientes (diseno/clientes.html).
+    """El aviso azul (.banner) de Clientes (diseno/clientes.html).
 
     titulo: "Dotación del 20 de diciembre: faltan 39 días".
     apoyo: las tres fechas y cuántos clientes empresa hay.
@@ -135,9 +141,10 @@ def clientes(request):
     # "Escribirle": el mismo mensaje para todos, con el WhatsApp de cada uno. La tabla
     # (_clientes_tabla.html, de T04) le pasa a _clientes_acciones.html solo el cliente.
     oferta = mensajes.texto_oferta(request.taller)
+    vencidos = clientes_con_deuda_vencida(request.taller, hoy)
     for fila in filas:
         fila.cliente.mensaje = mensaje(fila.cliente.whatsapp, oferta)
-    contexto = {"filas": filas, "busqueda": busqueda, "hay_clientes": bool(cuentas),
+    contexto = {"filas": filas, "busqueda": busqueda, "hay_clientes": bool(cuentas), "vencidos": vencidos,
                 "apoyo": apoyo(cuentas)}
     # El buscador pide solo la tabla mientras se escribe.
     solo_la_tabla = (

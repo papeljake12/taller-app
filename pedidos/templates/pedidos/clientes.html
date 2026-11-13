@@ -1,16 +1,20 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Clientes (diseno/clientes.html), T04 y T19. La lista, el buscador, crear y editar son de T04 (tanda 3). El aviso de dotación (_clientes_dotacion.html) y "Escribirle" (_clientes_acciones.html) los agrega T19 (tanda 5). En computador la tarjeta de la lista llena el alto que queda (.llenar) y solo la tabla se desplaza por dentro (_clientes_tabla.html).{% endcomment %}
+{% comment %}Clientes (diseno/clientes.html), T04 y T19. La lista, el buscador, crear y editar son de T04. El aviso de dotación (_clientes_dotacion.html) y "Escribirle" (_clientes_acciones.html) los agrega T19. La hoja se desplaza por dentro: ya no hay pantalla fija. Sin clientes se muestra la pieza _vacio.html.{% endcomment %}
 {% block pestana %}Clientes{% endblock %}
 {% block titulo %}Clientes{% endblock %}
 {% block apoyo %}<span class="encabezado__apoyo">{{ apoyo }}</span>{% endblock %}
-{% block acciones %}<a class="boton boton--principal" href="{% url 'pedidos:cliente_nuevo' %}" hx-get="{% url 'pedidos:cliente_nuevo' %}" hx-target="#ventana">Nuevo cliente</a>{% endblock %}
+{% block acciones %}<a class="boton boton--principal boton--redondo-celular" href="{% url 'pedidos:cliente_nuevo' %}" hx-get="{% url 'pedidos:cliente_nuevo' %}" hx-target="#ventana"><span class="boton__icono-celular">{% icono "sumar" 20 %}</span><span class="boton__texto">Nuevo cliente</span></a>{% endblock %}
 {% block contenido %}
+{% if hay_clientes %}
 {% include "pedidos/_clientes_dotacion.html" %}
-<section class="tarjeta tarjeta--lista tarjeta--con-buscador llenar" aria-labelledby="t-clientes">
+<section class="tarjeta tarjeta--recortada" aria-labelledby="t-clientes">
 <h2 class="oculto" id="t-clientes">Lista de clientes</h2>
-<form method="get" action="{% url 'pedidos:clientes' %}" role="search" hx-get="{% url 'pedidos:clientes' %}" hx-target="#clientes-lista" hx-swap="outerHTML" hx-trigger="input changed delay:300ms from:find input, search from:find input, submit" hx-push-url="true">
-<label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar cliente</span><input type="search" name="q" value="{{ busqueda }}" placeholder="Buscar por nombre, tipo o WhatsApp" autocomplete="off"></label>
+<form class="filtros" method="get" action="{% url 'pedidos:clientes' %}" role="search" hx-get="{% url 'pedidos:clientes' %}" hx-target="#clientes-lista" hx-swap="outerHTML" hx-trigger="input changed delay:300ms from:find input, search from:find input, submit" hx-push-url="true">
+<label class="buscador" style="flex: 1">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar cliente</span><input type="search" name="q" value="{{ busqueda }}" placeholder="Buscar por nombre, tipo o WhatsApp" autocomplete="off"></label>
 </form>
 {% include "pedidos/_clientes_tabla.html" %}
 </section>
+{% else %}
+<div id="clientes-vacio">{% url 'pedidos:cliente_nuevo' as url_nuevo %}{% include "piezas/_vacio.html" with dibujo="clientes" titulo="Aquí vas a ver tus clientes" texto="Cada cliente guarda su tipo, su WhatsApp y lo que ha comprado y lo que te debe, para escribirle con un toque." boton_texto="Nuevo cliente" boton_url=url_nuevo ventana=True como="Cómo llevar los clientes del taller" explicacion="Crea un cliente con «Nuevo cliente», o deja que aparezca solo cuando crees un pedido. Aquí ves cuánto te ha comprado, cuánto te debe y puedes escribirle por WhatsApp." %}</div>
+{% endif %}
 {% endblock %}

@@ -1,9 +1,10 @@
-{% comment %}
-Aviso de la próxima fecha de dotación (tarjeta oscura de diseno/clientes.html), T19. Los
-textos los arma la vista (pedidos/vistas/clientes.py, aviso_de_dotacion). El botón abre la
-ventana con los clientes empresa (_clientes_dotacion_empresas.html); sin JavaScript abre la
-misma lista como página. Sin clientes empresa no hay botón.
-{% endcomment %}<section class="tarjeta-oscura" aria-labelledby="t-dotacion">
-<div class="tarjeta-oscura__texto"><h2 class="tarjeta-oscura__titulo" id="t-dotacion">{{ aviso.titulo }}</h2><p class="tarjeta-oscura__apoyo">{{ aviso.apoyo }}</p></div>
-{% if aviso.boton %}<a class="boton boton--claro" href="{% url 'pedidos:clientes' %}?escribir=empresas" hx-get="{% url 'pedidos:clientes' %}?escribir=empresas" hx-target="#ventana">{{ aviso.boton }}</a>{% endif %}
+{% load piezas %}{% comment %}
+Aviso de la próxima fecha de dotación (.banner de diseno/clientes.html), T19. Los textos los
+arma la vista (pedidos/vistas/clientes.py, aviso_de_dotacion). El botón abre la ventana con
+los clientes empresa (_clientes_dotacion_empresas.html); sin JavaScript abre la misma lista
+como página. Sin clientes empresa no hay botón.
+{% endcomment %}<section class="banner" aria-labelledby="t-dotacion">
+{% icono "calendario" 20 %}
+<div class="banner__texto"><p class="banner__titulo" id="t-dotacion">{{ aviso.titulo }}</p><p>{{ aviso.apoyo }}</p></div>
+{% if aviso.boton %}<a class="boton" href="{% url 'pedidos:clientes' %}?escribir=empresas" hx-get="{% url 'pedidos:clientes' %}?escribir=empresas" hx-target="#ventana">{{ aviso.boton }}</a>{% endif %}
 </section>
