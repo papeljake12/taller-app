@@ -16,11 +16,11 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from config.ventanas import es_htmx, responder_ventana
-from config.esqueleto import todavia_no
 from cuentas.aislamiento import obtener_o_404
 from pedidos import calculos, mensajes
 from pedidos.formularios.abonos import FormularioAbono
 from pedidos.models import Abono, Pedido
+from pedidos.recibo import nombre_del_recibo, recibo_en_pdf
 
 
 @dataclass
@@ -147,7 +147,10 @@ def quitar(request, pk, abono):
 
 @require_GET
 def recibo(request, pk, abono):
-    """El recibo de un abono en PDF: llega con T09."""
+    """El recibo de un abono en PDF, para descargar."""
     pedido = _pedido(request, pk)
-    _abono(request, pedido, abono)
-    return todavia_no("T09")
+    abono = _abono(request, pedido, abono)
+    respuesta = HttpResponse(recibo_en_pdf(pedido, abono), content_type="application/pdf")
+    nombre = nombre_del_recibo(pedido, abono)
+    respuesta["Content-Disposition"] = f'attachment; filename="{nombre}"'
+    return respuesta
