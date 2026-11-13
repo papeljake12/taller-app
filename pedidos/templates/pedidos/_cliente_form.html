@@ -1,3 +1,8 @@
 {% extends "piezas/ventana.html" %}
+{% comment %}Ventana "Nuevo cliente" y "Editar cliente" (T04). Con errores vuelve con status 422 y los mensajes junto a cada campo; al guardar, vuelve a la lista de Clientes.{% endcomment %}
 {% block titulo %}{% if cliente %}Editar cliente{% else %}Nuevo cliente{% endif %}{% endblock %}
-{% block cuerpo %}<p class="texto-2">Llega con T04.</p>{% endblock %}
+{% block cuerpo %}{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+<div class="campos">{% include "piezas/_campo.html" with campo=form.nombre %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.tipo %}{% include "piezas/_campo.html" with campo=form.whatsapp %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.notas %}</div>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">{% if cliente %}Guardar cambios{% else %}Crear cliente{% endif %}</button>{% endblock %}

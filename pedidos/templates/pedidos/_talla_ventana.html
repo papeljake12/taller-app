@@ -1,0 +1,9 @@
+{% extends "piezas/ventana.html" %}
+{% comment %}
+"Agregar talla" como página aparte: solo se ve sin JavaScript, cuando el formulario de la
+tarjeta "Tallas" llega con errores. Al guardar se vuelve al pedido.
+{% endcomment %}
+{% block titulo %}Agregar talla{% endblock %}
+{% block cuerpo %}<p class="texto-2">{{ pedido.cliente.nombre }} · {{ pedido.detalle }}</p>
+{% include "pedidos/_talla_campos.html" %}{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Agregar a mano</button>{% endblock %}
