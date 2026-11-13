@@ -8,6 +8,9 @@ de un formulario guarda la etapa, también sin JavaScript; fuera de uno no hace 
 `etiqueta_grupo` (opcional) nombra el grupo para los lectores de pantalla.
 Con `solo_ver=True` los pasos se ven igual pero no se pueden tocar (disabled): así los ve una
 costurera que no es la encargada del pedido (T21).
+Cada paso lleva un id fijo ("paso-corte"; con `id_pasos` se cambia "paso"): así, cuando HTMX
+trae la tarjeta otra vez, el paso que cambia se marca con una transición (static/css/app.css,
+sección 7). El visto bueno siempre está; solo se ve en los pasos cumplidos.
 {% endcomment %}<div class="pasos"{% if etiqueta_grupo %} role="group" aria-label="{{ etiqueta_grupo }}"{% endif %}>
-{% for paso in pasos %}<button type="submit" class="paso paso--{{ paso.estado }}" name="estado" value="{{ paso.valor }}"{% if solo_ver %} disabled{% endif %}{% if paso.estado == "actual" %} aria-current="step"{% endif %}><span class="paso__circulo">{% if paso.estado == "hecho" %}{% icono "visto" 16 %}{% endif %}</span>{{ paso.nombre }}</button>
+{% for paso in pasos %}<button type="submit" class="paso paso--{{ paso.estado }}" name="estado" value="{{ paso.valor }}"{% if solo_ver %} disabled{% endif %}{% if paso.estado == "actual" %} aria-current="step"{% endif %} id="{{ id_pasos|default:'paso' }}-{{ paso.valor }}"><span class="paso__circulo">{% icono "visto" 16 %}</span>{{ paso.nombre }}</button>
 {% endfor %}</div>

@@ -1,5 +1,12 @@
-"""T17. Gastos: abrir el formulario, registrar y quitar un gasto desde el Resumen."""
+"""T17. Gastos: abrir el formulario, registrar y quitar un gasto desde el Resumen.
 
+Con HTMX, cada acción devuelve lo de adentro de la lista de gastos (id="gastos-lista") y,
+aparte (hx-swap-oob), la cabeza de la tarjeta y, si el gasto cambió algo, las cifras y la
+gráfica. Al registrar o quitar, un aviso corto lo confirma (ajuste "pantalla fija y
+animaciones").
+"""
+
+import json
 import re
 from datetime import date
 
@@ -12,8 +19,11 @@ from tests import fabricas
 
 pytestmark = pytest.mark.django_db
 
-HTMX = {"HX-Request": "true", "HX-Target": "gastos"}
+HTMX = {"HX-Request": "true", "HX-Target": "gastos-lista"}
 NUEVO = "finanzas:gasto_nuevo"
+CABEZA_OOB = 'id="gastos-cabeza" hx-swap-oob="true"'
+A_LA_LISTA = 'hx-target="#gastos-lista" hx-swap="innerHTML"'
+A_LA_LISTA_Y_ABAJO = 'hx-target="#gastos-lista" hx-swap="innerHTML scroll:#gastos-lista:bottom"'
 
 
 def url_nuevo(mes=None, cancelar=False):
@@ -29,6 +39,17 @@ def url_quitar(gasto):
 def entrada(html, nombre):
     """La etiqueta <input> (o <select>) del campo `nombre` dentro del html."""
     return re.search(rf'<(?:input|select)[^>]*name="{nombre}"[^>]*>', html).group(0)
+
+
+def aviso(respuesta):
+    """El aviso corto que lleva la respuesta de HTMX (cabecera HX-Trigger), o None."""
+    disparos = respuesta.headers.get("HX-Trigger")
+    return json.loads(disparos).get("aviso") if disparos else None
+
+
+def avisos_de_la_pagina(cliente, url):
+    """Los avisos que esperan en la página siguiente (base.html, #avisos-pendientes)."""
+    return re.findall(r"<p data-aviso>(.*?)</p>", cliente.get(url).text)
 
 
 def datos(**cambios):
@@ -53,9 +74,12 @@ def test_registrar_gasto_abre_el_formulario_en_la_tarjeta(sesion_duena, gasto):
 
     assert respuesta.status_code == 200
     html = respuesta.text
-    assert "<html" not in html and 'id="gastos"' in html
+    assert "<html" not in html and CABEZA_OOB in html
     assert "Gastos de noviembre" in html and "Hilos y botones" in html
-    assert f'hx-post="{reverse(NUEVO)}" hx-target="#gastos" hx-swap="outerHTML"' in html
+    assert f'id="gastos-formulario" method="post" action="{reverse(NUEVO)}"' in html
+    assert f'hx-post="{reverse(NUEVO)}" {A_LA_LISTA_Y_ABAJO}' in html
+    # Abierto, el botón de la cabeza lleva al primer campo y conserva su id.
+    assert '<a class="boton" id="gastos-registrar" href="#registrar-gasto">' in html
     assert '<input type="hidden" name="mes" value="2026-11">' in html
     assert "¿En qué gastaste?" in html and 'for="registrar-gasto"' in html
     assert "Tipo de gasto" in html and "Valor (pesos)" in html and ">Fecha</label>" in html
@@ -73,8 +97,9 @@ def test_cancelar_cierra_el_formulario(sesion_duena, gasto):
     respuesta = sesion_duena.get(url_nuevo("2026-11", cancelar=True), headers=HTMX)
 
     assert respuesta.status_code == 200
-    assert 'id="gastos"' in respuesta.text and "<form" not in respuesta.text
+    assert CABEZA_OOB in respuesta.text and "<form" not in respuesta.text
     assert "Hilos y botones" in respuesta.text
+    assert aviso(respuesta) is None  # cerrar el formulario no guarda nada
 
 
 def test_sin_javascript_registrar_gasto_abre_una_pagina_con_el_formulario(sesion_duena):
@@ -124,6 +149,11 @@ def test_registrar_un_gasto_lo_guarda_y_devuelve_la_tarjeta_las_cifras_y_la_graf
     # El formulario queda abierto, vacío y con el cursor para el siguiente gasto.
     assert "autofocus" in entrada(html, "concepto")
     assert "value=" not in entrada(html, "concepto")
+    # El gasto nuevo llega con su id (aparece suave) y el viejo conserva el suyo.
+    assert f'<div class="fila fila--compacta" id="gasto-{nuevo.pk}">' in html
+    assert f'<div class="fila fila--compacta" id="gasto-{gasto.pk}">' in html
+    assert 'id="gastos-formulario"' in html and CABEZA_OOB in html
+    assert aviso(respuesta) == "Gasto registrado."  # el texto de la demo
 
 
 @pytest.mark.parametrize(
@@ -153,6 +183,9 @@ def test_un_gasto_de_otro_mes_abre_ese_mes_para_verlo(sesion_duena):
     assert respuesta.status_code == 200
     assert respuesta["HX-Redirect"] == reverse("finanzas:resumen") + "?mes=2026-10#gastos"
     assert Gasto.objects.get().fecha == date(2026, 10, 28)
+    # La página se va al otro mes: el aviso la espera allá.
+    assert aviso(respuesta) is None
+    assert avisos_de_la_pagina(sesion_duena, respuesta["HX-Redirect"]) == ["Gasto registrado."]
 
 
 def test_sin_javascript_registrar_vuelve_al_mes_del_gasto(sesion_duena):
@@ -161,6 +194,7 @@ def test_sin_javascript_registrar_vuelve_al_mes_del_gasto(sesion_duena):
     assert respuesta.status_code == 302
     assert respuesta.url == reverse("finanzas:resumen") + "?mes=2026-11#gastos"
     assert Gasto.objects.count() == 1
+    assert avisos_de_la_pagina(sesion_duena, respuesta.url) == ["Gasto registrado."]
 
 
 def test_el_taller_no_llega_del_formulario(sesion_duena, taller):
@@ -198,8 +232,9 @@ def test_lo_mal_escrito_se_rechaza_con_un_mensaje_claro(sesion_duena, cambio, me
 
     assert respuesta.status_code == 422
     assert mensaje in respuesta.text
-    assert 'id="gastos"' in respuesta.text
+    assert 'id="gastos-formulario"' in respuesta.text and CABEZA_OOB in respuesta.text
     assert "resumen-cifras" not in respuesta.text
+    assert aviso(respuesta) is None  # no se guardó nada: no hay aviso
     assert not Gasto.objects.exists()
 
 
@@ -243,9 +278,27 @@ def test_quitar_primero_pregunta_en_la_tarjeta(sesion_duena, gasto):
     assert respuesta.status_code == 200
     html = respuesta.text
     assert "¿Quitar el gasto «Hilos y botones» de <span class=\"dinero\">$ 85.000</span> del 6 de nov?" in html
-    assert f'hx-post="{url_quitar(gasto)}"' in html
+    assert f'hx-post="{url_quitar(gasto)}" {A_LA_LISTA}' in html
     assert "Sí, quitar el gasto" in html and ">Cancelar</a>" in html
     assert Gasto.objects.filter(pk=gasto.pk).exists()
+    assert aviso(respuesta) is None  # preguntar no guarda nada
+
+
+def test_la_pregunta_va_en_el_lugar_del_gasto_y_conserva_su_id(sesion_duena, gasto):
+    """Así la fila no se cierra y se vuelve a abrir al cambiar por su pregunta (app.js)."""
+    fila = f'<div class="fila fila--compacta" id="gasto-{gasto.pk}">'
+    pregunta = f'<div class="tarjeta__cuerpo pagos__confirmar" id="gasto-{gasto.pk}">'
+    otro = fabricas.crear_gasto(gasto.taller, concepto="Transporte", fecha=date(2026, 11, 8))
+
+    respuesta = sesion_duena.get(url_quitar(gasto), headers=HTMX)
+
+    assert pregunta in respuesta.text and fila not in respuesta.text
+    assert f'<div class="fila fila--compacta" id="gasto-{otro.pk}">' in respuesta.text
+    cancelar = sesion_duena.get(url_quitar(gasto) + "?cancelar=1", headers=HTMX)
+    assert fila in cancelar.text and pregunta not in cancelar.text
+    # "Cancelar" devuelve el cursor a la X del gasto, que tiene su propio id.
+    assert f'data-foco-despues="gasto-{gasto.pk}-quitar"' in respuesta.text
+    assert f'id="gasto-{gasto.pk}-quitar"' in cancelar.text
 
 
 def test_cancelar_deja_el_gasto_como_estaba(sesion_duena, gasto):
@@ -254,6 +307,7 @@ def test_cancelar_deja_el_gasto_como_estaba(sesion_duena, gasto):
     assert respuesta.status_code == 200
     assert "¿Quitar" not in respuesta.text and "Hilos y botones" in respuesta.text
     assert Gasto.objects.filter(pk=gasto.pk).exists()
+    assert aviso(respuesta) is None
 
 
 def test_si_quitar_lo_borra_y_devuelve_la_tarjeta_las_cifras_y_la_grafica(sesion_duena, gasto):
@@ -263,9 +317,12 @@ def test_si_quitar_lo_borra_y_devuelve_la_tarjeta_las_cifras_y_la_grafica(sesion
     assert not Gasto.objects.filter(pk=gasto.pk).exists()
     html = respuesta.text
     assert "Hilos y botones" not in html
-    assert "No hay gastos anotados en este mes." in html
+    assert f'id="gasto-{gasto.pk}"' not in html  # su fila se cierra suave
+    assert '<p class="tarjeta__nota" id="gastos-vacio">No hay gastos anotados en este mes.</p>' in html
+    assert CABEZA_OOB in html
     assert 'id="resumen-cifras" aria-label="Resumen" hx-swap-oob="true"' in html
     assert 'id="resumen-grafica"' in html
+    assert aviso(respuesta) == "Gasto quitado."
 
 
 def test_sin_javascript_quitar_pregunta_en_una_pagina_y_despues_vuelve_al_mes(
@@ -281,6 +338,7 @@ def test_sin_javascript_quitar_pregunta_en_una_pagina_y_despues_vuelve_al_mes(
     assert respuesta.status_code == 302
     assert respuesta.url == reverse("finanzas:resumen") + "?mes=2026-11#gastos"
     assert not Gasto.objects.exists()
+    assert avisos_de_la_pagina(sesion_duena, respuesta.url) == ["Gasto quitado."]
 
 
 # --- Otro taller --------------------------------------------------------------------------

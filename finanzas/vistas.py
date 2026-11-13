@@ -5,9 +5,12 @@ el mes de hoy en Bogotá. Todas las cuentas (vendido, cobrado, gastado, "te qued
 gráfica, las ventas por tipo y quién tiene qué) salen de pedidos/calculos.py, siempre con
 el taller de la usuaria.
 
-Registrar y quitar un gasto: con HTMX, la acción devuelve solo la tarjeta "Gastos del mes"
-(finanzas/_gastos.html) y, con hx-swap-oob, las cifras y la gráfica, que cambian con el
-gasto. Sin JavaScript, los formularios hacen un envío normal y vuelven al resumen.
+Registrar y quitar un gasto: con HTMX, la acción devuelve solo lo de adentro de la lista de
+la tarjeta "Gastos del mes" (finanzas/_gastos_lista.html) y, con hx-swap-oob, la cabeza de
+la tarjeta y las cifras y la gráfica, que cambian con el gasto. Sin JavaScript, los
+formularios hacen un envío normal y vuelven al resumen. Al registrar o quitar, un aviso
+corto lo confirma (config/avisos.py): "Gasto registrado." (el de la demo) y "Gasto
+quitado." (la demo no tiene; va en su mismo estilo).
 
 Permisos (T21, docs/04-permisos.md): Resumen, gastos y Excel son solo de la dueña. La
 costurera recibe 403 (también al bajar el Excel desde cualquier pantalla); el número de un
@@ -25,6 +28,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
 
+from config.avisos import avisar
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
 from cuentas.permisos import exigir_duena, solo_duena
@@ -39,6 +43,11 @@ FORMA_DEL_MES = re.compile(r"([0-9]{4})-([0-9]{2})")
 # Años que se pueden pedir por la dirección: de PRIMER_ANIO (el mismo de los gastos) a este.
 # Fuera de ahí, un año escrito mal ("0001", "9999") rompería el mes anterior o el siguiente.
 ULTIMO_ANIO = 2999
+
+# Avisos cortos después de guardar (config/avisos.py). El primero es el de la demo
+# (demo/index.html); para quitar, la demo no tiene: va uno corto del mismo estilo.
+AVISO_REGISTRADO = "Gasto registrado."
+AVISO_QUITADO = "Gasto quitado."
 
 
 def mes_elegido(texto, hoy=None):
@@ -135,11 +144,17 @@ def _con_tarjeta(request):
 
 
 def _tarjeta(request, mes, status=200, con_cifras=True, **extra):
-    """La tarjeta "Gastos del mes" y, si el gasto cambió algo, las cifras y la gráfica."""
+    """La tarjeta "Gastos del mes": lo de adentro de su lista y, aparte (hx-swap-oob), su
+    cabeza y, si el gasto cambió algo, las cifras y la gráfica.
+
+    La tarjeta y la caja de su lista se quedan en la página (finanzas/_gastos.html): en
+    computador la lista se desplaza por dentro y así no vuelve al principio con cada acción.
+    """
     contexto = contexto_de_la_plata(request, mes, **extra)
-    html = render_to_string("finanzas/_gastos.html", contexto, request=request)
+    html = render_to_string("finanzas/_gastos_lista.html", contexto, request=request)
+    contexto["oob"] = True
+    html += render_to_string("finanzas/_gastos_cabeza.html", contexto, request=request)
     if con_cifras:
-        contexto["oob"] = True
         html += render_to_string("finanzas/_cifras.html", contexto, request=request)
         html += render_to_string("finanzas/_grafica.html", contexto, request=request)
     return HttpResponse(html, status=status)
@@ -192,9 +207,11 @@ def gasto_nuevo(request):
     mes_del_gasto = gasto.fecha.replace(day=1)
     if _con_tarjeta(request) and mes_del_gasto == mes:
         # El formulario queda abierto, vacío y con el cursor listo para el siguiente gasto.
-        return _tarjeta(request, mes, form=FormularioGasto().enfocar())
-    # Sin JavaScript, o si la fecha es de otro mes: se abre el mes del gasto, para verlo.
-    return _volver_al_mes(request, mes_del_gasto)
+        respuesta = _tarjeta(request, mes, form=FormularioGasto().enfocar())
+    else:
+        # Sin JavaScript, o si la fecha es de otro mes: se abre el mes del gasto, para verlo.
+        respuesta = _volver_al_mes(request, mes_del_gasto)
+    return avisar(request, respuesta, AVISO_REGISTRADO)
 
 
 @require_http_methods(["GET", "POST"])
@@ -211,8 +228,10 @@ def gasto_quitar(request, pk):
     if request.method == "POST":
         gasto.delete()
         if _con_tarjeta(request):
-            return _tarjeta(request, mes)
-        return _volver_al_mes(request, mes)
+            respuesta = _tarjeta(request, mes)
+        else:
+            respuesta = _volver_al_mes(request, mes)
+        return avisar(request, respuesta, AVISO_QUITADO)
     if "cancelar" in request.GET:
         if _con_tarjeta(request):
             return _tarjeta(request, mes, con_cifras=False)

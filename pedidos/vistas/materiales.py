@@ -3,12 +3,16 @@
 Cada acción responde solo la tarjeta "Materiales" (con HTMX) o vuelve al pedido (sin
 JavaScript). Un material se busca siempre dentro de su pedido, y el pedido dentro del
 taller de la usuaria: el número de un material de otro pedido responde 404.
+
+Agregar y quitar dicen "Material agregado." y "Material quitado." (config/avisos.py; la demo
+no trae texto para estas dos). Marcar la casilla no lleva aviso: se ve justo donde se tocó.
 """
 
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from config.avisos import avisar
 from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
 from pedidos import calculos
@@ -61,7 +65,7 @@ def nuevo(request, pk):
     material = form.save(commit=False)
     material.pedido = pedido
     material.save()
-    return _responder(request, pedido)
+    return avisar(request, _responder(request, pedido), "Material agregado.")
 
 
 @require_POST
@@ -81,4 +85,4 @@ def comprado(request, pk, material):
 def quitar(request, pk, material):
     pedido = obtener_o_404(request, Pedido, pk=pk)
     _material(request, pedido, material).delete()
-    return _responder(request, pedido)
+    return avisar(request, _responder(request, pedido), "Material quitado.")

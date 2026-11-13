@@ -1,6 +1,9 @@
 {% extends "base.html" %}{% load piezas %}
 {% comment %}Resultados del buscador del menú (T05): pedidos y clientes del taller, sin importar tildes ni mayúsculas.
-Cada cliente es una fila que se toca entera (fila--enlace con fila__enlace), como las de pedidos.{% endcomment %}
+Cada cliente es una fila que se toca entera (fila--enlace con fila__enlace), como las de pedidos.
+En computador (pantalla fija) el buscador queda quieto arriba y las tarjetas de resultados
+(tarjeta--resultados) se reparten el alto que queda: si una lista es larga, se desplaza por
+dentro de su tarjeta (.desplazable). Cómo se reparten está en app.css, "Pedidos y Buscar".{% endcomment %}
 {% block pestana %}Buscar{% endblock %}
 {% block titulo %}Buscar{% endblock %}
 {% block apoyo %}{% if q %}<span class="encabezado__apoyo">«{{ q }}»</span>{% endif %}{% endblock %}
@@ -16,15 +19,17 @@ Cada cliente es una fila que se toca entera (fila--enlace con fila__enlace), com
 {% endif %}
 </section>
 {% if filas %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-pedidos">
+<section class="tarjeta tarjeta--lista tarjeta--resultados" aria-labelledby="t-pedidos">
 <div class="tarjeta__cabeza"><h2 id="t-pedidos">Pedidos</h2><span class="tarjeta__aparte">{{ filas|length }} pedido{{ filas|length|pluralize }}</span></div>
 {% include "pedidos/_lista_tabla.html" with id_tabla="resultados-pedidos" %}
 </section>
 {% endif %}
 {% if clientes %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-clientes">
+<section class="tarjeta tarjeta--lista tarjeta--resultados" aria-labelledby="t-clientes">
 <div class="tarjeta__cabeza"><h2 id="t-clientes">Clientes</h2><span class="tarjeta__aparte">{{ clientes|length }} cliente{{ clientes|length|pluralize }}</span></div>
+<div class="desplazable">
 {% for cliente in clientes %}<div class="fila fila--compacta fila--enlace"><div class="fila__texto"><a class="fila__enlace" href="{% url 'pedidos:clientes' %}?q={{ cliente.nombre|urlencode }}"><strong>{{ cliente.nombre }}</strong></a> <span class="texto-2">· {{ cliente.get_tipo_display }}</span></div></div>
-{% endfor %}</section>
+{% endfor %}</div>
+</section>
 {% endif %}
 {% endblock %}

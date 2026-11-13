@@ -8,6 +8,11 @@ sin WhatsApp, copia el mensaje. Nada se envía solo.
 
 Permisos (T21, docs/04-permisos.md): Clientes es solo de la dueña. La costurera recibe 403
 en la lista, en "Nuevo cliente" y al editar uno de su taller (el de otro taller, 404).
+
+Aviso corto al guardar (config/avisos.py): "Cliente creado." y "Cliente guardado.". La demo
+no crea ni edita clientes aparte (salen de los pedidos), así que no trae texto para esto: son
+del mismo estilo que "Pedido guardado." y "Nombre guardado.". Como al guardar se vuelve a la
+lista, el aviso sale en la página siguiente.
 """
 
 from dataclasses import dataclass
@@ -19,6 +24,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
+from config.avisos import avisar
 from config.piezas import dia_y_mes
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import obtener_o_404
@@ -160,8 +166,9 @@ def _formulario(request, form, cliente=None):
             if es_htmx(request):
                 respuesta = HttpResponse()
                 respuesta["HX-Redirect"] = reverse("pedidos:clientes")
-                return respuesta
-            return redirect("pedidos:clientes")
+            else:
+                respuesta = redirect("pedidos:clientes")
+            return avisar(request, respuesta, "Cliente guardado." if cliente else "Cliente creado.")
     if cliente:
         accion = reverse("pedidos:cliente_editar", args=[cliente.pk])
         titulo = "Editar cliente"

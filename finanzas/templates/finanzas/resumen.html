@@ -15,12 +15,15 @@ Las ventas por tipo de cliente y quién tiene qué usan _barra.
 {% block contenido %}
 <nav class="navegacion-mes" aria-label="Cambiar de mes"><a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a></nav>
 {% include "finanzas/_cifras.html" %}
-<div class="dos-columnas">
+{% comment %}En computador (pantalla fija) esta fila toma el alto que queda (llenar), nunca menos que
+la gráfica, y la lista de gastos se desplaza por dentro de su tarjeta. Las cifras, la gráfica y
+la fila de abajo quedan quietas (static/css/app.css, apartado "Resumen").{% endcomment %}
+<div class="dos-columnas llenar resumen__fila-gastos">
 {% include "finanzas/_grafica.html" %}
 {% include "finanzas/_gastos.html" %}
 </div>
 {# Dos tarjetas del mismo ancho: las dos crecen igual desde 300 px y terminan a la misma altura. #}
-<div class="dos-columnas">
+<div class="dos-columnas resumen__fila-barras">
 <section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="t-ventas">
 <div class="tarjeta__cabeza"><h2 id="t-ventas">Ventas por tipo de cliente</h2></div>
 <div class="tarjeta__cuerpo">

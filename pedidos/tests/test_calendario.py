@@ -1,10 +1,12 @@
 """Calendario (T14): el mes con las entregas marcadas, la lista de entregas (con el filtro
-por día) y la semana más cargada."""
+por día) y la semana más cargada. Al final, la pantalla fija en computador y lo que necesitan
+las animaciones (ajuste "pantalla fija y animaciones")."""
 
 import re
 from datetime import date, timedelta
 
 import pytest
+from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
@@ -308,7 +310,7 @@ def test_un_dia_elegido_filtra_la_lista(sesion_duena, ejemplo):
 
     assert '<h2 id="t-entregas">Entregas del 9 de nov</h2>' in html
     assert filas_de_la_lista(html) == [("9 de nov", "Ferretería La Esquina", "Atrasado 2 días")]
-    assert f'<a class="boton" href="{PAGINA}?mes=2026-11"' in html
+    assert f'<a class="boton" id="calendario-ver-mes" href="{PAGINA}?mes=2026-11"' in html
     assert ">Ver todo el mes</a>" in html
     # El día queda marcado y tocarlo otra vez vuelve al mes entero.
     dia = celda(html, 9)
@@ -323,7 +325,9 @@ def test_con_htmx_responde_solo_la_lista_y_la_cuadricula(sesion_duena, ejemplo):
     html = respuesta.text
 
     assert respuesta.status_code == 200
-    assert html.lstrip().startswith('<section class="tarjeta tarjeta--lista" id="calendario-entregas"')
+    assert html.lstrip().startswith(
+        '<section class="tarjeta tarjeta--lista calendario-lista" id="calendario-entregas"'
+    )
     assert filas_de_la_lista(html) == [("14 de nov", "Grupo de danza Tambores del Río", "Faltan 3 días")]
     assert '<div class="calendario" id="calendario-dias" hx-swap-oob="true">' in html
     assert 'aria-pressed="true"' in celda(html, 14)
@@ -419,3 +423,177 @@ def test_el_tono_de_cada_entrega_en_su_dia(taller):
     assert vista.tono_en_el_dia(atrasado, HOY) == "rojo"
     assert vista.tono_en_el_dia(cotizado_vencido, HOY) == "ambar"
     assert vista.tono_en_el_dia(por_entregar, HOY) == "ambar"
+
+
+# --- Pantalla fija y animaciones (ajuste "pantalla fija y animaciones") ----------------------
+
+
+def test_en_computador_las_columnas_llenan_la_hoja(sesion_duena, ejemplo):
+    html = sesion_duena.get(PAGINA).text
+
+    # Las dos columnas toman el alto que queda (static/css/app.css, sección 6 y apartado
+    # "Calendario"); la lista de entregas es la que se encoge si no cabe.
+    assert '<div class="dos-columnas dos-columnas--calendario llenar">' in html
+    assert (
+        '<section class="tarjeta tarjeta--lista calendario-lista" id="calendario-entregas"'
+    ) in html
+
+
+def test_las_entregas_van_en_una_lista_que_se_desplaza_por_dentro(sesion_duena, ejemplo):
+    lista = tarjeta(sesion_duena.get(PAGINA).text, "t-entregas")
+
+    # El título queda afuera, quieto; las filas, dentro de la parte que se desplaza.
+    cabeza, filas = lista.split('<div class="desplazable">')
+    assert 'id="t-entregas"' in cabeza
+    assert filas.count('class="fila fila--compacta tabla__fila"') == 3
+
+
+def test_un_mes_sin_entregas_no_lleva_lista_que_se_desplace(sesion_duena):
+    lista = tarjeta(sesion_duena.get(PAGINA).text, "t-entregas")
+
+    assert "desplazable" not in lista
+    assert "No hay entregas en este mes." in lista
+
+
+def test_cada_entrega_lleva_el_id_de_su_pedido(sesion_duena, ejemplo):
+    lista = tarjeta(sesion_duena.get(PAGINA).text, "t-entregas")
+
+    pedidos = Pedido.objects.filter(taller=ejemplo, fecha_entrega__month=11).order_by(
+        "fecha_entrega", "pk"
+    )
+    assert re.findall(r'class="fila fila--compacta tabla__fila" id="([\w-]+)"', lista) == [
+        f"entrega-{pedido.pk}" for pedido in pedidos
+    ]
+
+
+def test_al_tocar_un_dia_la_entrega_conserva_su_id(sesion_duena, ejemplo):
+    # Así solo se cierran las entregas que se van; la que sigue no se mueve
+    # (static/js/app.js, sección 11).
+    tambores = Pedido.objects.get(taller=ejemplo, cliente__nombre="Grupo de danza Tambores del Río")
+    fila = f'<div class="fila fila--compacta tabla__fila" id="entrega-{tambores.pk}">'
+
+    pagina = sesion_duena.get(PAGINA).text
+    dia = sesion_duena.get(url("2026-11", "2026-11-14"), headers=HTMX).text
+    mes = sesion_duena.get(url("2026-11"), headers=HTMX).text
+
+    assert fila in pagina and fila in dia and fila in mes
+    assert dia.count('class="fila fila--compacta tabla__fila"') == 1
+
+
+def test_ver_todo_el_mes_lleva_su_id(sesion_duena, ejemplo):
+    # Así aparece y se va con un desvanecido, y no cambia si se toca otro día.
+    html = sesion_duena.get(url("2026-11", "2026-11-09"), headers=HTMX).text
+
+    assert '<a class="boton" id="calendario-ver-mes" href="' in html
+    assert 'id="calendario-ver-mes"' not in sesion_duena.get(url("2026-11"), headers=HTMX).text
+
+
+def test_la_cuadricula_que_llega_aparte_conserva_los_ids(sesion_duena, ejemplo):
+    # Los mismos días con los mismos ids: la cuadrícula se cambia sin parpadear.
+    def ids(html):
+        return re.findall(r'id="(dia-[\d-]+)"', cuadricula(html))
+
+    pagina = sesion_duena.get(PAGINA).text
+    dia = sesion_duena.get(url("2026-11", "2026-11-14"), headers=HTMX).text
+
+    assert ids(pagina) == ids(dia) == ["dia-2026-11-06", "dia-2026-11-09", "dia-2026-11-14"]
+
+
+def test_el_calendario_no_manda_aviso(sesion_duena, ejemplo):
+    # No guarda nada: tocar un día solo filtra (la demo tampoco tiene aviso aquí).
+    respuesta = sesion_duena.get(url("2026-11", "2026-11-14"), headers=HTMX)
+
+    assert "HX-Trigger" not in respuesta
+
+
+# Medidas de la pantalla en Chrome: la página, la hoja, las dos columnas, la cuadrícula del mes,
+# la lista de entregas y el día con más entregas de las que caben en su cuadro.
+MEDIR = """() => {
+  const caja = s => document.querySelector(s).getBoundingClientRect();
+  const hoja = document.querySelector('.hoja__contenido');
+  const lista = document.querySelector('#calendario-entregas .desplazable');
+  const dias = Array.from(document.querySelectorAll('#calendario-dias > .calendario__dia'));
+  const lleno = document.querySelector('#dia-2026-11-20 .calendario__entregas');
+  return {
+    pagina: document.scrollingElement.scrollHeight,
+    ventana: window.innerHeight,
+    contenido: hoja.scrollHeight,
+    cabe: hoja.clientHeight,
+    fondo_hoja: caja('.hoja__contenido').bottom,
+    fondo_mes: caja('.columna-ancha--calendario').bottom,
+    fondo_derecha: caja('.columna-angosta--calendario').bottom,
+    fondo_cuadricula: caja('#calendario-dias').bottom,
+    arriba_leyenda: caja('.calendario__leyenda').top,
+    fondo_leyenda: caja('.calendario__leyenda').bottom,
+    lista: [lista.clientHeight, lista.scrollHeight],
+    altos_de_los_dias: dias.map(d => d.getBoundingClientRect().height),
+    dia_lleno: [lleno.clientHeight, lleno.scrollHeight],
+    // Una parte que se desplaza dentro del botón del día sería una parada más del tabulador.
+    dia_lleno_se_desplaza: /auto|scroll/.test(getComputedStyle(lleno).overflowY),
+  };
+}"""
+
+
+def _abrir_chrome():
+    """Chrome sin ventana con Playwright (como tests/test_pantalla_fija.py), o salta."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        pytest.skip("Playwright no está instalado (uv sync con el grupo dev).")
+    manejador = sync_playwright().start()
+    try:
+        return manejador, manejador.chromium.launch(channel="chrome")
+    except Exception as error:  # noqa: BLE001 (sin Chrome no hay prueba)
+        manejador.stop()
+        pytest.skip(f"No se pudo abrir Chrome: {error}")
+
+
+@pytest.fixture
+def mes_lleno(taller, duena):
+    """Noviembre de 2026 (seis semanas) con 36 entregas, cinco el mismo día (el 20) con
+    nombres largos. Devuelve la sesión de la dueña, abierta antes de Chrome (Django no deja
+    usar la base mientras Playwright corre)."""
+    for numero in range(1, 6):
+        pedido_de(taller, f"Cliente con un nombre bastante largo {numero}",
+                  fecha_entrega=date(2026, 11, 20))
+    for numero in range(31):
+        pedido_de(taller, fecha_entrega=date(2026, 11, 1 + numero % 30))
+    cliente = Client()
+    cliente.force_login(duena)
+    return cliente.cookies["sessionid"].value
+
+
+def test_en_computador_un_mes_lleno_cabe_sin_desplazar_la_pagina(live_server, mes_lleno):
+    direccion = live_server.url + url("2026-11")
+    medidas = {}
+    manejador, navegador = _abrir_chrome()
+    try:
+        for ancho, alto in ((1366, 768), (1920, 1080)):
+            contexto = navegador.new_context(viewport={"width": ancho, "height": alto})
+            contexto.add_cookies([{"name": "sessionid", "value": mes_lleno, "url": direccion}])
+            pagina = contexto.new_page()
+            pagina.goto(direccion, wait_until="load")
+            pagina.evaluate("document.fonts.ready")
+            medidas[f"{ancho} x {alto}"] = pagina.evaluate(MEDIR)
+            contexto.close()
+    finally:
+        navegador.close()
+        manejador.stop()
+
+    for tamano, medida in medidas.items():
+        # Ni la página ni la hoja se desplazan: solo la lista de entregas, por dentro.
+        assert medida["pagina"] <= medida["ventana"], tamano
+        assert medida["contenido"] <= medida["cabe"] + 1, tamano
+        assert medida["lista"][1] > medida["lista"][0], tamano
+        # Las dos columnas terminan parejas y llegan hasta abajo (sin hueco).
+        assert abs(medida["fondo_mes"] - medida["fondo_derecha"]) <= 1, tamano
+        assert medida["fondo_hoja"] - medida["fondo_mes"] <= 6, tamano
+        # El mes se ve completo: sus seis semanas, del mismo alto, y la leyenda debajo.
+        altos = medida["altos_de_los_dias"]
+        assert len(altos) == 42 and max(altos) - min(altos) <= 1, tamano
+        assert medida["fondo_cuadricula"] <= medida["arriba_leyenda"] + 1, tamano
+        assert medida["fondo_leyenda"] <= medida["fondo_mes"], tamano
+        # Las cinco entregas del 20 no caben en su cuadro: se ven las primeras, sin estirar su
+        # semana (las cinco están en la lista y al tocar el día).
+        assert medida["dia_lleno"][1] > medida["dia_lleno"][0], tamano
+        assert medida["dia_lleno_se_desplaza"] is False, tamano

@@ -19,6 +19,7 @@ from django.utils import timezone
 from django.utils.cache import patch_vary_headers
 from django.views.decorators.http import require_http_methods
 
+from config.avisos import avisar
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller
 from cuentas.permisos import puede_ver_plata, solo_duena
@@ -161,8 +162,11 @@ def nuevo(request):
     pedido = crear_pedido(request, form.cleaned_data)
     destino = reverse("pedidos:detalle", args=[pedido.pk])
     if es_htmx(request):
-        return HttpResponse(headers={"HX-Redirect": destino})
-    return redirect(destino)
+        respuesta = HttpResponse(headers={"HX-Redirect": destino})
+    else:
+        respuesta = redirect(destino)
+    # Lleva al pedido nuevo: el aviso de la demo sale allí (config/avisos.py lo deja como mensaje).
+    return avisar(request, respuesta, "Pedido guardado.")
 
 
 def cliente_para_el_pedido(request, datos):

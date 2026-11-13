@@ -10,6 +10,11 @@ Toda la pantalla es un solo formulario (cotizador/_formulario.html, id="cotizado
   pedido, la orden de ir a él (HX-Redirect).
 Sin JavaScript todo funciona igual con envíos normales: cada respuesta es la página entera.
 
+Aviso corto (config/avisos.py, textos de la demo): "Prenda guardada en tu lista.", "Prenda
+quitada de tu lista." y, al crear el pedido, "Pedido creado como cotizado." (este llega a la
+página del pedido). Sin JavaScript no hay aviso corto: el de la prenda sale como nota en la
+tarjeta "Qué prenda".
+
 Todo se busca en el taller de la usuaria (cuentas/aislamiento.py): una prenda de otro taller
 no se puede elegir, ni guardar encima, ni quitar.
 
@@ -26,6 +31,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 
+from config.avisos import avisar
 from config.piezas import metros
 from config.ventanas import es_htmx
 from cotizador.formularios import (
@@ -101,6 +107,15 @@ def responder(request, contexto, status=200, solo_resultado=False):
     return respuesta
 
 
+def responder_con_aviso(request, contexto, texto):
+    """El formulario después de guardar o quitar una prenda, con el aviso corto `texto`.
+
+    Sin JavaScript no hay aviso corto: el mismo texto sale como nota en "Qué prenda"."""
+    if not es_htmx(request):
+        contexto["mensaje_prenda"] = texto
+    return avisar(request, responder(request, contexto), texto)
+
+
 def _datos(request):
     return request.POST if request.method == "POST" else request.GET
 
@@ -150,8 +165,8 @@ def prenda_guardar(request):
         return responder(request, contexto, status=422)
     prenda = guardar_prenda(request, form.cleaned_data)
     form = formulario(request, _con_la_elegida(request.POST, prenda))
-    contexto = contexto_cotizador(request, form, mensaje_prenda="Prenda guardada en tu lista.")
-    return responder(request, contexto)
+    return responder_con_aviso(request, contexto_cotizador(request, form),
+                               "Prenda guardada en tu lista.")
 
 
 def _con_la_elegida(datos, prenda):
@@ -202,8 +217,8 @@ def prenda_quitar(request, pk):
     if datos.get("confirmar") == "si":
         prenda.delete()
         form = formulario(request, datos_con_la_prenda(datos, None))
-        contexto = contexto_cotizador(request, form, mensaje_prenda="Prenda quitada de tu lista.")
-        return responder(request, contexto)
+        return responder_con_aviso(request, contexto_cotizador(request, form),
+                                   "Prenda quitada de tu lista.")
     form = formulario(request, _con_la_elegida(datos, prenda))
     por_quitar = None if datos.get("cancelar") == "si" else prenda
     return responder(request, contexto_cotizador(request, form, por_quitar=por_quitar))
@@ -224,8 +239,11 @@ def crear_pedido(request):
     pedido = pedido_de_la_cotizacion(request, form)
     destino = reverse("pedidos:detalle", args=[pedido.pk])
     if es_htmx(request):
-        return HttpResponse(headers={"HX-Redirect": destino})
-    return redirect(destino)
+        respuesta = HttpResponse(headers={"HX-Redirect": destino})
+    else:
+        respuesta = redirect(destino)
+    # Lleva a otra página: el aviso va como mensaje y sale en la página del pedido.
+    return avisar(request, respuesta, "Pedido creado como cotizado.")
 
 
 @transaction.atomic

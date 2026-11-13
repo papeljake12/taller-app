@@ -1,0 +1,10 @@
+{% comment %}
+Ejemplo de /piezas/: el cambio de etapa (config/vistas.py, piezas_etapa). Al tocar un paso,
+HTMX trae la tarjeta otra vez y el paso se marca con una transición (cada paso tiene su id).
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="p-animaciones-etapa" aria-labelledby="p-etapa-titulo">
+<div class="tarjeta__cabeza"><h2 id="p-etapa-titulo">Cambio de etapa</h2></div>
+<form class="tarjeta__cuerpo" method="post" action="{% url 'piezas_etapa' %}" hx-post="{% url 'piezas_etapa' %}" hx-target="#p-animaciones-etapa" hx-swap="outerHTML">{% csrf_token %}
+{% include "piezas/_pasos.html" with pasos=pasos id_pasos="p-paso" etiqueta_grupo="Etapa de ejemplo" %}
+<div class="texto-2">Toca una etapa para ver cómo se marca.</div>
+</form>
+</section>

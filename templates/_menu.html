@@ -1,5 +1,5 @@
 {% load piezas %}{# El menú lateral (normal o contraído). La barra de abajo y el panel "Más" del celular están en _menu_celular.html, después del contenido. Las secciones salen de config/menu.py, que ya deja fuera las que la costurera no puede abrir (T21). #}
-<nav class="menu" aria-label="Secciones">
+<nav class="menu" aria-label="Secciones" data-sin-animar>
 <div class="menu__marca">{% icono "tijeras" 22 %}<span class="menu__taller" id="menu-taller" title="{{ request.taller.nombre|default:"Taller" }}">{{ request.taller.nombre|default:"Taller" }}</span><button type="button" class="menu__contraer" aria-label="Contraer el menú" data-menu-contraer>{% icono "contraer" %}</button></div>
 <button type="button" class="menu__abrir" aria-label="Abrir el menú" title="Abrir el menú" data-menu-abrir>{% icono "tijeras" 22 %}</button>
 <form class="menu__buscar" role="search" action="{% url 'pedidos:buscar' %}">{% icono "buscar" 16 "2" %}<label class="oculto" for="menu-buscar">{% if es_duena %}Buscar pedidos y clientes{% else %}Buscar pedidos{% endif %}</label><input type="search" id="menu-buscar" name="q" placeholder="Buscar" value="{% if request.resolver_match.view_name == 'pedidos:buscar' %}{{ request.GET.q }}{% endif %}"></form>

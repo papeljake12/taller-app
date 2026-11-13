@@ -7,7 +7,9 @@ valor del precio mal escrito (el aviso lo dice). "Enviar por
 WhatsApp" necesita un número que sirva; si no hay, una nota lo pide.
 El aviso dice lo que hay que corregir: al crear el pedido o guardar la prenda (`aviso`) o,
 mientras se escribe, un valor del precio mal escrito (`errores_del_precio`).
-{% endcomment %}{% url 'cotizador:crear_pedido' as url_crear %}<section class="tarjeta columna columna-angosta cotizacion" id="resultado" aria-labelledby="t-total">
+data-sin-animar: como cambia con cada tecla, no se desvanece ni parpadea (static/js/app.js,
+sección 11). Su id y los de adentro son siempre los mismos.
+{% endcomment %}{% url 'cotizador:crear_pedido' as url_crear %}<section class="tarjeta columna columna-angosta cotizacion" id="resultado" aria-labelledby="t-total" data-sin-animar>
 <div class="cifra__nombre" id="t-total">Total de la cotización</div>
 <div class="cifra-grande cotizacion__total dinero">{{ cotizacion.total|pesos }}</div>
 <div>

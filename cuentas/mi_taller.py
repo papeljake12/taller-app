@@ -13,6 +13,10 @@ usuaria de otro taller, o el de una dueña, responde 404 y no cambia nada.
 
 Sin JavaScript, los formularios hacen un envío normal y vuelven a Mi taller. Si tienen un
 error, sale la página completa con el mensaje (cambiar el nombre, en una página aparte).
+
+Después de guardar sale un aviso corto (config/avisos.py). "Nombre guardado." es el de la
+demo; los demás no estaban en la demo y siguen su estilo (docs/bitacora/ajuste-pantalla-fija/
+mi-taller.md). Un formulario con errores no lleva aviso.
 """
 
 from dataclasses import dataclass
@@ -25,6 +29,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
+from config.avisos import avisar
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
 from cuentas.formularios_mi_taller import (
@@ -41,6 +46,13 @@ from cuentas.permisos import exigir_duena, solo_duena
 # caber sin deformarse.
 ANCHO_DEL_LOGO = 160
 ALTO_DEL_LOGO = 80
+
+# Los avisos cortos después de guardar.
+NOMBRE_GUARDADO = "Nombre guardado."  # el de la demo
+CAMBIOS_GUARDADOS = "Cambios guardados."
+COSTURERA_AGREGADA = "Costurera agregada."
+COSTURERA_DESACTIVADA = "Costurera desactivada."
+COSTURERA_ACTIVADA = "Costurera activada."
 
 
 @dataclass(frozen=True)
@@ -168,15 +180,22 @@ def mi_taller(request):
             return render(request, "cuentas/_mi_taller_taller.html",
                           contexto_taller(_taller(request), form), status=422)
         return _pagina(request, status=422, **contexto_taller(_taller(request), form))
+    aviso = _aviso_del_taller(form)
     taller = form.guardar()
     if not _con_tarjeta(request):
-        return _volver(request, "#tu-taller")
+        return avisar(request, _volver(request, "#tu-taller"), aviso)
     # La tarjeta con el mensaje de listo y, aparte, el nombre nuevo en el menú y en la
     # pestaña del navegador (los dos están fuera de la tarjeta).
     contexto = contexto_taller(taller, guardado=True)
     html = render_to_string("cuentas/_mi_taller_taller.html", contexto, request=request)
     html += render_to_string("cuentas/_mi_taller_nombre_menu.html", contexto, request=request)
-    return HttpResponse(html)
+    return avisar(request, HttpResponse(html), aviso)
+
+
+def _aviso_del_taller(form):
+    """"Nombre guardado." (el de la demo) si solo cambió el nombre; si cambió el teléfono,
+    el logo o varias cosas a la vez, "Cambios guardados."."""
+    return NOMBRE_GUARDADO if form.changed_data == ["nombre"] else CAMBIOS_GUARDADOS
 
 
 # --- Costureras --------------------------------------------------------------------------------
@@ -208,8 +227,10 @@ def costurera_nueva(request):
     if _con_tarjeta(request):
         # El formulario vuelve vacío y con el cursor listo para la siguiente.
         nueva = enfocar(FormularioCostureraNueva(taller=request.taller), "nombre_visible")
-        return _tarjeta_costureras(request, agregada=agregada, form_nueva=nueva)
-    return _volver(request, "#costureras")
+        respuesta = _tarjeta_costureras(request, agregada=agregada, form_nueva=nueva)
+    else:
+        respuesta = _volver(request, "#costureras")
+    return avisar(request, respuesta, COSTURERA_AGREGADA)
 
 
 @require_http_methods(["GET", "POST"])
@@ -240,6 +261,9 @@ def costurera_editar(request, pk):
     if accion in ("desactivar", "activar"):
         costurera.is_active = accion == "activar"
         costurera.save(update_fields=["is_active"])
+        # Su fila se va al grupo de las activas o al de las desactivadas (puede quedar
+        # lejos, en una lista larga): el aviso dice qué pasó.
+        aviso = COSTURERA_ACTIVADA if costurera.is_active else COSTURERA_DESACTIVADA
     elif accion == "nombre":
         form = FormularioNombre(request.POST, instance=costurera, taller=request.taller)
         if not form.is_valid():
@@ -248,11 +272,14 @@ def costurera_editar(request, pk):
                                            form_nombre=form)
             return _ventana_nombre(request, costurera, form, status=422)
         form.save()
+        aviso = NOMBRE_GUARDADO
     else:
         return HttpResponseBadRequest("No se entendió qué cambiar.")
     if _con_tarjeta(request):
-        return _tarjeta_costureras(request, enfocar_en=enfocar_en)
-    return _volver(request, "#costureras")
+        respuesta = _tarjeta_costureras(request, enfocar_en=enfocar_en)
+    else:
+        respuesta = _volver(request, "#costureras")
+    return avisar(request, respuesta, aviso)
 
 
 def _ventana_nombre(request, costurera, form, status=200):

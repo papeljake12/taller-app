@@ -3,7 +3,8 @@
 
    Reglas en docs/08-diseno.md; medidas copiadas de las páginas de diseno/.
    Orden: 1. colores y fuente · 2. base · 3. marco, menú y hoja · 4. piezas ·
-   5. celular (menos de 768 px) · 6. menos movimiento.
+   5. celular (menos de 768 px) · 6. pantalla fija (computador, desde 768 px) ·
+   7. animaciones · 8. ajustes de cada pantalla para la pantalla fija · 9. menos movimiento.
 
    Este archivo es compartido: después de la tanda 2 solo lo cambia el coordinador.
    ========================================================================== */
@@ -49,6 +50,24 @@
 
   /* Alto de la barra de abajo en celular (6 + 48 + 8 de relleno, 1 de borde) */
   --alto-barra: 63px;
+
+  /* Movimiento (docs/08-diseno.md, "Animaciones"). Todas las animaciones y transiciones de la
+     aplicación usan estas duraciones y curvas: se ajustan aquí, en un solo lugar. Si la
+     persona pidió menos movimiento en su equipo, valen 0 (sección 9). static/js/app.js
+     también las lee de aquí. */
+  --duracion-corta: 150ms;   /* pasar el mouse, presionar, lo que sale */
+  --duracion: 200ms;         /* lo que entra, ventanas, panel "Más", menú, cambio de sección */
+  --duracion-larga: 250ms;   /* barras de progreso y gráficas que crecen hasta su valor */
+  --curva: cubic-bezier(0.2, 0, 0, 1);         /* arranca rápido y frena suave */
+  --curva-salida: cubic-bezier(0.4, 0, 1, 1);  /* arranca suave y se va */
+
+  /* Tiempos que no son animaciones */
+  --espera-cargando: 300ms;  /* si una acción tarda más, el botón muestra "cargando" */
+  --vuelta-cargando: 700ms;  /* una vuelta del indicador "cargando" */
+  --tiempo-aviso: 2800ms;    /* cuánto se queda a la vista el aviso "Abono registrado." */
+
+  /* Pantalla fija (sección 6): una lista que se desplaza por dentro nunca mide menos */
+  --alto-minimo-lista: 140px;
 }
 
 @font-face {
@@ -1073,6 +1092,13 @@ textarea.campo__control {
   font-family: inherit;
 }
 
+/* La gráfica puede venir en dos versiones (config/piezas.py, grafica_barras con
+   alto_computador): una más baja para la pantalla fija del computador y la de siempre para
+   el celular. Solo se ve una. */
+.grafica--celular {
+  display: none;
+}
+
 .leyenda {
   display: flex;
   gap: 14px;
@@ -1118,6 +1144,7 @@ textarea.campo__control {
 }
 
 .paso__circulo {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1127,7 +1154,28 @@ textarea.campo__control {
   background: var(--tarjeta);
 }
 
+/* El visto bueno y el punto siempre están; se ven solo en su paso. Así, al cambiar de etapa,
+   se marcan con una transición (sección 7) en vez de aparecer de golpe. */
+.paso:not(.paso--hecho) .paso__circulo .icono {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.paso__circulo::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--negro);
+  transform: scale(0);
+}
+
 .paso--hecho .paso__circulo {
+  border: 2px solid var(--negro);  /* no se ve sobre el negro; evita un salto al marcarlo */
   background: var(--negro);
   color: #FFFFFF;
 }
@@ -1141,11 +1189,7 @@ textarea.campo__control {
 }
 
 .paso--actual .paso__circulo::after {
-  content: "";
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--negro);
+  transform: scale(1);
 }
 
 .paso--pendiente {
@@ -1608,6 +1652,31 @@ input[type="file"].campo__control::file-selector-button:hover {
 
 .ventana::backdrop {
   background: rgba(0, 0, 0, 0.5);
+}
+
+/* Una ventana larga ("Escribirles por la dotación" con muchas empresas): se desplaza solo su
+   cuerpo; el título con la X arriba y los botones abajo quedan siempre a la vista */
+.ventana[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.ventana[open] > .ventana__formulario {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ventana[open] .ventana__cabeza,
+.ventana[open] .ventana__pie {
+  flex: none;
+}
+
+.ventana[open] .ventana__cuerpo {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Abierta como página (sin JavaScript): una tarjeta normal */
@@ -2077,6 +2146,15 @@ select.campo__control:not(.boton-select) {
     font-size: 20px;
   }
 
+  /* En celular va la gráfica de siempre, no la baja del computador */
+  .grafica--computador {
+    display: none;
+  }
+
+  .grafica--celular {
+    display: block;
+  }
+
   .cifras {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -2327,9 +2405,1115 @@ select.campo__control:not(.boton-select) {
 }
 
 
-/* 6. Menos movimiento ------------------------------------------------------ */
+/* 6. Pantalla fija en computador (desde 768 px) ----------------------------- */
 
+/* En computador el marco mide exactamente el alto de la ventana y la página nunca se
+   desplaza: el menú y el encabezado de la hoja (título y botones) quedan siempre a la vista.
+   Cada pantalla se arma para caber completa. Si una lista de verdad no cabe, se desplaza solo
+   esa lista, por dentro de su tarjeta:
+
+     <section class="tarjeta tarjeta--lista llenar">        la tarjeta llega hasta abajo
+       <div class="tarjeta__cabeza">...</div>               la cabeza queda quieta
+       <div class="tabla-contenedor desplazable">...</div>  esto se desplaza (encabezado fijo)
+     </section>
+
+   .llenar sirve en la hoja, en una columna, en un tablero o en unas .dos-columnas.
+   Si aun así algo no cabe (una ventana muy baja), se desplaza el contenido de la hoja, nunca
+   la página. En celular (menos de 768 px) nada de esto aplica: se desliza como siempre. */
+
+@media (min-width: 768px) {
+  /* La página misma no se desplaza nunca (si algo no cabe, lo hace .hoja__contenido) */
+  html {
+    overflow: hidden;
+  }
+
+  .marco {
+    position: relative;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Lo que solo oyen los lectores de pantalla (.oculto) queda dentro de su parte: no alarga
+     la página. El aviso para lectores que va suelto en <body> queda fijo, fuera del flujo. */
+  .hoja__contenido {
+    position: relative;
+  }
+
+  body > .oculto {
+    position: fixed;
+  }
+
+  /* El menú ocupa el alto del marco; si la ventana es muy baja, se desplaza él solo */
+  .menu {
+    position: static;
+    align-self: stretch;
+    height: auto;
+    min-height: 0;
+  }
+
+  .hoja {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .encabezado {
+    flex: none;
+  }
+
+  /* El contenido toma el alto que deja el encabezado. Lleva 4 px de aire por dentro para que
+     el anillo del foco de una tarjeta no se corte en el borde. */
+  .hoja__contenido {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: -4px;
+    padding: 4px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Nada se encoge por debajo de lo que mide: lo que no cabe se desplaza (.desplazable) */
+  .hoja__contenido > *,
+  .tablero > *,
+  .columna > *,
+  .llenar > * {
+    flex-shrink: 0;
+  }
+
+  /* El último bloque de la hoja crece hasta abajo: no queda un hueco vacío al final */
+  .hoja__contenido > :last-child {
+    flex-grow: 1;
+  }
+
+  /* Abierta como página, la ventana ("Nuevo pedido" sin JavaScript) mide lo que su formulario */
+  .hoja__contenido > .ventana--pagina {
+    flex-grow: 0;
+  }
+
+  /* .llenar: el bloque toma exactamente el alto que queda donde está (la hoja, una columna,
+     un tablero o una tarjeta). Lo que no cabe dentro se desplaza en su .desplazable.
+     No va en las columnas de unas .dos-columnas (cambiaría su reparto 3 a 2): se pone en las
+     .dos-columnas, y sus columnas toman ese alto solas. */
+  .llenar {
+    flex: 1 1 0;
+    min-height: var(--alto-minimo-lista);
+  }
+
+  .tarjeta.llenar,
+  .tablero.llenar {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Unas .dos-columnas que llenan no se parten en dos filas: así cada columna mide el alto
+     de la fila y su tarjeta .llenar se desplaza por dentro en vez de estirar la fila */
+  .dos-columnas.llenar {
+    flex-wrap: nowrap;
+  }
+
+  .dos-columnas.llenar > *,
+  .columna.llenar > * {
+    min-height: 0;
+  }
+
+  /* ... pero sus columnas sí se angostan si la hoja es angosta (van en fila): así la de la
+     derecha no se sale por el borde (lo notó el carril de Resumen) */
+  .dos-columnas.llenar > * {
+    flex-shrink: 1;
+  }
+
+  /* La parte de una tarjeta que se desplaza por dentro (una tabla, una lista de filas) */
+  .desplazable {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* El encabezado de una tabla que se desplaza queda fijo arriba. Las líneas van pintadas
+     (box-shadow) porque el borde de una celda fija no se mueve con ella. */
+  .desplazable .tabla th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    border-top: 0;
+    box-shadow: inset 0 1px 0 var(--linea), 0 1px 0 var(--linea);
+  }
+
+  /* Fotos que pasan dentro de una tarjeta que llena: la foto toma el alto que quede */
+  .tarjeta--fotos.llenar .fotos,
+  .tarjeta--fotos.llenar .fotos-vacio {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 120px;
+  }
+}
+
+/* Pantallas de poca altura (1366 x 768, 1280 x 800, 1440 x 900): menos relleno y menos
+   espacio entre bloques, para que todo quepa. En pantallas más altas, las medidas de siempre. */
+@media (min-width: 768px) and (max-height: 900px) {
+  .hoja {
+    gap: 12px;
+    padding: 14px 24px 16px;
+  }
+
+  .hoja__contenido,
+  .tablero,
+  .columna,
+  .dos-columnas {
+    gap: 12px;
+  }
+
+  .tarjeta:not(.tarjeta--lista) {
+    padding: 12px 16px;
+  }
+
+  .tarjeta__cabeza {
+    padding: 11px 16px;
+  }
+
+  .tarjeta__cuerpo {
+    gap: 10px;
+    padding: 0 16px 14px;
+  }
+
+  .fila {
+    padding: 11px 16px;
+  }
+
+  .fila--compacta,
+  .fila-proporcion {
+    padding: 8px 16px;
+  }
+
+  .tabla th {
+    padding: 8px 16px;
+  }
+
+  .tabla td {
+    padding: 9px 16px;
+  }
+
+  .renglon {
+    padding: 8px 0;
+  }
+
+  .cifra__valor {
+    line-height: 1.2;
+  }
+
+  .etapas__etapa {
+    padding: 9px 16px;
+  }
+}
+
+
+/* 7. Animaciones -------------------------------------------------------------- */
+
+/* Cortas (entre 150 y 250 ms) y con las duraciones de :root. Lo que entra y sale sin recargar
+   (HTMX), el aviso de confirmación, la ventana y el menú también dependen de
+   static/js/app.js. Con menos movimiento pedido en el equipo no se ve ninguna (sección 9). */
+
+@keyframes aparecer {
+  from { opacity: 0; }
+}
+
+@keyframes desaparecer {
+  to { opacity: 0; }
+}
+
+@keyframes subir {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes bajar {
+  to { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes crecer-ancho {
+  from { transform: scaleX(0); }
+}
+
+@keyframes crecer-alto {
+  from { transform: scaleY(0); }
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+/* Botones y lo que se toca: responden al pasar el mouse y al presionar */
+.boton,
+.filtro,
+.paso,
+.menu__enlace,
+.menu__contraer,
+.menu__abrir,
+.menu__lupa,
+.ventana__cerrar,
+.navegacion-celular__enlace,
+.panel-mas__enlace,
+.tabla__fila,
+.fila--enlace,
+a.cifra,
+button.calendario__dia,
+button.casilla,
+input[type="file"].campo__control::file-selector-button {
+  transition:
+    background-color var(--duracion-corta) var(--curva),
+    border-color var(--duracion-corta) var(--curva),
+    color var(--duracion-corta) var(--curva),
+    opacity var(--duracion-corta) var(--curva),
+    transform var(--duracion-corta) var(--curva);
+}
+
+/* Al pasar el mouse: el secundario oscurece su borde y los dos suben un poco */
+.boton:not(.boton--principal, .boton--claro, .boton--icono):hover:not(:disabled, [aria-disabled="true"]),
+.filtro:not(.es-elegido, [aria-pressed="true"]):hover {
+  border-color: var(--borde-campo);
+}
+
+@media (hover: hover) {
+  .boton:hover:not(:disabled, [aria-disabled="true"]),
+  .filtro:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Al presionar: se hunde */
+.boton:active:not(:disabled, [aria-disabled="true"]),
+.filtro:active,
+.paso:active:not(:disabled),
+.menu__enlace:active:not([aria-disabled="true"]),
+.menu__contraer:active,
+.menu__abrir:active,
+.menu__lupa:active,
+.ventana__cerrar:active,
+.navegacion-celular__enlace:active,
+.panel-mas__enlace:active,
+button.casilla:active {
+  transform: scale(0.97);
+}
+
+/* Mientras espera: si la acción tarda (--espera-cargando), static/js/app.js le pone
+   .esta-cargando. Un botón muestra un círculo que gira en lugar de su texto (y guarda su
+   ancho); lo demás (un paso, una casilla, un día) se apaga un poco. */
+.esta-cargando {
+  cursor: progress;
+}
+
+:not(.boton, .filtro).esta-cargando {
+  opacity: 0.6;
+}
+
+.boton.esta-cargando,
+.filtro.esta-cargando {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.boton.esta-cargando > *,
+.filtro.esta-cargando > * {
+  visibility: hidden;
+}
+
+.boton.esta-cargando::after,
+.filtro.esta-cargando::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid var(--negro);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: girar var(--vuelta-cargando) linear infinite;
+}
+
+.boton--principal.esta-cargando::after,
+.filtro.es-elegido.esta-cargando::after,
+.filtro[aria-pressed="true"].esta-cargando::after {
+  border-color: #FFFFFF;
+  border-right-color: transparent;
+}
+
+/* Barras de progreso, la barra de pagos, "Quién te debe" y las gráficas crecen hasta su
+   valor cuando aparecen (al abrir la pantalla o cuando HTMX trae la tarjeta otra vez) */
+.progreso__relleno,
+.proporcion {
+  transform-origin: left center;
+  animation: crecer-ancho var(--duracion-larga) var(--curva) both;
+}
+
+.grafica rect {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: crecer-alto var(--duracion-larga) var(--curva) both;
+}
+
+/* Cambio de etapa: el paso se marca con una transición. Funciona porque cada paso tiene su
+   id (piezas/_pasos.html): HTMX cambia sus clases sin reemplazarlo de golpe. */
+.paso__circulo {
+  transition:
+    background-color var(--duracion) var(--curva),
+    border-color var(--duracion) var(--curva),
+    color var(--duracion) var(--curva);
+}
+
+.paso__circulo .icono,
+.paso__circulo::after {
+  transition:
+    opacity var(--duracion) var(--curva),
+    transform var(--duracion) var(--curva);
+}
+
+/* Filas plegadas (<details>): la flecha gira */
+details > summary.fila::after {
+  transition: transform var(--duracion) var(--curva);
+}
+
+/* Ventanas ("Nuevo pedido"...): abren y cierran con transición. Para cerrar, static/js/app.js
+   le pone .se-cierra y la cierra al terminar. */
+.ventana[open] {
+  animation: subir var(--duracion) var(--curva);
+}
+
+.ventana[open]::backdrop {
+  animation: aparecer var(--duracion) var(--curva);
+}
+
+.ventana.se-cierra {
+  animation: bajar var(--duracion-corta) var(--curva-salida) forwards;
+}
+
+.ventana.se-cierra::backdrop {
+  animation: desaparecer var(--duracion-corta) var(--curva-salida) forwards;
+}
+
+/* El panel "Más" del celular sube y baja (static/js/app.js le pone .se-cierra al cerrarlo) */
+.panel-mas:not([hidden]) {
+  animation: subir var(--duracion) var(--curva);
+}
+
+.panel-mas.se-cierra {
+  animation: bajar var(--duracion-corta) var(--curva-salida) forwards;
+}
+
+/* Menú: al contraerlo o abrirlo, cambia de ancho con transición y lo de adentro aparece
+   suave. static/js/app.js pone .menu-cambia solo mientras dura (no al abrir cada página). */
+.marco.menu-cambia .menu {
+  overflow: hidden;
+  transition:
+    flex-basis var(--duracion) var(--curva),
+    flex-grow var(--duracion) var(--curva),
+    min-width var(--duracion) var(--curva),
+    max-width var(--duracion) var(--curva),
+    padding var(--duracion) var(--curva);
+}
+
+.marco.menu-cambia .menu > * {
+  animation: aparecer var(--duracion) var(--curva) both;
+}
+
+/* Aviso corto de confirmación ("Abono registrado."): una píldora negra abajo, en el centro.
+   La pone static/js/app.js; los lectores de pantalla lo oyen por su propia caja. */
+.avisos {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.aviso-corto {
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--negro);
+  color: #FFFFFF;
+  font-weight: 600;
+  text-align: center;
+  animation: subir var(--duracion) var(--curva);
+}
+
+.aviso-corto.se-va {
+  animation: bajar var(--duracion-corta) var(--curva-salida) forwards;
+}
+
+/* Cambio entre secciones del menú: el contenido pasa con un desvanecido corto, sin parpadeo.
+   El menú y la barra del celular quedan quietos (cada uno tiene su propio nombre). Lo hace el
+   navegador (View Transitions); en uno que no lo sepa hacer, la página cambia como siempre. */
+@view-transition {
+  navigation: auto;
+}
+
+.menu {
+  view-transition-name: menu;
+}
+
+.navegacion-celular {
+  view-transition-name: barra-celular;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duracion);
+  animation-timing-function: var(--curva);
+}
+
+@media (max-width: 767.98px) {
+  /* En celular el aviso queda encima de la barra de abajo */
+  .avisos {
+    bottom: calc(var(--alto-barra) + 12px + env(safe-area-inset-bottom));
+  }
+
+  /* La ventana sube desde abajo, como una hoja */
+  .ventana[open] {
+    animation-name: subir-desde-abajo;
+  }
+
+  .ventana.se-cierra {
+    animation-name: bajar-hasta-abajo;
+  }
+
+  /* En la franja negra el botón principal es blanco: su círculo de "cargando" va en negro */
+  .encabezado__acciones .boton--principal.esta-cargando::after {
+    border-color: #000000;
+    border-right-color: transparent;
+  }
+}
+
+@keyframes subir-desde-abajo {
+  from { transform: translateY(100%); }
+}
+
+@keyframes bajar-hasta-abajo {
+  to { transform: translateY(100%); }
+}
+
+
+/* 8. Ajustes de cada pantalla para la pantalla fija ---------------------------- */
+
+/* Cada pantalla tiene su apartado. Solo lleva reglas de computador (desde 768 px): en
+   celular todo sigue como está. Lo escribe el agente de esa pantalla, solo dentro de su
+   apartado, y lo revisa el coordinador al unirlo. */
+
+/* --- Hoy (inicio) --- */
+
+/* Hoy en la pantalla fija (pedidos/templates/pedidos/hoy.html). El tablero toma el alto de la
+   hoja y se reparte así, de arriba abajo:
+     - las cifras, la fila de la plata y "Pedidos por etapa" miden lo que su contenido;
+     - la fila de "Qué hacer hoy" y "Trabajos del taller" toma lo que queda: la lista se
+       desplaza por dentro y la foto crece o se achica;
+     - en la fila de la plata manda la gráfica; "Quién te debe" se desplaza por dentro.
+   La costurera no tiene la fila de la plata: su primera fila toma ese alto también. */
+@media (min-width: 768px) {
+  /* Si la ventana es tan baja que ni así cabe, se desplaza la hoja (no se monta nada encima) */
+  .hoja__contenido > .tablero.llenar {
+    min-height: min-content;
+  }
+
+  /* La primera fila no baja de lo que necesita "Trabajos del taller" con su foto más pequeña */
+  .tablero > .dos-columnas.llenar {
+    min-height: 210px;
+  }
+
+  /* La gráfica baja (alto_computador en _grafica.html) crece con el ancho de su tarjeta, hasta
+     un tope: con el menú contraído en una pantalla grande, queda centrada en vez de crecer más */
+  #hoy-grafica .grafica--computador {
+    max-height: 190px;
+  }
+
+  /* Pedidos por etapa: el número y su etiqueta ("1 atrasado", "Pagado") en la misma línea */
+  #hoy-etapas .etapas__etapa {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 8px;
+  }
+
+  #hoy-etapas .etapas__nombre {
+    flex-basis: 100%;
+  }
+}
+
+/* Pantallas bajas (1366 x 768): todo un poco más apretado para que quepa */
+@media (min-width: 768px) and (max-height: 900px) {
+  /* Cifras: menos relleno y renglones más juntos */
+  #hoy-cifras .cifra {
+    padding: 9px 16px;
+  }
+
+  #hoy-cifras .cifra__nombre,
+  #hoy-cifras .cifra__apoyo {
+    line-height: 1.35;
+  }
+
+  #hoy-cifras .cifra__valor {
+    line-height: 1.15;
+  }
+
+  /* Cabezas de tarjeta un poco más bajas */
+  #hoy-que-hacer .tarjeta__cabeza,
+  .tablero .tarjeta--fotos .tarjeta__cabeza,
+  #hoy-quien-debe .tarjeta__cabeza,
+  #hoy-etapas .tarjeta__cabeza {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  /* La gráfica no pasa de 114 px de alto (su alto con el menú abierto en 1366 px de ancho): si
+     su tarjeta es más ancha, queda centrada */
+  #hoy-grafica {
+    gap: 6px;
+    padding: 10px 16px;
+  }
+
+  #hoy-grafica .cifra-grande {
+    line-height: 1.2;
+  }
+
+  #hoy-grafica .grafica--computador {
+    max-height: 114px;
+  }
+
+  /* Quién te debe: filas un poco más juntas (caben las de la altura de la gráfica) */
+  #hoy-quien-debe .fila-proporcion {
+    gap: 3px 12px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    line-height: 1.35;
+  }
+
+  /* La nota de "Trabajos del taller", más junta */
+  .tablero .tarjeta--fotos .tarjeta__nota {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    line-height: 1.35;
+  }
+
+  #hoy-etapas .etapas__etapa {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  #hoy-etapas .etapas__nombre {
+    line-height: 1.35;
+  }
+
+  #hoy-etapas .etapas__cantidad {
+    line-height: 1.2;
+  }
+}
+
+/* Si el tablero es angosto (una tableta, o el computador con la ventana a medio ancho) y las
+   tarjetas de una fila ya no caben de lado a lado (440 + 300 px y su separación), Hoy se
+   apila como antes: cada tarjeta mide lo que su contenido y lo que no cabe se desplaza en la
+   hoja. Se mide el ancho del tablero, no el de la ventana (@container), porque depende de si
+   el menú está contraído. */
+@media (min-width: 768px) {
+  .hoja__contenido > .tablero.llenar {
+    container-type: inline-size;
+  }
+}
+
+@container (max-width: 755.98px) {
+  .tablero > .dos-columnas.llenar {
+    flex: none;
+    flex-wrap: wrap;
+  }
+
+  .tablero > .dos-columnas.llenar > * {
+    min-height: auto;
+  }
+
+  #hoy-que-hacer.llenar,
+  #hoy-quien-debe.llenar,
+  .tablero .tarjeta--fotos.llenar {
+    flex: 1 0 auto;
+  }
+
+  #hoy-que-hacer .desplazable,
+  #hoy-quien-debe .desplazable {
+    flex: none;
+    overflow-y: visible;
+  }
+
+  .tablero .tarjeta--fotos.llenar .fotos {
+    flex: none;
+    height: 264px;
+  }
+
+  .tablero .tarjeta--fotos.llenar .fotos-vacio {
+    flex: 1 0 auto;
+    min-height: 264px;
+  }
+}
+
+/* En celular, Hoy queda como estaba. La lista de "Quién te debe" va ahora dentro de su parte
+   que se desplaza (en el computador): la cabeza conserva el relleno apretado de celular. */
+@media (max-width: 767.98px) {
+  #hoy-quien-debe .tarjeta__cabeza:has(+ .desplazable) {
+    padding-bottom: 3px;
+  }
+}
+
+/* La nota de "Qué hacer hoy" sin pendientes va dentro de su lista: sin relleno de más arriba,
+   como cuando iba justo debajo de la cabeza. */
+#hoy-que-hacer-lista > .tarjeta__nota:only-child {
+  padding-top: 0;
+}
+
+/* --- Hoy (fin) --- */
+
+
+/* --- Pedidos y Buscar (inicio) --- */
+
+@media (min-width: 768px) {
+  /* Pedidos: los filtros y el buscador quedan quietos arriba y la tarjeta de la tabla llega
+     hasta abajo (.llenar). La zona que cambia el buscador (.zona-tabla) le pasa ese alto a
+     la tabla, que con muchos pedidos se desplaza por dentro con su encabezado fijo. */
+  .llenar > .zona-tabla,
+  .tarjeta--resultados > .zona-tabla {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* Buscar: debajo del buscador, una o dos tarjetas de resultados (Pedidos y Clientes) se
+     reparten el alto que queda. Cada una mide lo que necesita mientras quepa; si no caben
+     las dos, la más corta se ve entera y la más larga toma el resto y se desplaza por
+     dentro; si las dos son largas, mitad y mitad. Lo que sobra lo toma la última, que llega
+     hasta abajo. Lo hace una rejilla en la hoja de esta pantalla (solo cuando hay
+     resultados): el buscador mide lo suyo; si hay dos tarjetas, la primera crece como mucho
+     hasta su contenido; la última se estira hasta abajo. */
+  .hoja__contenido:has(> .tarjeta--resultados) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: max-content auto;
+  }
+
+  .hoja__contenido:has(> .tarjeta--resultados + .tarjeta--resultados) {
+    grid-template-rows: max-content minmax(auto, max-content) auto;
+  }
+
+  .tarjeta--resultados {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* Miden por su contenido (no desde cero), para que la rejilla sepa cuánto necesita cada
+     tarjeta; si no cabe, se encogen y se desplazan por dentro. */
+  .tarjeta--resultados .desplazable {
+    flex: 1 1 auto;
+  }
+}
+
+/* --- Pedidos y Buscar (fin) --- */
+
+
+/* --- Pedido por dentro (inicio) --- */
+
+/* Pedido por dentro (pedidos/pedido.html). Las dos columnas (.pedido-por-dentro) toman el alto
+   que deja "Eliminar el pedido"; la lista de Materiales se desplaza por dentro y la foto toma
+   el alto que quede. Las tarjetas son más compactas que en las demás pantallas, en todos los
+   altos: esta es la pantalla con más cosas. Si aun así no cabe (1366 x 768 con la tarjeta
+   Pagos), las columnas miden lo que necesitan y se desplaza la hoja, como en las demás. */
+@media (min-width: 768px) {
+  /* Las columnas nunca miden menos que su contenido más apretado: si no cabe, la hoja se
+     desplaza en vez de montar una tarjeta sobre "Eliminar el pedido" */
+  .pedido-por-dentro.llenar,
+  .pedido-por-dentro.llenar > .columna {
+    min-height: auto;
+  }
+
+  /* "Eliminar el pedido" mide lo suyo: lo que sobra es de las columnas */
+  .hoja__contenido > #pedido-eliminar {
+    flex-grow: 0;
+  }
+
+  .pedido-por-dentro .columna {
+    gap: 12px;
+  }
+
+  .pedido-por-dentro .tarjeta__cabeza,
+  #pedido-eliminar .tarjeta__cabeza {
+    padding: 10px 16px;
+  }
+
+  .pedido-por-dentro .tarjeta__cuerpo {
+    gap: 8px;
+    padding: 0 16px 12px;
+  }
+
+  .pedido-por-dentro .fila--compacta {
+    padding: 8px 16px;
+  }
+
+  .pedido-por-dentro .cifra-grande {
+    line-height: 1.2;
+  }
+
+  /* Etapa: los pasos con menos aire arriba y abajo */
+  .pedido-por-dentro .paso {
+    gap: 4px;
+    padding: 2px;
+  }
+
+  /* Materiales: la lista se desplaza; la cabeza y el formulario quedan quietos. La tarjeta
+     nunca mide menos que su cabeza, el formulario y un poco de lista (overflow: clip, y no
+     hidden, para que el navegador sepa cuánto es eso). */
+  #pedido-materiales {
+    min-height: auto;
+    overflow: clip;
+  }
+
+  /* La lista no crece más que sus materiales: si sobra alto, queda en blanco al final de la
+     tarjeta (como antes), no entre la lista y el formulario. Con uno o dos materiales mide lo
+     suyo; con tres o más, si falta alto, se achica hasta mostrar unos dos. */
+  .materiales__lista {
+    min-height: max-content;
+    max-height: max-content;
+  }
+
+  .materiales__lista:has(> .fila:nth-child(3)) {
+    min-height: 90px;
+  }
+
+  /* Tallas: abierta, la lista de personas se desplaza si son más de tres. Se asoma la mitad
+     de la cuarta, para que se note que hay más. */
+  details[open] > .tallas__personas {
+    max-height: 206px;
+  }
+
+  /* Foto: la tarjeta toma el alto que queda. La foto mide 264 px, como siempre, y si falta
+     alto se achica hasta 120 px; la invitación sin foto mide 120 px y se achica hasta lo que
+     mide su frase. Lo que sobra queda en blanco al final de la tarjeta, no en gris. */
+  #pedido-foto {
+    min-height: auto;
+    overflow: clip;
+  }
+
+  #pedido-foto .fotos {
+    flex: 1 1 0;
+    min-height: 120px;
+    max-height: 264px;
+  }
+
+  #pedido-foto .fotos-vacio {
+    flex: 1 1 0;
+    min-height: auto;
+    max-height: 120px;
+    padding: 10px 16px;
+  }
+
+  #pedido-foto .tarjeta__nota {
+    padding: 8px 16px;
+  }
+
+  /* Elegir la foto: el campo mide 36 px, como los demás */
+  #pedido-foto input[type="file"].campo__control {
+    padding: 2px 3px;
+  }
+
+  #pedido-foto input[type="file"].campo__control::file-selector-button {
+    min-height: 30px;
+  }
+
+  /* Pagos: cada abono con menos aire arriba */
+  .pedido-por-dentro .pagos__abono {
+    padding-top: 8px;
+  }
+}
+
+/* --- Pedido por dentro (fin) --- */
+
+
+/* --- Nuevo pedido (inicio) --- */
+
+/* Sin reglas propias: la ventana cabe en 1366 x 768 aun con todos los errores (mide unos
+   680 px de alto) y, abierta como página, también. */
+
+/* --- Nuevo pedido (fin) --- */
+
+
+/* --- Calendario (inicio) --- */
+
+/* Las dos columnas llegan hasta abajo, sin hueco (las .dos-columnas llevan .llenar):
+   - el mes llena su tarjeta: sus semanas (4, 5 o 6) se reparten el alto que deja la
+     leyenda. Si un día tiene más entregas de las que caben en su cuadro, se ven las
+     primeras; la lista de la derecha las trae todas;
+   - a la derecha, "Entregas del mes" mide lo que sus filas; si son muchas, se encoge y solo
+     su lista se desplaza. "Semana más cargada" llega hasta abajo, como en el diseño. */
+@media (min-width: 768px) {
+  /* Una ventana muy baja no aplasta las semanas (cada una sigue midiendo al menos 56 px):
+     36 (días de la semana) + 6 x 56 + 46 (leyenda) + 2 (borde). Por debajo, se desplaza
+     la hoja. */
+  .dos-columnas--calendario {
+    min-height: 420px;
+  }
+
+  /* En una ventana angosta (de 768 a unos 1080 px con el menú abierto) las dos columnas se
+     angostan juntas: si no, la de la derecha se saldría de la hoja y no se vería. */
+  .dos-columnas--calendario > * {
+    flex-shrink: 1;
+  }
+
+  .columna-ancha--calendario {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .columna-ancha--calendario > .calendario {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-rows: auto;          /* Lun, Mar... */
+    grid-auto-rows: minmax(0, 1fr);    /* las semanas, todas del mismo alto */
+  }
+
+  .columna-ancha--calendario > .calendario__leyenda {
+    flex: none;
+  }
+
+  .calendario__dia {
+    min-height: 0;
+  }
+
+  /* Al tocar un día, la cuadrícula llega nueva (con el día marcado) y el día tocado sigue
+     bajo el mouse: si su fondo gris se animara, ese día parpadearía. El fondo cambia
+     directo; "cargando" sigue igual. */
+  button.calendario__dia {
+    transition-property: opacity;
+  }
+
+  .calendario__numero {
+    flex: none;
+  }
+
+  /* Un día con más entregas de las que caben muestra las primeras; tocarlo las trae todas a
+     la lista. No se desplaza por dentro: Chrome haría de esa parte una parada más del
+     tabulador dentro del botón del día. */
+  .calendario__entregas {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Cada entrega mide lo que su nombre (hasta tres líneas): no se aplasta para caber */
+  .calendario__entregas > .etiqueta {
+    flex: none;
+  }
+
+  .columna > .calendario-lista {
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .calendario-lista > .desplazable {
+    flex: 0 1 auto;
+  }
+}
+
+/* --- Calendario (fin) --- */
+
+
+/* --- Clientes (inicio) --- */
+
+/* Sin reglas propias: la tarjeta de la lista lleva .llenar y la caja de la tabla
+   (#clientes-lista) es su .desplazable, así que el aviso de dotación y el buscador quedan
+   quietos y solo la tabla se desplaza, con el encabezado fijo. */
+
+/* --- Clientes (fin) --- */
+
+
+/* --- Cotizador (inicio) --- */
+
+/* Sin reglas propias: con el relleno menor de la sección 6 cabe en 1366 x 768 (también con
+   una prenda elegida y el resultado lleno; sobran 36 px) y las dos columnas terminan juntas
+   al final de la hoja. Lo comprueba cotizador/tests/test_pantalla_fija_cotizador.py. */
+
+/* --- Cotizador (fin) --- */
+
+
+/* --- Telas (inicio) --- */
+
+/* La tarjeta de la tabla llega hasta abajo (.llenar, en telas/_tabla.html) y solo la tabla se
+   desplaza por dentro (.desplazable), con su encabezado fijo; las cifras quedan quietas.
+   Con pocas telas la tabla mide lo suyo y la nota "Toca el nombre de una tela..." va justo
+   debajo, como antes (no al fondo de la tarjeta). Con muchas, la tabla se encoge hasta el
+   espacio que queda y la nota se queda quieta abajo. */
+@media (min-width: 768px) {
+  #telas > .desplazable {
+    flex: 0 1 auto;
+  }
+}
+
+/* --- Telas (fin) --- */
+
+
+/* --- Resumen (inicio) --- */
+
+/* Resumen (finanzas/resumen.html). En computador, la fila de la gráfica y los gastos toma el
+   alto que queda (.llenar) y la lista de gastos se desplaza por dentro de su tarjeta
+   (#gastos-lista, .desplazable); las cifras, la gráfica y la fila de abajo quedan quietas. */
+
+/* Sin gastos, la nota va pegada a la cabeza, como antes de que la lista tuviera su caja
+   (#gastos-lista): así queda igual también en celular. */
+#gastos-lista > .tarjeta__nota:first-child {
+  padding-top: 0;
+}
+
+@media (min-width: 768px) {
+  /* La fila nunca es más baja que la gráfica: en una ventana muy baja se desplaza la hoja,
+     como en las demás pantallas, en vez de cortar la gráfica. La lista de gastos no cuenta
+     para ese mínimo: ella se desplaza por dentro. */
+  .resumen__fila-gastos.llenar {
+    min-height: auto;
+  }
+
+  /* Las dos tarjetas de la fila se reparten el ancho (3 a 2) también cuando la hoja es
+     angosta: se encogen en vez de salirse por la derecha (.llenar > * no se encoge) */
+  .resumen__fila-gastos.llenar > * {
+    flex-shrink: 1;
+  }
+
+  /* Ventas por tipo y Quién tiene qué miden lo suyo: el alto que sobra es para los gastos */
+  .hoja__contenido > .resumen__fila-barras {
+    flex-grow: 0;
+  }
+
+  /* La tarjeta de gastos: la cabeza queda quieta y la lista se desplaza debajo de ella */
+  #gastos {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* La gráfica viene en dos versiones (finanzas/_grafica.html): la baja del computador (alto
+   160) y la de siempre (alto 200, la misma del celular y del diseño). La baja solo hace falta
+   en pantallas de poca altura (hasta 900 px), para que quede holgura aunque "Quién tiene qué"
+   tenga más personas. En pantallas más altas sobra espacio: va la de siempre. */
+@media (min-width: 768px) and (min-height: 901px) {
+  #resumen-grafica .grafica--computador {
+    display: none;
+  }
+
+  #resumen-grafica .grafica--celular {
+    display: block;
+  }
+}
+
+/* --- Resumen (fin) --- */
+
+
+/* --- Mi taller (inicio) --- */
+
+/* Mi taller (cuentas/mi_taller.html): la fila de las dos tarjetas toma el alto que queda
+   (.dos-columnas.llenar) y cada tarjeta lo reparte de arriba abajo.
+   - Costureras: la cabeza y la nota quedan quietas. Debajo van la lista y el formulario para
+     agregar, uno detrás del otro, como siempre. Si son muchas, solo la lista se desplaza y el
+     formulario sigue a la vista. Si la ventana es tan baja que ni así cabe, se desplaza la
+     lista junto con el formulario (mi-taller__cuerpo): nada se corta.
+   - Tu taller: el formulario se desplaza por dentro solo si no cabe (una ventana muy baja).
+   En una ventana angosta (menos de 900 px, una tableta parada) las dos tarjetas no caben una
+   al lado de la otra: van una debajo de la otra, como antes, y se desplaza la hoja. */
+@media (min-width: 768px) and (max-width: 899.98px) {
+  .mi-taller.llenar {
+    flex: 1 0 auto;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 900px) {
+  /* Van una al lado de la otra: si la fila es más angosta que las dos (una ventana de menos
+     de unos 1050 px), se angostan las dos en vez de salirse por la derecha */
+  .mi-taller > .tarjeta {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 1;
+  }
+
+  .mi-taller .tarjeta__cabeza,
+  .mi-taller .tarjeta__nota {
+    flex: none;
+  }
+
+  .mi-taller__cuerpo {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Con pocas costureras la lista mide lo que sus filas, sin encogerse. Desde tres, se encoge
+     para dejar el formulario a la vista, hasta un mínimo (por debajo, se desplaza el cuerpo). */
+  .mi-taller .mi-taller__lista {
+    flex: none;
+  }
+
+  .mi-taller .mi-taller__lista:has(> :nth-child(3)) {
+    flex: 0 1 auto;
+    min-height: var(--alto-minimo-lista);
+  }
+
+  .mi-taller__cuerpo > .pagos__form {
+    flex: none;
+  }
+}
+
+/* --- Mi taller (fin) --- */
+
+
+/* 9. Menos movimiento ------------------------------------------------------ */
+
+/* Si la persona pidió menos movimiento en su equipo, no ve animaciones: las duraciones valen
+   0 (todo llega directo a su lugar), nada sube ni se hunde y el cambio de sección no se
+   desvanece. static/js/app.js tampoco anima nada. */
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    --duracion-corta: 0ms;
+    --duracion: 0ms;
+    --duracion-larga: 0ms;
+  }
+
+  @view-transition {
+    navigation: none;
+  }
+
+  .boton,
+  .filtro,
+  .paso,
+  .menu__enlace,
+  .menu__contraer,
+  .menu__abrir,
+  .menu__lupa,
+  .ventana__cerrar,
+  .navegacion-celular__enlace,
+  .panel-mas__enlace,
+  button.casilla {
+    transform: none !important;
+  }
+
+  /* El indicador "cargando" se queda quieto */
+  .boton.esta-cargando::after,
+  .filtro.esta-cargando::after {
+    animation: none;
+  }
+
   .fotos__foto,
   .fotos__punto {
     transition: none;

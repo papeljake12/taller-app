@@ -10,6 +10,11 @@ Permisos (T21, docs/04-permisos.md): la costurera ve el pedido sin la tarjeta Pa
 solo si es la encargada. La fecha de entrega, la encargada y el WhatsApp del cliente los ve
 pero no los cambia (es editar el pedido), y no puede eliminarlo. Cada vista lo revisa
 después de buscar el pedido: el de otro taller responde 404; lo prohibido del suyo, 403.
+
+Avisos cortos (config/avisos.py): eliminar dice "Pedido eliminado." en la lista de Pedidos,
+como la demo. La etapa, la fecha, la encargada y el WhatsApp no llevan aviso: se guardan
+solos al tocarlos y el cambio se ve justo ahí (el paso marcado, la frase de la entrega, el
+campo; el WhatsApp ya dice "Número guardado." debajo).
 """
 
 from django.http import HttpResponse
@@ -18,6 +23,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
+from config.avisos import avisar
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
 from cuentas.permisos import (
@@ -283,5 +289,7 @@ def eliminar(request, pk):
         almacen.delete(foto)
     lista = reverse("pedidos:lista")
     if es_htmx(request):
-        return HttpResponse(status=204, headers={"HX-Redirect": lista})
-    return redirect(lista)
+        respuesta = HttpResponse(status=204, headers={"HX-Redirect": lista})
+    else:
+        respuesta = redirect(lista)
+    return avisar(request, respuesta, "Pedido eliminado.")

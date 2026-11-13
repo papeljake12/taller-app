@@ -1,5 +1,5 @@
 {% load piezas %}{# Barra de abajo y panel "Más" en celular. Va después de <main> en base.html: así, con el teclado, primero se llega al contenido y después a la barra (que se ve fija abajo). Las secciones salen de config/menu.py. #}
-<nav class="navegacion-celular" aria-label="Secciones">
+<nav class="navegacion-celular" aria-label="Secciones" data-sin-animar>
 {% for entrada in menu.barra %}{% if entrada.url %}<a class="navegacion-celular__enlace{% if entrada.actual %} es-actual{% endif %}" href="{{ entrada.url }}"{% if entrada.actual %} aria-current="page"{% endif %}>{% else %}<a class="navegacion-celular__enlace" aria-disabled="true">{% endif %}{% icono entrada.icono 22 %}{{ entrada.nombre }}</a>
 {% endfor %}<button type="button" class="navegacion-celular__enlace{% if menu.mas_actual %} es-actual{% endif %}" aria-expanded="false" aria-controls="panel-mas" data-mas>{% icono "mas" 22 %}Más</button>
 </nav>

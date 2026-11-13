@@ -10,6 +10,9 @@ al pedido.
 Permisos (T21, docs/04-permisos.md): registrar y quitar abonos y descargar recibos es solo de
 la dueña. Primero se busca el pedido en el taller (el de otro responde 404) y después se
 revisa el rol (la costurera recibe 403, aunque envíe el formulario a mano).
+
+Después de guardar, un aviso corto (config/avisos.py): "Abono registrado." (el de la demo) y
+"Abono quitado.". Con errores, no.
 """
 
 from dataclasses import dataclass
@@ -20,6 +23,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from config.avisos import avisar
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import obtener_o_404
 from cuentas.permisos import exigir_duena
@@ -139,8 +143,10 @@ def nuevo(request, pk):
     form.save()
     if _con_tarjeta(request):
         # El formulario vuelve vacío y con el cursor listo para el siguiente abono.
-        return _tarjeta(request, _pedido(request, pk), form=FormularioAbono().enfocar())
-    return _volver_al_pedido(request, pedido)
+        respuesta = _tarjeta(request, _pedido(request, pk), form=FormularioAbono().enfocar())
+    else:
+        respuesta = _volver_al_pedido(request, pedido)
+    return avisar(request, respuesta, "Abono registrado.")
 
 
 @require_http_methods(["GET", "POST"])
@@ -156,8 +162,10 @@ def quitar(request, pk, abono):
     if request.method == "POST":
         abono.delete()
         if _con_tarjeta(request):
-            return _tarjeta(request, _pedido(request, pk))
-        return _volver_al_pedido(request, pedido)
+            respuesta = _tarjeta(request, _pedido(request, pk))
+        else:
+            respuesta = _volver_al_pedido(request, pedido)
+        return avisar(request, respuesta, "Abono quitado.")
     if "cancelar" in request.GET:
         if _con_tarjeta(request):
             return _tarjeta(request, pedido)

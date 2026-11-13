@@ -1,6 +1,7 @@
 """T15. Cotizador: el resultado mientras se escribe, "Mis prendas" (elegir, guardar y quitar),
 copiar o enviar la cotización y crear el pedido con ella."""
 
+import json
 import re
 from datetime import date, timedelta
 from decimal import Decimal
@@ -87,6 +88,16 @@ def valor_de(html, nombre):
 def boton(html, texto):
     """La etiqueta de apertura del botón (o enlace) que dice `texto`."""
     return re.search(rf'<(?:button|a)\b[^>]*>(?=[^<]*{texto})', html).group(0)
+
+
+def aviso_corto(respuesta):
+    """El texto del aviso corto que manda la respuesta (config/avisos.py), o None."""
+    disparos = json.loads(respuesta.headers.get("HX-Trigger") or "{}")
+    return disparos.get("aviso")
+
+
+def ids(html):
+    return re.findall(r'\bid="([^"]+)"', html)
 
 
 @pytest.fixture
@@ -402,7 +413,8 @@ def test_guardar_esta_prenda_la_agrega_a_mis_prendas(sesion_duena, taller):
     html = respuesta.text
     # El botón ya apunta al formulario entero: no hace falta cambiarle el destino.
     assert "HX-Retarget" not in respuesta.headers
-    assert "Prenda guardada en tu lista." in html
+    # Con JavaScript, "Prenda guardada en tu lista." sale en el aviso corto (ver abajo).
+    assert aviso_corto(respuesta) == "Prenda guardada en tu lista."
     assert f'<option value="{prenda.pk}" selected>' in html
     assert valor_de(html, "cliente") == "Panadería El Trigal"
 
@@ -462,9 +474,13 @@ def test_guardar_no_toca_la_prenda_de_otro_taller_con_el_mismo_nombre(sesion_due
 
 
 def test_guardar_sin_javascript_devuelve_la_pagina_entera(sesion_duena):
-    html = sesion_duena.post(URL_GUARDAR, CAMISA_POLO).text
+    respuesta = sesion_duena.post(URL_GUARDAR, CAMISA_POLO)
+    html = respuesta.text
 
-    assert "<h1>Cotizador</h1>" in html and "Prenda guardada en tu lista." in html
+    # Sin JavaScript no hay aviso corto: el texto sale como nota en "Qué prenda".
+    assert "<h1>Cotizador</h1>" in html
+    assert '<p class="nota" role="status">Prenda guardada en tu lista.</p>' in html
+    assert "HX-Trigger" not in respuesta.headers
 
 
 # --- Mis prendas: quitar --------------------------------------------------------------------
@@ -486,10 +502,11 @@ def test_quitar_de_mi_lista_primero_pregunta(sesion_duena, camisa):
 def test_quitar_con_la_confirmacion_la_borra_y_deja_lo_escrito(sesion_duena, camisa):
     datos = con(guardada=camisa.pk, aplicada=camisa.pk, confirmar="si")
 
-    html = sesion_duena.post(url_quitar(camisa), datos, headers=BOTON).text
+    respuesta = sesion_duena.post(url_quitar(camisa), datos, headers=BOTON)
+    html = respuesta.text
 
     assert not PrendaGuardada.objects.filter(pk=camisa.pk).exists()
-    assert "Prenda quitada de tu lista." in html
+    assert aviso_corto(respuesta) == "Prenda quitada de tu lista."
     assert valor_de(html, "prenda") == "Camisa polo bordada"
     assert valor_de(html, "aplicada") == ""
     assert total(html) == "$ 1.090.000"
@@ -695,3 +712,113 @@ def test_los_ejemplos_traen_la_camisa_polo_del_diseno(sesion_duena, duena):
     assert total(html) == "$ 1.090.000"
     for nombre, valor in CIFRAS_DEL_DISENO.items():
         assert renglon(html, nombre) == valor
+
+
+# --- Animaciones y aviso corto (ajuste "pantalla fija y animaciones") -----------------------
+
+
+def test_mientras_se_escribe_el_resultado_no_se_anima_ni_avisa(sesion_duena):
+    """El resultado cambia con cada tecla: lleva data-sin-animar, sus ids no cambian y no
+    manda aviso corto (no se guardó nada)."""
+    vacio = sesion_duena.post(URL_CALCULAR, con(cantidad=""), headers=HTMX)
+    lleno = sesion_duena.post(URL_CALCULAR, con(whatsapp="300 123 4567"), headers=HTMX)
+    mal = sesion_duena.post(URL_CALCULAR, con(insumos="tres mil"), headers=HTMX)
+
+    for respuesta in (vacio, lleno, mal):
+        assert "HX-Trigger" not in respuesta.headers
+        assert re.search(r'<section[^>]*id="resultado"[^>]*\sdata-sin-animar>', respuesta.text)
+        assert ids(respuesta.text) == ["resultado", "t-total"]
+
+
+def test_los_ids_del_formulario_no_cambian_de_una_respuesta_a_otra(sesion_duena, camisa):
+    """Lo que sigue en su lugar no se desvanece (static/js/app.js): sus ids son fijos."""
+    elegida = sesion_duena.post(URL_CALCULAR, con(guardada=camisa.pk), headers=HTMX).text
+    guardada = sesion_duena.post(URL_GUARDAR, con(guardada=camisa.pk, aplicada=camisa.pk),
+                                 headers=BOTON).text
+    pagina = sesion_duena.get(URL_INICIO).text
+
+    assert len(ids(elegida)) == len(set(ids(elegida)))
+    assert ids(elegida) == ids(guardada)
+    # Sin prenda elegida solo falta "Quitar de mi lista"; lo demás es igual.
+    assert set(ids(elegida)) - set(ids(pagina)) == {"quitar-de-mi-lista"}
+
+
+def test_quitar_de_mi_lista_y_su_pregunta_llevan_id(sesion_duena, camisa):
+    """El botón y la pregunta entran con un desvanecido y la pregunta se cierra al irse."""
+    elegida = sesion_duena.post(URL_CALCULAR, con(guardada=camisa.pk), headers=HTMX).text
+    datos = con(guardada=camisa.pk, aplicada=camisa.pk)
+    pregunta = sesion_duena.post(url_quitar(camisa), datos, headers=BOTON).text
+
+    assert 'id="quitar-de-mi-lista"' in boton(elegida, "Quitar de mi lista")
+    assert "pregunta-quitar" not in elegida
+    assert '<div class="aviso" id="pregunta-quitar" role="alert">' in pregunta
+    assert '<div class="botones" id="pregunta-quitar-botones">' in pregunta
+    assert "quitar-de-mi-lista" not in ids(pregunta)
+    # Al irse el botón que se tocó, el cursor queda en algo que sigue en la pantalla.
+    assert 'data-foco-despues="quitar-de-mi-lista"' in boton(pregunta, "Cancelar")
+    assert 'data-foco-despues="cot-guardada"' in boton(pregunta, "Sí, quitar la prenda")
+
+
+def test_guardar_la_prenda_con_javascript_avisa_sin_repetir_la_nota(sesion_duena):
+    respuesta = sesion_duena.post(URL_GUARDAR, CAMISA_POLO, headers=BOTON)
+
+    assert json.loads(respuesta.headers["HX-Trigger"]) == {
+        "aviso": "Prenda guardada en tu lista."
+    }
+    assert "Prenda guardada en tu lista." not in respuesta.text
+
+
+def test_guardar_la_prenda_con_errores_no_avisa(sesion_duena):
+    respuesta = sesion_duena.post(URL_GUARDAR, con(prenda=""), headers=BOTON)
+
+    assert respuesta.status_code == 422
+    assert aviso_corto(respuesta) is None
+
+
+def test_preguntar_y_cancelar_no_avisan(sesion_duena, camisa):
+    datos = con(guardada=camisa.pk, aplicada=camisa.pk)
+
+    pregunta = sesion_duena.post(url_quitar(camisa), datos, headers=BOTON)
+    cancelar = sesion_duena.post(url_quitar(camisa), {**datos, "cancelar": "si"}, headers=BOTON)
+
+    assert aviso_corto(pregunta) is None and aviso_corto(cancelar) is None
+    assert PrendaGuardada.objects.filter(pk=camisa.pk).exists()
+
+
+def test_quitar_la_prenda_con_javascript_avisa_sin_repetir_la_nota(sesion_duena, camisa):
+    datos = con(guardada=camisa.pk, aplicada=camisa.pk, confirmar="si")
+
+    respuesta = sesion_duena.post(url_quitar(camisa), datos, headers=BOTON)
+
+    assert json.loads(respuesta.headers["HX-Trigger"]) == {"aviso": "Prenda quitada de tu lista."}
+    assert "Prenda quitada de tu lista." not in respuesta.text
+
+
+def test_quitar_la_prenda_sin_javascript_lo_dice_en_la_tarjeta(sesion_duena, camisa):
+    datos = con(guardada=camisa.pk, aplicada=camisa.pk, confirmar="si")
+
+    respuesta = sesion_duena.post(url_quitar(camisa), datos)
+
+    assert "<h1>Cotizador</h1>" in respuesta.text
+    assert '<p class="nota" role="status">Prenda quitada de tu lista.</p>' in respuesta.text
+    assert "HX-Trigger" not in respuesta.headers
+
+
+@pytest.mark.parametrize("encabezados", [BOTON, {}], ids=["con-javascript", "sin-javascript"])
+def test_crear_pedido_avisa_en_la_pagina_del_pedido(sesion_duena, taller, encabezados):
+    """Crear el pedido lleva a otra página: el aviso de la demo va como mensaje y sale allí."""
+    respuesta = sesion_duena.post(URL_CREAR, CAMISA_POLO, headers=encabezados)
+
+    destino = respuesta.headers.get("HX-Redirect") or respuesta.url
+    assert destino == reverse("pedidos:detalle", args=[Pedido.objects.get(taller=taller).pk])
+    assert "HX-Trigger" not in respuesta.headers
+    pagina = sesion_duena.get(destino).text
+    assert "<p data-aviso>Pedido creado como cotizado.</p>" in pagina
+
+
+def test_crear_pedido_con_errores_no_avisa(sesion_duena, taller):
+    respuesta = sesion_duena.post(URL_CREAR, con(cliente=""), headers=BOTON)
+
+    assert respuesta.status_code == 422
+    assert aviso_corto(respuesta) is None
+    assert "avisos-pendientes" not in sesion_duena.get(URL_INICIO).text

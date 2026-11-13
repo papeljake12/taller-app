@@ -1,12 +1,12 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Clientes (diseno/clientes.html), T04 y T19. La lista, el buscador, crear y editar son de T04 (tanda 3). El aviso de dotación (_clientes_dotacion.html) y "Escribirle" (_clientes_acciones.html) los agrega T19 (tanda 5).{% endcomment %}
+{% comment %}Clientes (diseno/clientes.html), T04 y T19. La lista, el buscador, crear y editar son de T04 (tanda 3). El aviso de dotación (_clientes_dotacion.html) y "Escribirle" (_clientes_acciones.html) los agrega T19 (tanda 5). En computador la tarjeta de la lista llena el alto que queda (.llenar) y solo la tabla se desplaza por dentro (_clientes_tabla.html).{% endcomment %}
 {% block pestana %}Clientes{% endblock %}
 {% block titulo %}Clientes{% endblock %}
 {% block apoyo %}<span class="encabezado__apoyo">{{ apoyo }}</span>{% endblock %}
 {% block acciones %}<a class="boton boton--principal" href="{% url 'pedidos:cliente_nuevo' %}" hx-get="{% url 'pedidos:cliente_nuevo' %}" hx-target="#ventana">Nuevo cliente</a>{% endblock %}
 {% block contenido %}
 {% include "pedidos/_clientes_dotacion.html" %}
-<section class="tarjeta tarjeta--lista tarjeta--con-buscador" aria-labelledby="t-clientes">
+<section class="tarjeta tarjeta--lista tarjeta--con-buscador llenar" aria-labelledby="t-clientes">
 <h2 class="oculto" id="t-clientes">Lista de clientes</h2>
 <form method="get" action="{% url 'pedidos:clientes' %}" role="search" hx-get="{% url 'pedidos:clientes' %}" hx-target="#clientes-lista" hx-swap="outerHTML" hx-trigger="input changed delay:300ms from:find input, search from:find input, submit" hx-push-url="true">
 <label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar cliente</span><input type="search" name="q" value="{{ busqueda }}" placeholder="Buscar por nombre, tipo o WhatsApp" autocomplete="off"></label>
