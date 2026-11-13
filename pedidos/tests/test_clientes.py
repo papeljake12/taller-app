@@ -1,4 +1,8 @@
-"""Clientes (T04): la lista con buscador, crear y editar."""
+"""Clientes (T04): la lista con buscador, crear y editar.
+
+Con el ajuste "pantalla fija y animaciones": la tabla se desplaza por dentro en computador,
+cada fila lleva el id de su cliente y al guardar sale un aviso corto.
+"""
 
 import re
 from datetime import date
@@ -19,7 +23,16 @@ URL = "/clientes/"
 
 def filas(html):
     """Los nombres de la tabla, en orden."""
-    return re.findall(r"<tr><td><strong>([^<]+)</strong>", html)
+    return re.findall(r'<tr id="cliente-\d+"><td><strong>([^<]+)</strong>', html)
+
+
+def ids_de_filas(html):
+    return re.findall(r'<tr id="(cliente-\d+)">', html)
+
+
+def avisos_pendientes(html):
+    """Los avisos cortos que la página deja para static/js/app.js (base.html)."""
+    return re.findall(r"<p data-aviso>([^<]*)</p>", html)
 
 
 def nuevo(sesion, **datos):
@@ -142,9 +155,68 @@ def test_el_buscador_trae_solo_la_tabla(sesion_duena, taller):
 
     respuesta = sesion_duena.get(URL, {"q": "marcela"}, headers={**HTMX, "HX-Target": "clientes-lista"})
 
-    assert respuesta.text.startswith('<div id="clientes-lista">')
+    assert respuesta.text.startswith(
+        '<div id="clientes-lista" class="tabla-contenedor desplazable">')
     assert "<html" not in respuesta.text
     assert filas(respuesta.text) == ["Marcela Ejemplo"]
+
+
+# --- Pantalla fija y animaciones (docs/08-diseno.md) --------------------------------------------
+
+
+def test_en_computador_solo_la_tabla_se_desplaza(sesion_duena, taller):
+    """La tarjeta de la lista toma el alto que queda (.llenar) y la caja de la tabla se
+    desplaza por dentro (.desplazable): el aviso de dotación y el buscador quedan quietos."""
+    fabricas.crear_cliente(taller, nombre="Marcela Ejemplo")
+
+    html = sesion_duena.get(URL).text
+
+    tarjeta = re.search(r'<section class="([^"]*)" aria-labelledby="t-clientes">', html)
+    assert "llenar" in tarjeta.group(1).split()
+    lista = html[tarjeta.end():]
+    assert lista.index('role="search"') < lista.index(
+        '<div id="clientes-lista" class="tabla-contenedor desplazable">')
+    assert html.index("tarjeta-oscura") < tarjeta.start()
+
+
+def test_cada_fila_lleva_el_id_de_su_cliente_y_no_cambia_al_buscar(sesion_duena, taller):
+    """Con el mismo id antes y después, al buscar solo entran y salen las filas que cambian
+    (static/js/app.js, sección 11): las que siguen no parpadean."""
+    marcela = fabricas.crear_cliente(taller, nombre="Marcela Ejemplo")
+    ferreteria = fabricas.crear_cliente(taller, nombre="Ferretería La Esquina")
+
+    pagina = sesion_duena.get(URL).text
+    buscada = sesion_duena.get(URL, {"q": "marcela"},
+                               headers={**HTMX, "HX-Target": "clientes-lista"}).text
+
+    assert sorted(ids_de_filas(pagina)) == sorted(
+        [f"cliente-{marcela.pk}", f"cliente-{ferreteria.pk}"])
+    assert ids_de_filas(buscada) == [f"cliente-{marcela.pk}"]
+    # La tabla tiene su id en la página y en la búsqueda: no se vuelve a dibujar entera.
+    assert pagina.count('<table class="tabla" id="clientes-tabla">') == 1
+    assert buscada.count('<table class="tabla" id="clientes-tabla">') == 1
+
+
+def test_las_notas_de_la_lista_tienen_su_id(sesion_duena, taller):
+    """Sin resultados, la nota entra con un id fijo: al seguir escribiendo no parpadea."""
+    assert 'id="clientes-vacio"' in sesion_duena.get(URL).text
+
+    fabricas.crear_cliente(taller, nombre="Marcela Ejemplo")
+    for busqueda in ("zap", "zapatos"):
+        html = sesion_duena.get(URL, {"q": busqueda},
+                                headers={**HTMX, "HX-Target": "clientes-lista"}).text
+        nota = f"Ningún cliente coincide con «{busqueda}»."
+        assert f'<p class="tarjeta__nota" id="clientes-ninguno">{nota}</p>' in html
+        assert "clientes-tabla" not in html
+
+
+def test_buscar_no_lleva_aviso(sesion_duena, taller):
+    fabricas.crear_cliente(taller, nombre="Marcela Ejemplo")
+
+    respuesta = sesion_duena.get(URL, {"q": "marcela"},
+                                 headers={**HTMX, "HX-Target": "clientes-lista"})
+
+    assert "HX-Trigger" not in respuesta.headers
 
 
 def test_el_buscador_funciona_sin_javascript(sesion_duena):
@@ -167,6 +239,33 @@ def test_crear_un_cliente(sesion_duena, taller):
     assert cliente.taller == taller
     assert (cliente.nombre, cliente.tipo, cliente.whatsapp, cliente.notas) == (
         "Comparsa Nueva", "comparsa", "300 123 4567", "Ensayan los sábados.")
+
+
+def test_crear_avisa_cliente_creado_en_la_lista(sesion_duena):
+    """Al guardar se vuelve a la lista: el aviso corto sale allá (config/avisos.py)."""
+    respuesta = nuevo(sesion_duena, nombre="Comparsa Nueva")
+
+    assert respuesta.headers["HX-Redirect"] == URL
+    assert "HX-Trigger" not in respuesta.headers
+    assert avisos_pendientes(sesion_duena.get(URL).text) == ["Cliente creado."]
+    # Se muestra una sola vez.
+    assert avisos_pendientes(sesion_duena.get(URL).text) == []
+
+
+def test_crear_sin_javascript_tambien_avisa(sesion_duena):
+    respuesta = sesion_duena.post(reverse("pedidos:cliente_nuevo"),
+                                  {"nombre": "Sin JS", "tipo": "empresa"}, follow=True)
+
+    assert respuesta.redirect_chain == [(URL, 302)]
+    assert avisos_pendientes(respuesta.text) == ["Cliente creado."]
+
+
+def test_con_errores_no_hay_aviso(sesion_duena):
+    respuesta = nuevo(sesion_duena, nombre="  ")
+
+    assert respuesta.status_code == 422
+    assert "HX-Trigger" not in respuesta.headers
+    assert avisos_pendientes(sesion_duena.get(URL).text) == []
 
 
 def test_la_ventana_de_nuevo_cliente_trae_sus_campos(sesion_duena):
@@ -272,6 +371,29 @@ def test_editar_un_cliente(sesion_duena, taller):
     assert (cliente.nombre, cliente.tipo, cliente.whatsapp) == (
         "Nombre nuevo", "empresa", "3001234567")
     assert Cliente.objects.count() == 1
+
+
+def test_editar_avisa_cliente_guardado_en_la_lista(sesion_duena, taller):
+    cliente = fabricas.crear_cliente(taller, nombre="Nombre viejo")
+    url = reverse("pedidos:cliente_editar", args=[cliente.pk])
+
+    respuesta = sesion_duena.post(url, {"nombre": "Nombre nuevo", "tipo": "particular"},
+                                  headers=HTMX)
+
+    assert respuesta.headers["HX-Redirect"] == URL
+    assert avisos_pendientes(sesion_duena.get(URL).text) == ["Cliente guardado."]
+
+
+def test_editar_con_errores_no_avisa(sesion_duena, taller):
+    fabricas.crear_cliente(taller, nombre="Ya existe")
+    cliente = fabricas.crear_cliente(taller, nombre="Otro")
+    url = reverse("pedidos:cliente_editar", args=[cliente.pk])
+
+    respuesta = sesion_duena.post(url, {"nombre": "ya existe", "tipo": "particular"},
+                                  headers=HTMX)
+
+    assert respuesta.status_code == 422
+    assert avisos_pendientes(sesion_duena.get(URL).text) == []
 
 
 def test_editar_conservando_el_mismo_nombre_se_puede(sesion_duena, taller):

@@ -2903,6 +2903,10 @@ details > summary.fila::after {
 
 /* --- Clientes (inicio) --- */
 
+/* Sin reglas propias: la tarjeta de la lista lleva .llenar y la caja de la tabla
+   (#clientes-lista) es su .desplazable, así que el aviso de dotación y el buscador quedan
+   quietos y solo la tabla se desplaza, con el encabezado fijo. */
+
 /* --- Clientes (fin) --- */
 
 
