@@ -9,6 +9,7 @@ Uso:
     uv run python herramientas/capturas.py --tanda 1
     uv run python herramientas/capturas.py --tanda 1 --usuario david
     uv run python herramientas/capturas.py --tanda 1 --referencias carpeta/   (también las de diseno/)
+    uv run python herramientas/capturas.py --tanda 3 --solo pedidos pedido --salida carpeta/
 
 Solo se usa en el computador de desarrollo. Necesita Google Chrome instalado.
 """
@@ -167,10 +168,16 @@ def main():
     argumentos.add_argument("--usuario", help="usuario con el que se entra (por defecto, la primera dueña)")
     argumentos.add_argument("--referencias", type=Path,
                             help="carpeta donde guardar también las capturas de diseno/")
+    argumentos.add_argument("--solo", nargs="+", metavar="PANTALLA",
+                            help="capturar solo estas pantallas (por su nombre)")
+    argumentos.add_argument("--salida", type=Path,
+                            help="carpeta de las capturas (por defecto, docs/capturas/tanda-N/)")
     opciones = argumentos.parse_args()
 
     pantallas = [p for n in sorted(PANTALLAS) if n <= opciones.tanda for p in PANTALLAS[n]]
-    salida = RAIZ / "docs" / "capturas" / f"tanda-{opciones.tanda}"
+    if opciones.solo:
+        pantallas = [p for p in pantallas if p.nombre in opciones.solo]
+    salida = opciones.salida or RAIZ / "docs" / "capturas" / f"tanda-{opciones.tanda}"
 
     from playwright.sync_api import sync_playwright
 
@@ -182,7 +189,7 @@ def main():
     puerto = puerto_libre()
     servidor = levantar_servidor(puerto)
     base = f"http://127.0.0.1:{puerto}"
-    print(f"Servidor en {base}, sesión de {usuario}. Capturas en {salida.relative_to(RAIZ)}")
+    print(f"Servidor en {base}, sesión de {usuario}. Capturas en {salida}")
     total = 0
     try:
         with sync_playwright() as p:
