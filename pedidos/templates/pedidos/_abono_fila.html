@@ -1,0 +1,4 @@
+{% load piezas %}{% comment %}
+Un abono en la tarjeta Pagos: fecha, valor, su recibo en PDF y el botón para quitarlo.
+El botón de quitar no borra: trae la pregunta de confirmación (_abono_confirmar.html).
+{% endcomment %}{% url 'pedidos:abono_quitar' pedido.pk abono.pk as url_quitar %}<div class="renglon pagos__abono"><span>Abono del {{ abono.fecha|fecha_corta }}</span><span class="pagos__acciones"><strong class="dinero">{{ abono.valor|pesos }}</strong><a class="boton" href="{% url 'pedidos:recibo' pedido.pk abono.pk %}" download>Recibo</a><a class="boton pagos__quitar" href="{{ url_quitar }}" hx-get="{{ url_quitar }}" hx-target="#pagos" hx-swap="outerHTML" aria-label="Quitar el abono de {{ abono.valor|pesos }} del {{ abono.fecha|fecha_corta }}" title="Quitar abono">{% icono "cerrar" %}</a></span></div>
