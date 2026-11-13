@@ -1654,6 +1654,31 @@ input[type="file"].campo__control::file-selector-button:hover {
   background: rgba(0, 0, 0, 0.5);
 }
 
+/* Una ventana larga ("Escribirles por la dotación" con muchas empresas): se desplaza solo su
+   cuerpo; el título con la X arriba y los botones abajo quedan siempre a la vista */
+.ventana[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.ventana[open] > .ventana__formulario {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ventana[open] .ventana__cabeza,
+.ventana[open] .ventana__pie {
+  flex: none;
+}
+
+.ventana[open] .ventana__cuerpo {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 /* Abierta como página (sin JavaScript): una tarjeta normal */
 .ventana--pagina {
   width: auto;
