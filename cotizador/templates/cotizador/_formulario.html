@@ -30,7 +30,7 @@ vez de tocar el primer botón que se vea (que podría ser "Quitar de mi lista").
 <section class="tarjeta tarjeta--lista" aria-labelledby="t-ganancia">
 <div class="tarjeta__cabeza"><h2 id="t-ganancia">Tu ganancia</h2></div>
 <div class="tarjeta__cuerpo">
-<div class="campos">{% include "piezas/_campo.html" with campo=form.ganancia %}{% include "piezas/_campo.html" with campo=form.abono %}</div>
+<div class="campos campos--abajo">{% include "piezas/_campo.html" with campo=form.ganancia %}{% include "piezas/_campo.html" with campo=form.abono %}</div>
 <div class="botones"><button type="submit" class="boton" formaction="{{ url_guardar }}" hx-post="{{ url_guardar }}" hx-target="#cotizador" hx-swap="outerHTML" hx-sync="this:drop">Guardar esta prenda en mi lista</button></div>
 </div>
 </section>

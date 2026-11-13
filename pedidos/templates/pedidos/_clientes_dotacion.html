@@ -4,6 +4,6 @@ textos los arma la vista (pedidos/vistas/clientes.py, aviso_de_dotacion). El bot
 ventana con los clientes empresa (_clientes_dotacion_empresas.html); sin JavaScript abre la
 misma lista como página. Sin clientes empresa no hay botón.
 {% endcomment %}<section class="tarjeta-oscura" aria-labelledby="t-dotacion">
-<div class="fila__texto"><h2 class="tarjeta-oscura__titulo" id="t-dotacion">{{ aviso.titulo }}</h2><p class="tarjeta-oscura__apoyo">{{ aviso.apoyo }}</p></div>
+<div class="tarjeta-oscura__texto"><h2 class="tarjeta-oscura__titulo" id="t-dotacion">{{ aviso.titulo }}</h2><p class="tarjeta-oscura__apoyo">{{ aviso.apoyo }}</p></div>
 {% if aviso.boton %}<a class="boton boton--claro" href="{% url 'pedidos:clientes' %}?escribir=empresas" hx-get="{% url 'pedidos:clientes' %}?escribir=empresas" hx-target="#ventana">{{ aviso.boton }}</a>{% endif %}
 </section>

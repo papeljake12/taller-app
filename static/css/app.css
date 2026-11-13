@@ -1425,6 +1425,61 @@ input[type="file"].campo__control::file-selector-button:hover {
   display: none;
 }
 
+/* Calendario: el mes se lleva más ancho que en las demás pantallas (diseno/calendario.html) */
+.columna-ancha--calendario {
+  flex-basis: 480px;
+}
+
+.columna-angosta--calendario {
+  flex-basis: 280px;
+}
+
+/* Botones de una fila de tabla (Telas: "Entró" y "Usé"): en una línea, con 8 px entre ellos */
+.tabla__acciones {
+  display: inline-flex;
+  gap: 8px;
+}
+
+/* Botones de una celda que no se parten (Clientes: "Editar" y "Escribirle") */
+.botones--en-linea {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+/* El texto de la tarjeta negra (aviso de dotación): crece y deja el botón a la derecha */
+.tarjeta-oscura__texto {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+/* Resultado del cotizador (diseno/cotizador.html) */
+.cotizacion {
+  gap: 10px;
+  padding: 16px;
+}
+
+.cotizacion__total {
+  margin-top: -8px;
+  font-size: 30px;
+}
+
+/* Campos en fila con los controles alineados abajo, aunque una etiqueta se parta en dos */
+.campos--abajo {
+  align-items: flex-end;
+}
+
+/* Cifra en ámbar: hay que estar pendiente, sin ser atraso ni deuda (telas que se acaban) */
+.cifra--ambar {
+  border-color: var(--ambar-texto);
+}
+
+.cifra--ambar .cifra__nombre,
+.cifra--ambar .cifra__valor {
+  color: var(--ambar-texto);
+}
+
+.texto-ambar { color: var(--ambar-texto); }
+
 /* Tablero: filas de tarjetas de una pantalla (Hoy). En celular las filas se abren y
    cada bloque toma su turno con .orden-celular-N (ver la sección 5). */
 .tablero {
@@ -1589,6 +1644,13 @@ button.calendario__dia:hover {
   gap: 8px 16px;
   padding: 12px 16px;
   color: var(--texto-2);
+}
+
+/* Cada cuadrito de la leyenda junto a su palabra, con el espacio del diseño */
+.calendario__clave {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
 }
 
 /* 5. Celular (menos de 768 px) --------------------------------------------- */

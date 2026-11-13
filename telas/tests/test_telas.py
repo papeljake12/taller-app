@@ -75,7 +75,9 @@ def test_la_pantalla_sale_como_el_diseno(client):
                      r"<div class=\"cifra__apoyo\">En inventario", cifras)
     assert re.search(r"Metros en total</div>\s*<div class=\"cifra__valor\">60 m</div>\s*"
                      r"<div class=\"cifra__apoyo\">Suma de todas", cifras)
-    assert re.search(r'<div class="tarjeta cifra cifra--alerta">\s*<div class="cifra__nombre">'
+    # En ámbar, no en rojo: el rojo es solo para atrasos y deudas (CLAUDE.md, regla 7, y
+    # docs/03 y docs/08: "tela que se acaba" va en ámbar). diseno/telas.html la pintaba roja.
+    assert re.search(r'<div class="tarjeta cifra cifra--ambar">\s*<div class="cifra__nombre">'
                      r"Se están acabando</div>\s*<div class=\"cifra__valor\">2</div>\s*"
                      r'<div class="cifra__apoyo">Piqué blanco y popelina blanca</div>', cifras)
     for titulo in ("Tela", "Quedan", "Avisar cuando queden", "Estado", "Acción"):
@@ -84,7 +86,7 @@ def test_la_pantalla_sale_como_el_diseno(client):
     assert filas(html) == ["Piqué blanco", "Popelina blanca", "Dril azul",
                            "Tela estampada para polleras"]
     pique = fila(html, "Piqué blanco")
-    assert '<strong class="texto-rojo">6 m</strong>' in pique
+    assert '<strong class="texto-ambar">6 m</strong>' in pique
     assert '<td class="num">10 m</td>' in pique
     assert '<span class="etiqueta etiqueta--ambar">Se está acabando</span>' in pique
     assert ">Entró</a>" in pique and ">Usé</a>" in pique
@@ -108,7 +110,7 @@ def test_sin_telas_invita_a_anotar_la_primera(sesion_duena):
     assert "0 telas, 0 m en total" in html
     assert "Todavía no has anotado ninguna tela" in html
     assert "<table" not in html
-    assert "cifra--alerta" not in html
+    assert "cifra--ambar" not in html and "cifra--alerta" not in html
     assert "Ninguna por ahora" in html
 
 
@@ -132,7 +134,7 @@ def test_sin_aviso_solo_hay_dos_estados(sesion_duena, taller):
     assert '<span class="etiqueta etiqueta--verde">Suficiente</span>' in fila(html, "Seda")
     assert "Se acabó" not in html
     # Sin aviso, ninguna "se está acabando".
-    assert "cifra--alerta" not in html
+    assert "cifra--ambar" not in html and "cifra--alerta" not in html
 
 
 def test_no_muestra_las_telas_de_otro_taller(sesion_duena, pique):
@@ -264,8 +266,7 @@ def test_al_guardar_cierra_la_ventana_y_trae_la_tabla_las_cifras_y_el_apoyo(sesi
     assert ('<span class="encabezado__apoyo" id="telas-apoyo" hx-swap-oob="true">'
             "1 tela, 16 m en total</span>") in html
     assert "Ninguna por ahora" in html
-    assert ('<dialog class="ventana" id="ventana" aria-label="Ventana" hx-swap-oob="true">'
-            "</dialog>") in html
+    assert respuesta.headers["HX-Trigger"] == "cerrar-ventana"
 
 
 def menu_lateral(html):

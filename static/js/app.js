@@ -171,6 +171,12 @@
     }
   });
 
+  // El servidor puede cerrarla después de guardar con la cabecera "HX-Trigger: cerrar-ventana".
+  document.body.addEventListener("cerrar-ventana", function () {
+    const dialogo = ventana();
+    if (dialogo && dialogo.open) dialogo.close();
+  });
+
   document.addEventListener("close", function (evento) {
     if (evento.target === ventana()) evento.target.replaceChildren();
   }, true);

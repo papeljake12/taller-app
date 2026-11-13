@@ -46,7 +46,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 - [x] **T09. Recibo en PDF.** Con ReportLab, mismo contenido que el de la demo.
 - [x] **T10. Tallas internas.** Modelo `Talla`, agregar a mano con medidas, totales por talla,
   copiar resumen.
-- [ ] **T11. Enlace público de tallas.** Pantalla "Formulario público de tallas" completa,
+- [x] **T11. Enlace público de tallas.** Pantalla "Formulario público de tallas" completa,
   con token, cierre del enlace y límite de envíos.
 - [x] **T12. Materiales.** Modelo `Material`, agregar, marcar y quitar.
 - [x] **T13. Fotos.** Foto por pedido: subir, cambiar y quitar. Reducir el tamaño al subir y
@@ -55,14 +55,14 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 
 ## Las demás secciones
 
-- [ ] **T14. Calendario.** Pantalla "Calendario".
-- [ ] **T15. Cotizador.** Modelo `PrendaGuardada` y pantalla "Cotizador".
-- [ ] **T16. Telas.** Modelos `Tela` y `MovimientoTela`, pantalla "Telas".
+- [x] **T14. Calendario.** Pantalla "Calendario".
+- [x] **T15. Cotizador.** Modelo `PrendaGuardada` y pantalla "Cotizador".
+- [x] **T16. Telas.** Modelos `Tela` y `MovimientoTela`, pantalla "Telas".
 - [x] **T17. Gastos y resumen del mes.** Modelo `Gasto` y pantalla "Resumen del mes", sin el Excel.
 - [x] **T18. Descarga para Excel.** Con openpyxl, cuatro hojas.
-- [ ] **T19. Mensajes de WhatsApp y avisos de dotación.** Enlaces que abren el chat con el
+- [x] **T19. Mensajes de WhatsApp y avisos de dotación.** Enlaces que abren el chat con el
   texto escrito, y pantalla "Clientes" completa.
-- [ ] **T20. Mi taller.** Pantalla "Mi taller".
+- [x] **T20. Mi taller.** Pantalla "Mi taller".
 
 ## Cierre
 

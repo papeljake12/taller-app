@@ -1,6 +1,6 @@
 {% load piezas %}{# El menú en sus tres formas: lateral (normal o contraído), barra de abajo en celular y panel "Más". Las secciones salen de config/menu.py. #}
 <nav class="menu" aria-label="Secciones">
-<div class="menu__marca">{% icono "tijeras" 22 %}<span class="menu__taller">{{ request.taller.nombre|default:"Taller" }}</span><button type="button" class="menu__contraer" aria-label="Contraer el menú" data-menu-contraer>{% icono "contraer" %}</button></div>
+<div class="menu__marca">{% icono "tijeras" 22 %}<span class="menu__taller" id="menu-taller">{{ request.taller.nombre|default:"Taller" }}</span><button type="button" class="menu__contraer" aria-label="Contraer el menú" data-menu-contraer>{% icono "contraer" %}</button></div>
 <button type="button" class="menu__abrir" aria-label="Abrir el menú" title="Abrir el menú" data-menu-abrir>{% icono "tijeras" 22 %}</button>
 <form class="menu__buscar" role="search" action="{% url 'pedidos:buscar' %}">{% icono "buscar" 16 "2" %}<label class="oculto" for="menu-buscar">Buscar pedidos y clientes</label><input type="search" id="menu-buscar" name="q" placeholder="Buscar" value="{% if request.resolver_match.view_name == 'pedidos:buscar' %}{{ request.GET.q }}{% endif %}"></form>
 <button type="button" class="menu__lupa" aria-label="Buscar" title="Buscar" data-menu-abrir>{% icono "buscar" 16 "2" %}</button>

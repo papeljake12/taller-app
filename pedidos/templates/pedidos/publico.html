@@ -6,6 +6,7 @@ tarjeta, una de sus partes (`parte`): el formulario, la confirmación, el enlace
 de "espera un minuto" o el de "este enlace no existe".
 {% endcomment %}
 {% block pestana %}Envía tu talla{% endblock %}
+{% block sufijo %}{% if pedido %}{{ pedido.taller.nombre }}{% else %}Pedidos del taller{% endif %}{% endblock %}
 {% block cuerpo %}
 <div class="marco-acceso">
 <main class="acceso">

@@ -6,6 +6,9 @@ Contenido de la ventana (<dialog id="ventana"> de base.html). Una vista lo devue
   {% block cuerpo %} ...campos... {% endblock %}
   {% block pie %}<button type="submit" class="boton boton--principal">Guardar</button>{% endblock %}
 
+El botón que solo cierra dice "Cancelar"; una ventana sin nada que cancelar lo cambia con
+{% block cerrar %}Cerrar{% endblock %}.
+
 Todo va dentro de un formulario. `accion` es la dirección a la que se envía y `objetivo`,
 dónde se dibuja la respuesta (por defecto, la misma ventana, para mostrar los errores).
 La vista responde con config.ventanas.responder_ventana: dentro de la ventana si la pidió
@@ -14,5 +17,5 @@ HTMX, o como página completa si se abrió el enlace sin JavaScript.
 {% csrf_token %}
 <div class="ventana__cabeza"><h2 id="ventana-titulo">{% block titulo %}{% endblock %}</h2><button type="button" class="ventana__cerrar" data-cerrar-ventana aria-label="Cerrar">{% icono "cerrar" %}</button></div>
 <div class="ventana__cuerpo">{% block cuerpo %}{% endblock %}</div>
-<div class="ventana__pie"><button type="button" class="boton" data-cerrar-ventana>Cancelar</button>{% block pie %}{% endblock %}</div>
+<div class="ventana__pie"><button type="button" class="boton" data-cerrar-ventana>{% block cerrar %}Cancelar{% endblock %}</button>{% block pie %}{% endblock %}</div>
 </form>

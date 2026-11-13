@@ -30,7 +30,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 
 from config.menu import construir_menu
 from config.piezas import metros as texto_metros
-from config.ventanas import es_htmx, responder_ventana
+from config.ventanas import CERRAR_VENTANA, es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
 from pedidos import calculos
 from telas.formularios import (
@@ -138,9 +138,10 @@ def _cambios(request, movida=None, tipo=None):
     html += render_to_string("telas/_cifras.html", contexto, request=request)
     html += render_to_string("telas/_apoyo.html", contexto, request=request)
     html += render_to_string("telas/_menu.html", contexto, request=request)
-    html += render_to_string("telas/_cerrar_ventana.html", contexto, request=request)
-    # La ventana pidió dibujar la respuesta en sí misma: se cambia por la tabla.
-    return HttpResponse(html, headers={"HX-Retarget": "#telas", "HX-Reswap": "outerHTML"})
+    # La ventana pidió dibujar la respuesta en sí misma: se cambia por la tabla, y se cierra.
+    return HttpResponse(
+        html, headers={"HX-Retarget": "#telas", "HX-Reswap": "outerHTML", **CERRAR_VENTANA}
+    )
 
 
 # --- Nueva tela -----------------------------------------------------------------------------

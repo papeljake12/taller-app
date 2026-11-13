@@ -529,3 +529,41 @@ def test_en_celular_los_textos_cortos_y_el_cambio_de_mes_se_ven():
     for regla in (r"\.texto-computador \{\s*display: none;", r"\.texto-celular \{\s*display: inline;",
                   r"\.navegacion-mes \{\s*display: flex;"):
         assert re.search(regla, celular), regla
+
+
+# --- Agregado al unir la tanda 5 -------------------------------------------------------------
+
+
+def test_la_cifra_puede_ir_en_ambar_para_lo_que_hay_que_vigilar():
+    html = Template('{% include "piezas/_cifra.html" with nombre="Se están acabando" valor=2 ambar=True %}').render(Context())
+
+    assert 'class="tarjeta cifra cifra--ambar"' in html
+    css = (ESTATICOS / "css/app.css").read_text("utf-8")
+    assert ".cifra--ambar .cifra__valor" in css
+
+
+def test_el_nombre_del_taller_en_el_menu_tiene_id_para_cambiarlo_sin_recargar(sesion_duena, taller):
+    assert f'<span class="menu__taller" id="menu-taller">{taller.nombre}</span>' in sesion_duena.get("/").text
+
+
+def test_el_formulario_publico_lleva_en_la_pestana_el_taller_del_pedido(sesion_duena, taller):
+    from tests import fabricas
+
+    otro = fabricas.crear_taller(nombre="Confecciones del enlace")
+    pedido = fabricas.crear_pedido(otro)
+
+    html = sesion_duena.get(f"/tallas/{pedido.token_tallas}/").text
+
+    assert "· Confecciones del enlace</title>" in html
+    assert f"· {taller.nombre}</title>" not in html
+
+
+def test_la_ventana_puede_cambiar_cancelar_por_cerrar():
+    from django.template import engines
+
+    plantilla = engines["django"].from_string(
+        '{% extends "piezas/ventana.html" %}{% block cerrar %}Cerrar{% endblock %}'
+    )
+    html = plantilla.render({"accion": "/x/"})
+
+    assert "data-cerrar-ventana>Cerrar</button>" in html
