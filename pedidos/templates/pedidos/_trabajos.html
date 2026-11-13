@@ -1,4 +1,11 @@
-{% comment %}Tarjeta "Trabajos del taller" (T13). La rellena el carril C de la tanda 4.{% endcomment %}<section class="tarjeta tarjeta--lista tarjeta--fotos" aria-labelledby="t-trabajos">
-<div class="tarjeta__cabeza"><h2 id="t-trabajos">Trabajos del taller</h2></div>
-<p class="tarjeta__nota">Llega con T13.</p>
-</section>
+{% comment %}
+Tarjeta "Trabajos del taller" de Hoy (T13, diseno/hoy.html): las fotos de los pedidos pasan
+una a la vez, con la pieza Fotos que pasan (piezas/_fotos.html).
+
+`trabajos` es la lista que arma pedidos.fotos.trabajos(request): las fotos de los pedidos del
+taller, del más reciente al más antiguo, máximo 8. Sin fotos (o si la vista todavía no la
+manda), la tarjeta invita a subir la primera desde Pedidos: la foto se sube dentro de cada
+pedido.
+La nota de abajo reemplaza la del diseño ("Fotos de ejemplo hechas con IA..."), que era solo
+del diseño: ocupa el mismo lugar, para que la tarjeta termine igual que en la referencia.
+{% endcomment %}{% url 'pedidos:lista' as url_lista %}{% include "piezas/_fotos.html" with fotos=trabajos titulo="Trabajos del taller" url_subir=url_lista nota="Son las fotos de tus pedidos. Cada pedido tiene la suya: se sube dentro del pedido." %}

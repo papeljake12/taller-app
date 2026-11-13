@@ -1,0 +1,7 @@
+{% comment %}
+La pregunta antes de quitar la foto, dentro de la tarjeta "Foto del pedido" (en el lugar del
+formulario). "Sí, quitar la foto" la borra; "Cancelar" deja la tarjeta como estaba.
+{% endcomment %}{% url 'pedidos:foto_quitar' pedido.pk as url_quitar %}<div class="tarjeta__cuerpo">
+<div class="aviso" role="alert"><p>¿Quitar la foto de este pedido? Deja de salir en "Trabajos del taller" y no se puede recuperar.</p></div>
+<form class="botones" method="post" action="{{ url_quitar }}" hx-post="{{ url_quitar }}" hx-target="#pedido-foto" hx-swap="outerHTML">{% csrf_token %}<button type="submit" class="boton boton--principal" autofocus>Sí, quitar la foto</button><a class="boton" href="{{ url_quitar }}?cancelar=1" hx-get="{{ url_quitar }}?cancelar=1" hx-target="#pedido-foto" hx-swap="outerHTML">Cancelar</a></form>
+</div>
