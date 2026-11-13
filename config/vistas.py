@@ -4,6 +4,8 @@ Solo existe en el computador de desarrollo (DEBUG). En el servidor responde 404.
 Los valores que muestra son de ejemplo, copiados de las páginas de diseno/.
 """
 
+from datetime import date
+
 from django import forms
 from django.conf import settings
 from django.http import Http404
@@ -12,6 +14,7 @@ from django.templatetags.static import static
 from django.utils import timezone
 
 from config.menu import construir_menu
+from pedidos.calculos import MesDeGrafica
 
 
 class EjemploForm(forms.Form):
@@ -70,6 +73,14 @@ def piezas(request):
         "con_errores": con_errores,
         "pasos": pasos,
         "fotos": fotos,
+        # Los valores de ejemplo de la gráfica de diseno/hoy.html, de junio a noviembre.
+        "meses_grafica": [
+            MesDeGrafica(date(2026, mes, 1), cobrado, gastado)
+            for mes, cobrado, gastado in (
+                (6, 2_100_000, 800_000), (7, 2_900_000, 1_100_000), (8, 3_600_000, 1_300_000),
+                (9, 1_900_000, 700_000), (10, 2_660_000, 600_000), (11, 4_460_000, 939_000),
+            )
+        ],
         "colores": [
             ("--negro", "#1A1A1A"), ("--texto-2", "#555555"), ("--texto-3", "#8A8A8A"),
             ("--hoja", "#F1F1F1"), ("--tarjeta", "#FFFFFF"), ("--suave", "#F7F7F7"),

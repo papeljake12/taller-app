@@ -103,3 +103,21 @@ def test_cotizacion_para_copiar(ejemplo):
         "Precio por unidad: $ 54.500\nTotal: $ 1.090.000\nAbono para empezar: $ 545.000\n"
         "Entrega estimada: 14 de dic"
     )
+
+
+def test_preguntar_si_confirma(ejemplo):
+    marcela = pedido_de(ejemplo, "Marcela P.")
+
+    assert mensajes.texto_confirmar(marcela) == (
+        "Hola, le escribimos de Taller de ejemplo. ¿Le confirmamos su pedido (Vestido de "
+        "grado a la medida) por $ 380.000? Apenas nos confirme, empezamos."
+    )
+
+
+def test_aviso_de_atraso(ejemplo):
+    ferreteria = pedido_de(ejemplo, "Ferretería La Esquina")
+
+    assert mensajes.texto_atraso(ferreteria) == (
+        "Hola, le escribimos de Taller de ejemplo. Su pedido (8 overoles con logo estampado) "
+        "se nos demoró un poco. Le avisamos apenas esté listo. ¡Gracias por la paciencia!"
+    )

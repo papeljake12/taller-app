@@ -473,3 +473,51 @@ def test_los_metros_se_escriben_con_coma(valor, esperado):
     from config.piezas import metros
 
     assert metros(valor) == esperado
+
+
+
+# --- Gráfica de barras (config/piezas.py) -------------------------------------------------
+
+
+def _meses_del_diseno():
+    from pedidos.calculos import MesDeGrafica
+
+    valores = [(2_100_000, 800_000), (2_900_000, 1_100_000), (3_600_000, 1_300_000),
+               (1_900_000, 700_000), (2_660_000, 600_000), (4_460_000, 939_000)]
+    return [MesDeGrafica(date(2026, m, 1), c, g) for m, (c, g) in zip(range(6, 12), valores)]
+
+
+def test_la_grafica_dibuja_las_mismas_barras_que_el_diseno():
+    from config.piezas import grafica_barras
+
+    svg = grafica_barras(_meses_del_diseno())
+    diseno = (RAIZ / "diseno/hoy.html").read_text("utf-8")
+
+    rects = re.findall(r'<rect x="\d+" y="\d+" width="22" height="\d+" rx="4" fill="#[0-9A-F]+"></rect>', svg)
+    assert len(rects) == 12
+    for rect in rects:
+        assert rect in diseno, rect
+    assert '<text x="0" y="114" font-size="12" fill="#555555">2 M</text>' in svg
+    assert '<text x="0" y="54" font-size="12" fill="#555555">4 M</text>' in svg
+    assert 'font-weight="700" text-anchor="middle" fill="#1A1A1A">nov</text>' in svg
+    assert 'aria-label="Barras de cobrado y gastado de junio a noviembre. En noviembre: cobrado 4,46 millones y gastado 0,94 millones."' in svg
+
+
+def test_la_grafica_sin_plata_no_dibuja_barras():
+    from pedidos.calculos import MesDeGrafica
+
+    from config.piezas import grafica_barras
+
+    svg = grafica_barras([MesDeGrafica(date(2026, m, 1), 0, 0) for m in range(6, 12)])
+
+    assert "<rect" not in svg and "<svg" in svg
+
+
+def test_la_grafica_con_poca_plata_marca_miles():
+    from pedidos.calculos import MesDeGrafica
+
+    from config.piezas import grafica_barras
+
+    svg = grafica_barras([MesDeGrafica(date(2026, 11, 1), 900_000, 100_000)])
+
+    assert ">500 mil</text>" in svg

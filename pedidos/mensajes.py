@@ -53,6 +53,28 @@ def texto_cobro(pedido):
     )
 
 
+def texto_confirmar(pedido):
+    """Para un cotizado: preguntarle al cliente si confirma (botón de Hoy).
+
+    No está en la demo: lo agregó el diseño de Hoy. Mismo tono que los demás mensajes.
+    """
+    return (
+        f"Hola, le escribimos {firma(pedido.taller)}. ¿Le confirmamos su pedido "
+        f"({pedido.detalle}) por {pesos(pedido.total)}? Apenas nos confirme, empezamos."
+    )
+
+
+def texto_atraso(pedido):
+    """Para un pedido atrasado: avisarle al cliente (botón "Avisar al cliente" de Hoy).
+
+    No está en la demo: lo agregó el diseño de Hoy. Mismo tono que los demás mensajes.
+    """
+    return (
+        f"Hola, le escribimos {firma(pedido.taller)}. Su pedido ({pedido.detalle}) se nos "
+        "demoró un poco. Le avisamos apenas esté listo. ¡Gracias por la paciencia!"
+    )
+
+
 def texto_tallas(pedido):
     """Resumen de tallas para copiar: cuántas de cada una y cuántas faltan."""
     lineas = [f"Tallas: {pedido.cliente.nombre}", pedido.detalle, ""]

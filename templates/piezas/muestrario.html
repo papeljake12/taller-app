@@ -175,19 +175,8 @@ Los textos y valores son de ejemplo, copiados de las páginas de diseno/.
 <section class="tarjeta columna-ancha" aria-labelledby="p-grafica" style="display: flex; flex-direction: column; gap: 8px">
 <div class="tarjeta__cabeza" style="padding: 0"><h2 id="p-grafica">Cobrado y gastado por mes</h2><div class="leyenda"><span class="leyenda__serie"><span class="leyenda__color leyenda__color--cobrado"></span>Cobrado</span><span class="leyenda__serie"><span class="leyenda__color leyenda__color--gastado"></span>Gastado</span></div></div>
 <div class="cifra-grande">$ 4.460.000 <span class="cifra-grande__apoyo">cobrado en noviembre</span></div>
-<svg class="grafica" role="img" aria-label="Ejemplo: barras de cobrado y gastado de junio a noviembre." viewBox="0 0 600 200">
-<line x1="36" y1="110" x2="596" y2="110" stroke="#E1E1E1" stroke-width="1"></line><line x1="36" y1="50" x2="596" y2="50" stroke="#E1E1E1" stroke-width="1"></line>
-<text x="0" y="114" font-size="12" fill="#555555">2 M</text><text x="0" y="54" font-size="12" fill="#555555">4 M</text>
-<rect x="62" y="107" width="22" height="63" rx="4" fill="#2563C9"></rect><rect x="86" y="146" width="22" height="24" rx="4" fill="#A6A6A6"></rect>
-<rect x="156" y="83" width="22" height="87" rx="4" fill="#2563C9"></rect><rect x="180" y="137" width="22" height="33" rx="4" fill="#A6A6A6"></rect>
-<rect x="250" y="62" width="22" height="108" rx="4" fill="#2563C9"></rect><rect x="274" y="131" width="22" height="39" rx="4" fill="#A6A6A6"></rect>
-<rect x="344" y="113" width="22" height="57" rx="4" fill="#2563C9"></rect><rect x="368" y="149" width="22" height="21" rx="4" fill="#A6A6A6"></rect>
-<rect x="438" y="90" width="22" height="80" rx="4" fill="#2563C9"></rect><rect x="462" y="152" width="22" height="18" rx="4" fill="#A6A6A6"></rect>
-<rect x="532" y="36" width="22" height="134" rx="4" fill="#2563C9"></rect><rect x="556" y="142" width="22" height="28" rx="4" fill="#A6A6A6"></rect>
-<line x1="36" y1="170" x2="596" y2="170" stroke="#C9C9C9" stroke-width="1"></line>
-<text x="85" y="190" font-size="12" text-anchor="middle" fill="#555555">jun</text><text x="179" y="190" font-size="12" text-anchor="middle" fill="#555555">jul</text><text x="273" y="190" font-size="12" text-anchor="middle" fill="#555555">ago</text><text x="367" y="190" font-size="12" text-anchor="middle" fill="#555555">sep</text><text x="461" y="190" font-size="12" text-anchor="middle" fill="#555555">oct</text><text x="555" y="190" font-size="12" font-weight="700" text-anchor="middle" fill="#1A1A1A">nov</text>
-</svg>
-<p class="nota">Valores de ejemplo, en millones de pesos. La gráfica con datos de verdad llega con T06.</p>
+{% grafica_barras meses_grafica %}
+<p class="nota">Valores de ejemplo, en millones de pesos. Dibujada con la pieza grafica_barras de config/piezas.py.</p>
 </section>
 <section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="p-iconos">
 <div class="tarjeta__cabeza"><h2 id="p-iconos">Íconos</h2><span class="tarjeta__aparte">18 px, trazo de 1.75</span></div>

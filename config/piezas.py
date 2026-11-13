@@ -8,6 +8,7 @@
 - {{ valor|pesos }}: "$ 1.260.000" (va dentro de <span class="dinero"> para que no se parta).
 - {{ metros|metros }}: "6,5 m".
 - {% control form.campo %}: dibuja el control de un campo con la pieza Campo.
+- {% grafica_barras meses %}: la gráfica de cobrado y gastado por mes (Hoy y Resumen).
 """
 
 from decimal import Decimal
@@ -15,7 +16,8 @@ from decimal import Decimal
 from django import template
 from django.templatetags.static import static
 from django.utils.dates import MONTHS, WEEKDAYS
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
+from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 
 register = template.Library()
@@ -102,3 +104,97 @@ def metros(valor):
     numero = Decimal(str(valor)).quantize(Decimal("0.01")).normalize()
     texto = f"{numero:f}".replace(".", ",")
     return f"{texto} m"
+
+
+# --- Gráfica de barras: cobrado (azul) y gastado (gris) por mes ----------------------------
+
+# Medidas de diseno/hoy.html: un lienzo de 600 por 200; las barras nacen en la línea de
+# abajo (y=170) y la más alta mide 134; seis grupos de dos barras de 22, cada 94 unidades.
+_BASE, _ALTO_MAXIMO, _ANCHO_BARRA, _PRIMERA_X = 170, 134, 22, 62
+_AZUL, _GRIS, _LINEA, _EJE, _TEXTO_2, _NEGRO = (
+    "#2563C9", "#A6A6A6", "#E1E1E1", "#C9C9C9", "#555555", "#1A1A1A",
+)
+
+
+def _paso_redondo(maximo):
+    """Cada cuánto va una línea guía: 1, 2 o 5 por una potencia de 10, unas 2 o 3 líneas."""
+    objetivo = maximo / 3
+    potencia = 1
+    while potencia * 10 <= objetivo:
+        potencia *= 10
+    for multiplo in (1, 2, 5, 10):
+        if potencia * multiplo >= objetivo:
+            return potencia * multiplo
+    return potencia * 10
+
+
+def _texto_eje(valor):
+    """'2 M' para millones; '500 mil' para menos de un millón."""
+    if valor >= 1_000_000:
+        millones = valor / 1_000_000
+        return f"{millones:g} M".replace(".", ",")
+    return f"{valor // 1000:g} mil"
+
+
+def _millones(valor):
+    return f"{valor / 1_000_000:.2f}".rstrip("0").rstrip(".").replace(".", ",")
+
+
+@register.simple_tag
+def grafica_barras(meses):
+    """La gráfica de diseno/hoy.html con los datos de calculos.grafica_cobrado_y_gastado.
+
+    `meses` es una lista de objetos con mes (una fecha), cobrado y gastado. El último mes
+    (el actual) va en negrita. Lleva una descripción para lectores de pantalla.
+    """
+    meses = list(meses)
+    if not meses:
+        return ""
+    maximo = max(max(m.cobrado, m.gastado) for m in meses)
+    paso_x = 94 * 6 / len(meses)
+
+    def alto(valor):
+        return round(valor * _ALTO_MAXIMO / maximo) if maximo else 0
+
+    lineas, textos_eje = [], []
+    if maximo:
+        paso = _paso_redondo(maximo)
+        guia = paso
+        while guia <= maximo:
+            y = _BASE - alto(guia)
+            lineas.append((y,))
+            textos_eje.append((y + 4, _texto_eje(guia)))
+            guia += paso
+    barras, nombres = [], []
+    for i, mes in enumerate(meses):
+        x = round(_PRIMERA_X + i * paso_x)
+        for desplazamiento, valor, color in ((0, mes.cobrado, _AZUL), (24, mes.gastado, _GRIS)):
+            h = alto(valor)
+            if h:
+                barras.append((x + desplazamiento, _BASE - h, _ANCHO_BARRA, h, color))
+        actual = i == len(meses) - 1
+        nombre = str(MONTHS[mes.mes.month]).lower()[:3]
+        nombres.append((x + 23, mark_safe(' font-weight="700"') if actual else "",
+                        _NEGRO if actual else _TEXTO_2, nombre))
+    ultimo = meses[-1]
+    primero_nombre = str(MONTHS[meses[0].mes.month]).lower()
+    ultimo_nombre = str(MONTHS[ultimo.mes.month]).lower()
+    descripcion = (
+        f"Barras de cobrado y gastado de {primero_nombre} a {ultimo_nombre}. "
+        f"En {ultimo_nombre}: cobrado {_millones(ultimo.cobrado)} millones y gastado "
+        f"{_millones(ultimo.gastado)} millones."
+    )
+    return format_html(
+        '<svg class="grafica" role="img" aria-label="{}" viewBox="0 0 600 200">{}{}{}'
+        '<line x1="36" y1="170" x2="596" y2="170" stroke="{}" stroke-width="1"></line>{}</svg>',
+        descripcion,
+        format_html_join("", '<line x1="36" y1="{}" x2="596" y2="{}" stroke="' + _LINEA
+                         + '" stroke-width="1"></line>', ((y, y) for (y,) in lineas)),
+        format_html_join("", '<text x="0" y="{}" font-size="12" fill="' + _TEXTO_2
+                         + '">{}</text>', textos_eje),
+        format_html_join("", '<rect x="{}" y="{}" width="{}" height="{}" rx="4" fill="{}"></rect>',
+                         barras),
+        _EJE,
+        format_html_join("", '<text x="{}" y="190" font-size="12"{} text-anchor="middle" '
+                         'fill="{}">{}</text>', nombres),
+    )
