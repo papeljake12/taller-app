@@ -1,0 +1,12 @@
+{% load piezas %}{# Barra de abajo y panel "Más" en celular. Va después de <main> en base.html: así, con el teclado, primero se llega al contenido y después a la barra (que se ve fija abajo). Las secciones salen de config/menu.py. #}
+<nav class="navegacion-celular" aria-label="Secciones">
+{% for entrada in menu.barra %}{% if entrada.url %}<a class="navegacion-celular__enlace{% if entrada.actual %} es-actual{% endif %}" href="{{ entrada.url }}"{% if entrada.actual %} aria-current="page"{% endif %}>{% else %}<a class="navegacion-celular__enlace" aria-disabled="true">{% endif %}{% icono entrada.icono 22 %}{{ entrada.nombre }}</a>
+{% endfor %}<button type="button" class="navegacion-celular__enlace{% if menu.mas_actual %} es-actual{% endif %}" aria-expanded="false" aria-controls="panel-mas" data-mas>{% icono "mas" 22 %}Más</button>
+</nav>
+<div class="panel-mas" id="panel-mas" hidden data-panel-mas>
+<div class="tarjeta tarjeta--lista">
+<a class="panel-mas__enlace" href="{% url 'pedidos:buscar' %}">{% icono "buscar" %}{% if es_duena %}Buscar pedidos y clientes{% else %}Buscar pedidos{% endif %}</a>
+{% for entrada in menu.mas %}{% if entrada.url %}<a class="panel-mas__enlace{% if entrada.actual %} es-actual{% endif %}" href="{{ entrada.url }}"{% if entrada.actual %} aria-current="page"{% endif %}>{% else %}<a class="panel-mas__enlace" aria-disabled="true">{% endif %}{% icono entrada.icono %}{{ entrada.nombre }}</a>
+{% endfor %}<form method="post" action="{% url 'cuentas:salir' %}">{% csrf_token %}<button type="submit" class="panel-mas__enlace">{% icono "salir" %}Salir</button></form>
+</div>
+</div>

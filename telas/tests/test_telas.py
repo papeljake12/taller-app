@@ -77,7 +77,8 @@ def test_la_pantalla_sale_como_el_diseno(client):
                      r"<div class=\"cifra__apoyo\">Suma de todas", cifras)
     # En ámbar, no en rojo: el rojo es solo para atrasos y deudas (CLAUDE.md, regla 7, y
     # docs/03 y docs/08: "tela que se acaba" va en ámbar). diseno/telas.html la pintaba roja.
-    assert re.search(r'<div class="tarjeta cifra cifra--ambar">\s*<div class="cifra__nombre">'
+    assert re.search(r'<div class="tarjeta cifra cifra--ambar cifra--apoyo-celular">\s*'
+                     r'<div class="cifra__nombre">'
                      r"Se están acabando</div>\s*<div class=\"cifra__valor\">2</div>\s*"
                      r'<div class="cifra__apoyo">Piqué blanco y popelina blanca</div>', cifras)
     for titulo in ("Tela", "Quedan", "Avisar cuando queden", "Estado", "Acción"):
@@ -87,7 +88,10 @@ def test_la_pantalla_sale_como_el_diseno(client):
                            "Tela estampada para polleras"]
     pique = fila(html, "Piqué blanco")
     assert '<strong class="texto-ambar">6 m</strong>' in pique
-    assert '<td class="num">10 m</td>' in pique
+    assert '<td class="num solo-computador">10 m</td>' in pique
+    # En celular el estado va debajo del nombre (las columnas Avisar y Estado no caben).
+    assert ('<div class="solo-celular"><span class="etiqueta etiqueta--ambar">'
+            'Se está acabando</span>') in pique
     assert '<span class="etiqueta etiqueta--ambar">Se está acabando</span>' in pique
     assert ">Entró</a>" in pique and ">Usé</a>" in pique
     dril = fila(html, "Dril azul")

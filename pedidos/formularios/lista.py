@@ -94,7 +94,9 @@ class NuevoPedidoForm(forms.Form):
         max_length=40,
         required=False,
         error_messages={"max_length": "El número es muy largo: usa máximo 40 caracteres."},
-        widget=forms.TextInput(attrs={"inputmode": "tel", "autocomplete": "off"}),
+        # Como en la demo y en el cotizador: el ejemplo dice cómo escribirlo.
+        widget=forms.TextInput(attrs={"type": "tel", "inputmode": "tel", "autocomplete": "off",
+                                      "placeholder": "Ej.: 300 123 4567"}),
     )
 
     def clean_cliente(self):

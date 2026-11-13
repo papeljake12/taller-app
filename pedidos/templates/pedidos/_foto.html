@@ -2,7 +2,7 @@
 Tarjeta "Foto del pedido" (T13), la última de la columna derecha del pedido por dentro.
 
 Muestra la foto (264 px de alto, recortada para llenar, como en "Trabajos del taller") o, sin
-foto, una invitación a subirla; debajo, para qué sirve y cuánto puede pesar. Elegir un archivo lo sube solo (pedidos:foto); sin
+foto, una invitación a subirla, más baja (fotos-vacio--compacto: 120 px, sin crecer); debajo, para qué sirve y cuánto puede pesar. Elegir un archivo lo sube solo (pedidos:foto); sin
 JavaScript, con el botón "Subir la foto". "Quitar la foto" primero pregunta
 (pedidos:foto_quitar con GET) y la pregunta sale aquí mismo (_foto_confirmar.html).
 Cada acción devuelve solo esta tarjeta (pedidos/vistas/fotos.py).
@@ -12,7 +12,7 @@ de error) y `foto_por_quitar` (mostrar la pregunta antes de quitar).
 {% endcomment %}{% url 'pedidos:foto' pedido.pk as url_subir %}{% url 'pedidos:foto_quitar' pedido.pk as url_quitar %}<section class="tarjeta tarjeta--lista tarjeta--fotos" id="pedido-foto" aria-labelledby="t-foto">
 <div class="tarjeta__cabeza"><h2 id="t-foto">Foto del pedido</h2></div>
 {% if pedido.foto %}<div class="fotos"><figure class="fotos__foto es-visible"><img src="{{ pedido.foto.url }}" alt="Foto del trabajo: {{ pedido.detalle }}"></figure></div>
-{% else %}<div class="fotos-vacio"><p>Este pedido todavía no tiene foto. Sube la del diseño o la del trabajo terminado.</p></div>
+{% else %}<div class="fotos-vacio fotos-vacio--compacto"><p>Este pedido todavía no tiene foto. Sube la del diseño o la del trabajo terminado.</p></div>
 {% endif %}<p class="tarjeta__nota" id="pedido-foto-ayuda">Es la foto que pasa en "Trabajos del taller", en Hoy. Puede pesar hasta 10 MB: se guarda más liviana.</p>
 {% if foto_por_quitar and pedido.foto %}{% include "pedidos/_foto_confirmar.html" %}
 {% else %}<form class="tarjeta__cuerpo" method="post" action="{{ url_subir }}" enctype="multipart/form-data" hx-post="{{ url_subir }}" hx-encoding="multipart/form-data" hx-trigger="change, submit" hx-sync="this:drop" hx-target="#pedido-foto" hx-swap="outerHTML" novalidate>

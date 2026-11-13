@@ -1,7 +1,7 @@
 """El menú de la aplicación: secciones, sección actual y contadores.
 
-Las secciones se definen una sola vez aquí. `_menu.html` las dibuja en tres lugares: el
-menú lateral, la barra de abajo en celular y el panel "Más".
+Las secciones se definen una sola vez aquí. `_menu.html` las dibuja en el
+menú lateral, y `_menu_celular.html` en la barra de abajo del celular y el panel "Más".
 
 Si la dirección de una sección no existe, la entrada se ve pero no lleva a ninguna parte.
 

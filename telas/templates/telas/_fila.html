@@ -1,15 +1,17 @@
 {% load piezas %}{% comment %}
 Una tela de la tabla. `fila` sale de telas/vistas.py (FilaTela): la tela, si se está
 acabando y su etiqueta de estado.
-- El nombre abre el historial de la tela en la ventana (y desde ahí se puede quitar).
+- El nombre abre el historial de la tela en la ventana (y desde ahí se puede quitar). Como en
+  Pedidos, el enlace cubre toda la fila (tabla__fila y tabla__enlace) y va sin subrayar,
+  como en diseno/telas.html; los botones quedan por encima.
 - "Entró" y "Usé" abren la ventana que pregunta cuántos metros. Son dos acciones aparte
   porque la costurera podrá registrar "Usé" pero no "Entró" (T21). Después de guardar,
   el botón que se usó trae `autofocus` para que el cursor vuelva a él.
   La costurera solo ve "Usé" (T21).
-{% endcomment %}{% with t=fila.tela %}{% url 'telas:movimiento' t.pk as url_movimiento %}<tr>
-<td><a href="{{ url_movimiento }}" hx-get="{{ url_movimiento }}" hx-target="#ventana" aria-label="{{ t.nombre }}: ver el historial"><strong>{{ t.nombre }}</strong></a></td>
+{% endcomment %}{% with t=fila.tela %}{% url 'telas:movimiento' t.pk as url_movimiento %}<tr class="tabla__fila">
+<td><a class="tabla__enlace" href="{{ url_movimiento }}" hx-get="{{ url_movimiento }}" hx-target="#ventana" aria-label="{{ t.nombre }}: ver el historial"><strong>{{ t.nombre }}</strong></a><div class="solo-celular">{% include "piezas/_etiqueta.html" with texto=fila.estado tono=fila.tono %}</div></td>
 <td class="num"><strong{% if fila.baja %} class="texto-ambar"{% endif %}>{{ t.metros|metros }}</strong></td>
-<td class="num">{% if t.minimo %}{{ t.minimo|metros }}{% else %}<span class="texto-2">Sin aviso</span>{% endif %}</td>
-<td>{% include "piezas/_etiqueta.html" with texto=fila.estado tono=fila.tono %}</td>
+<td class="num solo-computador">{% if t.minimo %}{{ t.minimo|metros }}{% else %}<span class="texto-2">Sin aviso</span>{% endif %}</td>
+<td class="solo-computador">{% include "piezas/_etiqueta.html" with texto=fila.estado tono=fila.tono %}</td>
 <td class="num"><span class="tabla__acciones">{% if es_duena %}<a class="boton" href="{{ url_movimiento }}?tipo=entro" hx-get="{{ url_movimiento }}?tipo=entro" hx-target="#ventana" aria-label="Entró {{ t.nombre }}"{% if fila.enfocar == "entro" %} autofocus{% endif %}>Entró</a> {% endif %}<a class="boton" href="{{ url_movimiento }}?tipo=uso" hx-get="{{ url_movimiento }}?tipo=uso" hx-target="#ventana" aria-label="Usé {{ t.nombre }}"{% if fila.enfocar == "uso" %} autofocus{% endif %}>Usé</a></span></td>
 </tr>{% endwith %}

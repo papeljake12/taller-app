@@ -5,6 +5,9 @@
    4. HTMX envía la protección CSRF en cada petición, y dibuja los formularios con errores.
    5. Ventana (para "Nuevo pedido" y otros formularios cortos).
    6. Botones "Copiar".
+   7. Elegir un archivo (en celular).
+   8. El cursor no se pierde cuando HTMX cambia una parte de la página.
+   9. Un enlace a algo que está dentro de una fila plegada (<details>) la abre.
 
    Este archivo es compartido: después de la tanda 2 solo lo cambia el coordinador. */
 
@@ -159,16 +162,18 @@
     const dialogo = ventana();
     if (!dialogo || evento.detail.target !== dialogo) return;
     if (!dialogo.open) dialogo.showModal();
-    const primero = dialogo.querySelector("[autofocus], input, select, textarea, button");
+    // El cursor va al primer campo con error (después de "Guardar" con algo mal), al
+    // marcado con autofocus o, si no hay, al primer campo (no a la X de cerrar, que va
+    // antes). Una ventana sin campos lo deja en su primer botón.
+    const primero =
+      dialogo.querySelector(".campo--error .campo__control") ||
+      dialogo.querySelector("[autofocus]") ||
+      dialogo.querySelector(".campo__control:not([disabled])") ||
+      dialogo.querySelector("input:not([type=hidden]), select, textarea, button");
     if (primero) primero.focus();
   });
 
   document.addEventListener("click", function (evento) {
-    // Abierta como página (sin la ventana): "Cancelar" vuelve a la página anterior.
-    if (evento.target.closest(".ventana--pagina [data-cerrar-ventana]")) {
-      window.history.back();
-      return;
-    }
     const dialogo = ventana();
     if (!dialogo || !dialogo.open) return;
     // Tocar el fondo oscuro (fuera de la ventana) también la cierra.
@@ -209,11 +214,98 @@
       // Se guarda el contenido entero: un botón puede traer su texto de computador y el
       // de celular (.texto-computador y .texto-celular).
       boton.dataset.htmlOriginal = boton.innerHTML;
+      // "Copiado" es más corto: el botón guarda su ancho para que los de al lado no se muevan.
+      boton.style.minWidth = boton.offsetWidth + "px";
       boton.textContent = "Copiado";
+      // Los lectores de pantalla oyen qué sigue (el texto de la demo).
+      avisar("Copiado. Ya lo puedes pegar en WhatsApp.");
       window.setTimeout(function () {
         boton.innerHTML = boton.dataset.htmlOriginal;
+        boton.style.minWidth = "";
         delete boton.dataset.htmlOriginal;
       }, COPIADO_MS);
     });
+  });
+
+  // Un aviso que solo oyen los lectores de pantalla (una sola caja para toda la página).
+  function avisar(texto) {
+    let caja = document.getElementById("aviso-lector");
+    if (!caja) {
+      caja = document.createElement("div");
+      caja.id = "aviso-lector";
+      caja.className = "oculto";
+      caja.setAttribute("role", "status");
+      document.body.appendChild(caja);
+    }
+    caja.textContent = "";
+    window.setTimeout(function () { caja.textContent = texto; }, 50);
+  }
+
+  /* 7. Elegir un archivo --------------------------------------------------- */
+
+  // En celular el texto "Ningún archivo seleccionado" se esconde (no cabe). Al elegir uno,
+  // el campo queda marcado y el nombre del archivo se vuelve a ver (static/css/app.css).
+  document.addEventListener("change", function (evento) {
+    const campo = evento.target;
+    if (!campo.matches || !campo.matches('input[type="file"]')) return;
+    if (campo.files && campo.files.length) {
+      campo.setAttribute("data-elegido", "");
+    } else {
+      campo.removeAttribute("data-elegido");
+    }
+  });
+
+  /* 8. El cursor no se pierde ---------------------------------------------- */
+
+  // Un botón que desaparece al tocarlo ("Ver todo el mes", "Cancelar") dice a dónde va el
+  // cursor después con data-foco-despues="id". Sin esto, el cursor vuelve al principio de
+  // la página y quien usa el teclado pierde su lugar.
+  let focoDespues = null;
+
+  document.addEventListener("htmx:beforeRequest", function (evento) {
+    const elemento = evento.detail.elt;
+    focoDespues = (elemento && elemento.dataset && elemento.dataset.focoDespues) || null;
+  });
+
+  document.addEventListener("htmx:afterSettle", function () {
+    if (!focoDespues) return;
+    const activo = document.activeElement;
+    const perdido = !activo || activo === document.body || !activo.isConnected;
+    const destino = document.getElementById(focoDespues);
+    if (perdido && destino) {
+      destino.focus();
+      focoDespues = null;
+    }
+  });
+
+  /* 9. Abrir una fila plegada ---------------------------------------------- */
+
+  // "Registrar abono" (arriba del pedido) y "Cobrar el saldo" (en Hoy) llevan al campo del
+  // abono, que está dentro de la fila plegada "Registrar un abono" de la tarjeta Pagos.
+  // Antes de llegar se abre la fila y el cursor queda en el campo, listo para escribir.
+  function abrirHasta(id) {
+    const destino = id && document.getElementById(id);
+    if (!destino) return;
+    const plegada = destino.closest("details");
+    if (!plegada) return;
+    plegada.open = true;
+    // En el centro de la pantalla, para que se vea también su etiqueta ("Valor del abono").
+    destino.scrollIntoView({ block: "center" });
+    destino.focus({ preventScroll: true });
+  }
+
+  document.addEventListener("click", function (evento) {
+    const enlace = evento.target.closest('a[href^="#"]');
+    if (!enlace) return;
+    const id = decodeURIComponent(enlace.getAttribute("href").slice(1));
+    const destino = document.getElementById(id);
+    if (!destino || !destino.closest("details")) return;
+    evento.preventDefault();
+    abrirHasta(id);
+    if (window.history.replaceState) window.history.replaceState(null, "", "#" + id);
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.location.hash) abrirHasta(decodeURIComponent(window.location.hash.slice(1)));
   });
 })();

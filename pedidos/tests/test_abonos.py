@@ -63,7 +63,7 @@ def test_la_tarjeta_muestra_saldo_barra_abonado_total_y_cada_abono(pedido, duena
     assert 'aria-valuenow="50"' in html
     assert "Abonado <span class=\"dinero\">$ 1.260.000</span>" in html
     assert "Total <span class=\"dinero\">$ 2.520.000</span>" in html
-    assert "Abono del 5 de nov" in html
+    assert 'Abono del </span>5 de nov' in html
     abono = pedido.abonos.get()
     assert f'href="{reverse("pedidos:recibo", args=[pedido.pk, abono.pk])}"' in html
     assert f'hx-get="{url_quitar(abono)}"' in html
@@ -147,7 +147,7 @@ def test_registrar_un_abono_baja_el_saldo_y_devuelve_solo_la_tarjeta(sesion_duen
     assert "$ 880.000" in html  # el saldo: 2.520.000 - 1.260.000 - 380.000
     assert "Abonado <span class=\"dinero\">$ 1.640.000</span>" in html
     assert 'aria-valuenow="65"' in html
-    assert "Abono del 10 de nov" in html
+    assert 'Abono del </span>10 de nov' in html
     nuevo = pedido.abonos.get(valor=380_000)
     assert nuevo.fecha == date(2026, 11, 10)
     assert nuevo.registrado_por == duena
@@ -308,7 +308,7 @@ def test_cancelar_deja_la_tarjeta_como_estaba(sesion_duena, pedido):
     respuesta = sesion_duena.get(url_quitar(abono) + "?cancelar=1", headers=HTMX)
 
     assert "¿Quitar el abono" not in respuesta.text
-    assert "Abono del 5 de nov" in respuesta.text
+    assert 'Abono del </span>5 de nov' in respuesta.text
     assert Abono.objects.filter(pk=abono.pk).exists()
 
 

@@ -526,7 +526,7 @@ def test_la_grafica_con_poca_plata_marca_miles():
 
 def test_en_celular_los_textos_cortos_y_el_cambio_de_mes_se_ven():
     celular = _reglas_de_celular()
-    for regla in (r"\.texto-computador \{\s*display: none;", r"\.texto-celular \{\s*display: inline;",
+    for regla in (r"\.texto-computador,\s*\.solo-computador \{\s*display: none;", r"\.texto-celular \{\s*display: inline;",
                   r"\.navegacion-mes \{\s*display: flex;"):
         assert re.search(regla, celular), regla
 
@@ -543,7 +543,8 @@ def test_la_cifra_puede_ir_en_ambar_para_lo_que_hay_que_vigilar():
 
 
 def test_el_nombre_del_taller_en_el_menu_tiene_id_para_cambiarlo_sin_recargar(sesion_duena, taller):
-    assert f'<span class="menu__taller" id="menu-taller">{taller.nombre}</span>' in sesion_duena.get("/").text
+    assert (f'<span class="menu__taller" id="menu-taller" title="{taller.nombre}">'
+            f'{taller.nombre}</span>') in sesion_duena.get("/").text
 
 
 def test_el_formulario_publico_lleva_en_la_pestana_el_taller_del_pedido(sesion_duena, taller):
@@ -574,3 +575,137 @@ def test_en_celular_las_entregas_del_calendario_son_barritas_sin_partir_nombres(
     regla = re.search(r"\.calendario__entregas \.etiqueta \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
     assert regla and "font-size: 0;" in regla.group(1) and "height: 6px;" in regla.group(1)
     assert "overflow-wrap: anywhere" not in _reglas_de_celular()
+
+
+# --- Revisión final (T23) -------------------------------------------------------------------
+
+
+def _css():
+    return (ESTATICOS / "css/app.css").read_text("utf-8")
+
+
+def _js():
+    return (ESTATICOS / "js/app.js").read_text("utf-8")
+
+
+def test_en_celular_los_campos_y_el_buscador_se_tocan_como_los_botones():
+    regla = re.search(r"\.boton,\s*\.filtro,\s*\.buscador,\s*\.campo__control \{\s*min-height: 44px;",
+                      _reglas_de_celular())
+    assert regla
+    assert re.search(r"\.ventana__cerrar \{\s*width: 44px;\s*height: 44px;", _reglas_de_celular())
+
+
+def test_en_celular_lo_de_abajo_no_queda_detras_de_la_barra():
+    assert "scroll-padding-bottom: calc(var(--alto-barra)" in _reglas_de_celular()
+
+
+def test_la_barra_de_abajo_va_despues_del_contenido(sesion_duena):
+    # Con el teclado, primero el contenido y después la barra (que se ve fija abajo).
+    html = sesion_duena.get("/").text
+    assert html.index("</main>") < html.index('<nav class="navegacion-celular"')
+
+
+def test_el_nombre_del_taller_se_parte_en_dos_lineas_antes_de_cortarse():
+    regla = re.search(r"\.menu__taller \{(.*?)\}", _css(), re.DOTALL).group(1)
+    assert "-webkit-line-clamp: 2;" in regla and "white-space: nowrap" not in regla
+
+
+def test_en_celular_una_cifra_sola_al_final_va_a_lo_ancho():
+    assert re.search(r"\.cifras > \.cifra:last-child:nth-child\(odd\) \{\s*grid-column: 1 / -1;",
+                     _reglas_de_celular())
+
+
+def test_en_celular_quien_te_debe_es_una_lista_apretada_sin_lineas():
+    regla = re.search(r"#hoy-quien-debe \.fila-proporcion \{(.*?)\}", _reglas_de_celular(),
+                      re.DOTALL).group(1)
+    assert "padding: 3px 14px;" in regla and "border-top: 0;" in regla
+    assert "font-size: 13px;" in regla
+    # Toda la fila abre los pedidos del cliente, no solo el nombre.
+    assert re.search(r"\.fila-proporcion__nombre::after \{\s*content: \"\";\s*position: absolute;"
+                     r"\s*inset: 0;", _css())
+
+
+def test_un_dia_con_entregas_pone_su_numero_arriba_como_los_demas():
+    regla = re.search(r"button\.calendario__dia \{(.*?)\}", _css(), re.DOTALL).group(1)
+    assert "flex-direction: column;" in regla and "justify-content: flex-start;" in regla
+    assert re.search(r"button\.calendario__dia:focus-visible \{\s*outline-offset: -4px;", _css())
+
+
+def test_en_computador_un_nombre_largo_en_el_calendario_se_corta_en_tres_lineas():
+    regla = re.search(r"\n\.calendario__entregas \.etiqueta \{(.*?)\}", _css(), re.DOTALL).group(1)
+    assert "-webkit-line-clamp: 3;" in regla
+
+
+def test_en_celular_la_leyenda_del_calendario_cabe_en_una_linea():
+    assert re.search(r"\.calendario__leyenda \{\s*gap: 8px 12px;", _reglas_de_celular())
+    assert re.search(r"\.calendario__clave \{\s*gap: 8px;", _reglas_de_celular())
+
+
+def test_las_barras_del_resumen_terminan_en_el_mismo_lugar():
+    regla = re.search(r"\.fila-medida \{(.*?)\}", _css(), re.DOTALL).group(1)
+    assert "minmax(7.5em, auto)" in regla
+
+
+def test_la_ventana_pone_el_cursor_en_el_primer_campo_con_error():
+    js = _js()
+    assert js.index('".campo--error .campo__control"') < js.index('"[autofocus]"')
+    # Y no en la ficha CSRF escondida, que es el primer <input> del formulario.
+    assert 'input:not([type=hidden])' in js
+
+
+def test_un_boton_que_desaparece_dice_a_donde_va_el_cursor():
+    assert "dataset.focoDespues" in _js()
+
+
+def test_ver_todo_el_mes_devuelve_el_cursor_al_dia_elegido(sesion_duena, taller):
+    from tests import fabricas
+
+    pedido = fabricas.crear_pedido(taller)
+    dia = pedido.fecha_entrega
+    url = f"/calendario/?mes={dia:%Y-%m}&dia={dia:%Y-%m-%d}"
+    html = sesion_duena.get(url, headers={"HX-Request": "true"}).text
+
+    assert f'data-foco-despues="dia-{dia:%Y-%m-%d}">Ver todo el mes</a>' in html
+    assert f'id="dia-{dia:%Y-%m-%d}"' in html
+
+
+def test_el_historial_de_una_tela_se_cierra_con_cerrar(sesion_duena, taller):
+    from tests import fabricas
+
+    tela = fabricas.crear_tela(taller)
+    html = sesion_duena.get(f"/telas/{tela.pk}/movimiento/", headers={"HX-Request": "true"}).text
+
+    assert "data-cerrar-ventana>Cerrar</button>" in html
+    assert ">Cancelar</button>" not in html
+
+
+def test_cancelar_en_gastos_devuelve_el_cursor_al_boton_de_donde_se_vino(sesion_duena, taller):
+    from django.urls import reverse
+
+    from tests import fabricas
+
+    gasto = fabricas.crear_gasto(taller)
+    mes = f"{gasto.fecha:%Y-%m}"
+    htmx = {"HX-Request": "true", "HX-Target": "gastos"}
+    pregunta = sesion_duena.get(reverse("finanzas:gasto_quitar", args=[gasto.pk]), headers=htmx).text
+    formulario = sesion_duena.get(f'{reverse("finanzas:gasto_nuevo")}?mes={mes}', headers=htmx).text
+    tarjeta = sesion_duena.get(f"/resumen/?mes={mes}").text
+
+    assert f'data-foco-despues="gasto-{gasto.pk}-quitar">Cancelar</a>' in pregunta
+    assert 'data-foco-despues="gastos-registrar">Cancelar</a>' in formulario
+    assert f'id="gasto-{gasto.pk}-quitar"' in tarjeta and 'id="gastos-registrar"' in tarjeta
+
+
+def test_registrar_abono_va_plegado_y_se_abre_al_llegar(sesion_duena, taller):
+    from tests import fabricas
+
+    pedido = fabricas.crear_pedido(taller)
+    html = sesion_duena.get(f"/pedidos/{pedido.pk}/").text
+
+    # Plegado, como "Agregar una persona a mano": la tarjeta Pagos mide lo del diseño.
+    assert ('<details class="pagos__registrar">\n<summary class="fila fila--compacta">'
+            "<strong>Registrar un abono</strong></summary>") in html
+    assert 'id="registrar-abono"' in html and 'href="#registrar-abono"' in html
+    # El enlace de arriba abre la fila y deja el cursor en el campo (static/js/app.js).
+    assert 'destino.closest("details")' in _js()
+    assert re.search(r"\.campo__control \{\s*scroll-margin-top: 48px;", _css())

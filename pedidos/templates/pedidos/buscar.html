@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Resultados del buscador del menú (T05): pedidos y clientes del taller, sin importar tildes ni mayúsculas.{% endcomment %}
+{% comment %}Resultados del buscador del menú (T05): pedidos y clientes del taller, sin importar tildes ni mayúsculas.
+Cada cliente es una fila que se toca entera (fila--enlace con fila__enlace), como las de pedidos.{% endcomment %}
 {% block pestana %}Buscar{% endblock %}
 {% block titulo %}Buscar{% endblock %}
 {% block apoyo %}{% if q %}<span class="encabezado__apoyo">«{{ q }}»</span>{% endif %}{% endblock %}
@@ -23,7 +24,7 @@
 {% if clientes %}
 <section class="tarjeta tarjeta--lista" aria-labelledby="t-clientes">
 <div class="tarjeta__cabeza"><h2 id="t-clientes">Clientes</h2><span class="tarjeta__aparte">{{ clientes|length }} cliente{{ clientes|length|pluralize }}</span></div>
-{% for cliente in clientes %}<div class="fila fila--compacta"><div class="fila__texto"><a href="{% url 'pedidos:clientes' %}?q={{ cliente.nombre|urlencode }}"><strong>{{ cliente.nombre }}</strong></a> <span class="texto-2">· {{ cliente.get_tipo_display }}</span></div></div>
+{% for cliente in clientes %}<div class="fila fila--compacta fila--enlace"><div class="fila__texto"><a class="fila__enlace" href="{% url 'pedidos:clientes' %}?q={{ cliente.nombre|urlencode }}"><strong>{{ cliente.nombre }}</strong></a> <span class="texto-2">· {{ cliente.get_tipo_display }}</span></div></div>
 {% endfor %}</section>
 {% endif %}
 {% endblock %}

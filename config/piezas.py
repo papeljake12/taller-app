@@ -53,13 +53,14 @@ def fecha_larga(fecha):
 
 
 @register.simple_tag
-def control(campo):
+def control(campo, clase=""):
     """El control de un campo de formulario (input, select...) con la clase de la pieza.
 
     Django agrega solo los avisos para lectores de pantalla (aria-invalid y
     aria-describedby), que apuntan a los textos de ayuda y de error de _campo.html.
+    `clase` agrega otra (por ejemplo, "boton-select": una lista que se ve como botón).
     """
-    return campo.as_widget(attrs={"class": "campo__control"})
+    return campo.as_widget(attrs={"class": f"campo__control {clase}".strip()})
 
 
 @register.filter

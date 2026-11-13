@@ -58,7 +58,10 @@ def formulario(request, datos=None):
 def contexto_cotizador(request, form, **extra):
     """Lo que dibuja la pantalla: el formulario, el resultado y los mensajes para enviar."""
     cotizacion = form.cotizacion()
-    lista = form.lista(cotizacion)
+    errores_del_precio = form.errores_del_precio()
+    # Con un valor del precio mal escrito, ese valor cuenta como 0 y el total sale mal: no se
+    # puede copiar, enviar ni crear el pedido hasta que se corrija.
+    lista = form.lista(cotizacion) and not errores_del_precio
     texto = ""
     enlace = ""
     if lista:
@@ -76,7 +79,7 @@ def contexto_cotizador(request, form, **extra):
         "hay_prendas": prendas_del_taller(request).exists(),
         # La prenda guardada que está elegida en "Mis prendas" (para "Quitar de mi lista").
         "elegida": form.dato("guardada") or None,
-        "errores_del_precio": form.errores_del_precio(),
+        "errores_del_precio": errores_del_precio,
         **extra,
     }
 

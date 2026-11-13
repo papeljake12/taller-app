@@ -9,5 +9,5 @@ Usa las mismas clases que el formulario de abonos (pagos__form).
 {% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
 {% include "piezas/_campo.html" with campo=form.concepto %}
 <div class="campos">{% include "piezas/_campo.html" with campo=form.categoria %}{% include "piezas/_campo.html" with campo=form.valor %}{% include "piezas/_campo.html" with campo=form.fecha %}</div>
-<div class="botones"><button type="submit" class="boton boton--principal">Registrar gasto</button><a class="boton" href="{{ url_nuevo }}?mes={{ texto_mes }}&amp;cancelar=1" hx-get="{{ url_nuevo }}?mes={{ texto_mes }}&amp;cancelar=1" hx-target="#gastos" hx-swap="outerHTML">Cancelar</a></div>
+<div class="botones"><button type="submit" class="boton boton--principal">Registrar gasto</button><a class="boton" href="{{ url_nuevo }}?mes={{ texto_mes }}&amp;cancelar=1" hx-get="{{ url_nuevo }}?mes={{ texto_mes }}&amp;cancelar=1" hx-target="#gastos" hx-swap="outerHTML" data-foco-despues="gastos-registrar">Cancelar</a></div>
 </form>

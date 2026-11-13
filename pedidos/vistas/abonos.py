@@ -41,6 +41,9 @@ class Pagos:
     enlace_cobro: str  # '' si el cliente no tiene un WhatsApp que sirva
     form: FormularioAbono
     por_quitar: Abono | None = None  # el abono que espera la confirmación para quitarse
+    # "Registrar un abono" va plegado; se abre si el formulario vuelve (con errores, o vacío
+    # después de registrar uno, para seguir con el siguiente).
+    form_abierto: bool = False
 
 
 def contexto_pagos(request, pedido, form=None, por_quitar=None):
@@ -61,6 +64,7 @@ def contexto_pagos(request, pedido, form=None, por_quitar=None):
             enlace_cobro=mensajes.enlace_whatsapp(pedido.cliente.whatsapp, texto),
             form=form if form is not None else FormularioAbono(),
             por_quitar=por_quitar,
+            form_abierto=form is not None,
         ),
     }
 
