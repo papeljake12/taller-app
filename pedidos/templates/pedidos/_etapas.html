@@ -1,4 +1,11 @@
-{% comment %}Tarjeta "Pedidos por etapa" (T06). La rellena el carril B de la tanda 4.{% endcomment %}<section class="tarjeta tarjeta--lista" aria-labelledby="t-etapas">
+{% comment %}
+Tarjeta "Pedidos por etapa" (T06): cuántos pedidos hay en cada una de las seis etapas
+(calculos.pedidos_por_etapa). Debajo, en rojo, cuántos van atrasados. En Entregado, "Pagado"
+en verde si ninguno debe, o en rojo cuántos deben. `etapas` sale de pedidos/vistas/hoy.py.
+Con `oob`, HTMX la cambia después de una acción de "Qué hacer hoy".
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="hoy-etapas" aria-labelledby="t-etapas"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-etapas">Pedidos por etapa</h2></div>
-<p class="tarjeta__nota">Llega con T06.</p>
+<div class="etapas">
+{% for etapa in etapas %}<div class="etapas__etapa"><span class="etapas__nombre">{{ etapa.nombre }}</span><strong class="etapas__cantidad">{{ etapa.cantidad }}</strong>{% if etapa.aviso %}{% include "piezas/_etiqueta.html" with texto=etapa.aviso.texto tono=etapa.aviso.tono %}{% endif %}</div>
+{% endfor %}</div>
 </section>

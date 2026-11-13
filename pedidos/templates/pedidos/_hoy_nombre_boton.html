@@ -1,0 +1,5 @@
+{% comment %}
+El nombre de un botón de Hoy: `texto`; con `corto`, en celular dice la versión corta del
+diseño (diseno/hoy-celular.html: "Entregado", "Preguntar"). Las clases texto-computador y
+texto-celular deciden cuál se ve.
+{% endcomment %}{% if corto %}<span class="texto-computador">{{ texto }}</span><span class="texto-celular">{{ corto }}</span>{% else %}{{ texto }}{% endif %}
