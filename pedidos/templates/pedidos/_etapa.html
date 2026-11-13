@@ -4,12 +4,18 @@ tarjeta y, con hx-swap-oob, las partes que dependen de la etapa.
 
 Los pasos son la pieza piezas/_pasos.html: cada uno es un botón que envía su etapa, así
 que también funciona sin JavaScript.
+
+Sin `puede_mover_etapa` (una costurera que no es la encargada, T21), los pasos se ven igual
+pero no se pueden tocar, y la nota dice quién puede moverlo.
 {% endcomment %}<section class="tarjeta tarjeta--lista" id="pedido-etapa" aria-labelledby="t-etapa"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-etapa">Etapa</h2></div>
-<form class="tarjeta__cuerpo" method="post" action="{% url 'pedidos:etapa' pedido.pk %}" hx-post="{% url 'pedidos:etapa' pedido.pk %}" hx-target="#pedido-etapa" hx-swap="outerHTML" novalidate>
+{% if puede_mover_etapa %}<form class="tarjeta__cuerpo" method="post" action="{% url 'pedidos:etapa' pedido.pk %}" hx-post="{% url 'pedidos:etapa' pedido.pk %}" hx-target="#pedido-etapa" hx-swap="outerHTML" novalidate>
 {% csrf_token %}
 {% include "piezas/_aviso.html" with mensajes=form_etapa.estado.errors %}
 {% include "piezas/_pasos.html" with pasos=pasos etiqueta_grupo="Etapa del pedido" %}
 <div class="texto-2">Toca una etapa para mover el pedido.</div>
-</form>
+</form>{% else %}<div class="tarjeta__cuerpo">
+{% include "piezas/_pasos.html" with pasos=pasos etiqueta_grupo="Etapa del pedido" solo_ver=True %}
+<div class="texto-2">{% if pedido.encargada %}Solo {{ pedido.encargada.nombre }} o la dueña del taller pueden mover este pedido.{% else %}Solo la dueña del taller puede mover este pedido, o la encargada cuando lo tenga.{% endif %}</div>
+</div>{% endif %}
 </section>

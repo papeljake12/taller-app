@@ -1,4 +1,5 @@
 {% comment %}
 Botones de arriba del pedido (T07): "Avisar al cliente" y "Registrar abono".
 "Registrar abono" lleva al campo del abono de la tarjeta Pagos (id="registrar-abono").
-{% endcomment %}{% include "pedidos/_detalle_avisar.html" %}<a class="boton boton--principal" href="#registrar-abono">Registrar abono</a>
+La costurera no ve "Registrar abono" (T21); "Avisar al cliente" le llega vacío desde la vista.
+{% endcomment %}{% include "pedidos/_detalle_avisar.html" %}{% if puede_ver_plata %}<a class="boton boton--principal" href="#registrar-abono">Registrar abono</a>{% endif %}

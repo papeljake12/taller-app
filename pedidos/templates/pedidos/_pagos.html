@@ -4,12 +4,13 @@ Tarjeta "Pagos" del pedido por dentro (T08, diseno/pedido.html).
 La dibuja el pedido por dentro y la devuelven, sola, las acciones de pedidos/vistas/abonos.py:
 con HTMX reemplaza a la tarjeta entera (id="pagos"). Los datos llegan en `pagos`, que arma
 abonos.contexto_pagos.
+Solo la ve la dueña (T21, docs/04-permisos.md): para la costurera no se dibuja nada.
 - Falta por pagar (o "Pedido pagado" en verde), la barra y lo abonado frente al total.
 - Cada abono con su recibo en PDF y el botón para quitarlo, que primero pregunta.
 - El recordatorio del saldo por WhatsApp, o el botón para copiarlo si no hay número.
 - El formulario para registrar un abono. Su campo de valor tiene id="registrar-abono":
   allá lleva el botón "Registrar abono" de arriba del pedido.
-{% endcomment %}<section class="tarjeta tarjeta--lista" id="pagos" aria-labelledby="t-pagos"{% if oob %} hx-swap-oob="true"{% endif %}>
+{% endcomment %}{% if puede_ver_plata %}<section class="tarjeta tarjeta--lista" id="pagos" aria-labelledby="t-pagos"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-pagos">Pagos</h2></div>
 {% if pagos %}<div class="tarjeta__cuerpo">
 {% if pagos.saldo > 0 %}<div class="pagos__nombre texto-rojo">Falta por pagar</div>
@@ -23,4 +24,4 @@ abonos.contexto_pagos.
 <p class="nota">Escribe abajo el WhatsApp del cliente y aquí aparece el botón para enviarle el mensaje.</p>{% endif %}
 {% endif %}{% include "pedidos/_abono_form.html" with form=pagos.form %}
 </div>{% endif %}
-</section>
+</section>{% endif %}

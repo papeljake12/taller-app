@@ -4,6 +4,12 @@ WhatsApp del cliente y eliminar el pedido.
 Cada acción guarda una sola cosa. Con HTMX responde solo la tarjeta que cambió y, con
 hx-swap-oob, las otras partes de la página que dependen de ella (por ejemplo, la etiqueta
 de arriba cuando cambia la etapa). Sin JavaScript, vuelve a la página del pedido.
+
+Permisos (T21, docs/04-permisos.md): la costurera ve el pedido sin la tarjeta Pagos, sin
+"Registrar abono" y sin "Avisar al cliente" (los dos avisos dicen el saldo). Cambia la etapa
+solo si es la encargada. La fecha de entrega, la encargada y el WhatsApp del cliente los ve
+pero no los cambia (es editar el pedido), y no puede eliminarlo. Cada vista lo revisa
+después de buscar el pedido: el de otro taller responde 404; lo prohibido del suyo, 403.
 """
 
 from django.http import HttpResponse
@@ -14,6 +20,13 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
+from cuentas.permisos import (
+    es_duena,
+    exigir_duena,
+    exigir_mover_etapa,
+    puede_mover_etapa,
+    puede_ver_plata,
+)
 from pedidos import calculos, mensajes
 from pedidos.formularios.detalle import EncargadaForm, EntregaForm, EtapaForm, WhatsappForm
 from pedidos.models import Pedido
@@ -26,6 +39,8 @@ Estado = Pedido.Estado
 # el saldo por WhatsApp", que depende del WhatsApp y de la fecha de entrega.
 CAMBIAN_CON_LA_ETAPA = ("pedido_apoyo", "detalle_avisar", "entrega", "cliente", "pagos")
 CAMBIAN_CON_EL_WHATSAPP = ("detalle_avisar", "pagos")
+# Las partes con plata: la costurera no las recibe (T21).
+PARTES_CON_PLATA = ("pagos",)
 
 
 # --- Los datos de cada parte ----------------------------------------------------------------
@@ -90,30 +105,55 @@ def aviso_de_listo(pedido):
     return {"texto": texto, "enlace": mensajes.enlace_whatsapp(pedido.cliente.whatsapp, texto)}
 
 
+def solo_para_ver(*formularios):
+    """Deja los campos sin poder cambiarse: así los ve la costurera (T21)."""
+    for form in formularios:
+        for campo in form.fields.values():
+            campo.disabled = True
+    return formularios
+
+
 def contexto_de_la_ficha(request, pedido):
-    """Lo que necesitan las partes de T07: encabezado, Etapa, Entrega, Cliente y Eliminar."""
+    """Lo que necesitan las partes de T07: encabezado, Etapa, Entrega, Cliente y Eliminar.
+
+    Para la costurera, sin los avisos al cliente (dicen el saldo) y con los campos de la
+    entrega, la encargada y el WhatsApp solo para ver.
+    """
     frase, atrasado = frase_de_entrega(pedido)
     pedidos_del_cliente = del_taller(request, Pedido).filter(cliente=pedido.cliente_id).count()
-    return {
+    con_plata = puede_ver_plata(request)
+    duena = es_duena(request)
+    contexto = {
         "pedido": pedido,
         "etiqueta": calculos.etiqueta_etapa(pedido),
         "pasos": pasos_de_etapa(pedido),
-        "mensaje": mensaje_para_el_cliente(pedido),
-        "aviso_listo": aviso_de_listo(pedido),
+        "puede_mover_etapa": puede_mover_etapa(request, pedido),
+        "mensaje": mensaje_para_el_cliente(pedido) if con_plata else None,
+        "aviso_listo": aviso_de_listo(pedido) if con_plata else None,
         "frase_entrega": frase,
         "entrega_atrasada": atrasado,
         "pedidos_del_cliente": pedidos_del_cliente,
         "form_etapa": EtapaForm(initial={"estado": pedido.estado}),
+        # Sin `accion` (la costurera), los campos no se guardan solos al cambiar.
         "form_entrega": EntregaForm(
-            instance=pedido, accion=reverse("pedidos:entrega", args=[pedido.pk])
+            instance=pedido, accion=reverse("pedidos:entrega", args=[pedido.pk]) if duena else ""
         ),
         "form_encargada": EncargadaForm(
             instance=pedido,
             request=request,
-            accion=reverse("pedidos:encargada", args=[pedido.pk]),
+            accion=reverse("pedidos:encargada", args=[pedido.pk]) if duena else "",
         ),
         "form_whatsapp": WhatsappForm(initial={"whatsapp": pedido.cliente.whatsapp}),
     }
+    if not duena:
+        solo_para_ver(
+            contexto["form_entrega"], contexto["form_encargada"], contexto["form_whatsapp"]
+        )
+        # Un campo vacío y apagado parecería roto: dice que no hay número.
+        contexto["form_whatsapp"].fields["whatsapp"].widget.attrs["placeholder"] = (
+            "Sin número guardado"
+        )
+    return contexto
 
 
 def contexto_del_pedido(request, pedido, **extra):
@@ -124,7 +164,8 @@ def contexto_del_pedido(request, pedido, **extra):
     """
     contexto = contexto_de_la_ficha(request, pedido)
     contexto.update(materiales.contexto_de_materiales(pedido))  # T12
-    contexto.update(abonos.contexto_pagos(request, pedido))  # T08
+    if puede_ver_plata(request):
+        contexto.update(abonos.contexto_pagos(request, pedido))  # T08
     contexto["tarjeta_tallas"] = tallas.tarjeta(request, pedido)  # T10
     contexto.update(extra)
     return contexto
@@ -148,6 +189,8 @@ def responder(request, pedido, parte, otras=(), status=200, **extra):
     if not es_htmx(request):
         return render(request, "pedidos/pedido.html", contexto, status=status)
     html = render_to_string(f"pedidos/_{parte}.html", contexto, request=request)
+    if not puede_ver_plata(request):
+        otras = [otra for otra in otras if otra not in PARTES_CON_PLATA]
     for otra in otras:
         html += render_to_string(f"pedidos/_{otra}.html", {**contexto, "oob": True}, request)
     return HttpResponse(html, status=status)
@@ -164,8 +207,11 @@ def detalle(request, pk):
 @require_POST
 def etapa(request, pk):
     """Tocar una etapa la guarda. Cambian también la etiqueta de arriba, el aviso al
-    cliente, la frase de la entrega y el aviso de pedido listo."""
+    cliente, la frase de la entrega y el aviso de pedido listo.
+
+    La dueña siempre; la costurera, solo si es la encargada (si no, 403)."""
     pedido = obtener_pedido(request, pk)
+    exigir_mover_etapa(request, pedido)
     form = EtapaForm(request.POST)
     if not form.is_valid():
         return responder(request, pedido, "etapa", status=422, form_etapa=form)
@@ -176,8 +222,9 @@ def etapa(request, pk):
 
 @require_POST
 def entrega(request, pk):
-    """La fecha de entrega. El aviso de cobro dice la fecha: también cambia."""
+    """La fecha de entrega. El aviso de cobro dice la fecha: también cambia. Solo la dueña."""
     pedido = obtener_pedido(request, pk)
+    exigir_duena(request)
     form = EntregaForm(request.POST, instance=pedido)
     if not form.is_valid():
         pedido.refresh_from_db(fields=["fecha_entrega"])
@@ -188,8 +235,10 @@ def entrega(request, pk):
 
 @require_POST
 def encargada(request, pk):
-    """Quién lo está haciendo: una usuaria del taller (la lista ya viene filtrada)."""
+    """Quién lo está haciendo: una usuaria del taller (la lista ya viene filtrada). Solo la
+    dueña elige la encargada."""
     pedido = obtener_pedido(request, pk)
+    exigir_duena(request)
     form = EncargadaForm(request.POST, instance=pedido, request=request)
     if not form.is_valid():
         pedido.refresh_from_db(fields=["encargada"])
@@ -200,8 +249,9 @@ def encargada(request, pk):
 
 @require_POST
 def whatsapp(request, pk):
-    """El WhatsApp del cliente (se guarda en el cliente, no en el pedido)."""
+    """El WhatsApp del cliente (se guarda en el cliente, no en el pedido). Solo la dueña."""
     pedido = obtener_pedido(request, pk)
+    exigir_duena(request)
     form = WhatsappForm(request.POST)
     if not form.is_valid():
         return responder(request, pedido, "cliente", status=422, form_whatsapp=form)
@@ -218,9 +268,10 @@ def eliminar(request, pk):
     """GET: la ventana que pregunta si de verdad. POST: borra el pedido y vuelve a Pedidos.
 
     Con el pedido se borran sus abonos, tallas y materiales, y el archivo de su foto. Los
-    gastos que lo nombraban se conservan, sin pedido.
+    gastos que lo nombraban se conservan, sin pedido. Solo la dueña.
     """
     pedido = obtener_o_404(request, Pedido.objects.select_related("cliente"), pk=pk)
+    exigir_duena(request)
     accion = reverse("pedidos:eliminar", args=[pedido.pk])
     if request.method == "GET":
         contexto = {"pedido": pedido, "accion": accion, "titulo_pagina": "Eliminar el pedido"}

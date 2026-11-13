@@ -14,8 +14,10 @@ Con HTMX, al guardar se cierra la ventana y llegan solas la tabla, las cifras, e
 el contador del menú (_cambios), sin recargar la página. Sin JavaScript, cada acción abre
 su página y al terminar vuelve a Telas.
 
-Permisos (T21, todavía no): la costurera puede ver y registrar "Usé", pero no "Entró", ni
-agregar ni quitar. Por eso "Entró" y "Usé" son dos tipos separados (TIPOS).
+Permisos (T21, docs/04-permisos.md): la costurera puede ver las telas, su historial y
+registrar "Usé", pero no "Entró", ni agregar ni quitar: esas responden 403 aunque el
+formulario se envíe a mano. Por eso "Entró" y "Usé" son dos tipos separados (TIPOS). El
+número de una tela de otro taller responde 404 a cualquiera.
 """
 
 from dataclasses import dataclass, replace
@@ -32,6 +34,7 @@ from config.menu import construir_menu
 from config.piezas import metros as texto_metros
 from config.ventanas import CERRAR_VENTANA, es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
+from cuentas.permisos import exigir_duena, solo_duena
 from pedidos import calculos
 from telas.formularios import (
     TOPE_DE_LA_TELA,
@@ -43,6 +46,9 @@ from telas.models import MovimientoTela, Tela
 # "Entró" suma y "Usé" resta. La clave es la que va en la dirección (?tipo=entro).
 TIPOS = {"entro": 1, "uso": -1}
 TITULOS = {"entro": "Entró", "uso": "Usé"}
+
+# Los tipos que solo anota la dueña (T21): la costurera solo anota "Usé".
+SOLO_LA_DUENA = {"entro"}
 
 # Cuántos movimientos muestra el historial de una tela (los más nuevos).
 MOVIMIENTOS_A_LA_VISTA = 30
@@ -147,6 +153,7 @@ def _cambios(request, movida=None, tipo=None):
 # --- Nueva tela -----------------------------------------------------------------------------
 
 
+@solo_duena
 @require_http_methods(["GET", "POST"])
 def nueva(request):
     """Agregar una tela. Si ya trae metros, quedan como su primer "Entró" en el historial."""
@@ -233,11 +240,15 @@ def movimiento(request, pk):
         tipo = request.GET.get("tipo")
         if tipo not in TIPOS:
             return _ventana_historial(request, tela)
+        if tipo in SOLO_LA_DUENA:
+            exigir_duena(request)
         return _ventana_movimiento(request, tela, FormularioMovimiento(tipo=tipo))
     tipo = request.POST.get("tipo")
     if tipo not in TIPOS:
         # Los formularios de la pantalla siempre lo traen: esto solo pasa a mano.
         return HttpResponseBadRequest("Falta decir si la tela entró o se usó.")
+    if tipo in SOLO_LA_DUENA:
+        exigir_duena(request)
     form = FormularioMovimiento(request.POST, tipo=tipo)
     if form.is_valid() and _guardar_movimiento(request, tela, form):
         return _cambios(request, movida=tela, tipo=tipo)
@@ -252,9 +263,10 @@ def movimiento(request, pk):
 def quitar(request, pk):
     """Quitar una tela, con un paso de confirmación. Se borra también su historial.
 
-    GET pregunta (en la ventana, o en una página sin JavaScript). POST la quita.
+    GET pregunta (en la ventana, o en una página sin JavaScript). POST la quita. Solo la dueña.
     """
     tela = obtener_o_404(request, Tela, pk=pk)
+    exigir_duena(request)
     if request.method == "POST":
         tela.delete()  # sus movimientos se borran con ella (on_delete=CASCADE)
         return _cambios(request)

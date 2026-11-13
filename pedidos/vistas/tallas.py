@@ -6,6 +6,9 @@ de la vieja. Sin JavaScript, el formulario se envía normal y se vuelve al pedid
 
 La ficha del pedido (pedidos/vistas/detalle.py) arma la tarjeta con `tarjeta(request,
 pedido)`: así la tarjeta sale igual al abrir el pedido y después de cada acción.
+
+Permisos (T21, docs/04-permisos.md): la costurera ve las tallas y las agrega o quita a mano,
+pero abrir o cerrar el enlace público es manejar el pedido: solo la dueña.
 """
 
 from django.http import HttpResponseBadRequest
@@ -15,6 +18,7 @@ from django.views.decorators.http import require_POST
 
 from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
+from cuentas.permisos import exigir_duena
 from pedidos import calculos, mensajes
 from pedidos.formularios.tallas import TallaForm, nombre_de_talla
 from pedidos.models import Pedido, Talla
@@ -127,6 +131,7 @@ def quitar(request, pk, talla):
 @require_POST
 def enlace(request, pk):
     pedido = obtener_o_404(request, Pedido.objects.select_related("cliente"), pk=pk)
+    exigir_duena(request)
     abiertas = request.POST.get("abiertas")
     if abiertas not in ("si", "no"):
         return HttpResponseBadRequest("Falta decir si el enlace queda abierto o cerrado.")
