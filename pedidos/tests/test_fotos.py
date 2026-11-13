@@ -230,6 +230,19 @@ def test_quitar_primero_pregunta(sesion_duena, pedido):
     assert _existe(archivo)
 
 
+def test_la_pregunta_atiende_solo_el_ultimo_toque(sesion_duena, pedido):
+    """"Cancelar" y "Sí, quitar la foto" cambian la misma tarjeta: si se tocan seguidos, el
+    último cancela al anterior, para que una respuesta tardía no vuelva a pintar la foto."""
+    poner_foto(pedido)
+
+    respuesta = sesion_duena.get(url_quitar(pedido), headers=HTMX)
+
+    sincronizar = 'hx-sync="closest .tarjeta:replace"'
+    assert respuesta.text.count(sincronizar) == 2
+    assert f'hx-post="{url_quitar(pedido)}" {sincronizar}' in respuesta.text
+    assert f'hx-get="{url_quitar(pedido)}?cancelar=1" {sincronizar}' in respuesta.text
+
+
 def test_cancelar_deja_la_tarjeta_como_estaba(sesion_duena, pedido):
     poner_foto(pedido)
 

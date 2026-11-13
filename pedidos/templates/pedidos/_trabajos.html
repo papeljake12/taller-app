@@ -8,4 +8,6 @@ manda), la tarjeta invita a subir la primera desde Pedidos: la foto se sube dent
 pedido.
 La nota de abajo reemplaza la del diseño ("Fotos de ejemplo hechas con IA..."), que era solo
 del diseño: ocupa el mismo lugar, para que la tarjeta termine igual que en la referencia.
-{% endcomment %}{% url 'pedidos:lista' as url_lista %}{% include "piezas/_fotos.html" with fotos=trabajos titulo="Trabajos del taller" url_subir=url_lista nota="Son las fotos de tus pedidos. Cada pedido tiene la suya: se sube dentro del pedido." %}
+`id_titulo` da nombre a la tarjeta para los lectores de pantalla, cuando la pieza lo use
+(pedido al coordinador).
+{% endcomment %}{% url 'pedidos:lista' as url_lista %}{% include "piezas/_fotos.html" with fotos=trabajos titulo="Trabajos del taller" id_titulo="t-trabajos" url_subir=url_lista nota="Son las fotos de tus pedidos. Cada pedido tiene la suya: se sube dentro del pedido." %}
