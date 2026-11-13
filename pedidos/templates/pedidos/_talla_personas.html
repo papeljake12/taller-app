@@ -1,0 +1,15 @@
+{% comment %}
+Parte de la tarjeta "Tallas": la lista persona por persona (nombre, talla, medidas, nota y
+de dónde llegó), cada una con su botón "Quitar" (pedidos:talla_quitar).
+Va plegada para que la tarjeta no crezca; se deja abierta después de agregar o quitar.
+{% endcomment %}{% if t.personas %}<details{% if t.ver_personas %} open{% endif %}>
+<summary class="fila fila--compacta"><strong>Ver {% if t.personas|length == 1 %}la persona{% else %}las {{ t.personas|length }} personas{% endif %}</strong></summary>
+{% for persona in t.personas %}<form class="fila fila--compacta" method="post" action="{% url 'pedidos:talla_quitar' pedido.pk persona.talla.pk %}" hx-post="{% url 'pedidos:talla_quitar' pedido.pk persona.talla.pk %}" hx-target="#tarjeta-tallas" hx-swap="outerHTML" hx-confirm="¿Quitar la talla de {{ persona.talla.nombre }}?">
+{% csrf_token %}
+<div class="fila__texto"><div class="fila__titulo"><strong>{{ persona.talla.nombre }}</strong>{% include "piezas/_etiqueta.html" with texto=persona.nombre_talla tono="gris" %}</div>
+<div class="fila__detalle">{{ persona.detalle }}</div></div>
+<button type="submit" class="boton" aria-label="Quitar a {{ persona.talla.nombre }}">Quitar</button>
+</form>
+{% endfor %}</details>
+{% else %}<p class="fila fila--compacta texto-2">Nadie ha enviado su talla todavía. Copia el enlace y mándaselo al cliente, o agrégalas a mano.</p>
+{% endif %}

@@ -1,0 +1,8 @@
+{% comment %}
+Los campos para agregar una talla a mano. Los usan la tarjeta "Tallas" (_talla_form.html) y
+la página que se abre sin JavaScript cuando hay errores (_talla_ventana.html).
+{% endcomment %}{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+<div class="campos">{% include "piezas/_campo.html" with campo=form.nombre %}{% include "piezas/_campo.html" with campo=form.talla %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.pecho %}{% include "piezas/_campo.html" with campo=form.cintura %}{% include "piezas/_campo.html" with campo=form.cadera %}</div>
+<p class="nota">Pecho, cintura y cadera solo hacen falta si eliges «A la medida».</p>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.largo %}{% include "piezas/_campo.html" with campo=form.nota %}</div>
