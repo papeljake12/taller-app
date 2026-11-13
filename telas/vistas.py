@@ -14,6 +14,10 @@ Con HTMX, al guardar se cierra la ventana y llegan solas la tabla, las cifras, e
 el contador del menú (_cambios), sin recargar la página. Sin JavaScript, cada acción abre
 su página y al terminar vuelve a Telas.
 
+Al guardar sale un aviso corto (config/avisos.py), con los textos de la demo: "Tela
+agregada." y "Piqué blanco: quedan 6 m.". Para quitar una tela la demo no tenía texto: se usa
+"Tela quitada.", del mismo estilo. Son metros, no plata: la costurera también puede verlos.
+
 Permisos (T21, docs/04-permisos.md): la costurera puede ver las telas, su historial y
 registrar "Usé", pero no "Entró", ni agregar ni quitar: esas responden 403 aunque el
 formulario se envíe a mano. Por eso "Entró" y "Usé" son dos tipos separados (TIPOS). El
@@ -30,6 +34,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods
 
+from config.avisos import avisar
 from config.menu import construir_menu
 from config.piezas import metros as texto_metros
 from config.ventanas import CERRAR_VENTANA, es_htmx, responder_ventana
@@ -166,7 +171,7 @@ def nueva(request):
             tela.save()
             if tela.metros > 0:
                 MovimientoTela.objects.create(tela=tela, metros=tela.metros, usuario=request.user)
-        return _cambios(request)
+        return avisar(request, _cambios(request), "Tela agregada.")
     form.enfocar()
     contexto = {"form": form, "accion": reverse("telas:nueva"), "titulo_pagina": "Nueva tela"}
     status = 422 if form.is_bound else 200
@@ -251,7 +256,9 @@ def movimiento(request, pk):
         exigir_duena(request)
     form = FormularioMovimiento(request.POST, tipo=tipo)
     if form.is_valid() and _guardar_movimiento(request, tela, form):
-        return _cambios(request, movida=tela, tipo=tipo)
+        tela.refresh_from_db()  # lo que quedó, para el aviso
+        texto = f"{tela.nombre}: quedan {texto_metros(tela.metros)}."
+        return avisar(request, _cambios(request, movida=tela, tipo=tipo), texto)
     tela.refresh_from_db()  # para decir cuánto queda de verdad
     return _ventana_movimiento(request, tela, form, status=422)
 
@@ -269,7 +276,7 @@ def quitar(request, pk):
     exigir_duena(request)
     if request.method == "POST":
         tela.delete()  # sus movimientos se borran con ella (on_delete=CASCADE)
-        return _cambios(request)
+        return avisar(request, _cambios(request), "Tela quitada.")
     contexto = {
         "tela": tela,
         "movimientos": tela.movimientos.count(),
