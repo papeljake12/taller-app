@@ -1,0 +1,27 @@
+{% load piezas %}{% comment %}
+Tarjeta del resultado del cotizador (T15, diseno/cotizador.html). La devuelve, sola,
+cotizador:calcular mientras se escribe (id="resultado"). Todas las cifras salen de
+calculos.cotizar (`cotizacion`); aquí no se hace ninguna cuenta.
+Los botones se apagan hasta que hay prenda, cantidad y precio (`lista`). "Enviar por
+WhatsApp" necesita un número que sirva; si no hay, una nota lo pide.
+El aviso dice lo que hay que corregir: al crear el pedido o guardar la prenda (`aviso`) o,
+mientras se escribe, un valor del precio mal escrito (`errores_del_precio`).
+{% endcomment %}{% url 'cotizador:crear_pedido' as url_crear %}<section class="tarjeta columna columna-angosta cotizacion" id="resultado" aria-labelledby="t-total">
+<div class="cifra__nombre" id="t-total">Total de la cotización</div>
+<div class="cifra-grande cotizacion__total dinero">{{ cotizacion.total|pesos }}</div>
+<div>
+<div class="renglon"><span>Precio por unidad</span><strong class="dinero">{{ cotizacion.precio_unidad|pesos }}</strong></div>
+<div class="renglon"><span>Costo de hacer una</span><span class="dinero">{{ cotizacion.costo|pesos }}</span></div>
+<div class="renglon"><span>De eso, en tela</span><span class="dinero">{{ cotizacion.tela|pesos }}</span></div>
+<div class="renglon"><span>Tu ganancia en el pedido</span><strong class="dinero texto-verde">{{ cotizacion.ganancia|pesos }}</strong></div>
+<div class="renglon"><span>Abono para empezar</span><span class="dinero">{{ cotizacion.abono|pesos }}</span></div>
+</div>
+{% include "piezas/_aviso.html" with mensajes=aviso|default:errores_del_precio %}
+{% if not lista %}<p class="nota">Escribe la prenda, la cantidad y los costos para ver el precio.</p>
+{% endif %}<noscript><button type="submit" class="boton">Calcular</button></noscript>
+<button type="submit" class="boton boton--principal" formaction="{{ url_crear }}" hx-post="{{ url_crear }}" hx-target="#cotizador" hx-swap="outerHTML" hx-sync="this:drop"{% if not lista %} disabled{% endif %}>Crear pedido con esta cotización</button>
+{% if enlace_whatsapp %}<a class="boton" href="{{ enlace_whatsapp }}" target="_blank" rel="noopener">Enviar por WhatsApp</a>{% else %}<button type="button" class="boton" disabled>Enviar por WhatsApp</button>{% endif %}
+<button type="button" class="boton" data-copiar="{{ texto_cotizacion }}"{% if not lista %} disabled{% endif %}>Copiar cotización</button>
+{% if lista and not enlace_whatsapp %}<p class="nota">Escribe el WhatsApp del cliente para enviarle la cotización.</p>
+{% endif %}<p class="nota">El precio por unidad se redondea hacia arriba a los 500 pesos.</p>
+</section>

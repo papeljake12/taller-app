@@ -1,18 +1,16 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Cotizador (diseno/cotizador.html), T15. Lo rellena el carril C de la tanda 5.{% endcomment %}
+{% comment %}
+Cotizador (diseno/cotizador.html), T15. Toda la pantalla es un solo formulario
+(cotizador/_formulario.html): a la izquierda los datos y a la derecha el resultado
+(cotizador/_resultado.html), que se actualiza mientras se escribe.
+"Empezar de nuevo" vuelve a abrir la pantalla vacía. En celular, arriba solo cabe el botón
+principal: por eso también va al comienzo del contenido (.navegacion-mes, como en Resumen).
+{% endcomment %}
 {% block pestana %}Cotizador{% endblock %}
 {% block titulo %}Cotizador{% endblock %}
-{% block apoyo %}{% endblock %}
-{% block acciones %}{% endblock %}
+{% block apoyo %}<span class="encabezado__apoyo">El precio se actualiza mientras escribes</span>{% endblock %}
+{% block acciones %}<a class="boton" href="{% url 'cotizador:inicio' %}">Empezar de nuevo</a>{% endblock %}
 {% block contenido %}
-<div class="dos-columnas">
-<div class="columna-ancha columna"><section class="tarjeta tarjeta--lista" aria-labelledby="t-para-quien">
-<div class="tarjeta__cabeza"><h2 id="t-para-quien">Para quién</h2></div>
-<p class="tarjeta__nota">Llega con T15.</p>
-</section></div>
-<div class="columna-angosta columna"><section class="tarjeta tarjeta--lista" aria-labelledby="t-total">
-<div class="tarjeta__cabeza"><h2 id="t-total">Total de la cotización</h2></div>
-<p class="tarjeta__nota">Llega con T15.</p>
-</section></div>
-</div>
+<div class="navegacion-mes"><a class="boton" href="{% url 'cotizador:inicio' %}">Empezar de nuevo</a></div>
+{% include "cotizador/_formulario.html" %}
 {% endblock %}
