@@ -307,3 +307,21 @@ def test_sin_sesion_lleva_a_entrar(client):
     respuesta = client.get(url("2026-11"))
 
     assert respuesta.status_code == 302 and respuesta.url.startswith("/entrar/")
+
+
+# --- Agregado al unir la tanda 4 ---------------------------------------------------------------
+
+
+def test_en_celular_se_puede_cambiar_de_mes(sesion_duena):
+    # Arriba, en celular, solo cabe el botón principal: el mes se cambia con una fila propia.
+    html = sesion_duena.get(url("2026-11")).text
+
+    assert '<nav class="navegacion-mes" aria-label="Cambiar de mes">' in html
+    assert 'href="?mes=2026-10">Mes anterior</a>' in html
+    assert 'href="?mes=2026-12">Mes siguiente</a>' in html
+
+
+def test_descargar_para_excel_es_el_boton_principal_de_resumen(sesion_duena):
+    html = sesion_duena.get(url("2026-11")).text
+
+    assert '<a class="boton boton--principal" href="/resumen/excel/">Descargar para Excel</a>' in html

@@ -586,3 +586,13 @@ def test_frase_de_etapa(taller, estado, con_encargada, frase):
     pedido = pedido_de(taller, estado=estado, encargada=marta if con_encargada else None)
 
     assert vista.frase_de_etapa(pedido) == frase
+
+
+# --- Agregado al unir la tanda 4 (pieza _cifra con su clase) --------------------------------
+
+
+def test_en_celular_las_cifras_llevan_su_orden_en_la_pagina(sesion_duena, ejemplo):
+    cifras = parte(sesion_duena.get(PAGINA).text, "hoy-cifras")
+
+    # En el orden del computador, cada cifra lleva el turno que toma en celular.
+    assert re.findall(r"orden-celular-(\d)", cifras) == ["1", "3", "2", "4"]

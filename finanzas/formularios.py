@@ -10,7 +10,7 @@ from django import forms
 from django.utils import timezone
 
 from finanzas.models import Gasto
-from pedidos.formularios.abonos import CampoPesos
+from pedidos.formularios.comun import CampoPesos
 
 # El primer año que el Resumen deja ver (?mes=2000-01). Un gasto de antes, o de más allá del
 # próximo año, es casi siempre un año mal escrito ("0202" en vez de "2026"): se guardaría en

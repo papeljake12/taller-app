@@ -37,7 +37,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 - [x] **T04. Clientes.** Modelo `Cliente`, lista con buscador, crear y editar.
 - [x] **T05. Pedidos: crear y listar.** Modelo `Pedido`, ventana "Nuevo pedido", lista con
   filtros, buscador y orden, y el buscador del menú. Pantallas "Pedidos" y "Nuevo pedido".
-- [ ] **T06. Pantalla Hoy.** Cifras, "Qué hacer hoy" con sus acciones, gráfica de cobrado y
+- [x] **T06. Pantalla Hoy.** Cifras, "Qué hacer hoy" con sus acciones, gráfica de cobrado y
   gastado, "Quién te debe" y "Pedidos por etapa". Pantalla "Hoy", sin las fotos (llegan con
   T13). Usa los cálculos de abonos y gastos, que ya existen desde la tanda 2.
 - [x] **T07. Pedido por dentro: ficha y etapa.** Cambiar etapa, encargada, fecha y WhatsApp
@@ -49,7 +49,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 - [ ] **T11. Enlace público de tallas.** Pantalla "Formulario público de tallas" completa,
   con token, cierre del enlace y límite de envíos.
 - [x] **T12. Materiales.** Modelo `Material`, agregar, marcar y quitar.
-- [ ] **T13. Fotos.** Foto por pedido: subir, cambiar y quitar. Reducir el tamaño al subir y
+- [x] **T13. Fotos.** Foto por pedido: subir, cambiar y quitar. Reducir el tamaño al subir y
   validar que sea una imagen. Tarjeta "Trabajos del taller" en Hoy, con las fotos que pasan
   como describe `docs/08-diseno.md`.
 
@@ -58,8 +58,8 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 - [ ] **T14. Calendario.** Pantalla "Calendario".
 - [ ] **T15. Cotizador.** Modelo `PrendaGuardada` y pantalla "Cotizador".
 - [ ] **T16. Telas.** Modelos `Tela` y `MovimientoTela`, pantalla "Telas".
-- [ ] **T17. Gastos y resumen del mes.** Modelo `Gasto` y pantalla "Resumen del mes", sin el Excel.
-- [ ] **T18. Descarga para Excel.** Con openpyxl, cuatro hojas.
+- [x] **T17. Gastos y resumen del mes.** Modelo `Gasto` y pantalla "Resumen del mes", sin el Excel.
+- [x] **T18. Descarga para Excel.** Con openpyxl, cuatro hojas.
 - [ ] **T19. Mensajes de WhatsApp y avisos de dotación.** Enlaces que abren el chat con el
   texto escrito, y pantalla "Clientes" completa.
 - [ ] **T20. Mi taller.** Pantalla "Mi taller".

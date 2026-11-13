@@ -521,3 +521,11 @@ def test_la_grafica_con_poca_plata_marca_miles():
     svg = grafica_barras([MesDeGrafica(date(2026, 11, 1), 900_000, 100_000)])
 
     assert ">500 mil</text>" in svg
+
+
+
+def test_en_celular_los_textos_cortos_y_el_cambio_de_mes_se_ven():
+    celular = _reglas_de_celular()
+    for regla in (r"\.texto-computador \{\s*display: none;", r"\.texto-celular \{\s*display: inline;",
+                  r"\.navegacion-mes \{\s*display: flex;"):
+        assert re.search(regla, celular), regla

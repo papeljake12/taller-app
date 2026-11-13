@@ -11,8 +11,9 @@ Las ventas por tipo de cliente y quién tiene qué usan _barra.
 {% block titulo %}Resumen{% endblock %}
 {% block apoyo %}<span class="encabezado__apoyo">{{ mes|mes_y_anio }}</span>{% endblock %}
 {% comment %}En Resumen, "Descargar para Excel" es el botón principal (negro), como en el diseño: por eso no usa la pieza _boton_excel, que es blanca.{% endcomment %}
-{% block acciones %}<a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a><a class="boton boton--principal" href="{% url 'finanzas:excel' %}">Descargar para Excel</a>{% endblock %}
+{% block acciones %}<a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a>{% include "piezas/_boton_excel.html" with principal=True %}{% endblock %}
 {% block contenido %}
+<nav class="navegacion-mes" aria-label="Cambiar de mes"><a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a></nav>
 {% include "finanzas/_cifras.html" %}
 <div class="dos-columnas">
 {% include "finanzas/_grafica.html" %}

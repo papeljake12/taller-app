@@ -438,3 +438,20 @@ def test_borrar_archivo_no_falla_si_no_hay_archivo(pedido):
 
     fotos.borrar_archivo(almacen, "")
     fotos.borrar_archivo(almacen, "pedidos/fotos/no-existe.jpg")
+
+
+# --- Agregado al unir la tanda 4 (Hoy recibe sus fotos) -------------------------------------
+
+
+def test_hoy_muestra_solo_las_fotos_del_taller(sesion_duena, pedido, ajeno):
+    poner_foto(pedido)
+    poner_foto(ajeno)
+    pedido.refresh_from_db()
+    ajeno.refresh_from_db()
+
+    html = sesion_duena.get("/").text
+
+    assert pedido.foto.url in html
+    assert ajeno.foto.url not in html
+    assert "Subir la primera foto" not in html
+    assert 'aria-labelledby="t-trabajos"' in html and 'id="t-trabajos"' in html

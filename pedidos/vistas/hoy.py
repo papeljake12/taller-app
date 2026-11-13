@@ -27,7 +27,7 @@ from config.menu import construir_menu
 from config.piezas import pesos
 from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
-from pedidos import calculos, mensajes
+from pedidos import calculos, fotos, mensajes
 from pedidos.calculos import Etiqueta
 from pedidos.models import Pedido
 
@@ -267,6 +267,7 @@ def contexto_de_hoy(request, hoy):
         "pendientes": pendientes(taller, hoy),
         "deudores": deudores(taller, hoy),
         "etapas": etapas(taller, hoy),
+        "trabajos": fotos.trabajos(request),  # T13
     }
     contexto.update(grafica(taller, hoy))
     return contexto

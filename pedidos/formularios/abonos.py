@@ -4,48 +4,11 @@ El valor se escribe como lo escribe la gente: "380000", "380.000" o "$ 380.000".
 como un entero de pesos, sin decimales (regla 3 de CLAUDE.md).
 """
 
-
 from django import forms
 from django.utils import timezone
 
-from pedidos.formularios.comun import leer_pesos
+from pedidos.formularios.comun import CampoPesos
 from pedidos.models import Abono
-
-# Más que esto no es un abono: es un error al escribir (un cero de más, por ejemplo).
-MAXIMO_ABONO = 1_000_000_000
-
-# "380000", o con puntos de mil bien puestos: "380.000", "1.260.000".
-
-
-
-
-class CampoPesos(forms.CharField):
-    """Un valor en pesos, escrito con o sin puntos y con o sin el signo $."""
-
-    default_error_messages = {
-        "required": "Escribe el valor del abono.",
-        "invalid": "Escribe solo el valor en pesos, por ejemplo 380.000.",
-        "cero": "El abono debe ser mayor que 0.",
-        "grande": "Revisa el valor: es demasiado grande.",
-    }
-
-    def to_python(self, value):
-        texto = super().to_python(value)
-        if texto in self.empty_values:
-            return None
-        pesos = leer_pesos(texto)
-        if pesos is None:
-            raise forms.ValidationError(self.error_messages["invalid"], code="invalid")
-        return pesos
-
-    def validate(self, value):
-        super().validate(value)
-        if value is None:
-            return
-        if value <= 0:
-            raise forms.ValidationError(self.error_messages["cero"], code="cero")
-        if value > MAXIMO_ABONO:
-            raise forms.ValidationError(self.error_messages["grande"], code="grande")
 
 
 class FormularioAbono(forms.ModelForm):

@@ -9,7 +9,8 @@ from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 
-from pedidos.formularios.abonos import FormularioAbono, leer_pesos
+from pedidos.formularios.abonos import FormularioAbono
+from pedidos.formularios.comun import leer_pesos
 from pedidos.models import Abono
 from pedidos.vistas.abonos import contexto_pagos
 from tests import fabricas
