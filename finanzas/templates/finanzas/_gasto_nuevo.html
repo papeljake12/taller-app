@@ -1,0 +1,12 @@
+{% extends "piezas/ventana.html" %}
+{% comment %}
+"Registrar gasto" como página aparte: solo se ve sin JavaScript, al tocar "Registrar gasto"
+o cuando el formulario llega con errores. Con JavaScript, el formulario y sus errores salen
+dentro de la tarjeta de gastos (_gasto_form.html).
+{% endcomment %}
+{% block titulo %}Registrar gasto{% endblock %}
+{% block cuerpo %}<input type="hidden" name="mes" value="{{ texto_mes }}">
+{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+{% include "piezas/_campo.html" with campo=form.concepto %}
+<div class="campos">{% include "piezas/_campo.html" with campo=form.categoria %}{% include "piezas/_campo.html" with campo=form.valor %}{% include "piezas/_campo.html" with campo=form.fecha %}</div>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Registrar gasto</button>{% endblock %}
