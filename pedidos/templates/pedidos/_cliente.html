@@ -1,4 +1,19 @@
-{% comment %}Tarjeta "Cliente" (T07). La rellena el carril B de la tanda 3.{% endcomment %}<section class="tarjeta tarjeta--lista" aria-labelledby="t-cliente">
+{% comment %}
+Tarjeta "Cliente" (T07): nombre, tipo y cuántos pedidos tiene, y su WhatsApp, que se guarda
+solo al salir del campo (pedidos:whatsapp). Con la etapa en "listo", el aviso de pedido
+listo: el botón abre WhatsApp si hay número; si no, copia el texto. El recordatorio del
+saldo está en la tarjeta Pagos.
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="pedido-cliente" aria-labelledby="t-cliente"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-cliente">Cliente</h2></div>
-<p class="tarjeta__nota">Llega con T07.</p>
+<div class="tarjeta__cuerpo">
+<div><div class="fila__titulo"><strong>{{ pedido.cliente.nombre }}</strong></div><div class="texto-2">{{ pedido.cliente.get_tipo_display }}, {{ pedidos_del_cliente }} pedido{{ pedidos_del_cliente|pluralize }}</div></div>
+<form method="post" action="{% url 'pedidos:whatsapp' pedido.pk %}" hx-post="{% url 'pedidos:whatsapp' pedido.pk %}" hx-trigger="change, submit" hx-target="#pedido-cliente" hx-swap="outerHTML" novalidate>
+{% csrf_token %}
+{% include "piezas/_campo.html" with campo=form_whatsapp.whatsapp %}
+<noscript><div class="botones"><button type="submit" class="boton">Guardar el número</button></div></noscript>
+</form>
+{% if whatsapp_guardado %}<p class="nota" role="status">{% if pedido.cliente.whatsapp %}Número guardado.{% else %}Número borrado.{% endif %}</p>{% endif %}
+{% if aviso_listo %}<div class="botones">{% if aviso_listo.enlace %}<a class="boton boton--principal" href="{{ aviso_listo.enlace }}" target="_blank" rel="noopener">Avisar por WhatsApp que está listo</a>{% else %}<button type="button" class="boton" data-copiar="{{ aviso_listo.texto }}">Copiar aviso de pedido listo</button>{% endif %}</div>
+{% if not aviso_listo.enlace %}<p class="nota">Escribe el WhatsApp del cliente y aquí aparece el botón para enviarle el aviso.</p>{% endif %}{% endif %}
+</div>
 </section>

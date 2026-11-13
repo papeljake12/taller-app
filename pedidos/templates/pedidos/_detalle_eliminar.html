@@ -1,0 +1,5 @@
+{% extends "piezas/ventana.html" %}
+{% comment %}Ventana "¿Eliminar este pedido?" (T07). Al confirmar, la vista borra el pedido y lleva a Pedidos.{% endcomment %}
+{% block titulo %}¿Eliminar este pedido?{% endblock %}
+{% block cuerpo %}<p>Se borrará el pedido de {{ pedido.cliente.nombre }} ({{ pedido.detalle }}) con sus abonos, tallas y materiales. No se puede deshacer.</p>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Sí, eliminar</button>{% endblock %}
