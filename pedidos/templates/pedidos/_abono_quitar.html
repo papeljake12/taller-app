@@ -1,0 +1,8 @@
+{% extends "piezas/ventana.html" %}{% load piezas %}
+{% comment %}
+La pregunta antes de quitar un abono, como página aparte: solo se ve sin JavaScript. Con
+JavaScript sale dentro de la tarjeta Pagos (_abono_confirmar.html).
+{% endcomment %}
+{% block titulo %}Quitar abono{% endblock %}
+{% block cuerpo %}<p>¿Quitar el abono de <span class="dinero">{{ abono.valor|pesos }}</span> del {{ abono.fecha|fecha_corta }} del pedido de {{ pedido.cliente.nombre }}? El saldo vuelve a subir.</p>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Sí, quitar el abono</button>{% endblock %}

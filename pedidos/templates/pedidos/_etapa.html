@@ -1,4 +1,15 @@
-{% comment %}Tarjeta "Etapa" (T07). La rellena el carril B de la tanda 3.{% endcomment %}<section class="tarjeta tarjeta--lista" aria-labelledby="t-etapa">
+{% load piezas %}{% comment %}
+Tarjeta "Etapa" (T07). Tocar una etapa la guarda (pedidos:etapa) y HTMX cambia solo esta
+tarjeta y, con hx-swap-oob, las partes que dependen de la etapa.
+
+Los pasos son la pieza piezas/_pasos.html: cada uno es un botón que envía su etapa, así
+que también funciona sin JavaScript.
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="pedido-etapa" aria-labelledby="t-etapa"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-etapa">Etapa</h2></div>
-<p class="tarjeta__nota">Llega con T07.</p>
+<form class="tarjeta__cuerpo" method="post" action="{% url 'pedidos:etapa' pedido.pk %}" hx-post="{% url 'pedidos:etapa' pedido.pk %}" hx-target="#pedido-etapa" hx-swap="outerHTML" novalidate>
+{% csrf_token %}
+{% include "piezas/_aviso.html" with mensajes=form_etapa.estado.errors %}
+{% include "piezas/_pasos.html" with pasos=pasos etiqueta_grupo="Etapa del pedido" %}
+<div class="texto-2">Toca una etapa para mover el pedido.</div>
+</form>
 </section>

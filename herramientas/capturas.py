@@ -64,6 +64,10 @@ PANTALLAS = {
         Pantalla("mi-taller", "/mi-taller/"),
         Pantalla("tallas-publico", "/tallas/{token}/", sin_sesion=True),
     ],
+    3: [
+        Pantalla("pedidos-atrasados", "/pedidos/?filtro=atrasados"),
+        Pantalla("buscar", "/buscar/?q=esquina"),
+    ],
 }
 
 DESBORDE = """(ancho) => {

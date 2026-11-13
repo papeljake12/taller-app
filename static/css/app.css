@@ -1201,6 +1201,138 @@ textarea.campo__control {
 }
 
 
+/* Fila de tabla que abre algo (Pedidos, buscador): el enlace de la primera celda cubre
+   toda la fila. El nombre va en negrita, sin subrayado, como en el diseño. */
+.tabla__fila {
+  position: relative;
+}
+
+.tabla__fila:hover {
+  background: var(--suave);
+}
+
+.tabla__enlace {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tabla__enlace::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.tabla__enlace:hover strong,
+.tabla__enlace:focus-visible strong {
+  text-decoration: underline;
+}
+
+/* Fila con un formulario: el botón queda a la altura de los campos, no de las etiquetas */
+.fila--formulario {
+  align-items: flex-end;
+}
+
+/* Botón de solo ícono, liviano, dentro de una fila (quitar un material). Lleva aria-label. */
+.boton--icono {
+  min-height: 28px;
+  min-width: 28px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--texto-2);
+}
+
+.boton--icono:hover {
+  background: var(--suave);
+  color: var(--negro);
+}
+
+/* La casilla también puede ser un botón (materiales comprados) */
+button.casilla {
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Tallas: el número de cada talla va a la derecha, como en el diseño */
+.fila-talla > :last-child {
+  text-align: right;
+}
+
+/* Filas que se despliegan (<details>): se ven tocables, con una flecha */
+details > summary.fila {
+  cursor: pointer;
+  list-style: none;
+}
+
+details > summary.fila::-webkit-details-marker {
+  display: none;
+}
+
+details > summary.fila::after {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 1.75px solid currentColor;
+  border-bottom: 1.75px solid currentColor;
+  transform: rotate(45deg);
+}
+
+details[open] > summary.fila::after {
+  transform: rotate(-135deg);
+}
+
+/* Tarjeta Pagos del pedido por dentro (diseno/pedido.html) */
+.pagos__nombre {
+  font-weight: 600;
+}
+
+.pagos__saldo {
+  margin-top: -8px;
+  font-size: 26px;
+}
+
+.pagos__totales {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  color: var(--texto-2);
+}
+
+.pagos__abono {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--linea);
+}
+
+.pagos__acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* Botón de solo ícono para quitar un abono: cuadrado, para que la fila quepa en una línea */
+.pagos__quitar {
+  width: 36px;
+  padding: 0;
+}
+
+.pagos__confirmar,
+.pagos__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linea);
+}
+
 /* Tablero: filas de tarjetas de una pantalla (Hoy). En celular las filas se abren y
    cada bloque toma su turno con .orden-celular-N (ver la sección 5). */
 .tablero {
@@ -1444,6 +1576,13 @@ button.calendario__dia:hover {
   .boton,
   .filtro {
     min-height: 44px;
+  }
+
+  /* Los de solo ícono, también de 44 px de ancho para tocarlos con el dedo */
+  .boton--icono,
+  .pagos__quitar {
+    min-width: 44px;
+    width: 44px;
   }
 
   /* 16 px en los campos para que el celular no agrande la pantalla al escribir */

@@ -2,7 +2,7 @@
 <nav class="menu" aria-label="Secciones">
 <div class="menu__marca">{% icono "tijeras" 22 %}<span class="menu__taller">{{ request.taller.nombre|default:"Taller" }}</span><button type="button" class="menu__contraer" aria-label="Contraer el menú" data-menu-contraer>{% icono "contraer" %}</button></div>
 <button type="button" class="menu__abrir" aria-label="Abrir el menú" title="Abrir el menú" data-menu-abrir>{% icono "tijeras" 22 %}</button>
-<form class="menu__buscar" role="search" action="{% url 'pedidos:buscar' %}">{% icono "buscar" 16 "2" %}<label class="oculto" for="menu-buscar">Buscar pedidos y clientes</label><input type="search" id="menu-buscar" name="q" placeholder="Buscar" value="{{ request.GET.q|default:'' }}"></form>
+<form class="menu__buscar" role="search" action="{% url 'pedidos:buscar' %}">{% icono "buscar" 16 "2" %}<label class="oculto" for="menu-buscar">Buscar pedidos y clientes</label><input type="search" id="menu-buscar" name="q" placeholder="Buscar" value="{% if request.resolver_match.view_name == 'pedidos:buscar' %}{{ request.GET.q }}{% endif %}"></form>
 <button type="button" class="menu__lupa" aria-label="Buscar" title="Buscar" data-menu-abrir>{% icono "buscar" 16 "2" %}</button>
 <div class="menu__lista">
 {% for entrada in menu.secciones %}{% include "_menu_entrada.html" %}
@@ -18,6 +18,7 @@
 </nav>
 <div class="panel-mas" id="panel-mas" hidden data-panel-mas>
 <div class="tarjeta tarjeta--lista">
+<a class="panel-mas__enlace" href="{% url 'pedidos:buscar' %}">{% icono "buscar" %}Buscar pedidos y clientes</a>
 {% for entrada in menu.mas %}{% if entrada.url %}<a class="panel-mas__enlace{% if entrada.actual %} es-actual{% endif %}" href="{{ entrada.url }}"{% if entrada.actual %} aria-current="page"{% endif %}>{% else %}<a class="panel-mas__enlace" aria-disabled="true">{% endif %}{% icono entrada.icono %}{{ entrada.nombre }}</a>
 {% endfor %}<form method="post" action="{% url 'cuentas:salir' %}">{% csrf_token %}<button type="submit" class="panel-mas__enlace">{% icono "salir" %}Salir</button></form>
 </div>

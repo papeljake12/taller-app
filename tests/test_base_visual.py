@@ -190,14 +190,35 @@ def test_en_celular_la_barra_tiene_hoy_pedidos_calendario_clientes_y_mas(sesion_
     assert mas["atributos"]["aria-controls"] == "panel-mas"
 
 
-def test_mas_trae_cotizador_telas_resumen_mi_taller_y_salir(sesion_duena):
+def test_mas_trae_buscar_cotizador_telas_resumen_mi_taller_y_salir(sesion_duena):
+    # En celular el menú lateral (con su buscador) no se ve: "Buscar" va primero en "Más".
     html = Elementos(sesion_duena.get("/").text)
 
     panel = [e for e in html.elementos if e["atributos"].get("id") == "panel-mas"][0]
     entradas = [texto(e) for e in html.con_clase("panel-mas__enlace")]
 
     assert "hidden" in panel["atributos"]
-    assert entradas == ["Cotizador", "Telas", "Resumen", "Mi taller", "Salir"]
+    assert entradas == [
+        "Buscar pedidos y clientes", "Cotizador", "Telas", "Resumen", "Mi taller", "Salir",
+    ]
+
+
+def test_el_buscador_del_menu_solo_muestra_lo_buscado_en_su_pagina(sesion_duena):
+    en_pedidos = sesion_duena.get("/pedidos/?q=marta").text
+    en_buscar = sesion_duena.get("/buscar/?q=marta").text
+
+    assert 'id="menu-buscar" name="q" placeholder="Buscar" value=""' in en_pedidos
+    assert 'id="menu-buscar" name="q" placeholder="Buscar" value="marta"' in en_buscar
+
+
+def test_pedidos_va_resaltado_tambien_dentro_de_un_pedido(sesion_duena, taller):
+    from tests import fabricas
+
+    pedido = fabricas.crear_pedido(taller)
+    html = Elementos(sesion_duena.get(f"/pedidos/{pedido.pk}/").text)
+
+    actuales = [texto(e) for e in html.con_clase("menu__enlace") if "es-actual" in e["clases"]]
+    assert actuales == ["Pedidos"]
 
 
 def test_las_secciones_del_menu_coinciden_con_el_diseno():
@@ -320,7 +341,10 @@ def test_ninguna_pagina_carga_nada_desde_internet(sesion_duena, settings, direcc
 
     html = sesion_duena.get(direccion).text
 
-    assert not re.search(r'(?:src|href)="(?:https?:)?//', html)
+    # Ni scripts, ni imágenes, ni hojas de estilo de afuera. Un enlace para abrir WhatsApp
+    # (<a href="https://wa.me/...">) sí puede ir: no se descarga nada al cargar la página.
+    assert not re.search(r'src="(?:https?:)?//', html)
+    assert not re.search(r'<link[^>]+href="(?:https?:)?//', html)
 
 
 @pytest.mark.parametrize("direccion", ["/", "/entrar/"])

@@ -9,6 +9,7 @@ dependencies = [
     "django-axes>=9.0.0",
     "pillow>=13.0.0",
     "psycopg[binary]>=3.2",
+    "reportlab>=5.1.0",
 ]
 
 [dependency-groups]

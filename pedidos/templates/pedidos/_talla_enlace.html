@@ -1,0 +1,10 @@
+{% comment %}
+Parte de la tarjeta "Tallas": si el enlace público recibe tallas, y el botón para abrirlo o
+cerrarlo (pedidos:tallas_enlace). Cerrado, el formulario público ya no acepta envíos (T11).
+{% endcomment %}<form class="fila fila--compacta" method="post" action="{% url 'pedidos:tallas_enlace' pedido.pk %}" hx-post="{% url 'pedidos:tallas_enlace' pedido.pk %}" hx-target="#tarjeta-tallas" hx-swap="outerHTML">
+{% csrf_token %}
+{% if pedido.tallas_abiertas %}<div class="fila__texto">{% include "piezas/_etiqueta.html" with texto="Enlace abierto" tono="gris" %} <span class="texto-2">Cada persona puede enviar su talla.</span></div>
+<button type="submit" class="boton" name="abiertas" value="no">Cerrar el enlace</button>
+{% else %}<div class="fila__texto">{% include "piezas/_etiqueta.html" with texto="Enlace cerrado" tono="ambar" %} <span class="texto-2">Nadie más puede enviar su talla.</span></div>
+<button type="submit" class="boton" name="abiertas" value="si">Abrir el enlace</button>
+{% endif %}</form>
