@@ -6,6 +6,9 @@ de la usuaria: el número de un pedido de otro taller responde 404 y no cambia n
 
 Con HTMX, cada acción devuelve solo la tarjeta (pedidos/_foto.html), que reemplaza a la que
 está en la página. Sin JavaScript, el formulario hace un envío normal y vuelve al pedido.
+
+Después de guardar, un aviso corto con los textos de la demo (config/avisos.py): "Foto
+guardada." al subirla o cambiarla y "Foto quitada." al quitarla.
 """
 
 from django.http import HttpResponse
@@ -13,6 +16,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
+from config.avisos import avisar
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import obtener_o_404
 from cuentas.permisos import exigir_duena
@@ -59,7 +63,7 @@ def subir(request, pk):
     if not form.is_valid():
         return _responder(request, pedido, form=form, status=422)
     fotos.guardar(pedido, form.cleaned_data["foto"])
-    return _responder(request, pedido)
+    return avisar(request, _responder(request, pedido), "Foto guardada.")
 
 
 @require_http_methods(["GET", "POST"])
@@ -74,8 +78,10 @@ def quitar(request, pk):
     # La costurera sube o cambia la foto, pero no la quita (docs/04-permisos.md).
     exigir_duena(request)
     if request.method == "POST":
+        tenia_foto = bool(pedido.foto)
         fotos.quitar(pedido)
-        return _responder(request, pedido)
+        respuesta = _responder(request, pedido)
+        return avisar(request, respuesta, "Foto quitada.") if tenia_foto else respuesta
     if "cancelar" in request.GET or not pedido.foto:
         return _responder(request, pedido)
     if _con_tarjeta(request):

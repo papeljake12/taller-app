@@ -5,6 +5,7 @@ veces). Con la etapa en "listo", el aviso de pedido listo: el botón abre WhatsA
 número; si no, copia el texto. El recordatorio del saldo está en la tarjeta Pagos.
 La costurera ve el WhatsApp sin poder cambiarlo (disabled, sin formulario) y no recibe el
 aviso de listo, que dice el saldo (T21).
+"Número guardado." lleva id: aparece con un desvanecido al guardar y se va suave después.
 {% endcomment %}<section class="tarjeta tarjeta--lista" id="pedido-cliente" aria-labelledby="t-cliente"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-cliente">Cliente</h2></div>
 <div class="tarjeta__cuerpo">
@@ -14,7 +15,7 @@ aviso de listo, que dice el saldo (T21).
 {% include "piezas/_campo.html" with campo=form_whatsapp.whatsapp %}
 <noscript><div class="botones"><button type="submit" class="boton">Guardar el número</button></div></noscript>
 </form>{% else %}<div>{% include "piezas/_campo.html" with campo=form_whatsapp.whatsapp %}</div>{% endif %}
-{% if whatsapp_guardado %}<p class="nota" role="status">{% if pedido.cliente.whatsapp %}Número guardado.{% else %}Número borrado.{% endif %}</p>{% endif %}
+{% if whatsapp_guardado %}<p class="nota" id="pedido-whatsapp-guardado" role="status">{% if pedido.cliente.whatsapp %}Número guardado.{% else %}Número borrado.{% endif %}</p>{% endif %}
 {% if aviso_listo %}<div class="botones">{% if aviso_listo.enlace %}<a class="boton boton--principal" href="{{ aviso_listo.enlace }}" target="_blank" rel="noopener">Avisar por WhatsApp que está listo</a>{% else %}<button type="button" class="boton" data-copiar="{{ aviso_listo.texto }}">Copiar aviso de pedido listo</button>{% endif %}</div>
 {% if not aviso_listo.enlace %}<p class="nota">Escribe el WhatsApp del cliente y aquí aparece el botón para enviarle el aviso.</p>{% endif %}{% endif %}
 </div>

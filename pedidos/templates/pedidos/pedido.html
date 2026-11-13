@@ -7,13 +7,18 @@ congelada después de la tanda 2:
   columna derecha: _pagos (T08), _entrega (T07), _cliente (T07), _foto (T13);
   abajo: _eliminar (T07).
 Las dos columnas terminan a la misma altura: la última tarjeta de cada una crece.
+
+Pantalla fija (computador): las dos columnas toman el alto que deja "Eliminar el pedido"
+(.llenar). La lista de Materiales se desplaza por dentro de su tarjeta, la foto se achica
+si falta alto y, abierta, la lista de personas de Tallas se desplaza si son muchas. Las
+medidas están en static/css/app.css, apartado "Pedido por dentro".
 {% endcomment %}
 {% block pestana %}{{ pedido.cliente.nombre }}{% endblock %}
 {% block titulo %}{{ pedido.cliente.nombre }}{% endblock %}
 {% block apoyo %}{% include "pedidos/_pedido_apoyo.html" %}{% endblock %}
 {% block acciones %}{% include "pedidos/_pedido_acciones.html" %}{% endblock %}
 {% block contenido %}
-<div class="dos-columnas">
+<div class="dos-columnas llenar pedido-por-dentro">
 <div class="columna-ancha columna">
 {% include "pedidos/_etapa.html" %}
 {% include "pedidos/_tallas.html" %}

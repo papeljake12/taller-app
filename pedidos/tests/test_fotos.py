@@ -1,5 +1,6 @@
 """T13. Fotos: la foto del pedido (subir, cambiar y quitar) y "Trabajos del taller" en Hoy."""
 
+import json
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
@@ -303,6 +304,77 @@ def test_quitar_sin_foto_no_hace_nada(sesion_duena, pedido):
 
 def test_subir_solo_acepta_envios(sesion_duena, pedido):
     assert sesion_duena.get(reverse("pedidos:foto", args=[pedido.pk])).status_code == 405
+
+
+# --- Aviso corto y animaciones (ajuste "pantalla fija y animaciones") ------------------------
+
+
+def aviso(respuesta):
+    """El aviso corto que lleva la respuesta de HTMX (config/avisos.py), o None."""
+    return json.loads(respuesta.headers.get("HX-Trigger") or "{}").get("aviso")
+
+
+def test_subir_la_foto_avisa_foto_guardada(sesion_duena, pedido):
+    assert aviso(subir(sesion_duena, pedido, foto_de_prueba(), headers=HTMX)) == "Foto guardada."
+
+
+def test_cambiar_la_foto_tambien_avisa_foto_guardada(sesion_duena, pedido):
+    poner_foto(pedido)
+
+    assert aviso(subir(sesion_duena, pedido, foto_de_prueba(), headers=HTMX)) == "Foto guardada."
+
+
+def test_la_costurera_tambien_recibe_el_aviso(client, costurera, pedido):
+    client.force_login(costurera)
+
+    assert aviso(subir(client, pedido, foto_de_prueba(), headers=HTMX)) == "Foto guardada."
+
+
+def test_una_foto_que_no_sirve_no_avisa(sesion_duena, pedido):
+    respuesta = subir(sesion_duena, pedido, SimpleUploadedFile("otra.jpg", b"texto"),
+                      headers=HTMX)
+
+    assert respuesta.status_code == 422
+    assert aviso(respuesta) is None
+
+
+def test_quitar_la_foto_avisa_foto_quitada(sesion_duena, pedido):
+    poner_foto(pedido)
+
+    assert aviso(sesion_duena.post(url_quitar(pedido), headers=HTMX)) == "Foto quitada."
+
+
+def test_preguntar_cancelar_o_quitar_sin_foto_no_avisan(sesion_duena, pedido):
+    assert aviso(sesion_duena.post(url_quitar(pedido), headers=HTMX)) is None
+    poner_foto(pedido)
+    assert aviso(sesion_duena.get(url_quitar(pedido), headers=HTMX)) is None
+    assert aviso(sesion_duena.get(url_quitar(pedido) + "?cancelar=1", headers=HTMX)) is None
+
+
+def test_sin_javascript_el_aviso_sale_en_el_pedido(sesion_duena, pedido):
+    poner_foto(pedido)
+
+    respuesta = sesion_duena.post(url_quitar(pedido), follow=True)
+
+    assert "<p data-aviso>Foto quitada.</p>" in respuesta.text
+
+
+def test_la_foto_y_la_invitacion_llevan_su_id_y_la_pregunta_conserva_el_del_formulario(
+    sesion_duena, pedido
+):
+    """Al subir la primera foto la invitación se va y la foto llega; la pregunta "¿Quitar?"
+    toma el lugar del formulario sin cerrarse (static/js/app.js, sección 11). En computador
+    la tarjeta toma el alto que queda en la columna (.llenar)."""
+    sin_foto = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
+    con_foto = subir(sesion_duena, pedido, foto_de_prueba(), headers=HTMX).text
+    pregunta = sesion_duena.get(url_quitar(pedido), headers=HTMX).text
+
+    assert 'class="tarjeta tarjeta--lista tarjeta--fotos llenar" id="pedido-foto"' in sin_foto
+    assert 'id="pedido-foto-vacio"' in sin_foto and 'id="pedido-foto-imagen"' not in sin_foto
+    assert 'id="pedido-foto-imagen"' in con_foto and 'id="pedido-foto-vacio"' not in con_foto
+    assert '<form class="tarjeta__cuerpo" id="pedido-foto-acciones"' in con_foto
+    assert '<div class="tarjeta__cuerpo" id="pedido-foto-acciones">' in pregunta
+    assert pregunta.count('id="pedido-foto-acciones"') == 1
 
 
 # --- La tarjeta en el pedido por dentro ------------------------------------------------------

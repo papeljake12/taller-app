@@ -1,6 +1,7 @@
 """Tarjeta "Tallas" del pedido por dentro (T10): ver, agregar y quitar tallas, y abrir o
 cerrar el enlace público."""
 
+import json
 import re
 from decimal import Decimal
 from html import unescape
@@ -372,3 +373,67 @@ def test_con_errores_el_formulario_queda_abierto_y_con_el_cursor_en_el_error(ses
     select = re.search(r'<select name="talla"[^>]*>', respuesta.text).group(0)
     assert "autofocus" in select
     assert respuesta.text.count("autofocus") == 1
+
+
+# --- Aviso corto, animaciones y pantalla fija (ajuste "pantalla fija y animaciones") --------
+
+
+def aviso(respuesta):
+    """El aviso corto que lleva la respuesta de HTMX (config/avisos.py), o None."""
+    return json.loads(respuesta.headers.get("HX-Trigger") or "{}").get("aviso")
+
+
+def test_agregar_a_mano_avisa_talla_agregada(sesion_duena, pedido):
+    assert aviso(agregar(sesion_duena, pedido)) == "Talla agregada."
+
+
+def test_la_costurera_tambien_recibe_el_aviso_al_agregar(client, costurera, pedido):
+    client.force_login(costurera)
+
+    assert aviso(agregar(client, pedido)) == "Talla agregada."
+
+
+def test_agregar_con_errores_no_avisa(sesion_duena, pedido):
+    respuesta = agregar(sesion_duena, pedido, nombre="")
+
+    assert respuesta.status_code == 422
+    assert aviso(respuesta) is None
+
+
+def test_quitar_avisa_talla_quitada(sesion_duena, pedido):
+    talla = fabricas.crear_talla(pedido)
+
+    respuesta = sesion_duena.post(
+        reverse("pedidos:talla_quitar", args=[pedido.pk, talla.pk]), headers=HTMX
+    )
+
+    assert aviso(respuesta) == "Talla quitada."
+
+
+def test_sin_javascript_el_aviso_sale_en_el_pedido(sesion_duena, pedido):
+    respuesta = sesion_duena.post(
+        reverse("pedidos:talla_nueva", args=[pedido.pk]),
+        {"nombre": "Persona nueva", "talla": "M"},
+        follow=True,
+    )
+
+    assert "<p data-aviso>Talla agregada.</p>" in respuesta.text
+
+
+def test_abrir_o_cerrar_el_enlace_no_avisa(sesion_duena, pedido):
+    """La tarjeta lo dice justo donde se tocó ("Enlace cerrado")."""
+    url = reverse("pedidos:tallas_enlace", args=[pedido.pk])
+
+    assert aviso(sesion_duena.post(url, {"abiertas": "no"}, headers=HTMX)) is None
+
+
+def test_cada_persona_lleva_su_id_dentro_de_una_lista_que_se_desplaza(pedido, duena):
+    """El id deja que al agregar o quitar solo esa fila entre o salga (static/js/app.js); en
+    computador, abierta, la lista se desplaza por dentro si son muchas."""
+    ana = fabricas.crear_talla(pedido, nombre="Ana Ejemplo")
+
+    html = dibujar(pedido, duena, ver_personas=True)
+
+    assert '<div class="tallas__personas desplazable">' in html
+    assert f'<form class="fila fila--compacta" id="talla-{ana.pk}"' in html
+    assert html.index('class="tallas__personas') < html.index(f'id="talla-{ana.pk}"')
