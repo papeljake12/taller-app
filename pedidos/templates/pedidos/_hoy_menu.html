@@ -1,0 +1,6 @@
+{% comment %}
+Las entradas del menú lateral, para que HTMX cambie el contador de atrasados después de una
+acción de "Qué hacer hoy" (solo con `oob`). `menu_lateral` sale de pedidos/vistas/hoy.py.
+{% endcomment %}{% if oob %}<div hx-swap-oob="innerHTML:.menu__lista">
+{% for entrada in menu_lateral %}{% include "_menu_entrada.html" %}
+{% endfor %}</div>{% endif %}

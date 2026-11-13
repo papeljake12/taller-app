@@ -1,0 +1,4 @@
+{% comment %}
+Botón de un mensaje para el cliente (`fila.mensaje`), con `texto` como nombre del botón:
+con WhatsApp guardado abre el chat con el mensaje escrito; sin WhatsApp, copia el mensaje.
+{% endcomment %}{% if fila.mensaje.enlace %}<a class="boton" href="{{ fila.mensaje.enlace }}" target="_blank" rel="noopener">{{ texto }}</a>{% else %}<button type="button" class="boton" data-copiar="{{ fila.mensaje.texto }}" title="Copia el mensaje para pegarlo en WhatsApp">{{ texto }}</button>{% endif %}
