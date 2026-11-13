@@ -13,29 +13,29 @@ fechas también avisan con "input", así que se siguen calculando al elegir.
 Sin JavaScript, "Calcular" (en el resultado) hace un envío normal.
 El primer botón del formulario es un "Calcular" escondido: Enter en un campo calcula, en
 vez de tocar el primer botón que se vea (que podría ser "Quitar de mi lista").
-{% endcomment %}{% url 'cotizador:calcular' as url_calcular %}{% url 'cotizador:prenda_guardar' as url_guardar %}<form class="dos-columnas" id="cotizador" method="post" action="{{ url_calcular }}" hx-post="{{ url_calcular }}" hx-trigger="input changed delay:300ms, submit" hx-target="#resultado" hx-swap="outerHTML" hx-sync="this:queue last" novalidate>
+{% endcomment %}{% url 'cotizador:calcular' as url_calcular %}{% url 'cotizador:prenda_guardar' as url_guardar %}<form class="columnas" id="cotizador" method="post" action="{{ url_calcular }}" hx-post="{{ url_calcular }}" hx-trigger="input changed delay:300ms, submit" hx-target="#resultado" hx-swap="outerHTML" hx-sync="this:queue last" novalidate>
 {% csrf_token %}{{ form.aplicada }}<button type="submit" class="oculto" tabindex="-1" aria-hidden="true">Calcular</button>
-<div class="columna-ancha columna">
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-para-quien">
+<div class="columna">
+<section class="tarjeta" aria-labelledby="t-para-quien">
 <div class="tarjeta__cabeza"><h2 id="t-para-quien">Para quién</h2></div>
 <div class="tarjeta__cuerpo">
 <div class="campos">{% include "piezas/_campo.html" with campo=form.cliente clase_campo="campo--ancho-celular" %}{% include "piezas/_campo.html" with campo=form.tipo %}{% include "piezas/_campo.html" with campo=form.whatsapp %}</div>
 </div>
 </section>
 {% include "cotizador/_que_prenda.html" %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-costo">
+<section class="tarjeta" aria-labelledby="t-costo">
 <div class="tarjeta__cabeza"><h2 id="t-costo">Cuánto cuesta hacer una</h2></div>
 <div class="tarjeta__cuerpo">
 <div class="campos">{% include "piezas/_campo.html" with campo=form.metros %}{% include "piezas/_campo.html" with campo=form.precio_metro %}{% include "piezas/_campo.html" with campo=form.insumos %}</div>
 <div class="campos">{% include "piezas/_campo.html" with campo=form.mano_obra %}{% include "piezas/_campo.html" with campo=form.extra %}</div>
 </div>
 </section>
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-ganancia">
+<section class="tarjeta" aria-labelledby="t-ganancia">
 <div class="tarjeta__cabeza"><h2 id="t-ganancia">Tu ganancia</h2></div>
 <div class="tarjeta__cuerpo">
-<div class="campos campos--abajo">{% include "piezas/_campo.html" with campo=form.ganancia %}{% include "piezas/_campo.html" with campo=form.abono %}</div>
-<div class="botones"><button type="submit" class="boton" formaction="{{ url_guardar }}" hx-post="{{ url_guardar }}" hx-target="#cotizador" hx-swap="outerHTML" hx-sync="this:drop">Guardar esta prenda en mi lista</button></div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.ganancia %}{% include "piezas/_campo.html" with campo=form.abono %}</div>
 </div>
+<div class="tarjeta__pie"><button type="submit" class="boton" formaction="{{ url_guardar }}" hx-post="{{ url_guardar }}" hx-target="#cotizador" hx-swap="outerHTML" hx-sync="this:drop">Guardar esta prenda en mi lista</button></div>
 </section>
 </div>
 {% include "cotizador/_resultado.html" %}
