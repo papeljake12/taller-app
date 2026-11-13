@@ -10,15 +10,15 @@ Las acciones se piden en la ventana (<dialog id="ventana"> de base.html):
 - POST movimiento: suma o resta los metros y anota el movimiento en el historial.
 - nueva: agregar una tela. quitar: pregunta primero y después la quita con su historial.
 
-Con HTMX, al guardar se cierra la ventana y llegan solas la tabla, las cifras y el apoyo
-(_cambios), sin recargar la página. Sin JavaScript, cada acción abre su página y al
-terminar vuelve a Telas.
+Con HTMX, al guardar se cierra la ventana y llegan solas la tabla, las cifras, el apoyo y
+el contador del menú (_cambios), sin recargar la página. Sin JavaScript, cada acción abre
+su página y al terminar vuelve a Telas.
 
 Permisos (T21, todavía no): la costurera puede ver y registrar "Usé", pero no "Entró", ni
 agregar ni quitar. Por eso "Entró" y "Usé" son dos tipos separados (TIPOS).
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from urllib.parse import urlparse
 
 from django.db import transaction
@@ -28,6 +28,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods
 
+from config.menu import construir_menu
 from config.piezas import metros as texto_metros
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
@@ -63,12 +64,10 @@ class FilaTela:
 
 
 def fila(tela, enfocar=None):
-    baja = calculos.tela_baja(tela)
-    if baja:
+    """Solo dos estados, como dice docs/03-pantallas.md: "Se está acabando" (ámbar) o
+    "Suficiente" (verde). Una tela sin aviso nunca se está acabando."""
+    if calculos.tela_baja(tela):
         return FilaTela(tela, True, "Se está acabando", "ambar", enfocar)
-    if not tela.metros:
-        # Sin metros y sin aviso: no es "Suficiente". Gris, porque no se pidió aviso.
-        return FilaTela(tela, False, "Se acabó", "gris", enfocar)
     return FilaTela(tela, False, "Suficiente", "verde", enfocar)
 
 
@@ -114,9 +113,19 @@ def _en_la_pantalla(request):
     return desde == reverse("telas:inicio")
 
 
+def menu_de_telas(request):
+    """Las entradas del menú lateral, para cambiar su contador de telas con hx-swap-oob.
+
+    La acción tiene su propia dirección: se marca "Telas" como la sección actual, que es la
+    pantalla donde está la usuaria (igual que menu_de_hoy en pedidos/vistas/hoy.py).
+    """
+    return [replace(e, actual=e.clave == "telas") for e in construir_menu(request)["secciones"]]
+
+
 def _cambios(request, movida=None, tipo=None):
-    """Lo que cambió, para la pantalla Telas: cierra la ventana y trae la tabla, las cifras
-    y el apoyo, sin recargar. Sin JavaScript (o desde otra página), vuelve a Telas."""
+    """Lo que cambió, para la pantalla Telas: cierra la ventana y trae la tabla, las cifras,
+    el apoyo y el contador del menú, sin recargar. Sin JavaScript (o desde otra página),
+    vuelve a Telas."""
     url = reverse("telas:inicio")
     if not _en_la_pantalla(request):
         if es_htmx(request):
@@ -125,8 +134,10 @@ def _cambios(request, movida=None, tipo=None):
     contexto = contexto_de_telas(request, movida, tipo)
     html = render_to_string("telas/_tabla.html", contexto, request=request)
     contexto["oob"] = True
+    contexto["menu_lateral"] = menu_de_telas(request)
     html += render_to_string("telas/_cifras.html", contexto, request=request)
     html += render_to_string("telas/_apoyo.html", contexto, request=request)
+    html += render_to_string("telas/_menu.html", contexto, request=request)
     html += render_to_string("telas/_cerrar_ventana.html", contexto, request=request)
     # La ventana pidió dibujar la respuesta en sí misma: se cambia por la tabla.
     return HttpResponse(html, headers={"HX-Retarget": "#telas", "HX-Reswap": "outerHTML"})

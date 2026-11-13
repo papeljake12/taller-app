@@ -118,7 +118,9 @@ def test_una_sola_tela_va_en_singular(sesion_duena, taller):
     assert "1 tela, 6,5 m en total" in sesion_duena.get(URL).text
 
 
-def test_sin_aviso_y_sin_metros_no_dice_suficiente(sesion_duena, taller):
+def test_sin_aviso_solo_hay_dos_estados(sesion_duena, taller):
+    """docs/03-pantallas.md: "Se está acabando" o "Suficiente", nada más. Sin aviso, aunque
+    no le queden metros, dice "Suficiente"."""
     fabricas.crear_tela(taller, nombre="Lino", metros=0, minimo=0)
     fabricas.crear_tela(taller, nombre="Seda", metros=3, minimo=0)
 
@@ -126,8 +128,9 @@ def test_sin_aviso_y_sin_metros_no_dice_suficiente(sesion_duena, taller):
 
     lino = fila(html, "Lino")
     assert '<span class="texto-2">Sin aviso</span>' in lino
-    assert '<span class="etiqueta etiqueta--gris">Se acabó</span>' in lino
+    assert '<span class="etiqueta etiqueta--verde">Suficiente</span>' in lino
     assert '<span class="etiqueta etiqueta--verde">Suficiente</span>' in fila(html, "Seda")
+    assert "Se acabó" not in html
     # Sin aviso, ninguna "se está acabando".
     assert "cifra--alerta" not in html
 
@@ -263,6 +266,46 @@ def test_al_guardar_cierra_la_ventana_y_trae_la_tabla_las_cifras_y_el_apoyo(sesi
     assert "Ninguna por ahora" in html
     assert ('<dialog class="ventana" id="ventana" aria-label="Ventana" hx-swap-oob="true">'
             "</dialog>") in html
+
+
+def menu_lateral(html):
+    """El menú lateral que llega aparte (hx-swap-oob) después de una acción."""
+    marca = '<div hx-swap-oob="innerHTML:.menu__lista">'
+    assert html.count(marca) == 1
+    inicio = html.index(marca)
+    return html[inicio:html.index("</div>", inicio)]
+
+
+def contador_de_telas(menu):
+    entrada = re.search(r'<a class="menu__enlace[^"]*" href="/telas/".*?</a>', menu).group(0)
+    contador = re.search(r'<span class="menu__contador">(\d+)</span>', entrada)
+    return int(contador.group(1)) if contador else 0
+
+
+def test_al_guardar_el_contador_del_menu_cambia_sin_recargar(sesion_duena, taller):
+    dril = fabricas.crear_tela(taller, nombre="Dril azul", metros=18, minimo=10)
+    assert contador_de_telas(sesion_duena.get(URL).text) == 0
+
+    # Usé 9 m: quedan 9 y el aviso es en 10, así que ya se está acabando.
+    menu = menu_lateral(mover(sesion_duena, dril, "uso", "9").text)
+
+    assert contador_de_telas(menu) == 1
+    # Telas sigue resaltada como la sección actual.
+    assert re.search(r'class="menu__enlace es-actual" href="/telas/" data-nombre="Telas"', menu)
+    assert menu.count('aria-current="page"') == 1
+
+    # Entró 5 m: ya no se está acabando y el contador se va.
+    assert contador_de_telas(menu_lateral(mover(sesion_duena, dril, "entro", "5").text)) == 0
+
+
+def test_nueva_y_quitar_tambien_cambian_el_contador_del_menu(sesion_duena):
+    html = sesion_duena.post(reverse("telas:nueva"),
+                             {"nombre": "Lino", "metros": "2", "minimo": "8"}, headers=HTMX).text
+    assert contador_de_telas(menu_lateral(html)) == 1
+
+    lino = Tela.objects.get(nombre="Lino")
+    html = sesion_duena.post(url_quitar(lino), headers=HTMX).text
+    assert contador_de_telas(menu_lateral(html)) == 0
 
 
 def test_al_guardar_el_cursor_vuelve_al_boton_que_se_uso(sesion_duena, taller, pique):
