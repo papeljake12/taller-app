@@ -357,6 +357,38 @@ def test_un_cliente_con_el_mismo_nombre_en_otro_taller_no_se_reutiliza(sesion_du
     assert Cliente.objects.filter(taller=otro).count() == 1
 
 
+def test_si_otra_persona_crea_el_mismo_cliente_a_la_vez_se_usa_ese(sesion_duena, taller,
+                                                                     monkeypatch):
+    """Dos personas guardan a la vez un pedido del mismo cliente nuevo.
+
+    Justo después de buscarlo (y no encontrarlo), la otra persona lo guarda. Al crearlo,
+    la base de datos no deja repetir el nombre en el taller: se usa el de la otra persona.
+    """
+    from django.db.models import QuerySet
+
+    primero_de_verdad = QuerySet.first
+    ya_paso = []
+
+    def buscar_mientras_la_otra_guarda(queryset):
+        if queryset.model is Cliente and not ya_paso:
+            ya_paso.append(True)
+            Cliente.objects.create(taller=taller, nombre="Marcela P.", tipo="particular",
+                                   whatsapp="304 000 0000")
+            return None
+        return primero_de_verdad(queryset)
+
+    monkeypatch.setattr(QuerySet, "first", buscar_mientras_la_otra_guarda)
+
+    respuesta = sesion_duena.post(NUEVO, datos_validos(cliente="marcela p.", tipo="empresa"))
+
+    assert ya_paso
+    assert respuesta.status_code == 302
+    assert Cliente.objects.count() == 1
+    cliente = Cliente.objects.get()
+    assert Pedido.objects.get().cliente == cliente
+    assert cliente.nombre == "Marcela P." and cliente.tipo == "particular"
+
+
 def test_el_taller_y_la_etapa_no_llegan_del_formulario(sesion_duena, taller):
     otro = fabricas.crear_taller()
 
@@ -372,7 +404,7 @@ def test_el_taller_y_la_etapa_no_llegan_del_formulario(sesion_duena, taller):
 @pytest.mark.parametrize(
     ("texto", "valor"),
     [("1260000", 1_260_000), ("1.260.000", 1_260_000), ("$ 380.000", 380_000),
-     ("$380.000", 380_000), ("0", 0)],
+     ("$380.000", 380_000), ("0", 0), ("1.000", 1_000)],
 )
 def test_el_valor_total_se_acepta_con_puntos_o_con_signo(sesion_duena, texto, valor):
     sesion_duena.post(NUEVO, datos_validos(total=texto))
@@ -380,7 +412,10 @@ def test_el_valor_total_se_acepta_con_puntos_o_con_signo(sesion_duena, texto, va
     assert Pedido.objects.get().total == valor
 
 
-@pytest.mark.parametrize("texto", ["380,50", "-5000", "abc", "$", "1e6", "³"])
+@pytest.mark.parametrize(
+    "texto",
+    ["380,50", "-5000", "abc", "$", "1e6", "³", "380.5", "1.260.00", "1..000", ".500", "500."],
+)
 def test_leer_pesos_rechaza_lo_que_no_es_plata_entera(texto):
     assert leer_pesos(texto) is None
 
