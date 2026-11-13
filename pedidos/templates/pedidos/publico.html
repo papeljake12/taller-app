@@ -1,19 +1,21 @@
 {% extends "base.html" %}{% load piezas %}
 {% comment %}
-Formulario público de tallas (T11, pedidos/vistas/publico.py): una tarjeta centrada, como la
-página de entrar, sin menú ni nada del panel. Arriba va el nombre del taller; dentro de la
-tarjeta, una de sus partes (`parte`): el formulario, la confirmación, el enlace cerrado, el
-de "espera un minuto" o el de "este enlace no existe".
+Formulario público de tallas (T11, pedidos/vistas/publico.py), como diseno/tallas-publico.html:
+una tarjeta centrada sobre el marco negro, sin menú ni nada del panel. Arriba va el taller
+(su logo o sus iniciales y su nombre); dentro de la tarjeta, una de sus partes (`parte`): el
+formulario, la confirmación, el enlace cerrado, el de "espera un minuto" o el de "este enlace
+no existe". La nota de abajo solo sale con el formulario.
 {% endcomment %}
 {% block pestana %}Envía tu talla{% endblock %}
 {% block sufijo %}{% if pedido %}{{ pedido.taller.nombre }}{% else %}Pedidos del taller{% endif %}{% endblock %}
 {% block cuerpo %}
 <div class="marco-acceso">
 <main class="acceso">
-<div class="acceso__marca">{% icono "tijeras" 22 %}<span>{% if pedido %}{{ pedido.taller.nombre }}{% else %}Pedidos del taller{% endif %}</span></div>
-<section class="tarjeta acceso__tarjeta" aria-labelledby="titulo-tallas">
+<div class="acceso__marca">{% if pedido %}<span class="menu__avatar" aria-hidden="true">{% if taller_logo %}<img src="{{ taller_logo }}" alt="">{% else %}{{ taller_iniciales }}{% endif %}</span><span>{{ pedido.taller.nombre }}</span>{% else %}<span class="menu__logo">{% icono "tijeras" 16 %}</span><span>Pedidos del taller</span>{% endif %}</div>
+<section class="tarjeta acceso__tarjeta{% if parte == 'pedidos/_publico_listo.html' %} acceso__tarjeta--centrada{% endif %}" aria-labelledby="titulo-tallas">
 {% include parte %}
 </section>
+{% if parte == 'pedidos/_publico_form.html' %}<p class="acceso__nota">Solo el taller ve tu talla.</p>{% endif %}
 </main>
 </div>
 {% endblock %}

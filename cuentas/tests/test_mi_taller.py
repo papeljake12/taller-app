@@ -84,11 +84,17 @@ def test_la_pantalla_muestra_el_taller_y_sus_costureras(sesion_duena, taller, du
     assert "<strong>Marta</strong>" in html and "Usuario: marta" in html
     assert "<strong>Yolima</strong>" in html and ">Desactivada</span>" in html
     assert "No puede entrar, pero sus pedidos siguen guardados." in html
-    assert ">1 activa</span>" in html
+    # Las tarjetas "Activas" (con su cuenta) y "Desactivadas", y las iniciales de cada una.
+    assert ">Activas</h2>" in html and ">Desactivadas</h2>" in html
+    assert '<span class="tarjeta__aparte">1</span>' in html
+    assert '<span class="iniciales" aria-hidden="true">MA</span>' in html
+    assert ">Nueva costurera</h2>" in html
     # La dueña no sale en la lista de costureras.
     assert f"<strong>{duena.nombre}</strong>" not in html
+    # El formulario ya está a la vista: no hay botón "Agregar costurera" arriba.
     assert ">Agregar costurera</button>" in html
-    assert 'href="#costurera-nueva-nombre_visible"' in html
+    assert 'href="#costurera-nueva' not in html
+    assert '<div class="ajustes">' in html and html.count('<div class="ajuste">') == 2
 
 
 def test_las_activas_van_primero(sesion_duena, taller):
@@ -106,7 +112,7 @@ def test_sin_costureras_invita_a_agregar_la_primera(sesion_duena):
     html = sesion_duena.get(URL).text
 
     assert "Todavía no has agregado a nadie." in html
-    assert "activas</span>" not in html
+    assert 'class="tarjeta__aparte"' not in html and ">Desactivadas</h2>" not in html
 
 
 def test_no_se_ven_las_costureras_de_otro_taller(sesion_duena):
@@ -134,7 +140,7 @@ def test_cambiar_el_nombre_devuelve_la_tarjeta_y_el_nombre_para_el_menu(sesion_d
     assert "<html" not in html
     assert 'id="tu-taller"' in html
     assert "Listo: se guardaron los cambios." in html
-    assert ('<span class="menu__taller" id="menu-taller" title="Confecciones de prueba" '
+    assert ('<span class="menu__nombre" id="menu-taller" title="Confecciones de prueba" '
             'hx-swap-oob="true">Confecciones de prueba</span>' in html)
     assert "<title>Mi taller · Confecciones de prueba</title>" in html
 
@@ -145,7 +151,7 @@ def test_el_nombre_nuevo_sale_en_el_menu_y_en_los_mensajes(sesion_duena, taller)
     guardar_taller(sesion_duena, taller, nombre="Confecciones de prueba")
 
     html = sesion_duena.get(reverse("pedidos:hoy")).text
-    assert ('<span class="menu__taller" id="menu-taller" title="Confecciones de prueba">'
+    assert ('<span class="menu__nombre" id="menu-taller" title="Confecciones de prueba">'
             'Confecciones de prueba</span>') in html
     pedido.refresh_from_db()
     assert mensajes.firma(pedido.taller) == "de Confecciones de prueba"
@@ -187,7 +193,7 @@ def test_con_un_error_el_menu_sigue_con_el_nombre_guardado(sesion_duena, taller)
 
     assert respuesta.status_code == 422
     assert "<html" in respuesta.text
-    assert f'<span class="menu__taller" id="menu-taller" title="{anterior}">{anterior}</span>' in respuesta.text
+    assert f'<span class="menu__nombre" id="menu-taller" title="{anterior}">{anterior}</span>' in respuesta.text
     taller.refresh_from_db()
     assert taller.nombre == anterior
 
@@ -234,9 +240,8 @@ def test_un_logo_grande_se_reduce_a_512_de_lado_largo(sesion_duena, taller, carp
     assert logo_guardado(taller) == (512, 256, "JPEG", "RGB")
     assert taller.logo.name.startswith("talleres/logos/")
     assert (carpeta_de_logos / taller.logo.name).exists()
-    # La tarjeta muestra el logo achicado a 160 x 80, sin deformarlo.
-    assert f'src="{taller.logo.url}"' in respuesta.text
-    assert 'width="160" height="80"' in respuesta.text
+    # La tarjeta muestra el logo en el cuadrito de vista previa, como en el menú.
+    assert f'<span class="menu__avatar" id="tu-taller-logo" aria-hidden="true"><img src="{taller.logo.url}" alt="">' in respuesta.text
     assert ">Cambiar el logo (opcional)</label>" in respuesta.text
 
 
@@ -515,7 +520,7 @@ def test_sin_javascript_cambiar_nombre_abre_una_pagina(sesion_duena, marta):
 
     assert respuesta.status_code == 200
     assert "<html" in respuesta.text
-    assert "<h1>Cambiar nombre</h1>" in respuesta.text  # como página, el título va en la hoja
+    assert "Cambiar nombre</h1>" in respuesta.text  # como página, el título va en la hoja
     assert "Usuario: marta. Hoy aparece como Marta." in respuesta.text
 
 
@@ -745,8 +750,8 @@ def test_la_fila_conserva_su_id_cuando_se_cambia_por_su_formulario(sesion_duena,
     pagina = sesion_duena.get(URL).text
     formulario = sesion_duena.get(editar(marta), headers=HTMX_COSTURERAS).text
 
-    assert f'<div class="fila" {fila}>' in pagina
-    assert f'<form class="fila fila--formulario" {fila}' in formulario
+    assert f'<div class="persona" {fila}>' in pagina
+    assert f'<form class="persona persona--formulario" {fila}' in formulario
     assert formulario.count(fila) == 1
 
 
@@ -761,73 +766,39 @@ def test_lo_que_aparece_y_se_va_lleva_un_id_que_no_cambia(sesion_duena, taller):
     for id_ in ("tu-taller-listo", "tu-taller-logo", "tu-taller-quitar-logo"):
         assert guardado.count(f'id="{id_}"') == otra_vez.count(f'id="{id_}"') == 1
     assert 'id="costurera-agregada"' in agregada
-    assert f'<div class="fila" id="costurera-{persona.pk}">' in agregada
+    assert f'<div class="persona" id="costurera-{persona.pk}">' in agregada
 
 
-# --- Pantalla fija (computador) -----------------------------------------------------------------
+# --- Como los ajustes de Shopify ----------------------------------------------------------------
 
 
-def test_la_fila_de_tarjetas_llena_la_hoja_y_la_lista_se_desplaza(sesion_duena, marta):
+def test_cada_bloque_lleva_su_explicacion_a_la_izquierda_y_ya_no_hay_pantalla_fija(
+        sesion_duena, marta):
     html = sesion_duena.get(URL).text
 
-    assert '<div class="dos-columnas llenar mi-taller">' in html
-    assert '<div class="mi-taller__lista desplazable" id="costureras-lista">' in html
-    assert '<form class="tarjeta__cuerpo desplazable"' in html
+    assert html.count('<div class="ajuste__explica">') == 2
+    assert 'id="tu-taller"' in html and 'id="costureras"' in html
+    # Ya no se usan las clases de la pantalla fija ni la lista que se desplazaba por dentro.
+    for vieja in ("llenar", "desplazable", "mi-taller__", "pagos__form"):
+        assert vieja not in html
 
 
-MEDIR_MI_TALLER = """() => {
-  const hoja = document.querySelector('.hoja__contenido');
-  const lista = document.getElementById('costureras-lista');
-  const fin = (s) => document.querySelector(s).getBoundingClientRect().bottom;
-  const boton = document.querySelector('#costureras .pagos__form [type="submit"]');
-  return {
-    pagina: document.scrollingElement.scrollHeight, ventana: innerHeight,
-    contenido: hoja.scrollHeight, cabe: hoja.clientHeight,
-    lista: lista.clientHeight, listaEntera: lista.scrollHeight,
-    finTaller: fin('#tu-taller'), finCostureras: fin('#costureras'),
-    finHoja: hoja.getBoundingClientRect().bottom,
-    finBoton: boton.getBoundingClientRect().bottom,
-  };
-}"""
+def test_el_cuadrito_del_logo_muestra_las_iniciales_si_no_hay_logo(sesion_duena, taller):
+    taller.nombre = "Taller de ejemplo"
+    taller.save()
+
+    html = sesion_duena.get(URL).text
+
+    assert '<span class="menu__avatar" id="tu-taller-logo" aria-hidden="true">TE</span>' in html
 
 
-@pytest.mark.django_db(transaction=True)
-def test_con_muchas_costureras_solo_su_lista_se_desplaza(live_server, taller, duena):
-    """En Chrome, con 18 costureras, en 1366 x 768 y en 1920 x 1080: la página y la hoja no se
-    desplazan, la lista se desplaza dentro de su tarjeta, el formulario para agregar sigue a la
-    vista y las dos tarjetas terminan parejas al final de la hoja, sin hueco abajo."""
-    from tests.test_pantalla_fija import TAMANOS, _chrome
+def test_las_desactivadas_van_en_su_propia_tarjeta(sesion_duena, taller, marta):
+    yoli = fabricas.crear_usuaria(taller, rol=Usuario.Rol.COSTURERA, username="yoli",
+                                  nombre_visible="Yolima", is_active=False)
 
-    for numero in range(1, 19):
-        fabricas.crear_usuaria(taller, rol=Usuario.Rol.COSTURERA,
-                               nombre_visible=f"Costurera {numero:02d}")
-    cliente = Client()
-    cliente.force_login(duena)
-    cookie = {"name": "sessionid", "value": cliente.cookies["sessionid"].value,
-              "url": live_server.url}
-    medidas = {}
-    manejador, navegador = _chrome()  # después de usar la base: Django no deja usarla después
-    try:
-        # La pantalla se abre una vez y se mide en cada tamaño cambiando la ventana: cargarla
-        # otra vez no cambia nada y hace la prueba más lenta.
-        ancho, alto = TAMANOS[0]
-        contexto = navegador.new_context(viewport={"width": ancho, "height": alto})
-        contexto.add_cookies([cookie])
-        pagina = contexto.new_page()
-        pagina.goto(live_server.url + URL, wait_until="load")
-        pagina.evaluate("document.fonts.ready")
-        for ancho, alto in TAMANOS:
-            pagina.set_viewport_size({"width": ancho, "height": alto})
-            medidas[(ancho, alto)] = pagina.evaluate(MEDIR_MI_TALLER)
-        contexto.close()
-    finally:
-        navegador.close()
-        manejador.stop()
+    html = sesion_duena.get(URL).text
 
-    for tamano, m in medidas.items():
-        assert m["pagina"] <= m["ventana"], tamano
-        assert m["contenido"] <= m["cabe"] + 1, tamano
-        assert m["listaEntera"] > m["lista"] >= 140, tamano
-        assert m["finBoton"] <= m["finCostureras"], tamano
-        assert abs(m["finTaller"] - m["finCostureras"]) < 1, tamano
-        assert m["finHoja"] - m["finCostureras"] <= 5, tamano  # solo los 4 px del foco
+    activas, desactivadas = html.split(">Desactivadas</h2>")
+    assert f'id="costurera-{marta.pk}"' in activas
+    assert f'id="costurera-{yoli.pk}"' in desactivadas
+    assert ">Activar</button>" in desactivadas

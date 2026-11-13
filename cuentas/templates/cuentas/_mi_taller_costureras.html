@@ -1,26 +1,22 @@
 {% comment %}
-Tarjeta "Costureras" de Mi taller (T20): las costureras del taller, cada una con su usuario
-y si puede entrar, y el formulario para agregar otra.
+Las tarjetas de "Costureras" de Mi taller (T20): las activas, las desactivadas (si hay) y el
+formulario para agregar otra.
 
 La dibuja mi_taller.html y la devuelven, sola, las acciones de cuentas/mi_taller.py: con HTMX
-reemplaza a la tarjeta entera (id="costureras").
+reemplaza a la columna entera (id="costureras").
 - Cada costurera (_mi_taller_costurera.html) con "Cambiar nombre" y "Desactivar" (o
   "Activar"). La que está cambiando de nombre (`editando`) trae el formulario en su fila
   (_mi_taller_costurera_nombre.html).
-- Al final, "Agregar costurera" (_mi_taller_nueva.html).
-
-Pantalla fija (computador): la cabeza y la nota quedan quietas; si son muchas, la lista
-(mi-taller__lista) se desplaza por dentro y el formulario de agregar queda siempre a la vista
-debajo. Si la ventana es tan baja que ni así cabe, se desplaza mi-taller__cuerpo entero.
-Ver el apartado "Mi taller" de static/css/app.css.
-{% endcomment %}<section class="tarjeta tarjeta--lista columna-ancha" id="costureras" aria-labelledby="t-costureras">
-<div class="tarjeta__cabeza"><h2 id="t-costureras">Costureras</h2>{% if costureras %}<span class="tarjeta__aparte">{{ activas }} {% if activas == 1 %}activa{% else %}activas{% endif %}</span>{% endif %}</div>
-<p class="tarjeta__nota">Las personas que cosen contigo. Cada una entra con su usuario y su contraseña, y así puedes anotar quién hace cada pedido.</p>
-<div class="mi-taller__cuerpo">
-<div class="mi-taller__lista desplazable" id="costureras-lista">
-{% for costurera in costureras %}{% if costurera == editando %}{% include "cuentas/_mi_taller_costurera_nombre.html" %}{% else %}{% include "cuentas/_mi_taller_costurera.html" %}{% endif %}
-{% empty %}<p class="tarjeta__nota">Todavía no has agregado a nadie.</p>
-{% endfor %}</div>
-{% include "cuentas/_mi_taller_nueva.html" with form=form_nueva %}
+- Al final, "Nueva costurera" (_mi_taller_nueva.html).
+{% endcomment %}<div class="columna" id="costureras">
+<section class="tarjeta" aria-labelledby="t-activas">
+<div class="tarjeta__cabeza"><h2 id="t-activas">Activas</h2>{% if activas %}<span class="tarjeta__aparte">{{ activas }}</span>{% endif %}</div>
+{% for costurera in lista_activas %}{% if costurera == editando %}{% include "cuentas/_mi_taller_costurera_nombre.html" %}{% else %}{% include "cuentas/_mi_taller_costurera.html" %}{% endif %}
+{% empty %}<p class="persona texto-2">Todavía no has agregado a nadie.</p>
+{% endfor %}</section>
+{% if lista_inactivas %}<section class="tarjeta" aria-labelledby="t-inactivas">
+<div class="tarjeta__cabeza"><h2 id="t-inactivas">Desactivadas</h2><span class="tarjeta__aparte">{{ lista_inactivas|length }}</span></div>
+{% for costurera in lista_inactivas %}{% if costurera == editando %}{% include "cuentas/_mi_taller_costurera_nombre.html" %}{% else %}{% include "cuentas/_mi_taller_costurera.html" %}{% endif %}
+{% endfor %}</section>
+{% endif %}{% include "cuentas/_mi_taller_nueva.html" with form=form_nueva %}
 </div>
-</section>

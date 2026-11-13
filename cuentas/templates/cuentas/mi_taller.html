@@ -1,19 +1,23 @@
 {% extends "base.html" %}
 {% comment %}
-Mi taller (T20). No tiene página de referencia en diseno/: son dos tarjetas con las piezas
-del diseño, en una fila que se reparte 2 a 3 y termina a la misma altura:
-  _mi_taller_taller (nombre, teléfono y logo) y _mi_taller_costureras (la lista y el
-  formulario para agregar). Cada acción devuelve su tarjeta sola (cuentas/mi_taller.py).
-"Agregar costurera", arriba, lleva al primer campo del formulario de la tarjeta Costureras.
-En computador la fila toma el alto que queda en la pantalla (llenar): si hay muchas
-costureras, su lista se desplaza por dentro de la tarjeta (apartado "Mi taller" de app.css).
+Mi taller (T20), como los ajustes de Shopify (diseno/mi-taller.html): cada bloque lleva su
+explicación a la izquierda y sus tarjetas a la derecha. Dos bloques:
+  "Tu taller" (_mi_taller_taller: nombre, teléfono y logo) y
+  "Costureras" (_mi_taller_costureras: las activas, las desactivadas y el formulario de la
+  nueva). Cada acción devuelve su tarjeta o su columna sola (cuentas/mi_taller.py).
+El formulario de la costurera nueva ya está a la vista, así que no hay botón arriba.
 {% endcomment %}
 {% block pestana %}Mi taller{% endblock %}
 {% block titulo %}Mi taller{% endblock %}
-{% block acciones %}<a class="boton boton--principal" href="#costurera-nueva-nombre_visible">Agregar costurera</a>{% endblock %}
 {% block contenido %}
-<div class="dos-columnas llenar mi-taller">
+<div class="ajustes">
+<div class="ajuste">
+<div class="ajuste__explica"><h2>Tu taller</h2><p>Aparece en el menú, en los mensajes de WhatsApp y en los recibos.</p></div>
 {% include "cuentas/_mi_taller_taller.html" %}
+</div>
+<div class="ajuste">
+<div class="ajuste__explica"><h2>Costureras</h2><p>Las personas que cosen contigo. Cada una entra con su usuario y su contraseña, y así puedes anotar quién hace cada pedido.</p></div>
 {% include "cuentas/_mi_taller_costureras.html" %}
+</div>
 </div>
 {% endblock %}

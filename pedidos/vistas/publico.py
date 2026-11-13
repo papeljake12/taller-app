@@ -27,6 +27,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from config.menu import iniciales
 from config.red import ip_del_cliente
 from config.ventanas import es_htmx
 from pedidos.formularios.publico import TallaPublicaForm
@@ -45,7 +46,14 @@ SESION_LISTO = "talla_publica"
 
 def _pagina(request, parte, contexto, status=200):
     """La página pública (sin menú) con una de sus partes: formulario, listo, cerrado..."""
-    return render(request, "pedidos/publico.html", {**contexto, "parte": parte}, status=status)
+    datos = {**contexto, "parte": parte}
+    pedido = contexto.get("pedido")
+    if pedido is not None:
+        # La marca de arriba: el logo del taller o, si no tiene, sus iniciales (como en el menú).
+        logo = pedido.taller.logo
+        datos["taller_logo"] = logo.url if logo else None
+        datos["taller_iniciales"] = iniciales(pedido.taller.nombre)
+    return render(request, "pedidos/publico.html", datos, status=status)
 
 
 def _ip(request):
