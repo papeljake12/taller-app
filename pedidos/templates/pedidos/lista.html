@@ -1,5 +1,7 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Pedidos (diseno/pedidos.html), T05: filtros con su conteo, buscador y la tabla.{% endcomment %}
+{% comment %}Pedidos (diseno/pedidos.html), T05: filtros con su conteo, buscador y la tabla.
+En computador (pantalla fija) los filtros y el buscador quedan quietos arriba; la tarjeta llega
+hasta abajo (.llenar) y, con muchos pedidos, solo la tabla se desplaza por dentro.{% endcomment %}
 {% block pestana %}Pedidos{% endblock %}
 {% block titulo %}Pedidos{% endblock %}
 {% block apoyo %}<span class="encabezado__apoyo">{{ total }} pedido{{ total|pluralize }}</span>{% endblock %}
@@ -7,7 +9,7 @@
 {% block contenido %}
 {% if total %}
 {% include "pedidos/_lista_filtros.html" %}
-<section class="tarjeta tarjeta--lista tarjeta--con-buscador" aria-labelledby="t-lista">
+<section class="tarjeta tarjeta--lista tarjeta--con-buscador llenar" aria-labelledby="t-lista">
 <h2 class="oculto" id="t-lista">Lista de pedidos</h2>
 {# Sin JavaScript, el buscador se envía con Enter. Con HTMX, la tabla cambia mientras se escribe. #}
 <form role="search" action="{% url 'pedidos:lista' %}" hx-get="{% url 'pedidos:lista' %}" hx-trigger="input delay:300ms, submit" hx-target="#lista-pedidos" hx-swap="outerHTML" hx-push-url="true">

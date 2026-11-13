@@ -2914,6 +2914,48 @@ details > summary.fila::after {
 
 /* --- Pedidos y Buscar (inicio) --- */
 
+@media (min-width: 768px) {
+  /* Pedidos: los filtros y el buscador quedan quietos arriba y la tarjeta de la tabla llega
+     hasta abajo (.llenar). La zona que cambia el buscador (.zona-tabla) le pasa ese alto a
+     la tabla, que con muchos pedidos se desplaza por dentro con su encabezado fijo. */
+  .llenar > .zona-tabla,
+  .tarjeta--resultados > .zona-tabla {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* Buscar: debajo del buscador, una o dos tarjetas de resultados (Pedidos y Clientes) se
+     reparten el alto que queda. Cada una mide lo que necesita mientras quepa; si no caben
+     las dos, la más corta se ve entera y la más larga toma el resto y se desplaza por
+     dentro; si las dos son largas, mitad y mitad. Lo que sobra lo toma la última, que llega
+     hasta abajo. Lo hace una rejilla en la hoja de esta pantalla (solo cuando hay
+     resultados): el buscador mide lo suyo; si hay dos tarjetas, la primera crece como mucho
+     hasta su contenido; la última se estira hasta abajo. */
+  .hoja__contenido:has(> .tarjeta--resultados) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: max-content auto;
+  }
+
+  .hoja__contenido:has(> .tarjeta--resultados + .tarjeta--resultados) {
+    grid-template-rows: max-content minmax(auto, max-content) auto;
+  }
+
+  .tarjeta--resultados {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* Miden por su contenido (no desde cero), para que la rejilla sepa cuánto necesita cada
+     tarjeta; si no cabe, se encogen y se desplazan por dentro. */
+  .tarjeta--resultados .desplazable {
+    flex: 1 1 auto;
+  }
+}
+
 /* --- Pedidos y Buscar (fin) --- */
 
 
@@ -2923,6 +2965,9 @@ details > summary.fila::after {
 
 
 /* --- Nuevo pedido (inicio) --- */
+
+/* Sin reglas propias: la ventana cabe en 1366 x 768 aun con todos los errores (mide unos
+   680 px de alto) y, abierta como página, también. */
 
 /* --- Nuevo pedido (fin) --- */
 
