@@ -9,6 +9,10 @@ pedido)`: así la tarjeta sale igual al abrir el pedido y después de cada acci�
 
 Permisos (T21, docs/04-permisos.md): la costurera ve las tallas y las agrega o quita a mano,
 pero abrir o cerrar el enlace público es manejar el pedido: solo la dueña.
+
+Agregar y quitar a mano dicen "Talla agregada." y "Talla quitada." (config/avisos.py; la demo
+no trae texto para estas dos). Abrir o cerrar el enlace no lleva aviso: la tarjeta lo dice
+justo donde se tocó ("Enlace abierto" o "Enlace cerrado").
 """
 
 from django.http import HttpResponseBadRequest
@@ -16,6 +20,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from config.avisos import avisar
 from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
 from cuentas.permisos import exigir_duena
@@ -118,7 +123,8 @@ def nueva(request, pk):
         }
         return render(request, "piezas/pagina_ventana.html", contexto, status=422)
     form.save()
-    return _responder(request, pedido, enfocar=True, ver_personas=True)
+    respuesta = _responder(request, pedido, enfocar=True, ver_personas=True)
+    return avisar(request, respuesta, "Talla agregada.")
 
 
 @require_POST
@@ -129,7 +135,7 @@ def quitar(request, pk, talla):
     # La costurera agrega tallas, pero no las quita (docs/04-permisos.md).
     exigir_duena(request)
     persona.delete()
-    return _responder(request, pedido, ver_personas=True)
+    return avisar(request, _responder(request, pedido, ver_personas=True), "Talla quitada.")
 
 
 @require_POST

@@ -1,5 +1,7 @@
 """Materiales de un pedido (T12): agregar, marcar como comprado y quitar."""
 
+import json
+
 import pytest
 from django.urls import reverse
 
@@ -74,7 +76,7 @@ def test_agregar_un_material_devuelve_solo_la_tarjeta(sesion_duena, pedido):
     assert respuesta.status_code == 200
     assert (material.nombre, material.cantidad, material.comprado) == ("Dril azul", "24 m", False)
     assert respuesta.text.startswith(
-        '<section class="tarjeta tarjeta--lista" id="pedido-materiales"'
+        '<section class="tarjeta tarjeta--lista llenar" id="pedido-materiales"'
     )
     assert "<html" not in respuesta.text
     assert "0 de 1 comprados" in respuesta.text
@@ -167,7 +169,7 @@ def test_marcar_sin_decir_como_queda_se_rechaza_y_no_cambia(sesion_duena, pedido
     assert respuesta.status_code == 422
     assert "No se pudo marcar el material. Toca la casilla otra vez." in respuesta.text
     assert respuesta.text.startswith(
-        '<section class="tarjeta tarjeta--lista" id="pedido-materiales"'
+        '<section class="tarjeta tarjeta--lista llenar" id="pedido-materiales"'
     )
     assert material.comprado is True
 
@@ -242,3 +244,64 @@ def test_las_acciones_no_aceptan_get(sesion_duena, pedido):
     for direccion in (url_nuevo(pedido), url_de("comprado", material), url_de("quitar", material)):
         assert sesion_duena.get(direccion).status_code == 405
     assert Material.objects.filter(pk=material.pk).exists()
+
+
+# --- Aviso corto, animaciones y pantalla fija (ajuste "pantalla fija y animaciones") --------
+
+
+def aviso(respuesta):
+    """El aviso corto que lleva la respuesta de HTMX (config/avisos.py), o None."""
+    return json.loads(respuesta.headers.get("HX-Trigger") or "{}").get("aviso")
+
+
+def test_agregar_avisa_material_agregado(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url_nuevo(pedido), {"nombre": "Botones"}, headers=HTMX)
+
+    assert aviso(respuesta) == "Material agregado."
+
+
+def test_agregar_con_errores_no_avisa(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url_nuevo(pedido), {"nombre": ""}, headers=HTMX)
+
+    assert respuesta.status_code == 422
+    assert aviso(respuesta) is None
+
+
+def test_quitar_avisa_material_quitado(sesion_duena, pedido):
+    material = fabricas.crear_material(pedido)
+
+    respuesta = sesion_duena.post(url_de("quitar", material), headers=HTMX)
+
+    assert aviso(respuesta) == "Material quitado."
+
+
+def test_sin_javascript_el_aviso_sale_en_el_pedido(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url_nuevo(pedido), {"nombre": "Botones"}, follow=True)
+
+    assert "<p data-aviso>Material agregado.</p>" in respuesta.text
+
+
+def test_marcar_como_comprado_no_avisa(sesion_duena, pedido):
+    """Se ve justo donde se tocó: la casilla se marca."""
+    material = fabricas.crear_material(pedido)
+
+    respuesta = sesion_duena.post(url_de("comprado", material), {"comprado": "si"}, headers=HTMX)
+
+    assert respuesta.status_code == 200
+    assert aviso(respuesta) is None
+
+
+def test_cada_material_lleva_su_id_dentro_de_una_lista_que_se_desplaza(sesion_duena, pedido):
+    """El id deja que al agregar o quitar solo esa fila entre o salga (static/js/app.js); en
+    computador la lista se desplaza por dentro de la tarjeta, que toma el alto que queda."""
+    material = fabricas.crear_material(pedido, nombre="Botones de prueba")
+
+    html = sesion_duena.post(url_de("comprado", material), {"comprado": "si"}, headers=HTMX).text
+
+    assert '<section class="tarjeta tarjeta--lista llenar" id="pedido-materiales"' in html
+    assert '<div class="materiales__lista desplazable">' in html
+    assert f'<div class="fila fila--compacta" id="material-{material.pk}">' in html
+    # El formulario para agregar queda fuera de la lista: no se desplaza con ella.
+    lista = html.index('class="materiales__lista')
+    assert html.index(f'id="material-{material.pk}"') > lista
+    assert html.index("</div>\n<form class=\"fila fila--formulario\"") > lista

@@ -1,5 +1,6 @@
 """T08. Abonos: la tarjeta Pagos, registrar y quitar abonos, y el recordatorio del saldo."""
 
+import json
 import re
 from datetime import date, timedelta
 
@@ -390,3 +391,77 @@ def test_los_abonos_salen_en_orden_de_fecha(taller, duena):
     html = tarjeta(pedido, duena)
 
     assert html.index("$ 100.000") < html.index("$ 200.000")
+
+
+# --- Aviso corto y animaciones (ajuste "pantalla fija y animaciones") ----------------------
+
+
+def aviso(respuesta):
+    """El aviso corto que lleva la respuesta de HTMX (config/avisos.py), o None."""
+    return json.loads(respuesta.headers.get("HX-Trigger") or "{}").get("aviso")
+
+
+def test_registrar_un_abono_avisa_abono_registrado(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url_nuevo(pedido), {"valor": "100000"}, headers=HTMX)
+
+    assert aviso(respuesta) == "Abono registrado."
+
+
+def test_un_abono_con_errores_no_avisa(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url_nuevo(pedido), {"valor": "cien"}, headers=HTMX)
+
+    assert respuesta.status_code == 422
+    assert aviso(respuesta) is None
+
+
+def test_sin_javascript_el_aviso_sale_en_el_pedido(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url_nuevo(pedido), {"valor": "100000"}, follow=True)
+
+    assert "<p data-aviso>Abono registrado.</p>" in respuesta.text
+
+
+def test_desde_la_pagina_aparte_el_aviso_sale_en_el_pedido(sesion_duena, pedido):
+    respuesta = sesion_duena.post(
+        url_nuevo(pedido), {"valor": "100000"}, headers={"HX-Request": "true",
+                                                         "HX-Target": "ventana"}
+    )
+
+    assert "HX-Trigger" not in respuesta.headers
+    siguiente = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk]))
+    assert "<p data-aviso>Abono registrado.</p>" in siguiente.text
+
+
+def test_quitar_un_abono_avisa_abono_quitado(sesion_duena, pedido):
+    abono = pedido.abonos.get()
+
+    respuesta = sesion_duena.post(url_quitar(abono), headers=HTMX)
+
+    assert aviso(respuesta) == "Abono quitado."
+
+
+def test_sin_javascript_quitar_avisa_en_el_pedido(sesion_duena, pedido):
+    abono = pedido.abonos.get()
+
+    respuesta = sesion_duena.post(url_quitar(abono), follow=True)
+
+    assert "<p data-aviso>Abono quitado.</p>" in respuesta.text
+
+
+def test_preguntar_y_cancelar_no_avisan(sesion_duena, pedido):
+    abono = pedido.abonos.get()
+
+    assert aviso(sesion_duena.get(url_quitar(abono), headers=HTMX)) is None
+    assert aviso(sesion_duena.get(url_quitar(abono) + "?cancelar=1", headers=HTMX)) is None
+
+
+def test_cada_abono_lleva_su_id_y_la_pregunta_conserva_el_mismo(sesion_duena, pedido):
+    """Así la pregunta "¿Quitar?" toma el lugar de la fila sin que se cierre y se vuelva a
+    abrir, y al quitarlo solo esa fila se cierra (static/js/app.js, sección 11)."""
+    abono = pedido.abonos.get()
+
+    pagina = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
+    pregunta = sesion_duena.get(url_quitar(abono), headers=HTMX).text
+
+    assert f'<div class="renglon pagos__abono" id="abono-{abono.pk}">' in pagina
+    assert f'<div class="pagos__confirmar" id="abono-{abono.pk}">' in pregunta
+    assert pregunta.count(f'id="abono-{abono.pk}"') == 1

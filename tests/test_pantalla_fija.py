@@ -52,8 +52,15 @@ PANTALLAS = [
 NO_CABEN = {
     "hoy": "Todavía sin ajustar a la pantalla fija.",
     "hoy-menu-contraido": "Todavía sin ajustar a la pantalla fija.",
-    "pedido": "Todavía sin ajustar a la pantalla fija.",
-    "pedido-costurera": "Todavía sin ajustar a la pantalla fija.",
+    # En 1920 x 1080 ya caben las dos. En 1366 x 768 no, aun con las tarjetas apretadas y
+    # Materiales desplazándose por dentro: hace falta una decisión de diseño de David
+    # (docs/bitacora/ajuste-pantalla-fija/pedido.md, "Opciones para David").
+    "pedido": "En 1366 x 768 faltan unos 315 px (997 de contenido en 682): la columna de la "
+              "derecha (Pagos, Entrega, Cliente y Foto) mide unos 915 px y no tiene ninguna "
+              "lista larga que se pueda desplazar; sin quitar ni mover tarjetas no cabe.",
+    "pedido-costurera": "En 1366 x 768 faltan unos 80 px (761 de contenido en 682): la columna "
+                        "de la izquierda (Etapa, Tallas y Materiales con solo dos materiales a "
+                        "la vista) mide unos 754 px; apretarla más dejaría la lista sin espacio.",
 }
 
 MEDIR = """() => {

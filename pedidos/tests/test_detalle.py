@@ -480,3 +480,57 @@ def test_sin_sesion_las_acciones_llevan_a_entrar(client, pedido):
         assert respuesta.url.startswith("/entrar/")
     pedido.refresh_from_db()
     assert pedido.estado == "corte"
+
+
+# --- Aviso corto y pantalla fija (ajuste "pantalla fija y animaciones") ---------------------
+
+
+def test_eliminar_avisa_pedido_eliminado_en_la_lista(sesion_duena, pedido):
+    """Como la demo: el aviso sale en Pedidos, la página a la que se llega."""
+    respuesta = sesion_duena.post(url("eliminar", pedido), headers=HTMX)
+
+    assert "HX-Trigger" not in respuesta.headers
+    lista = sesion_duena.get(respuesta.headers["HX-Redirect"]).text
+    assert "<p data-aviso>Pedido eliminado.</p>" in lista
+
+
+def test_sin_javascript_eliminar_avisa_en_la_lista(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url("eliminar", pedido), follow=True)
+
+    assert "<p data-aviso>Pedido eliminado.</p>" in respuesta.text
+
+
+def test_lo_que_se_ve_justo_donde_se_toca_no_avisa(sesion_duena, taller, pedido):
+    """La etapa, la fecha, la encargada y el WhatsApp se guardan solos al tocarlos y el
+    cambio se ve ahí mismo: no llevan aviso corto."""
+    marta = fabricas.crear_usuaria(taller, rol=Usuario.Rol.COSTURERA, nombre_visible="Marta")
+    respuestas = [
+        sesion_duena.post(url("etapa", pedido), {"estado": "confeccion"}, headers=HTMX),
+        sesion_duena.post(url("entrega", pedido),
+                          {"fecha_entrega": (hoy() + timedelta(days=5)).isoformat()},
+                          headers=HTMX),
+        sesion_duena.post(url("encargada", pedido), {"encargada": marta.pk}, headers=HTMX),
+        sesion_duena.post(url("whatsapp", pedido), {"whatsapp": "3001234567"}, headers=HTMX),
+    ]
+
+    for respuesta in respuestas:
+        assert respuesta.status_code == 200
+        assert "aviso" not in respuesta.headers.get("HX-Trigger", "")
+
+
+def test_las_columnas_toman_el_alto_que_queda(sesion_duena, pedido):
+    """Pantalla fija: las dos columnas llenan la hoja; Materiales y la foto, su columna."""
+    html = sesion_duena.get(url("detalle", pedido)).text
+
+    assert '<div class="dos-columnas llenar pedido-por-dentro">' in html
+    assert 'class="tarjeta tarjeta--lista llenar" id="pedido-materiales"' in html
+    assert 'class="tarjeta tarjeta--lista tarjeta--fotos llenar" id="pedido-foto"' in html
+
+
+def test_numero_guardado_lleva_id_para_aparecer_con_un_desvanecido(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url("whatsapp", pedido), {"whatsapp": "3001234567"},
+                                  headers=HTMX)
+
+    assert '<p class="nota" id="pedido-whatsapp-guardado" role="status">Número guardado.</p>' in (
+        respuesta.text
+    )

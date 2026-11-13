@@ -2888,6 +2888,118 @@ details > summary.fila::after {
 
 /* --- Pedido por dentro (inicio) --- */
 
+/* Pedido por dentro (pedidos/pedido.html). Las dos columnas (.pedido-por-dentro) toman el alto
+   que deja "Eliminar el pedido"; la lista de Materiales se desplaza por dentro y la foto toma
+   el alto que quede. Las tarjetas son más compactas que en las demás pantallas, en todos los
+   altos: esta es la pantalla con más cosas. Si aun así no cabe (1366 x 768 con la tarjeta
+   Pagos), las columnas miden lo que necesitan y se desplaza la hoja, como en las demás. */
+@media (min-width: 768px) {
+  /* Las columnas nunca miden menos que su contenido más apretado: si no cabe, la hoja se
+     desplaza en vez de montar una tarjeta sobre "Eliminar el pedido" */
+  .pedido-por-dentro.llenar,
+  .pedido-por-dentro.llenar > .columna {
+    min-height: auto;
+  }
+
+  /* "Eliminar el pedido" mide lo suyo: lo que sobra es de las columnas */
+  .hoja__contenido > #pedido-eliminar {
+    flex-grow: 0;
+  }
+
+  .pedido-por-dentro .columna {
+    gap: 12px;
+  }
+
+  .pedido-por-dentro .tarjeta__cabeza,
+  #pedido-eliminar .tarjeta__cabeza {
+    padding: 10px 16px;
+  }
+
+  .pedido-por-dentro .tarjeta__cuerpo {
+    gap: 8px;
+    padding: 0 16px 12px;
+  }
+
+  .pedido-por-dentro .fila--compacta {
+    padding: 8px 16px;
+  }
+
+  .pedido-por-dentro .cifra-grande {
+    line-height: 1.2;
+  }
+
+  /* Etapa: los pasos con menos aire arriba y abajo */
+  .pedido-por-dentro .paso {
+    gap: 4px;
+    padding: 2px;
+  }
+
+  /* Materiales: la lista se desplaza; la cabeza y el formulario quedan quietos. La tarjeta
+     nunca mide menos que su cabeza, el formulario y un poco de lista (overflow: clip, y no
+     hidden, para que el navegador sepa cuánto es eso). */
+  #pedido-materiales {
+    min-height: auto;
+    overflow: clip;
+  }
+
+  /* La lista no crece más que sus materiales: si sobra alto, queda en blanco al final de la
+     tarjeta (como antes), no entre la lista y el formulario. Con uno o dos materiales mide lo
+     suyo; con tres o más, si falta alto, se achica hasta mostrar unos dos. */
+  .materiales__lista {
+    min-height: max-content;
+    max-height: max-content;
+  }
+
+  .materiales__lista:has(> .fila:nth-child(3)) {
+    min-height: 90px;
+  }
+
+  /* Tallas: abierta, la lista de personas se desplaza si son más de tres. Se asoma la mitad
+     de la cuarta, para que se note que hay más. */
+  details[open] > .tallas__personas {
+    max-height: 206px;
+  }
+
+  /* Foto: la tarjeta toma el alto que queda. La foto mide 264 px, como siempre, y si falta
+     alto se achica hasta 120 px; la invitación sin foto mide 120 px y se achica hasta lo que
+     mide su frase. Lo que sobra queda en blanco al final de la tarjeta, no en gris. */
+  #pedido-foto {
+    min-height: auto;
+    overflow: clip;
+  }
+
+  #pedido-foto .fotos {
+    flex: 1 1 0;
+    min-height: 120px;
+    max-height: 264px;
+  }
+
+  #pedido-foto .fotos-vacio {
+    flex: 1 1 0;
+    min-height: auto;
+    max-height: 120px;
+    padding: 10px 16px;
+  }
+
+  #pedido-foto .tarjeta__nota {
+    padding: 8px 16px;
+  }
+
+  /* Elegir la foto: el campo mide 36 px, como los demás */
+  #pedido-foto input[type="file"].campo__control {
+    padding: 2px 3px;
+  }
+
+  #pedido-foto input[type="file"].campo__control::file-selector-button {
+    min-height: 30px;
+  }
+
+  /* Pagos: cada abono con menos aire arriba */
+  .pedido-por-dentro .pagos__abono {
+    padding-top: 8px;
+  }
+}
+
 /* --- Pedido por dentro (fin) --- */
 
 
