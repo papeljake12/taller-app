@@ -1,0 +1,8 @@
+{% comment %}
+El formulario para cambiar el nombre de una costurera, en el lugar de su fila. "Guardar" lo
+cambia; "Cancelar" deja la tarjeta como estaba. El campo llega con el cursor puesto.
+{% endcomment %}{% url 'cuentas:costurera_editar' costurera.pk as url_editar %}<form class="fila fila--formulario" id="costurera-{{ costurera.pk }}" method="post" action="{{ url_editar }}" hx-post="{{ url_editar }}" hx-target="#costureras" hx-swap="outerHTML" novalidate>
+{% csrf_token %}<input type="hidden" name="accion" value="nombre">
+<div class="fila__texto">{% include "piezas/_campo.html" with campo=form_nombre.nombre_visible %}</div>
+<div class="fila__acciones"><button type="submit" class="boton boton--principal">Guardar</button><a class="boton" href="{{ url_editar }}?cancelar=1" hx-get="{{ url_editar }}?cancelar=1" hx-target="#costureras" hx-swap="outerHTML">Cancelar</a></div>
+</form>

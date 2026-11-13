@@ -1,0 +1,6 @@
+{% comment %}
+Lo que cambia fuera de la tarjeta "Tu taller" al guardar el nombre: el nombre del taller en
+el menú (templates/_menu.html, la clase menu__taller) y la pestaña del navegador. HTMX pone
+el nombre en su lugar con hx-swap-oob y cambia la pestaña con el <title>.
+{% endcomment %}<span hx-swap-oob="innerHTML:.menu__taller">{{ taller.nombre }}</span>
+<title>Mi taller · {{ taller.nombre }}</title>

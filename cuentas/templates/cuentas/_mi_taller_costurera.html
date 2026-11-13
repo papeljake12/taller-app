@@ -1,0 +1,10 @@
+{% comment %}
+Una costurera en la tarjeta Costureras: su nombre, su usuario y, si está desactivada, la
+etiqueta y qué significa. Los botones van en un solo formulario: "Cambiar nombre" trae el
+formulario del nombre a esta fila y "Desactivar" o "Activar" la cambia de una vez (se
+puede deshacer, por eso no pregunta).
+{% endcomment %}{% url 'cuentas:costurera_editar' costurera.pk as url_editar %}<div class="fila" id="costurera-{{ costurera.pk }}">
+<div class="fila__texto"><div class="fila__titulo"><strong>{{ costurera.nombre }}</strong>{% if not costurera.is_active %}{% include "piezas/_etiqueta.html" with texto="Desactivada" tono="gris" %}{% endif %}</div>
+<div class="fila__detalle">Usuario: {{ costurera.username }}{% if not costurera.is_active %}. No puede entrar, pero sus pedidos siguen guardados.{% endif %}</div></div>
+<form class="fila__acciones" method="post" action="{{ url_editar }}" hx-post="{{ url_editar }}" hx-target="#costureras" hx-swap="outerHTML">{% csrf_token %}<a class="boton" href="{{ url_editar }}" hx-get="{{ url_editar }}" hx-target="#costureras" hx-swap="outerHTML" aria-label="Cambiar el nombre de {{ costurera.nombre }}">Cambiar nombre</a>{% if costurera.is_active %}<button type="submit" class="boton" name="accion" value="desactivar" aria-label="Desactivar a {{ costurera.nombre }}">Desactivar</button>{% else %}<button type="submit" class="boton" name="accion" value="activar" aria-label="Activar a {{ costurera.nombre }}">Activar</button>{% endif %}</form>
+</div>

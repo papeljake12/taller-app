@@ -1,0 +1,22 @@
+{% comment %}
+Tarjeta "Tu taller" de Mi taller (T20): el nombre (sale en el menú, en los mensajes y en
+los recibos), el teléfono y el logo.
+
+La dibuja mi_taller.html y la devuelve, sola, la vista cuentas:mi_taller con POST: con HTMX
+reemplaza a la tarjeta entera (id="tu-taller"). Al guardar llega también, aparte,
+_mi_taller_nombre_menu.html con el nombre nuevo para el menú.
+Necesita `taller`, `form_taller`, `logo` (o None) y `guardado` (mostrar "Listo").
+{% endcomment %}{% url 'cuentas:mi_taller' as url_guardar %}<section class="tarjeta tarjeta--lista columna-angosta" id="tu-taller" aria-labelledby="t-taller">
+<div class="tarjeta__cabeza"><h2 id="t-taller">Tu taller</h2></div>
+<form class="tarjeta__cuerpo" method="post" action="{{ url_guardar }}" enctype="multipart/form-data" hx-post="{{ url_guardar }}" hx-encoding="multipart/form-data" hx-target="#tu-taller" hx-swap="outerHTML" hx-sync="this:drop" novalidate>
+{% csrf_token %}
+{% if guardado %}<p class="nota" role="status">Listo: se guardaron los cambios.</p>
+{% endif %}{% include "piezas/_aviso.html" with mensajes=form_taller.non_field_errors %}
+{% include "piezas/_campo.html" with campo=form_taller.nombre %}
+{% include "piezas/_campo.html" with campo=form_taller.telefono %}
+{% if logo %}<div><img src="{{ logo.url }}" alt="Logo de {{ taller.nombre }}" width="{{ logo.ancho }}" height="{{ logo.alto }}"></div>
+{% endif %}{% include "piezas/_campo.html" with campo=form_taller.logo %}
+{% if form_taller.quitar_logo %}<label class="fila__titulo" for="{{ form_taller.quitar_logo.id_for_label }}">{{ form_taller.quitar_logo }}{{ form_taller.quitar_logo.label }}</label>
+{% endif %}<div class="botones"><button type="submit" class="boton boton--principal">Guardar</button></div>
+</form>
+</section>

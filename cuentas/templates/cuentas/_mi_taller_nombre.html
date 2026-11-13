@@ -1,0 +1,11 @@
+{% extends "piezas/ventana.html" %}
+{% comment %}
+Cambiar el nombre de una costurera como página aparte: solo se ve sin JavaScript. Con
+JavaScript el formulario sale en su fila de la tarjeta Costureras
+(_mi_taller_costurera_nombre.html).
+{% endcomment %}
+{% block titulo %}Cambiar nombre{% endblock %}
+{% block cuerpo %}<input type="hidden" name="accion" value="nombre">
+<p>Usuario: {{ costurera.username }}. Hoy aparece como {{ costurera.nombre }}.</p>
+{% include "piezas/_campo.html" with campo=form.nombre_visible %}{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Guardar</button>{% endblock %}
