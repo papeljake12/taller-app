@@ -1,0 +1,7 @@
+{% comment %}
+Las entradas del menú lateral, para que HTMX cambie el contador de telas que se están
+acabando después de una acción de Telas (solo con `oob`). `menu_lateral` sale de
+telas/vistas.py (menu_de_telas). Es la misma idea de pedidos/_hoy_menu.html.
+{% endcomment %}{% if oob %}<div hx-swap-oob="innerHTML:.menu__lista">
+{% for entrada in menu_lateral %}{% include "_menu_entrada.html" %}
+{% endfor %}</div>{% endif %}
