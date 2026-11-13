@@ -4,7 +4,7 @@ Todas las cuentas (saldo, tallas, etiquetas, filtros y orden) salen de pedidos/c
 Todo se filtra por el taller de la usuaria (cuentas/aislamiento.py).
 
 Permisos (T21, docs/04-permisos.md): la costurera ve todos los pedidos, pero sin valores: sin
-la columna Saldo ni el filtro "Con saldo". No crea pedidos y el buscador no le muestra
+las columnas Total y Pago, ni "Por cobrar", ni el filtro "Con saldo". No crea pedidos y el buscador no le muestra
 clientes (Clientes es solo de la dueña).
 """
 
@@ -37,16 +37,40 @@ AVISO_DE_ERRORES = "Revisa los campos marcados."
 
 @dataclass(frozen=True)
 class FilaPedido:
-    """Un pedido con lo que muestra su fila: etapa, urgencia, tallas y saldo (0 si quien
-    la ve no puede ver la plata)."""
+    """Un pedido con lo que muestra su fila: etapa, pago (solo si quien la ve puede ver la
+    plata), fecha de entrega y tallas."""
 
     pedido: Pedido
     etapa: Etiqueta
-    urgencia: Etiqueta | None
+    pago: Etiqueta | None  # None si quien la ve no puede ver la plata
+    fecha: str  # "11 nov"
+    entrega_nota: str  # "2 días tarde", "en 3 días", "hoy", "mañana" o ""
+    atrasado: bool
     tallas_recibidas: int
     tallas_esperadas: int
-    saldo: int
-    cotizado: bool
+
+
+MESES_CORTOS = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+
+
+def fecha_de_entrega(fecha):
+    """"11 nov", como en diseno/pedidos.html."""
+    return f"{fecha.day} {MESES_CORTOS[fecha.month - 1]}"
+
+
+def _dias(cantidad):
+    return f"{cantidad} {'día' if cantidad == 1 else 'días'}"
+
+
+def nota_de_entrega(pedido, hoy):
+    """Lo que acompaña la fecha: "2 días tarde" si va atrasado; "hoy", "mañana" o "en 3 días"
+    si se entrega en los próximos 7 días; si no, nada."""
+    dias = calculos.dias_para_entrega(pedido, hoy)
+    if calculos.esta_atrasado(pedido, hoy):
+        return f"{_dias(-dias)} tarde"
+    if calculos.esta_pronto(pedido, hoy):
+        return {0: "hoy", 1: "mañana"}.get(dias, f"en {_dias(dias)}")
+    return ""
 
 
 def filas_de(pedidos, hoy, con_plata=True):
@@ -58,11 +82,12 @@ def filas_de(pedidos, hoy, con_plata=True):
             FilaPedido(
                 pedido=pedido,
                 etapa=calculos.etiqueta_etapa(pedido),
-                urgencia=calculos.etiqueta_urgencia(pedido, hoy),
+                pago=calculos.etiqueta_pago(pedido, hoy) if con_plata else None,
+                fecha=fecha_de_entrega(pedido.fecha_entrega),
+                entrega_nota=nota_de_entrega(pedido, hoy),
+                atrasado=calculos.esta_atrasado(pedido, hoy),
                 tallas_recibidas=recibidas,
                 tallas_esperadas=esperadas,
-                saldo=calculos.saldo(pedido) if con_plata else 0,
-                cotizado=pedido.estado == Pedido.Estado.COTIZADO,
             )
         )
     return filas
@@ -104,6 +129,24 @@ def _con_busqueda(url, filtro, q):
     return f"{url}?{urlencode(parametros)}"
 
 
+def cifras_de(request, conteos, total, url_lista):
+    """La barra de cifras de arriba de Pedidos. "Por cobrar" no la ve la costurera."""
+    cuantos = {clave: conteo for clave, _, conteo in conteos}
+    cifras = {
+        "activos": total - cuantos["entregados"],
+        "produccion": cuantos["produccion"],
+        "semana": cuantos["semana"],
+        "atrasados": cuantos["atrasados"],
+        "url_produccion": _con_busqueda(url_lista, "produccion", ""),
+        "url_semana": _con_busqueda(url_lista, "semana", ""),
+        "url_atrasados": _con_busqueda(url_lista, "atrasados", ""),
+    }
+    if puede_ver_plata(request):
+        cifras["por_cobrar"] = calculos.por_cobrar(request.taller)
+        cifras["url_saldo"] = _con_busqueda(url_lista, "saldo", "")
+    return cifras
+
+
 def lista(request):
     hoy = timezone.localdate()
     filtro = _filtro_elegido(request)
@@ -116,10 +159,15 @@ def lista(request):
     elegidos = calculos.filtrar_pedidos(pedidos_para_tabla(request), filtro, hoy)
     if q:
         elegidos = buscar_pedidos(elegidos, q)
+    conteos = calculos.conteo_de_filtros(pedidos_del_taller, hoy)
     contexto = {
         "total": total,
         "filtro": filtro,
         "q": q,
+        # La fila del buscador se ve si hay algo buscado o si se tocó la lupa sin JavaScript.
+        "ver_buscador": bool(q) or "buscar" in request.GET,
+        "url_buscar": _con_busqueda(url_lista, filtro, q) + "&buscar=1",
+        "cifras": cifras_de(request, conteos, total, url_lista),
         "filas": filas_de(elegidos, hoy, puede_ver_plata(request)),
         "url_todos": _con_busqueda(url_lista, "todos", ""),
         "filtros": [
@@ -130,7 +178,7 @@ def lista(request):
                 "elegido": clave == filtro,
                 "url": _con_busqueda(url_lista, clave, q),
             }
-            for clave, nombre, conteo in calculos.conteo_de_filtros(pedidos_del_taller, hoy)
+            for clave, nombre, conteo in conteos
             if clave in permitidos
         ],
     }

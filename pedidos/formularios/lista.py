@@ -29,7 +29,9 @@ class NuevoPedidoForm(forms.Form):
             "required": "Escribe el nombre del cliente.",
             "max_length": "El nombre es muy largo: usa máximo 80 letras.",
         },
-        widget=forms.TextInput(attrs={"autocomplete": "off"}),
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ej.: Colegio San José", "autocomplete": "off"}
+        ),
     )
     tipo = forms.ChoiceField(
         label="Tipo de cliente",
@@ -87,7 +89,9 @@ class NuevoPedidoForm(forms.Form):
             "required": "Escribe el valor total en pesos.",
             "max_length": "Escribe el valor en pesos, solo con números. Por ejemplo: 380.000.",
         },
-        widget=forms.TextInput(attrs={"inputmode": "numeric", "autocomplete": "off"}),
+        widget=forms.TextInput(
+            attrs={"inputmode": "numeric", "autocomplete": "off", "placeholder": "Ej.: 1.200.000"}
+        ),
     )
     whatsapp = forms.CharField(
         label="WhatsApp (opcional)",

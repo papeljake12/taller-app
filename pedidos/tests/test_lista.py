@@ -20,6 +20,23 @@ BUSCAR = reverse("pedidos:buscar")
 HTMX = {"HX-Request": "true"}
 
 
+MESES = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+
+
+def nota_de_entrega_de(taller, dias):
+    """Lo que dice la entrega de un pedido en producción que se entrega dentro de `dias`."""
+    from pedidos.vistas.lista import nota_de_entrega
+
+    hoy = timezone.localdate()
+    pedido = Pedido(taller=taller, estado="confeccion", fecha_entrega=hoy + timedelta(days=dias))
+    return nota_de_entrega(pedido, hoy)
+
+
+@pytest.fixture
+def ejemplo_de_costurera(taller, costurera):
+    return ejemplos.cargar(taller=taller, con_fotos=False)
+
+
 @pytest.fixture
 def ejemplo(taller, duena):
     """Los pedidos de diseno/pedidos.html, contados desde hoy y a nombre de la dueña."""
@@ -28,11 +45,18 @@ def ejemplo(taller, duena):
 
 def clientes_en_orden(html):
     """Los nombres de cliente de la tabla, en el orden en que salen."""
-    return re.findall(r'class="tabla__enlace" href="[^"]+"><strong>([^<]+)</strong>', html)
+    return re.findall(r'<tr class="tabla__fila" id="pedido-\d+">.*?class="tabla__enlace" href="[^"]+">([^<]+)</a>',
+                      html, re.S)
 
 
 def filtro_elegido(html):
-    return re.search(r'class="filtro es-elegido"[^>]*>([^<]+)</a>', html).group(1)
+    elegido = re.search(r'class="filtro es-elegido"[^>]*>(.*?)</a>', html, re.S).group(1)
+    return " ".join(re.sub(r"<[^>]+>", " ", elegido).split())
+
+
+def texto_de(html):
+    """El texto de la página sin etiquetas y con los espacios juntos."""
+    return " ".join(re.sub(r"<[^>]+>", " ", html).split())
 
 
 # --- La lista ---------------------------------------------------------------------------------
@@ -41,7 +65,8 @@ def filtro_elegido(html):
 def test_la_lista_sale_como_en_el_diseno(sesion_duena, ejemplo):
     html = sesion_duena.get(LISTA).text
 
-    assert '<span class="encabezado__apoyo">6 pedidos</span>' in html
+    assert '<div class="paginas">6 pedidos</div>' in html
+    assert "hoja--completa" in html
     assert clientes_en_orden(html) == [
         "Ferretería La Esquina",
         "Grupo de danza Tambores del Río",
@@ -53,24 +78,121 @@ def test_la_lista_sale_como_en_el_diseno(sesion_duena, ejemplo):
     for texto in (
         'placeholder="Buscar por cliente, prenda o encargada"',
         "Descargar para Excel",
-        "8 overoles con logo estampado",
-        '<span class="etiqueta etiqueta--azul">En confección</span>',
-        '<span class="etiqueta etiqueta--rojo">Atrasado 2 días</span>',
-        '<span class="etiqueta etiqueta--ambar">Faltan 3 días</span>',
-        '<span class="etiqueta etiqueta--verde">Entregado</span>',
-        '<span class="etiqueta etiqueta--gris">Cotizado</span>',
-        "<td>Carmen</td>",
+        '<table class="tabla tabla--pedidos">',
+        '<td class="solo-tabla tabla__prenda">8 overoles con logo estampado</td>',
+        '<span class="etiqueta etiqueta--azul etiqueta--medio">En confección</span>',
+        '<span class="etiqueta etiqueta--rojo etiqueta--alerta">Vencido</span>',
+        '<span class="etiqueta etiqueta--naranja etiqueta--medio">Abonado 67 %</span>',
+        '<span class="etiqueta etiqueta--gris etiqueta--vacio">Sin abonos</span>',
+        '<span class="etiqueta etiqueta--verde etiqueta--lleno">Listo</span>',
+        '<span class="etiqueta etiqueta--gris etiqueta--lleno">Entregado</span>',
+        '<span class="etiqueta etiqueta--gris etiqueta--lleno">Pagado</span>',
+        '<td class="solo-tabla">Carmen</td>',
         '<span class="texto-2">Sin asignar</span>',
-        "<td>8 de 8</td>",
-        "<td>0 de 1</td>",
-        "<td>14 de 18</td>",
-        "<td>9 de 40</td>",
-        '<strong class="texto-rojo dinero">$ 480.000</strong>',
-        '<strong class="texto-rojo dinero">$ 3.300.000</strong>',
-        'Cotizado en <span class="dinero">$ 380.000</span>',
-        '<strong class="texto-verde">Pagado</strong>',
+        '<td class="solo-tabla">8 de 8</td>',
+        '<td class="solo-tabla">0 de 1</td>',
+        '<td class="solo-tabla">14 de 18</td>',
+        '<td class="solo-tabla">9 de 40</td>',
+        '<td class="num dinero celda-total">$ 960.000</td>',
+        '<td class="num dinero celda-total">$ 2.520.000</td>',
+        '<th scope="col" class="num">Total</th>',
     ):
         assert texto in html, texto
+
+
+def test_la_entrega_dice_cuanto_falta_o_cuanto_se_atraso(sesion_duena, ejemplo):
+    html = sesion_duena.get(LISTA).text
+    hoy = timezone.localdate()
+
+    atraso = hoy - timedelta(days=2)
+    proxima = hoy + timedelta(days=3)
+    assert (f'<span class="texto-atraso">{atraso.day} {MESES[atraso.month - 1]} · 2 días tarde'
+            '</span>') in html
+    assert (f'{proxima.day} {MESES[proxima.month - 1]} · <span class="texto-2">en 3 días</span>'
+            ) in html
+    # Lo que se entrega hoy o mañana lo dice con esas palabras.
+    assert nota_de_entrega_de(ejemplo, 0) == "hoy"
+    assert nota_de_entrega_de(ejemplo, 1) == "mañana"
+    assert nota_de_entrega_de(ejemplo, 7) == "en 7 días"
+    assert nota_de_entrega_de(ejemplo, 8) == ""
+    assert nota_de_entrega_de(ejemplo, -1) == "1 día tarde"
+
+
+def test_la_barra_de_cifras_sale_como_en_el_diseno(sesion_duena, ejemplo):
+    html = sesion_duena.get(LISTA).text
+
+    assert '<section class="cifras cifras--barra"' in html
+    assert 'class="chip"' in html and "Hoy</span>" in html
+    cifras = dict(re.findall(
+        r'<span class="cifra__nombre">([^<]+)</span><span class="cifra__valor">([^<]+)</span>',
+        html))
+    assert cifras == {"Activos": "5", "En producción": "4", "Se entregan esta semana": "1",
+                      "Atrasados": "1", "Por cobrar": "$ 5.790.000"}
+    assert f'<a class="cifra cifra--alerta" href="{LISTA}?filtro=atrasados" title=' in html
+    assert f'<a class="cifra" href="{LISTA}?filtro=produccion" title=' in html
+    assert f'<a class="cifra" href="{LISTA}?filtro=semana" title=' in html
+    assert f'<a class="cifra" href="{LISTA}?filtro=saldo" title=' in html
+    assert 'title="Pedidos que no se han entregado"' in html
+
+
+def test_atrasados_va_en_rojo_solo_si_hay(sesion_duena, taller):
+    fabricas.crear_pedido(taller, fecha_entrega=timezone.localdate() + timedelta(days=20))
+
+    html = sesion_duena.get(LISTA).text
+
+    assert "cifra--alerta" not in html
+
+
+def test_el_buscador_esta_escondido_detras_de_la_lupa(sesion_duena, ejemplo):
+    html = sesion_duena.get(LISTA).text
+
+    assert '<div class="buscador-fila" id="buscador-pedidos" hidden>' in html
+    # La lupa del encabezado (celular) y la de la tarjeta (computador).
+    assert html.count('data-mostrar="buscador-pedidos"') == 2
+    # Sin JavaScript, la lupa lleva a la misma lista con el buscador a la vista.
+    assert f'href="{LISTA}?filtro=todos&amp;buscar=1"' in html
+    abierto = sesion_duena.get(LISTA, {"filtro": "todos", "buscar": "1"}).text
+    assert '<div class="buscador-fila" id="buscador-pedidos">' in abierto
+
+
+def test_si_hay_algo_buscado_el_buscador_se_ve(sesion_duena, ejemplo):
+    html = sesion_duena.get(LISTA, {"q": "esquina"}).text
+
+    assert '<div class="buscador-fila" id="buscador-pedidos">' in html
+
+
+def test_cada_fila_trae_la_lista_de_celular_de_la_referencia(sesion_duena, ejemplo):
+    html = sesion_duena.get(LISTA).text
+
+    for clase in ("celda-mini solo-celular", "celda-cliente", "celda-etapa",
+                  "celda-apoyo solo-celular", "num dinero celda-total"):
+        assert html.count(f'<td class="{clase}">') == 6, clase
+    # La insignia del pago va dentro de un solo-celular, antes de la etapa.
+    assert html.count('<td class="celda-etapa"><span class="solo-celular"><span class="etiqueta') == 6
+
+
+def test_la_costurera_no_ve_total_pago_ni_por_cobrar(client, costurera, ejemplo_de_costurera):
+    client.force_login(costurera)
+    html = client.get(LISTA).text
+
+    assert len(clientes_en_orden(html)) == 6
+    texto = texto_de(html)
+    for prohibido in ("Por cobrar", "Total", "Pago", "Con saldo", "Abonado", "Sin abonos",
+                      "Vencido", "$ ", "Descargar para Excel", "Nuevo pedido"):
+        assert prohibido not in texto, prohibido
+    assert "celda-total" not in html
+    for visible in ("Activos", "En producción", "Entrega", "Etapa", "Tallas", "Encargada",
+                    "Atrasados"):
+        assert visible in texto, visible
+
+
+def test_la_costurera_no_puede_pedir_el_filtro_con_saldo(client, costurera, ejemplo_de_costurera):
+    client.force_login(costurera)
+
+    html = client.get(LISTA, {"filtro": "saldo"}).text
+
+    assert filtro_elegido(html).startswith("Todos")
+    assert len(clientes_en_orden(html)) == 6
 
 
 def test_los_filtros_muestran_su_conteo_como_en_el_diseno(sesion_duena, ejemplo):
@@ -78,7 +200,8 @@ def test_los_filtros_muestran_su_conteo_como_en_el_diseno(sesion_duena, ejemplo)
 
     for texto in ("Todos 6", "En producción 4", "Esta semana 1", "Atrasados 1", "Con saldo 4",
                   "Entregados 1"):
-        assert f">{texto}</a>" in html, texto
+        nombre, conteo = texto.rsplit(" ", 1)
+        assert f'>{nombre} <span class="filtro__conteo">{conteo}</span></a>' in html, texto
     assert filtro_elegido(html) == "Todos 6"
     assert 'href="?filtro=atrasados"' not in html
     assert f'href="{LISTA}?filtro=atrasados"' in html
@@ -136,14 +259,17 @@ def test_cada_fila_abre_su_pedido(sesion_duena, ejemplo):
         assert f'href="{reverse("pedidos:detalle", args=[pedido.pk])}"' in html
 
 
-def test_la_tabla_se_desplaza_dentro_de_su_tarjeta(sesion_duena, ejemplo):
+def test_la_tabla_va_en_una_tarjeta_recortada_con_sus_pestanas(sesion_duena, ejemplo):
     html = sesion_duena.get(LISTA).text
 
-    # Pantalla fija: la tarjeta llega hasta abajo y solo la tabla se desplaza por dentro.
-    assert 'class="tarjeta tarjeta--lista tarjeta--con-buscador llenar"' in html
-    assert '<div class="zona-tabla" id="lista-pedidos">' in html
-    assert '<div class="tabla-contenedor desplazable" id="lista-pedidos-tabla">' in html
-    assert '<table class="tabla tabla--pedidos">' in html
+    assert 'class="tarjeta tarjeta--recortada tarjeta--lista-celular"' in html
+    assert '<div class="filtros">\n<div class="filtros__pestanas"' in html
+    assert 'class="filtros__herramientas solo-computador"' in html
+    assert '<div id="lista-pedidos">' in html
+    assert '<div class="tabla-contenedor" id="lista-pedidos-tabla">' in html
+    # Ya no hay pantalla fija: nada de lo que era para caber en 1366 x 768.
+    for vieja in ("llenar", "desplazable", "zona-tabla", "tarjeta--lista "):
+        assert vieja not in html, vieja
 
 
 def test_cada_fila_tiene_un_id_que_no_cambia_al_buscar(sesion_duena, ejemplo):
@@ -173,16 +299,26 @@ def test_el_aviso_de_nada_coincide_tiene_su_id(sesion_duena, ejemplo):
 def test_sin_pedidos_invita_a_crear_el_primero(sesion_duena):
     html = sesion_duena.get(LISTA).text
 
-    assert '<span class="encabezado__apoyo">0 pedidos</span>' in html
-    assert "Todavía no hay pedidos" in html
-    assert "<table" not in html
-    assert html.count(f'hx-get="{NUEVO}"') == 2
+    assert "Aquí vas a ver tus pedidos" in html
+    assert "Cómo llevar los pedidos del taller" in html
+    assert 'class="vacio"' in html
+    assert "<table" not in html and "cifras--barra" not in html
+    assert html.count(f'hx-get="{NUEVO}"') == 2  # el del encabezado y el de la pantalla vacía
+
+
+def test_sin_pedidos_la_costurera_no_ve_el_boton_de_crear(client, costurera):
+    client.force_login(costurera)
+
+    html = client.get(LISTA).text
+
+    assert "Aquí vas a ver tus pedidos" in html
+    assert NUEVO not in html
 
 
 def test_un_solo_pedido_dice_pedido_en_singular(sesion_duena, taller):
     fabricas.crear_pedido(taller)
 
-    assert '<span class="encabezado__apoyo">1 pedido</span>' in sesion_duena.get(LISTA).text
+    assert '<div class="paginas">1 pedido</div>' in sesion_duena.get(LISTA).text
 
 
 def test_un_filtro_sin_pedidos_lo_dice_y_ofrece_ver_todos(sesion_duena, taller):
@@ -240,9 +376,10 @@ def test_mientras_se_escribe_htmx_recibe_solo_la_tabla_y_los_filtros(sesion_duen
     html = respuesta.text
 
     assert "<html" not in html
-    assert html.lstrip().startswith('<div class="zona-tabla" id="lista-pedidos">')
+    assert html.lstrip().startswith('<div id="lista-pedidos">')
+    assert '<div class="paginas">1 pedido</div>' in html
     assert clientes_en_orden(html) == ["Ferretería La Esquina"]
-    assert 'aria-label="Filtrar pedidos" hx-swap-oob="true"' in html
+    assert 'id="filtros-pedidos" role="group" aria-label="Filtrar pedidos" hx-swap-oob="true"' in html
     assert "HX-Request" in respuesta["Vary"]
 
 
@@ -275,7 +412,8 @@ def test_la_lista_no_muestra_pedidos_de_otro_taller(sesion_duena, taller):
     buscado = sesion_duena.get(LISTA, {"q": "ajen"}).text
 
     assert clientes_en_orden(html) == ["Cliente propio"]
-    assert ">Todos 1</a>" in html and ">Atrasados 0</a>" in html
+    assert '>Todos <span class="filtro__conteo">1</span></a>' in html
+    assert '>Atrasados <span class="filtro__conteo">0</span></a>' in html
     assert "Cliente ajeno" not in html and "Cliente ajeno" not in buscado
     assert reverse("pedidos:detalle", args=[ajeno.pk]) not in html
     assert propio.pk != ajeno.pk
@@ -306,6 +444,11 @@ def test_la_ventana_trae_todos_los_campos(sesion_duena):
                      "Tallas", "Fecha de entrega", "Valor total (pesos)", "WhatsApp (opcional)"):
         assert f">{etiqueta}</label>" in html, etiqueta
     assert "Adulto (XS a XXL)" in html and "Niño (4 a 16)" in html
+    for ejemplo_en_campo in ("Ej.: Colegio San José", "Ej.: 20 camisas polo con logo bordado",
+                             "Ej.: 1.200.000", "Ej.: 300 123 4567"):
+        assert f'placeholder="{ejemplo_en_campo}"' in html, ejemplo_en_campo
+    assert html.count('<div class="campos">') == 5
+    assert ">Cancelar</button>" in html and ">Guardar pedido</button>" in html
     assert 'type="date"' in html
     assert f'hx-post="{NUEVO}" hx-target="#ventana"' in html
     assert "Guardar pedido" in html
@@ -555,13 +698,27 @@ def test_el_buscador_del_menu_encuentra_pedidos_y_clientes(sesion_duena, ejemplo
     assert "Empresa" in html
 
 
-def test_en_buscar_cada_lista_de_resultados_se_desplaza_en_su_tarjeta(sesion_duena, ejemplo):
+def test_buscar_usa_el_lenguaje_de_pedidos(sesion_duena, ejemplo):
     html = sesion_duena.get(BUSCAR, {"q": "ESQUINA"}).text
 
-    assert html.count('class="tarjeta tarjeta--lista tarjeta--resultados"') == 2
-    assert '<div class="tabla-contenedor desplazable" id="resultados-pedidos-tabla">' in html
-    assert re.search(r'<div class="desplazable">\s*<div class="fila fila--compacta fila--enlace">',
-                     html)
+    assert "hoja--completa" in html
+    assert 'class="buscador-fila buscador-fila--sola"' in html
+    assert html.count('class="tarjeta tarjeta--recortada') == 2
+    assert '<div class="tabla-contenedor" id="resultados-pedidos-tabla">' in html
+    assert "paginas" not in html
+    assert re.search(r'<h2 id="t-clientes">Clientes</h2>.*?<table class="tabla">', html, re.S)
+    assert "llenar" not in html and "desplazable" not in html and "tarjeta--resultados" not in html
+
+
+def test_la_costurera_en_buscar_solo_ve_pedidos_sin_valores(client, costurera,
+                                                           ejemplo_de_costurera):
+    client.force_login(costurera)
+
+    html = client.get(BUSCAR, {"q": "esquina"}).text
+
+    assert clientes_en_orden(html) == ["Ferretería La Esquina"]
+    assert '<h2 id="t-clientes">' not in html
+    assert "celda-total" not in html and "Abonado" not in html and "Vencido" not in html
 
 
 def test_el_buscador_del_menu_no_mira_tildes_ni_mayusculas(sesion_duena, ejemplo):
@@ -612,27 +769,18 @@ def test_el_buscador_del_menu_no_muestra_nada_de_otro_taller(sesion_duena, talle
     assert "No hay pedidos ni clientes que coincidan" in html
 
 
-# --- Pantalla fija con muchos pedidos (en Chrome) -----------------------------------------------
+# --- Celular y computador (en Chrome) -------------------------------------------------------------
 
-# Cada lista que se desplaza por dentro: cuánto se ve y cuánto mide. Después de bajarla, si el
-# encabezado de su tabla quedó arriba (fijo).
-MEDIR_LISTAS = """() => {
-  const pagina = document.scrollingElement;
-  const hoja = document.querySelector('.hoja__contenido');
-  const listas = {};
-  document.querySelectorAll('.desplazable').forEach(lista => {
-    const nombre = lista.closest('section').getAttribute('aria-labelledby');
-    lista.scrollTop = 400;
-    const th = lista.querySelector('th');
-    listas[nombre] = {
-      se_ve: lista.clientHeight, mide: lista.scrollHeight,
-      encabezado_fijo: th ? Math.abs(th.getBoundingClientRect().top
-                                     - lista.getBoundingClientRect().top) < 1 : null,
-    };
-  });
-  return {pagina: pagina.scrollHeight, ventana: innerHeight,
-          hoja: hoja.scrollHeight, cabe: hoja.clientHeight, listas: listas};
-}"""
+# Que la página no se desborde de lado y que la tabla se vuelva lista en celular.
+MEDIR_DESBORDE = """() => ({
+  ancho: document.documentElement.scrollWidth, ventana: innerWidth,
+  filas_visibles: [...document.querySelectorAll('.tabla--pedidos tbody tr')]
+    .filter(f => f.offsetHeight > 0).length,
+  prenda_visible: [...document.querySelectorAll('.tabla--pedidos .tabla__prenda')]
+    .some(c => c.offsetHeight > 0),
+  apoyo_visible: [...document.querySelectorAll('.tabla--pedidos .celda-apoyo')]
+    .some(c => c.offsetHeight > 0),
+})"""
 
 
 def _abrir_chrome():
@@ -649,21 +797,12 @@ def _abrir_chrome():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_con_muchos_pedidos_solo_la_lista_se_desplaza(live_server):
-    """Con 40 pedidos y 25 clientes más, Pedidos y Buscar caben en 1366 x 768 y en 1920 x 1080:
-    la página y la hoja quedan quietas y solo las listas se desplazan, con el encabezado fijo.
-    En Buscar, una lista corta se ve entera y la larga toma el resto. En celular, igual que
-    antes: la página se desliza."""
+def test_pedidos_y_buscar_no_se_desbordan_y_la_tabla_se_vuelve_lista_en_celular(live_server):
     from django.test import Client
 
     from cuentas.models import Usuario
 
     taller = ejemplos.cargar(con_fotos=False)
-    grande = fabricas.crear_cliente(taller, "Colegio grande de prueba", tipo="colegio")
-    for numero in range(40):
-        fabricas.crear_pedido(taller, grande, detalle=f"Uniformes de prueba {numero}")
-    for numero in range(25):
-        fabricas.crear_cliente(taller, f"Colegio de prueba {numero}")
     navegador_django = Client()
     navegador_django.force_login(Usuario.objects.get(taller=taller, rol=Usuario.Rol.DUENA))
     sesion = navegador_django.cookies["sessionid"].value
@@ -671,15 +810,15 @@ def test_con_muchos_pedidos_solo_la_lista_se_desplaza(live_server):
     manejador, navegador = _abrir_chrome()
     medidas = {}
     try:
-        for ancho, alto in [(1366, 768), (1920, 1080), (390, 844)]:
+        for ancho, alto in [(1280, 800), (390, 844)]:
             contexto = navegador.new_context(viewport={"width": ancho, "height": alto})
             contexto.add_cookies([{"name": "sessionid", "value": sesion,
                                    "url": live_server.url}])
             pagina = contexto.new_page()
-            for direccion in ["/pedidos/", "/buscar/?q=colegio", "/buscar/?q=colegio+grande"]:
+            for direccion in ["/pedidos/", "/buscar/?q=a"]:
                 pagina.goto(live_server.url + direccion, wait_until="load")
                 pagina.evaluate("document.fonts.ready")
-                medidas[(direccion, ancho)] = pagina.evaluate(MEDIR_LISTAS)
+                medidas[(direccion, ancho)] = pagina.evaluate(MEDIR_DESBORDE)
             contexto.close()
     finally:
         navegador.close()
@@ -687,20 +826,7 @@ def test_con_muchos_pedidos_solo_la_lista_se_desplaza(live_server):
 
     for (direccion, ancho), medida in medidas.items():
         donde = f"{direccion} en {ancho} px"
-        if ancho < 768:
-            assert medida["pagina"] > medida["ventana"], f"{donde}: el celular se desliza"
-            continue
-        assert medida["pagina"] <= medida["ventana"], f"{donde}: la página se desplaza"
-        assert medida["hoja"] <= medida["cabe"] + 1, f"{donde}: la hoja no cabe"
-        pedidos = medida["listas"]["t-lista" if direccion == "/pedidos/" else "t-pedidos"]
-        assert pedidos["mide"] > pedidos["se_ve"], f"{donde}: la tabla se desplaza por dentro"
-        assert pedidos["encabezado_fijo"], f"{donde}: el encabezado de la tabla queda fijo"
-    for ancho in (1366, 1920):
-        # Muchos pedidos y muchos clientes: las dos listas se desplazan, mitad y mitad.
-        listas = medidas[("/buscar/?q=colegio", ancho)]["listas"]
-        assert listas["t-clientes"]["mide"] > listas["t-clientes"]["se_ve"]
-        assert abs(listas["t-clientes"]["se_ve"] - listas["t-pedidos"]["se_ve"]) <= 2
-        # Muchos pedidos y un cliente: el cliente se ve entero y los pedidos toman el resto.
-        listas = medidas[("/buscar/?q=colegio+grande", ancho)]["listas"]
-        assert listas["t-clientes"]["mide"] <= listas["t-clientes"]["se_ve"] + 1
-        assert listas["t-pedidos"]["se_ve"] > 3 * listas["t-clientes"]["se_ve"]
+        assert medida["ancho"] <= medida["ventana"], f"{donde}: se desborda de lado"
+        assert medida["filas_visibles"] > 0, donde
+        assert medida["prenda_visible"] == (ancho > 768), f"{donde}: columna Prenda"
+        assert medida["apoyo_visible"] == (ancho < 768), f"{donde}: línea de apoyo del celular"
