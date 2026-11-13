@@ -29,9 +29,9 @@ def creado_el(dia):
 
 
 def cifra(html, nombre):
-    """El bloque de la cifra `nombre` (de su <div class="tarjeta cifra"> a su cierre)."""
+    """El bloque de la cifra `nombre` (de su <div class="cifra"> a su cierre)."""
     return re.search(
-        rf'<div class="tarjeta cifra[^"]*">\s*<div class="cifra__nombre">{nombre}</div>.*?</div>\s*</div>',
+        rf'<div class="cifra[^"]*"[^>]*><span class="cifra__nombre">{nombre}</span>.*?</div>',
         html,
         re.S,
     ).group(0)
@@ -102,7 +102,7 @@ def test_sin_mes_la_pantalla_muestra_el_mes_de_hoy(sesion_duena):
 
     nombre = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
               "Septiembre", "Octubre", "Noviembre", "Diciembre"][hoy.month - 1]
-    assert f'<span class="encabezado__apoyo">{nombre} de {hoy.year}</span>' in html
+    assert f'aria-current="date">' in html and f"{nombre} de {hoy.year}</span>" in html
     assert f'name="mes" value="{hoy:%Y-%m}"' not in html  # el formulario empieza cerrado
     assert f"?mes={hoy:%Y-%m}" in html  # "Registrar gasto" lleva el mes
 
@@ -115,22 +115,23 @@ def test_con_un_mes_que_no_sirve_no_falla(sesion_duena):
 def test_el_encabezado_trae_el_mes_y_los_botones_del_diseno(sesion_duena):
     html = sesion_duena.get(url("2026-11")).text
 
-    assert "<h1>Resumen</h1>" in html
-    assert '<span class="encabezado__apoyo">Noviembre de 2026</span>' in html
-    assert '<a class="boton" href="?mes=2026-10">Mes anterior</a>' in html
-    assert '<a class="boton" href="?mes=2026-12">Mes siguiente</a>' in html
-    assert (
-        f'<a class="boton boton--principal" href="{reverse("finanzas:excel")}">'
-        "Descargar para Excel</a>"
-    ) in html
+    assert "Resumen</h1>" in html
+    # El selector del mes: flecha anterior, el mes en el medio y flecha siguiente.
+    assert 'aria-label="Mes mes"' not in html
+    assert '<span class="grupo-botones"><a class="boton boton--icono" href="?mes=2026-10" aria-label="Mes anterior"' in html
+    assert 'aria-current="date">' in html and "Noviembre de 2026</span>" in html
+    assert 'href="?mes=2026-12" aria-label="Mes siguiente"' in html
+    # Los botones de texto "Mes anterior / Mes siguiente" ya no van en el encabezado.
+    assert ">Mes anterior</a>" not in html and ">Mes siguiente</a>" not in html
+    assert f'<a class="boton" href="{reverse("finanzas:excel")}">Descargar para Excel</a>' in html
 
 
 def test_el_mes_anterior_y_el_siguiente_cruzan_el_anio(sesion_duena):
     enero = sesion_duena.get(url("2027-01")).text
     diciembre = sesion_duena.get(url("2026-12")).text
 
-    assert 'href="?mes=2026-12">Mes anterior' in enero
-    assert 'href="?mes=2027-01">Mes siguiente' in diciembre
+    assert 'href="?mes=2026-12" aria-label="Mes anterior"' in enero
+    assert 'href="?mes=2027-01" aria-label="Mes siguiente"' in diciembre
 
 
 # --- Las cuatro cifras --------------------------------------------------------------------
@@ -147,7 +148,7 @@ def test_las_cifras_son_las_del_mes_elegido(sesion_duena, dos_meses):
     assert "$ 621.000" in gastado and "Telas, insumos y demás" in gastado
     quedo = cifra(html, "Te quedó")
     assert "$ 3.839.000" in quedo and "Cobrado menos gastado" in quedo
-    assert "cifra--buena" in quedo  # en verde
+    assert "cifra--buena" not in quedo  # ya no va en verde
 
 
 def test_otro_mes_tiene_sus_propias_cifras(sesion_duena, dos_meses):
@@ -205,7 +206,6 @@ def test_la_grafica_muestra_los_seis_meses_que_terminan_en_el_mes_elegido(sesion
     assert 'aria-label="Barras de cobrado y gastado de junio a noviembre.' in grafica
     assert "En noviembre: cobrado 4,46 millones y gastado 0,62 millones." in grafica
     assert ">nov</text>" in grafica and ">jun</text>" in grafica
-    assert "De junio a noviembre, en millones de pesos (M)." in grafica
 
 
 def test_la_grafica_de_un_mes_pasado_termina_en_ese_mes(sesion_duena, dos_meses):
@@ -214,7 +214,6 @@ def test_la_grafica_de_un_mes_pasado_termina_en_ese_mes(sesion_duena, dos_meses)
     assert "de mayo a octubre." in grafica
     assert ">nov</text>" not in grafica
     assert "En octubre: cobrado 0,5 millones y gastado 0,07 millones." in grafica
-    assert "De mayo a octubre, en miles de pesos." in grafica
 
 
 # --- Gastos del mes -----------------------------------------------------------------------
@@ -226,9 +225,9 @@ def test_los_gastos_del_mes_van_del_mas_nuevo_al_mas_viejo_como_en_el_diseno(
     gastos = tarjeta(sesion_duena.get(url("2026-11")).text, "t-gastos")
 
     assert "Gastos de noviembre" in gastos
-    assert "Recibo de luz del taller<br><span class=\"texto-2\">9 de nov, servicios</span>" in gastos
+    assert '<div>Recibo de luz del taller</div><div class="texto-2">9 de nov · servicios</div>' in gastos
     assert '<strong class="dinero">$ 140.000</strong>' in gastos
-    assert "6 de nov, insumos" in gastos and "4 de nov, telas" in gastos
+    assert "6 de nov · insumos" in gastos and "4 de nov · telas" in gastos
     posiciones = [gastos.index(c) for c in ("Recibo de luz", "Hilos y botones", "Tela piqué")]
     assert posiciones == sorted(posiciones)
     assert "Gasto de octubre" not in gastos
@@ -255,33 +254,31 @@ def test_un_mes_sin_gastos_lo_dice(sesion_duena, dos_meses):
     assert '<p class="tarjeta__nota" id="gastos-vacio">No hay gastos anotados en este mes.</p>' in gastos
 
 
-def test_pantalla_fija_la_lista_de_gastos_se_desplaza_en_su_tarjeta(sesion_duena, dos_meses, taller):
-    """Ajuste "pantalla fija": la fila de la gráfica y los gastos llena el alto que queda y la
-    lista de gastos tiene su propia caja, que se desplaza por dentro y nunca se reemplaza (las
-    acciones cambian solo lo de adentro). Cada gasto lleva su id."""
+def test_la_tarjeta_de_gastos_tiene_su_caja_de_lista_y_ids_estables(sesion_duena, dos_meses, taller):
+    """La lista de gastos tiene su propia caja, que nunca se reemplaza (las acciones cambian
+    solo lo de adentro). Cada gasto lleva su id. Ya no hay "pantalla fija"."""
     html = sesion_duena.get(url("2026-11")).text
     gastos = tarjeta(html, "t-gastos")
 
-    assert '<div class="dos-columnas llenar resumen__fila-gastos">' in html
-    assert '<div class="dos-columnas resumen__fila-barras">' in html
-    assert gastos.startswith(
-        '<section class="tarjeta tarjeta--lista columna-angosta" id="gastos" aria-labelledby="t-gastos">'
-    )
+    assert '<div class="dos-columnas">' in html
+    assert '<div class="dos-columnas dos-columnas--iguales">' in html
+    assert "llenar" not in html and "desplazable" not in html
+    assert gastos.startswith('<section class="tarjeta" id="gastos" aria-labelledby="t-gastos">')
     assert '<div class="tarjeta__cabeza" id="gastos-cabeza"><h2 id="t-gastos">' in gastos
     assert 'hx-swap-oob' not in gastos  # en la página entera la cabeza va en su lugar
-    assert '<div class="desplazable" id="gastos-lista">' in gastos
+    assert '<div id="gastos-lista">' in gastos
     assert 'id="gastos-registrar"' in gastos
-    assert 'hx-target="#gastos-lista" hx-swap="innerHTML scroll:#gastos-lista:bottom"' in gastos
+    assert 'hx-target="#gastos-lista" hx-swap="innerHTML"' in gastos
     for gasto in taller.gasto_set.filter(fecha__month=11):
         assert f'<div class="fila fila--compacta" id="gasto-{gasto.pk}">' in gastos
         assert f'id="gasto-{gasto.pk}-quitar"' in gastos
 
 
-def test_la_grafica_va_baja_en_computador_y_la_de_siempre_en_celular(sesion_duena, dos_meses):
+def test_la_grafica_es_una_sola_de_alto_160_para_todas_las_pantallas(sesion_duena, dos_meses):
     grafica = tarjeta(sesion_duena.get(url("2026-11")).text, "t-grafica")
 
-    assert re.search(r'<svg class="grafica grafica--computador"[^>]*viewBox="0 0 600 160"', grafica)
-    assert re.search(r'<svg class="grafica grafica--celular"[^>]*viewBox="0 0 600 200"', grafica)
+    assert grafica.count("<svg") == 1
+    assert re.search(r'<svg class="grafica"[^>]*viewBox="0 0 600 160"', grafica)
 
 
 # --- Ventas por tipo y quién tiene qué ----------------------------------------------------
@@ -292,8 +289,9 @@ def test_ventas_por_tipo_de_cliente_con_barras_contra_la_mas_grande(sesion_duena
 
     assert "Ventas por tipo de cliente" in ventas
     assert ventas.index("Colegio") < ventas.index("Empresa")
-    assert 'aria-label="Colegio"><span class="progreso__relleno" style="width: 100%">' in ventas
-    assert 'aria-label="Empresa"><span class="progreso__relleno" style="width: 53%">' in ventas
+    assert '<span class="proporcion" style="width: 100%"></span>' in ventas
+    assert '<span class="proporcion" style="width: 53%"></span>' in ventas
+    assert ventas.count("fila-proporcion__nombre") == 2
     assert '<strong class="dinero">$ 4.800.000</strong>' in ventas
     assert '<strong class="dinero">$ 2.520.000</strong>' in ventas
 
@@ -316,10 +314,10 @@ def test_quien_tiene_que_cuenta_los_pedidos_en_produccion_por_persona(sesion_due
 
     personas = tarjeta(sesion_duena.get(url()).text, "t-personas")
 
-    assert "Pedidos en producción hoy, por persona." in personas
+    assert "En producción hoy" in personas
     assert personas.index("Marta") < personas.index("Carmen")
-    assert 'aria-label="Marta"><span class="progreso__relleno" style="width: 100%">' in personas
-    assert 'aria-label="Carmen"><span class="progreso__relleno" style="width: 50%">' in personas
+    assert '<span class="proporcion" style="width: 100%"></span>' in personas
+    assert '<span class="proporcion" style="width: 50%"></span>' in personas
     # Es una cantidad de pedidos, no plata: no lleva la letra de las cifras de dinero.
     assert "<strong>2</strong>" in personas and "dinero" not in personas
     assert "Ajena" not in personas
@@ -329,7 +327,6 @@ def test_sin_pedidos_en_produccion_lo_dice(sesion_duena):
     personas = tarjeta(sesion_duena.get(url()).text, "t-personas")
 
     assert "No hay pedidos en producción." in personas
-    assert "por persona" not in personas
 
 
 def test_sin_sesion_lleva_a_entrar(client):
@@ -341,16 +338,23 @@ def test_sin_sesion_lleva_a_entrar(client):
 # --- Agregado al unir la tanda 4 ---------------------------------------------------------------
 
 
-def test_en_celular_se_puede_cambiar_de_mes(sesion_duena):
-    # Arriba, en celular, solo cabe el botón principal: el mes se cambia con una fila propia.
+def test_el_selector_del_mes_va_arriba_del_contenido_y_funciona_sin_javascript(sesion_duena):
     html = sesion_duena.get(url("2026-11")).text
 
-    assert '<nav class="navegacion-mes" aria-label="Cambiar de mes">' in html
-    assert 'href="?mes=2026-10">Mes anterior</a>' in html
-    assert 'href="?mes=2026-12">Mes siguiente</a>' in html
+    selector = re.search(r'<div class="botones" role="group" aria-label="Mes del resumen">.*?</div>', html, re.S).group(0)
+    assert selector.index("Mes anterior") < selector.index("Noviembre de 2026") < selector.index("Mes siguiente")
+    assert "hx-" not in selector  # son enlaces normales
+    assert html.index(selector) < html.index('class="cifras"')
 
 
-def test_descargar_para_excel_es_el_boton_principal_de_resumen(sesion_duena):
+def test_descargar_para_excel_es_un_boton_secundario_de_resumen(sesion_duena):
     html = sesion_duena.get(url("2026-11")).text
 
-    assert '<a class="boton boton--principal" href="/resumen/excel/">Descargar para Excel</a>' in html
+    assert '<a class="boton" href="/resumen/excel/">Descargar para Excel</a>' in html
+    assert "boton--principal" not in html.split('<div class="hoja__contenido">')[0].split('<main')[-1]
+
+
+def test_la_costurera_no_entra_al_resumen(client, costurera):
+    client.force_login(costurera)
+
+    assert client.get(url("2026-11")).status_code == 403
