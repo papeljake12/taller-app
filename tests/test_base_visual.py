@@ -320,7 +320,10 @@ def test_ninguna_pagina_carga_nada_desde_internet(sesion_duena, settings, direcc
 
     html = sesion_duena.get(direccion).text
 
-    assert not re.search(r'(?:src|href)="(?:https?:)?//', html)
+    # Ni scripts, ni imágenes, ni hojas de estilo de afuera. Un enlace para abrir WhatsApp
+    # (<a href="https://wa.me/...">) sí puede ir: no se descarga nada al cargar la página.
+    assert not re.search(r'src="(?:https?:)?//', html)
+    assert not re.search(r'<link[^>]+href="(?:https?:)?//', html)
 
 
 @pytest.mark.parametrize("direccion", ["/", "/entrar/"])
