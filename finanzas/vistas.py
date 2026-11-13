@@ -24,16 +24,16 @@ from django.views.decorators.http import require_GET, require_http_methods
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
 from finanzas.excel import TIPO_DE_ARCHIVO, libro_del_taller, nombre_del_archivo
-from finanzas.formularios import FormularioGasto
+from finanzas.formularios import PRIMER_ANIO, FormularioGasto
 from finanzas.models import Gasto
 from pedidos import calculos
 
 # "2026-11": cuatro cifras del año, un guion y dos del mes (solo cifras comunes, de 0 a 9).
 FORMA_DEL_MES = re.compile(r"([0-9]{4})-([0-9]{2})")
 
-# Años que se pueden pedir por la dirección. Fuera de ahí, un año escrito mal ("0001",
-# "9999") rompería el mes anterior o el siguiente.
-PRIMER_ANIO, ULTIMO_ANIO = 2000, 2999
+# Años que se pueden pedir por la dirección: de PRIMER_ANIO (el mismo de los gastos) a este.
+# Fuera de ahí, un año escrito mal ("0001", "9999") rompería el mes anterior o el siguiente.
+ULTIMO_ANIO = 2999
 
 
 def mes_elegido(texto, hoy=None):

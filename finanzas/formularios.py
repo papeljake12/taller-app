@@ -12,6 +12,11 @@ from django.utils import timezone
 from finanzas.models import Gasto
 from pedidos.formularios.abonos import CampoPesos
 
+# El primer año que el Resumen deja ver (?mes=2000-01). Un gasto de antes, o de más allá del
+# próximo año, es casi siempre un año mal escrito ("0202" en vez de "2026"): se guardaría en
+# un mes que nadie mira y solo aparecería en el Excel.
+PRIMER_ANIO = 2000
+
 
 class CampoPesosGasto(CampoPesos):
     """El mismo campo de pesos de los abonos, con los mensajes de un gasto."""
@@ -77,4 +82,8 @@ class FormularioGasto(forms.ModelForm):
         return self
 
     def clean_fecha(self):
-        return self.cleaned_data.get("fecha") or timezone.localdate()
+        hoy = timezone.localdate()
+        fecha = self.cleaned_data.get("fecha") or hoy
+        if not PRIMER_ANIO <= fecha.year <= hoy.year + 1:
+            raise forms.ValidationError("Revisa la fecha del gasto.")
+        return fecha

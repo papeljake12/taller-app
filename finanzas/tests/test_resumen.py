@@ -265,7 +265,8 @@ def test_ventas_por_tipo_de_cliente_con_barras_contra_la_mas_grande(sesion_duena
     assert ventas.index("Colegio") < ventas.index("Empresa")
     assert 'aria-label="Colegio"><span class="progreso__relleno" style="width: 100%">' in ventas
     assert 'aria-label="Empresa"><span class="progreso__relleno" style="width: 53%">' in ventas
-    assert "$ 4.800.000" in ventas and "$ 2.520.000" in ventas
+    assert '<strong class="dinero">$ 4.800.000</strong>' in ventas
+    assert '<strong class="dinero">$ 2.520.000</strong>' in ventas
 
 
 def test_un_mes_sin_ventas_lo_dice(sesion_duena, dos_meses):
@@ -290,7 +291,8 @@ def test_quien_tiene_que_cuenta_los_pedidos_en_produccion_por_persona(sesion_due
     assert personas.index("Marta") < personas.index("Carmen")
     assert 'aria-label="Marta"><span class="progreso__relleno" style="width: 100%">' in personas
     assert 'aria-label="Carmen"><span class="progreso__relleno" style="width: 50%">' in personas
-    assert "<strong class=\"dinero\">2</strong>" in personas
+    # Es una cantidad de pedidos, no plata: no lleva la letra de las cifras de dinero.
+    assert "<strong>2</strong>" in personas and "dinero" not in personas
     assert "Ajena" not in personas
 
 

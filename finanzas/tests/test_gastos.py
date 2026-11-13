@@ -188,6 +188,9 @@ def test_el_taller_no_llega_del_formulario(sesion_duena, taller):
         ({"valor": "99.000.000.000"}, "Revisa el valor: es demasiado grande."),
         ({"categoria": "comida"}, "Elige el tipo de gasto."),
         ({"fecha": "31/02/2026"}, "Escribe una fecha válida."),
+        # Un año mal escrito: la fecha existe, pero el gasto no se vería en ningún mes.
+        ({"fecha": "0202-11-09"}, "Revisa la fecha del gasto."),
+        ({"fecha": "1999-12-31"}, "Revisa la fecha del gasto."),
     ],
 )
 def test_lo_mal_escrito_se_rechaza_con_un_mensaje_claro(sesion_duena, cambio, mensaje):
@@ -198,6 +201,20 @@ def test_lo_mal_escrito_se_rechaza_con_un_mensaje_claro(sesion_duena, cambio, me
     assert 'id="gastos"' in respuesta.text
     assert "resumen-cifras" not in respuesta.text
     assert not Gasto.objects.exists()
+
+
+def test_la_fecha_va_desde_el_2000_hasta_el_fin_del_otro_anio(sesion_duena):
+    hoy = timezone.localdate()
+    lejos = sesion_duena.post(reverse(NUEVO), datos(fecha=f"{hoy.year + 2}-01-01"), headers=HTMX)
+
+    assert lejos.status_code == 422
+    assert "Revisa la fecha del gasto." in lejos.text
+    assert not Gasto.objects.exists()
+
+    for fecha in (date(2000, 1, 1), date(hoy.year + 1, 12, 31)):
+        sesion_duena.post(reverse(NUEVO), datos(fecha=fecha.isoformat()), headers=HTMX)
+    assert sorted(Gasto.objects.values_list("fecha", flat=True)) == [
+        date(2000, 1, 1), date(hoy.year + 1, 12, 31)]
 
 
 def test_con_un_error_el_cursor_vuelve_al_campo_que_hay_que_corregir(sesion_duena):

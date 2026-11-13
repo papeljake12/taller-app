@@ -23,7 +23,7 @@ Las ventas por tipo de cliente y quién tiene qué usan _barra.
 <section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="t-ventas">
 <div class="tarjeta__cabeza"><h2 id="t-ventas">Ventas por tipo de cliente</h2></div>
 <div class="tarjeta__cuerpo">
-{% for barra in ventas %}{% include "finanzas/_barra.html" with valor=barra.valor|pesos %}
+{% for barra in ventas %}{% include "finanzas/_barra.html" with valor=barra.valor|pesos dinero=True %}
 {% empty %}<p class="texto-2">No hay ventas confirmadas en este mes.</p>
 {% endfor %}</div>
 </section>
