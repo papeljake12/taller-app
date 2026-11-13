@@ -1,7 +1,7 @@
 """Telas (T16): el inventario, "Entró" y "Usé", agregar y quitar una tela.
 
-La pantalla (diseno/telas.html) tiene tres partes que cambian juntas cuando cambia una tela:
-el dato de apoyo del encabezado ("4 telas, 60 m en total"), las tres cifras y la tabla.
+La pantalla (diseno/telas.html) tiene dos partes que cambian juntas cuando cambia una tela:
+las tres cifras y la tabla (o la pantalla vacía).
 Las cuentas salen de pedidos/calculos.py (resumen_de_telas, telas_en_orden, tela_baja).
 
 Las acciones se piden en la ventana (<dialog id="ventana"> de base.html):
@@ -10,7 +10,7 @@ Las acciones se piden en la ventana (<dialog id="ventana"> de base.html):
 - POST movimiento: suma o resta los metros y anota el movimiento en el historial.
 - nueva: agregar una tela. quitar: pregunta primero y después la quita con su historial.
 
-Con HTMX, al guardar se cierra la ventana y llegan solas la tabla, las cifras, el apoyo y
+Con HTMX, al guardar se cierra la ventana y llegan solas la tabla, las cifras y
 el contador del menú (_cambios), sin recargar la página. Sin JavaScript, cada acción abre
 su página y al terminar vuelve a Telas.
 
@@ -71,15 +71,16 @@ class FilaTela:
     baja: bool
     estado: str
     tono: str
+    circulo: str
     enfocar: str | None = None
 
 
 def fila(tela, enfocar=None):
     """Solo dos estados, como dice docs/03-pantallas.md: "Se está acabando" (ámbar) o
-    "Suficiente" (verde). Una tela sin aviso nunca se está acabando."""
+    "Suficiente" (gris). Una tela sin aviso nunca se está acabando."""
     if calculos.tela_baja(tela):
-        return FilaTela(tela, True, "Se está acabando", "ambar", enfocar)
-    return FilaTela(tela, False, "Suficiente", "verde", enfocar)
+        return FilaTela(tela, True, "Se está acabando", "ambar", "medio", enfocar)
+    return FilaTela(tela, False, "Suficiente", "gris", "lleno", enfocar)
 
 
 def nombres_juntos(telas):
@@ -93,7 +94,7 @@ def nombres_juntos(telas):
 
 
 def contexto_de_telas(request, movida=None, tipo=None):
-    """Lo que cambia con cada tela: el apoyo, las cifras y la tabla.
+    """Lo que cambia con cada tela: las cifras y la tabla.
 
     `movida` y `tipo`: la tela que se acaba de mover y cómo, para devolverle el cursor.
     """
@@ -134,8 +135,8 @@ def menu_de_telas(request):
 
 
 def _cambios(request, movida=None, tipo=None):
-    """Lo que cambió, para la pantalla Telas: cierra la ventana y trae la tabla, las cifras,
-    el apoyo y el contador del menú, sin recargar. Sin JavaScript (o desde otra página),
+    """Lo que cambió, para la pantalla Telas: cierra la ventana y trae la tabla, las cifras
+    y el contador del menú, sin recargar. Sin JavaScript (o desde otra página),
     vuelve a Telas."""
     url = reverse("telas:inicio")
     if not _en_la_pantalla(request):
@@ -147,7 +148,6 @@ def _cambios(request, movida=None, tipo=None):
     contexto["oob"] = True
     contexto["menu_lateral"] = menu_de_telas(request)
     html += render_to_string("telas/_cifras.html", contexto, request=request)
-    html += render_to_string("telas/_apoyo.html", contexto, request=request)
     html += render_to_string("telas/_menu.html", contexto, request=request)
     # La ventana pidió dibujar la respuesta en sí misma: se cambia por la tabla, y se cierra.
     return HttpResponse(

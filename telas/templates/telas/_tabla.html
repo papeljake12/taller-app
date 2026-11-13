@@ -1,26 +1,19 @@
 {% comment %}
 La tabla de Telas (diseno/telas.html): primero las que se están acabando y después por
-nombre (calculos.telas_en_orden). Cada fila es _fila.html.
+nombre (calculos.telas_en_orden). Cada fila es _fila.html. Sin telas, la pantalla vacía
+(diseno/telas-vacia.html, pieza _vacio.html).
 Las acciones la devuelven entera, en el lugar de la que había (id="telas").
-En celular no caben las cinco columnas: "Avisar cuando queden" y "Estado" se esconden
-(solo-computador) y el estado va debajo del nombre, así "Entró" y "Usé" se ven sin correr la
-tabla. Cuánto avisa se ve al tocar la tela (su historial).
-Pantalla fija (docs/08-diseno.md): en computador la tarjeta llega hasta abajo (llenar) y,
-si hay muchas telas, solo la tabla se desplaza por dentro (desplazable), con su encabezado
-fijo; las cifras de arriba y la nota de abajo se quedan quietas. En celular, como siempre.
 Cada fila lleva su id (tela-12, en _fila.html): así, al cambiar la tabla sin recargar, la
 tela nueva aparece con un desvanecido, la que se quita se desvanece y las demás no parpadean.
-{% endcomment %}<section class="tarjeta tarjeta--lista llenar" id="telas" aria-labelledby="t-telas">
+{% endcomment %}{% if filas %}<section class="tarjeta tarjeta--recortada" id="telas" aria-labelledby="t-telas">
 <h2 class="oculto" id="t-telas">Lista de telas</h2>
-{% if filas %}<div class="tabla-contenedor desplazable">
-<table class="tabla tabla--telas">
-<thead><tr><th scope="col">Tela</th><th scope="col" class="num">Quedan</th><th scope="col" class="num solo-computador">Avisar cuando queden</th><th scope="col" class="solo-computador">Estado</th><th scope="col" class="num">Acción</th></tr></thead>
+<div class="tabla-contenedor">
+<table class="tabla">
+<thead><tr><th scope="col">Tela</th><th scope="col" class="num">Quedan</th><th scope="col" class="num">Avisar cuando queden</th><th scope="col">Estado</th><th scope="col"><span class="oculto">Acciones</span></th></tr></thead>
 <tbody>
 {% for fila in filas %}{% include "telas/_fila.html" %}
 {% endfor %}</tbody>
 </table>
 </div>
-<p class="tarjeta__nota">Toca el nombre de una tela para ver su historial{% if es_duena %} o quitarla{% endif %}.</p>
-{% elif es_duena %}<p class="tarjeta__nota">Todavía no has anotado ninguna tela. Anota la primera con «Nueva tela» y cuántos metros te quedan.</p>
-{% else %}<p class="tarjeta__nota">Todavía no hay telas anotadas. Cuando la dueña del taller anote una, aparecerá aquí.</p>
-{% endif %}</section>
+<div class="paginas">Toca el nombre de una tela para ver su historial{% if es_duena %} o quitarla{% endif %}.</div>
+</section>{% else %}<div id="telas">{% url 'telas:nueva' as url_nueva %}{% if es_duena %}{% include "piezas/_vacio.html" with dibujo="telas" titulo="Aquí vas a ver tus telas" texto="Anota cuántos metros te quedan de cada tela. Te avisamos cuando alguna se esté acabando." boton_texto="Agregar tela" boton_url=url_nueva ventana=True como="Cómo llevar las telas del taller" explicacion="Agrega cada tela con los metros que tienes y desde cuántos metros quieres que te avise. Cuando compres, toca «Entró» y suma los metros; cuando cortes, toca «Usé» y réstalos. Cada movimiento queda en el historial de la tela." %}{% else %}{% include "piezas/_vacio.html" with dibujo="telas" titulo="Aquí vas a ver tus telas" texto="Cuando la dueña del taller anote una tela, aparecerá aquí con los metros que quedan." %}{% endif %}</div>{% endif %}
