@@ -23,7 +23,6 @@ HTMX = {"HX-Request": "true", "HX-Target": "gastos-lista"}
 NUEVO = "finanzas:gasto_nuevo"
 CABEZA_OOB = 'id="gastos-cabeza" hx-swap-oob="true"'
 A_LA_LISTA = 'hx-target="#gastos-lista" hx-swap="innerHTML"'
-A_LA_LISTA_Y_ABAJO = 'hx-target="#gastos-lista" hx-swap="innerHTML scroll:#gastos-lista:bottom"'
 
 
 def url_nuevo(mes=None, cancelar=False):
@@ -77,9 +76,9 @@ def test_registrar_gasto_abre_el_formulario_en_la_tarjeta(sesion_duena, gasto):
     assert "<html" not in html and CABEZA_OOB in html
     assert "Gastos de noviembre" in html and "Hilos y botones" in html
     assert f'id="gastos-formulario" method="post" action="{reverse(NUEVO)}"' in html
-    assert f'hx-post="{reverse(NUEVO)}" {A_LA_LISTA_Y_ABAJO}' in html
+    assert f'hx-post="{reverse(NUEVO)}" {A_LA_LISTA}' in html
     # Abierto, el botón de la cabeza lleva al primer campo y conserva su id.
-    assert '<a class="boton" id="gastos-registrar" href="#registrar-gasto">' in html
+    assert '<a class="boton tarjeta__aparte" id="gastos-registrar" href="#registrar-gasto">' in html
     assert '<input type="hidden" name="mes" value="2026-11">' in html
     assert "¿En qué gastaste?" in html and 'for="registrar-gasto"' in html
     assert "Tipo de gasto" in html and "Valor (pesos)" in html and ">Fecha</label>" in html
@@ -136,7 +135,7 @@ def test_registrar_un_gasto_lo_guarda_y_devuelve_la_tarjeta_las_cifras_y_la_graf
     assert nuevo.fecha == date(2026, 11, 9)
     html = respuesta.text
     assert "<html" not in html
-    assert "9 de nov, servicios" in html and "$ 140.000" in html
+    assert "9 de nov · servicios" in html and "$ 140.000" in html
     # El nuevo (9 de nov) va antes que el viejo (6 de nov).
     assert html.index("Recibo de luz") < html.index("Hilos y botones")
     cifras = re.search(r'<section class="cifras" id="resumen-cifras"[^>]*>', html).group(0)
@@ -287,7 +286,7 @@ def test_quitar_primero_pregunta_en_la_tarjeta(sesion_duena, gasto):
 def test_la_pregunta_va_en_el_lugar_del_gasto_y_conserva_su_id(sesion_duena, gasto):
     """Así la fila no se cierra y se vuelve a abrir al cambiar por su pregunta (app.js)."""
     fila = f'<div class="fila fila--compacta" id="gasto-{gasto.pk}">'
-    pregunta = f'<div class="tarjeta__cuerpo pagos__confirmar" id="gasto-{gasto.pk}">'
+    pregunta = f'<div class="tarjeta__cuerpo" id="gasto-{gasto.pk}">'
     otro = fabricas.crear_gasto(gasto.taller, concepto="Transporte", fecha=date(2026, 11, 8))
 
     respuesta = sesion_duena.get(url_quitar(gasto), headers=HTMX)

@@ -2,13 +2,7 @@
 Tarjeta "Cobrado y gastado por mes" del Resumen (T17): los seis meses que terminan en el mes
 elegido (calculos.grafica_cobrado_y_gastado), dibujados con la pieza grafica_barras.
 Al registrar o quitar un gasto vuelve con hx-swap-oob (id="resumen-grafica").
-Va en dos versiones: una baja (alto 160) para el computador de poca altura (pantalla fija) y
-la de siempre (alto 200) para el celular y las pantallas altas (static/css/app.css, apartado
-"Resumen").
-{% endcomment %}<section class="tarjeta tarjeta--lista columna-ancha" id="resumen-grafica" aria-labelledby="t-grafica"{% if oob %} hx-swap-oob="true"{% endif %}>
+{% endcomment %}<section class="tarjeta" id="resumen-grafica" aria-labelledby="t-grafica"{% if oob %} hx-swap-oob="true"{% endif %}>
 <div class="tarjeta__cabeza"><h2 id="t-grafica">Cobrado y gastado por mes</h2><div class="leyenda"><span class="leyenda__serie"><span class="leyenda__color leyenda__color--cobrado"></span>Cobrado</span><span class="leyenda__serie"><span class="leyenda__color leyenda__color--gastado"></span>Gastado</span></div></div>
-<div class="tarjeta__cuerpo">
-{% grafica_barras grafica alto_computador=160 %}
-{% with primero=grafica|first ultimo=grafica|last %}<p class="nota">De {{ primero.mes|date:"F"|lower }} a {{ ultimo.mes|date:"F"|lower }}, {% if grafica_en_millones %}en millones de pesos (M){% else %}en miles de pesos{% endif %}.</p>{% endwith %}
-</div>
+<div class="tarjeta__cuerpo">{% grafica_barras grafica %}</div>
 </section>

@@ -1,12 +1,11 @@
 {% load piezas %}{% comment %}
 Las cuatro cifras del mes (T17): vendido, cobrado, gastado y te quedó (calculos.resumen_del_mes).
-"Te quedó" va en verde. Si es negativo no va en rojo (el rojo es solo para atrasos y
-deudas): queda en negro y lo dice en su línea de apoyo, que en ese caso también se ve en
-celular (cifra--apoyo-celular).
+"Te quedó" va en negro, como las demás. Si es negativo no va en rojo (el rojo es solo para
+atrasos y deudas): lo dice con palabras en su línea de apoyo.
 Al registrar o quitar un gasto vuelve con hx-swap-oob (id="resumen-cifras").
 {% endcomment %}<section class="cifras" id="resumen-cifras" aria-label="Resumen"{% if oob %} hx-swap-oob="true"{% endif %}>
 {% include "piezas/_cifra.html" with nombre="Vendido" valor=cifras.vendido|pesos apoyo="Pedidos confirmados en el mes" %}
 {% include "piezas/_cifra.html" with nombre="Cobrado" valor=cifras.cobrado|pesos apoyo="Abonos recibidos en el mes" %}
 {% include "piezas/_cifra.html" with nombre="Gastado" valor=cifras.gastado|pesos apoyo="Telas, insumos y demás" %}
-{% if cifras.te_quedo < 0 %}{% include "piezas/_cifra.html" with nombre="Te quedó" valor=cifras.te_quedo|pesos apoyo="Gastaste más de lo que cobraste" clase="cifra--apoyo-celular" %}{% else %}{% include "piezas/_cifra.html" with nombre="Te quedó" valor=cifras.te_quedo|pesos apoyo="Cobrado menos gastado" buena=True %}{% endif %}
+{% if cifras.te_quedo < 0 %}{% include "piezas/_cifra.html" with nombre="Te quedó" valor=cifras.te_quedo|pesos apoyo="Gastaste más de lo que cobraste" %}{% else %}{% include "piezas/_cifra.html" with nombre="Te quedó" valor=cifras.te_quedo|pesos apoyo="Cobrado menos gastado" %}{% endif %}
 </section>

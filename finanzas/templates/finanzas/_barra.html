@@ -1,6 +1,6 @@
 {% comment %}
-Una fila con barra de "Ventas por tipo de cliente" o "Quién tiene qué": el nombre, la barra
-(medida contra la más grande, que llega al 100 %) y el valor ya escrito (pesos o cantidad).
-Con dinero=True el valor son pesos y lleva la letra de las cifras de dinero; una cantidad de
-pedidos no.
-{% endcomment %}<div class="fila-medida"><span>{{ barra.nombre }}</span>{% include "piezas/_progreso.html" with porcentaje=barra.porcentaje alta=True nombre=barra.nombre %}<strong{% if dinero %} class="dinero"{% endif %}>{{ valor }}</strong></div>
+Una fila con barra de "Ventas por tipo de cliente" o "Quién tiene qué" (diseno/resumen.html): el
+nombre, el valor ya escrito (pesos o cantidad) y la barra debajo, medida contra la más grande,
+que llega al 100 %. Con dinero=True el valor son pesos y lleva la letra de las cifras de
+dinero; una cantidad de pedidos no.
+{% endcomment %}<div class="fila-proporcion"><span class="fila-proporcion__nombre">{{ barra.nombre }}</span><strong{% if dinero %} class="dinero"{% endif %}>{{ valor }}</strong><span class="proporcion" style="width: {{ barra.porcentaje }}%"></span></div>
