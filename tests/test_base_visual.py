@@ -417,3 +417,35 @@ def test_en_celular_las_columnas_del_tablero_miden_lo_que_su_contenido():
     # volvería un alto de 440 px y las tarjetas de Hoy quedarían enormes.
     regla = re.search(r"\.tablero > \.dos-columnas > \* \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
     assert regla and "flex: none;" in regla.group(1)
+
+
+
+# --- Formatos de plata, fechas y metros (config/piezas.py) --------------------------------
+
+
+@pytest.mark.parametrize(
+    ("valor", "esperado"),
+    [(1260000, "$ 1.260.000"), (0, "$ 0"), (500, "$ 500"), (-200000, "-$ 200.000"), (None, "")],
+)
+def test_la_plata_se_escribe_como_en_el_diseno(valor, esperado):
+    from config.piezas import pesos
+
+    assert pesos(valor) == esperado
+
+
+def test_las_fechas_cortas_y_de_mes_como_en_el_diseno():
+    from config.piezas import dia_y_mes, fecha_corta, mes_y_anio
+
+    assert fecha_corta(date(2026, 11, 9)) == "9 de nov"
+    assert fecha_corta(date(2027, 1, 12)) == "12 de ene"
+    assert dia_y_mes(date(2026, 12, 20)) == "20 de diciembre"
+    assert mes_y_anio(date(2026, 11, 1)) == "Noviembre de 2026"
+
+
+@pytest.mark.parametrize(
+    ("valor", "esperado"), [("60", "60 m"), ("6.50", "6,5 m"), ("0.25", "0,25 m"), (18, "18 m")]
+)
+def test_los_metros_se_escriben_con_coma(valor, esperado):
+    from config.piezas import metros
+
+    assert metros(valor) == esperado
