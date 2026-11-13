@@ -5,8 +5,7 @@ entera: HTMX cambia la sección con id "tarjeta-tallas" por la nueva.
 Arriba va lo del diseño (recibidas, barra por talla y los dos botones de copiar). Debajo, lo
 que pide docs/03-pantallas.md y no está dibujado: el enlace abierto o cerrado, la lista
 persona por persona y el formulario para agregar a mano.
-Si la ficha todavía no trae `tarjeta_tallas`, la tarjeta muestra solo cuántas van.
-{% endcomment %}{% if tarjeta_tallas %}{% with t=tarjeta_tallas %}<section class="tarjeta tarjeta--lista" id="tarjeta-tallas" aria-labelledby="t-tallas">
+{% endcomment %}{% with t=tarjeta_tallas %}<section class="tarjeta tarjeta--lista" id="tarjeta-tallas" aria-labelledby="t-tallas">
 <div class="tarjeta__cabeza"><h2 id="t-tallas">Tallas</h2></div>
 <div class="tarjeta__cuerpo">
 <div class="cifra-grande">{{ t.recibidas }} de {{ t.esperadas }} <span class="cifra-grande__apoyo">recibidas</span></div>
@@ -18,7 +17,4 @@ Si la ficha todavía no trae `tarjeta_tallas`, la tarjeta muestra solo cuántas 
 {% include "pedidos/_talla_enlace.html" %}
 {% include "pedidos/_talla_personas.html" %}
 {% include "pedidos/_talla_form.html" %}
-</section>{% endwith %}{% else %}<section class="tarjeta tarjeta--lista" id="tarjeta-tallas" aria-labelledby="t-tallas">
-<div class="tarjeta__cabeza"><h2 id="t-tallas">Tallas</h2></div>
-<div class="tarjeta__cuerpo"><div class="cifra-grande">{{ pedido.tallas.count }} de {{ pedido.cantidad }} <span class="cifra-grande__apoyo">recibidas</span></div></div>
-</section>{% endif %}
+</section>{% endwith %}

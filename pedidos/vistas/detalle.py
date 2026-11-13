@@ -17,15 +17,15 @@ from cuentas.aislamiento import del_taller, obtener_o_404
 from pedidos import calculos, mensajes
 from pedidos.formularios.detalle import EncargadaForm, EntregaForm, EtapaForm, WhatsappForm
 from pedidos.models import Pedido
-from pedidos.vistas import materiales
+from pedidos.vistas import abonos, materiales, tallas
 
 Estado = Pedido.Estado
 
 # Las partes de la página que cambian, además de la tarjeta tocada, cuando cambia la etapa o
-# el WhatsApp del cliente (se mandan con hx-swap-oob). Al unir la tarjeta Pagos (T08), que
-# tiene el botón "Recordar el saldo por WhatsApp", se agrega aquí "pagos" a las dos.
-CAMBIAN_CON_LA_ETAPA = ("pedido_apoyo", "detalle_avisar", "entrega", "cliente")
-CAMBIAN_CON_EL_WHATSAPP = ("detalle_avisar",)
+# el WhatsApp del cliente (se mandan con hx-swap-oob). Pagos (T08) tiene el botón "Recordar
+# el saldo por WhatsApp", que depende del WhatsApp y de la fecha de entrega.
+CAMBIAN_CON_LA_ETAPA = ("pedido_apoyo", "detalle_avisar", "entrega", "cliente", "pagos")
+CAMBIAN_CON_EL_WHATSAPP = ("detalle_avisar", "pagos")
 
 
 # --- Los datos de cada parte ----------------------------------------------------------------
@@ -124,6 +124,8 @@ def contexto_del_pedido(request, pedido, **extra):
     """
     contexto = contexto_de_la_ficha(request, pedido)
     contexto.update(materiales.contexto_de_materiales(pedido))  # T12
+    contexto.update(abonos.contexto_pagos(request, pedido))  # T08
+    contexto["tarjeta_tallas"] = tallas.tarjeta(request, pedido)  # T10
     contexto.update(extra)
     return contexto
 
@@ -181,7 +183,7 @@ def entrega(request, pk):
         pedido.refresh_from_db(fields=["fecha_entrega"])
         return responder(request, pedido, "entrega", status=422, form_entrega=form)
     form.save(commit=False).save(update_fields=["fecha_entrega", "actualizado"])
-    return responder(request, pedido, "entrega", otras=("detalle_avisar",))
+    return responder(request, pedido, "entrega", otras=("detalle_avisar", "pagos"))
 
 
 @require_POST

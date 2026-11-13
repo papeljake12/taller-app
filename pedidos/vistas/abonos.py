@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -80,8 +81,19 @@ def _con_tarjeta(request):
 
 
 def _tarjeta(request, pedido, status=200, **extra):
-    return render(request, "pedidos/_pagos.html", contexto_pagos(request, pedido, **extra),
-                  status=status)
+    """La tarjeta Pagos y, con hx-swap-oob, el botón "Avisar al cliente" de arriba, que
+    cambia con el saldo (recordatorio de cobro o aviso de listo)."""
+    from pedidos.vistas import detalle
+
+    html = render_to_string(
+        "pedidos/_pagos.html", contexto_pagos(request, pedido, **extra), request=request
+    )
+    html += render_to_string(
+        "pedidos/_detalle_avisar.html",
+        {"pedido": pedido, "mensaje": detalle.mensaje_para_el_cliente(pedido), "oob": True},
+        request=request,
+    )
+    return HttpResponse(html, status=status)
 
 
 def _volver_al_pedido(request, pedido):

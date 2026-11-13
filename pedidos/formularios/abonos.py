@@ -4,27 +4,19 @@ El valor se escribe como lo escribe la gente: "380000", "380.000" o "$ 380.000".
 como un entero de pesos, sin decimales (regla 3 de CLAUDE.md).
 """
 
-import re
 
 from django import forms
 from django.utils import timezone
 
+from pedidos.formularios.comun import leer_pesos
 from pedidos.models import Abono
 
 # Más que esto no es un abono: es un error al escribir (un cero de más, por ejemplo).
 MAXIMO_ABONO = 1_000_000_000
 
 # "380000", o con puntos de mil bien puestos: "380.000", "1.260.000".
-_SOLO_NUMEROS = re.compile(r"\d+")
-_CON_PUNTOS = re.compile(r"\d{1,3}(\.\d{3})+")
 
 
-def leer_pesos(texto):
-    """'$ 1.260.000' -> 1260000. None si no es un valor en pesos."""
-    limpio = re.sub(r"[\s$]", "", str(texto or ""))
-    if _SOLO_NUMEROS.fullmatch(limpio) or _CON_PUNTOS.fullmatch(limpio):
-        return int(limpio.replace(".", ""))
-    return None
 
 
 class CampoPesos(forms.CharField):

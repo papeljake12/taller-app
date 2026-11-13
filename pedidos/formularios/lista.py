@@ -4,33 +4,21 @@ Los mensajes de error van en español y de tú, como los de la demo ("Escribe...
 El valor total se acepta como lo escribe la gente: "1260000", "1.260.000" o "$ 380.000".
 """
 
-import re
 
 from django import forms
 
+from pedidos.formularios.comun import leer_pesos
 from pedidos.models import Cliente, Pedido
 
 # Más que esto no es el valor de un pedido del taller: seguramente sobra un cero.
 TOTAL_MAXIMO = 1_000_000_000
 
 # Solo dígitos ("1260000"), o grupos de tres separados por puntos de mil ("1.260.000").
-FORMA_DE_PESOS = re.compile(r"\d+|\d{1,3}(?:\.\d{3})+")
 
 # Un número de WhatsApp tiene por lo menos 7 dígitos.
 DIGITOS_MINIMOS_WHATSAPP = 7
 
 
-def leer_pesos(texto):
-    """'$ 1.260.000' -> 1260000. None si lo escrito no es un valor en pesos enteros.
-
-    Se quitan el signo $ y los espacios. Los puntos solo valen como puntos de mil, cada tres
-    cifras: "380.5" o "1.260.00" no se aceptan, porque guardarían otro valor sin avisar. Una
-    coma tampoco: en Colombia es la de los decimales, y la plata se guarda sin centavos.
-    """
-    limpio = str(texto or "").replace("$", "").replace(" ", "")
-    if not limpio.isascii() or not FORMA_DE_PESOS.fullmatch(limpio):
-        return None
-    return int(limpio.replace(".", ""))
 
 
 class NuevoPedidoForm(forms.Form):

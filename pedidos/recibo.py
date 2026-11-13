@@ -12,6 +12,7 @@ El PDF va sin comprimir: pesa poco y así las pruebas pueden leer su texto.
 """
 
 import re
+import unicodedata
 from io import BytesIO
 
 from django.utils import timezone
@@ -77,6 +78,9 @@ def para_la_hoja(texto):
     Lo que no está en cp1252 (un emoji, una flecha) queda como "?", y los saltos de línea o
     tabulaciones como un espacio, para que el recibo siempre se vea igual.
     """
+    # "José" puede llegar como "Jose" + tilde suelta (al copiar de algunos celulares):
+    # se junta antes de pasarlo al PDF, o la tilde saldría como "?".
+    texto = unicodedata.normalize("NFC", str(texto))
     texto = re.sub(r"\s", " ", str(texto))
     return texto.encode("cp1252", "replace").decode("cp1252")
 

@@ -25,7 +25,11 @@ class Seccion:
 
 SECCIONES = (
     Seccion("hoy", "Hoy", "hoy", ("pedidos:hoy",), en_barra=True),
-    Seccion("pedidos", "Pedidos", "pedidos", ("pedidos:lista",), en_barra=True),
+    Seccion(
+        "pedidos", "Pedidos", "pedidos",
+        ("pedidos:lista", "pedidos:detalle", "pedidos:nuevo", "pedidos:buscar"),
+        en_barra=True,
+    ),
     Seccion("calendario", "Calendario", "calendario", ("pedidos:calendario",), en_barra=True),
     Seccion("clientes", "Clientes", "clientes", ("pedidos:clientes",), en_barra=True),
     Seccion("cotizador", "Cotizador", "cotizador", ("cotizador:inicio",), en_barra=False),

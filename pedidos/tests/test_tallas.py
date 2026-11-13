@@ -63,12 +63,6 @@ def test_muestra_recibidas_y_una_barra_por_talla_como_el_diseno(pedido, duena):
     assert "Copiar resumen" in html
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Falta que el coordinador ponga tarjeta_tallas en pedidos/vistas/detalle.py. "
-    "Cuando lo haga, esta prueba pasa: hay que quitar esta marca y la tarjeta de reserva "
-    "({% else %}) de pedidos/_tallas.html.",
-)
 def test_la_ficha_del_pedido_muestra_la_tarjeta_completa(sesion_duena, pedido):
     fabricas.crear_talla(pedido, talla="M")
 
