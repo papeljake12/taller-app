@@ -5,12 +5,14 @@ del diseño, en una fila que se reparte 2 a 3 y termina a la misma altura:
   _mi_taller_taller (nombre, teléfono y logo) y _mi_taller_costureras (la lista y el
   formulario para agregar). Cada acción devuelve su tarjeta sola (cuentas/mi_taller.py).
 "Agregar costurera", arriba, lleva al primer campo del formulario de la tarjeta Costureras.
+En computador la fila toma el alto que queda en la pantalla (llenar): si hay muchas
+costureras, su lista se desplaza por dentro de la tarjeta (apartado "Mi taller" de app.css).
 {% endcomment %}
 {% block pestana %}Mi taller{% endblock %}
 {% block titulo %}Mi taller{% endblock %}
 {% block acciones %}<a class="boton boton--principal" href="#costurera-nueva-nombre_visible">Agregar costurera</a>{% endblock %}
 {% block contenido %}
-<div class="dos-columnas">
+<div class="dos-columnas llenar mi-taller">
 {% include "cuentas/_mi_taller_taller.html" %}
 {% include "cuentas/_mi_taller_costureras.html" %}
 </div>

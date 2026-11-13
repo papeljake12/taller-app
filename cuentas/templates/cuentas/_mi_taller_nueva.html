@@ -4,10 +4,12 @@ el que entra y su contraseña. Con HTMX devuelve la tarjeta con ella en la lista
 formulario vacío (con "Listo"), o con los errores. La contraseña nunca vuelve a mostrarse.
 El botón "Agregar costurera" de arriba de la pantalla lleva al primer campo.
 Usa las mismas clases que el formulario de abonos (pagos__form).
+El "Listo" lleva id: así aparece con un desvanecido y, cuando se va, se cierra suave
+(static/js/app.js, sección 11).
 {% endcomment %}{% url 'cuentas:costurera_nueva' as url_nueva %}<form class="tarjeta__cuerpo pagos__form" method="post" action="{{ url_nueva }}" hx-post="{{ url_nueva }}" hx-target="#costureras" hx-swap="outerHTML" novalidate>
 {% csrf_token %}
 <p class="fila__titulo"><strong>Nueva costurera</strong></p>
-{% if agregada %}<p class="nota" role="status">Listo: {{ agregada.nombre }} ya puede entrar con el usuario «{{ agregada.username }}».</p>
+{% if agregada %}<p class="nota" id="costurera-agregada" role="status">Listo: {{ agregada.nombre }} ya puede entrar con el usuario «{{ agregada.username }}».</p>
 {% endif %}{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
 <div class="campos">{% include "piezas/_campo.html" with campo=form.nombre_visible %}{% include "piezas/_campo.html" with campo=form.username %}{% include "piezas/_campo.html" with campo=form.contrasena %}</div>
 <div class="botones"><button type="submit" class="boton boton--principal">Agregar costurera</button></div>

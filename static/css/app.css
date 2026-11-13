@@ -3308,6 +3308,61 @@ details > summary.fila::after {
 
 /* --- Mi taller (inicio) --- */
 
+/* Mi taller (cuentas/mi_taller.html): la fila de las dos tarjetas toma el alto que queda
+   (.dos-columnas.llenar) y cada tarjeta lo reparte de arriba abajo.
+   - Costureras: la cabeza y la nota quedan quietas. Debajo van la lista y el formulario para
+     agregar, uno detrás del otro, como siempre. Si son muchas, solo la lista se desplaza y el
+     formulario sigue a la vista. Si la ventana es tan baja que ni así cabe, se desplaza la
+     lista junto con el formulario (mi-taller__cuerpo): nada se corta.
+   - Tu taller: el formulario se desplaza por dentro solo si no cabe (una ventana muy baja).
+   En una ventana angosta (menos de 900 px, una tableta parada) las dos tarjetas no caben una
+   al lado de la otra: van una debajo de la otra, como antes, y se desplaza la hoja. */
+@media (min-width: 768px) and (max-width: 899.98px) {
+  .mi-taller.llenar {
+    flex: 1 0 auto;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 900px) {
+  /* Van una al lado de la otra: si la fila es más angosta que las dos (una ventana de menos
+     de unos 1050 px), se angostan las dos en vez de salirse por la derecha */
+  .mi-taller > .tarjeta {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 1;
+  }
+
+  .mi-taller .tarjeta__cabeza,
+  .mi-taller .tarjeta__nota {
+    flex: none;
+  }
+
+  .mi-taller__cuerpo {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Con pocas costureras la lista mide lo que sus filas, sin encogerse. Desde tres, se encoge
+     para dejar el formulario a la vista, hasta un mínimo (por debajo, se desplaza el cuerpo). */
+  .mi-taller .mi-taller__lista {
+    flex: none;
+  }
+
+  .mi-taller .mi-taller__lista:has(> :nth-child(3)) {
+    flex: 0 1 auto;
+    min-height: var(--alto-minimo-lista);
+  }
+
+  .mi-taller__cuerpo > .pagos__form {
+    flex: none;
+  }
+}
+
 /* --- Mi taller (fin) --- */
 
 

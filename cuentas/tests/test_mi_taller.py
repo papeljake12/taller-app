@@ -1,5 +1,10 @@
-"""T20. Mi taller: el nombre, el teléfono y el logo del taller, y las costureras."""
+"""T20. Mi taller: el nombre, el teléfono y el logo del taller, y las costureras.
 
+Al final, lo del ajuste "pantalla fija y animaciones": los avisos cortos después de guardar,
+los ids de lo que entra y sale, y la lista que se desplaza por dentro con muchas costureras.
+"""
+
+import json
 import re
 from io import BytesIO
 
@@ -645,3 +650,184 @@ def test_no_se_puede_poner_la_costurera_en_otro_taller(sesion_duena, taller):
     assert persona.rol == Usuario.Rol.COSTURERA
     assert not persona.is_superuser and not persona.is_staff
     assert Taller.objects.get(pk=otro.pk).usuarias.count() == 0
+
+
+# --- Aviso corto después de guardar (config/avisos.py) -----------------------------------------
+
+
+def aviso(respuesta):
+    """El texto del aviso corto que lleva una respuesta de HTMX, o None si no lleva."""
+    return json.loads(respuesta.get("HX-Trigger") or "{}").get("aviso")
+
+
+@pytest.mark.parametrize(
+    ("cambios", "texto"),
+    [
+        ({"nombre": "Confecciones de prueba"}, "Nombre guardado."),  # el de la demo
+        ({"telefono": "300 123 4567"}, "Cambios guardados."),
+        ({"nombre": "Confecciones de prueba", "telefono": "300 123 4567"}, "Cambios guardados."),
+        ({}, "Cambios guardados."),
+    ],
+)
+def test_guardar_el_taller_avisa(sesion_duena, taller, cambios, texto):
+    respuesta = guardar_taller(sesion_duena, taller, HTMX_TALLER, **cambios)
+
+    assert respuesta.status_code == 200
+    assert aviso(respuesta) == texto
+
+
+def test_cambiar_o_quitar_el_logo_avisa(sesion_duena, taller):
+    con_logo = guardar_taller(sesion_duena, taller, HTMX_TALLER, logo=imagen_de_prueba())
+    sin_logo = guardar_taller(sesion_duena, taller, HTMX_TALLER, quitar_logo="on")
+
+    assert aviso(con_logo) == aviso(sin_logo) == "Cambios guardados."
+
+
+def test_las_acciones_de_las_costureras_avisan(sesion_duena, marta):
+    agregada = agregar(sesion_duena, HTMX_COSTURERAS)
+    nombre = sesion_duena.post(editar(marta), {"accion": "nombre", "nombre_visible": "Martica"},
+                               headers=HTMX_COSTURERAS)
+    desactivada = sesion_duena.post(editar(marta), {"accion": "desactivar"},
+                                    headers=HTMX_COSTURERAS)
+    activada = sesion_duena.post(editar(marta), {"accion": "activar"}, headers=HTMX_COSTURERAS)
+
+    assert aviso(agregada) == "Costurera agregada."
+    assert aviso(nombre) == "Nombre guardado."
+    assert aviso(desactivada) == "Costurera desactivada."
+    assert aviso(activada) == "Costurera activada."
+
+
+def test_abrir_o_cancelar_el_cambio_de_nombre_no_avisa(sesion_duena, marta):
+    abrir = sesion_duena.get(editar(marta), headers=HTMX_COSTURERAS)
+    cancelar = sesion_duena.get(editar(marta) + "?cancelar=1", headers=HTMX_COSTURERAS)
+
+    assert aviso(abrir) is None and aviso(cancelar) is None
+
+
+def test_un_formulario_con_errores_no_avisa(sesion_duena, taller, marta):
+    respuestas = [
+        guardar_taller(sesion_duena, taller, HTMX_TALLER, nombre=""),
+        agregar(sesion_duena, HTMX_COSTURERAS, username="marta"),
+        sesion_duena.post(editar(marta), {"accion": "nombre", "nombre_visible": ""},
+                          headers=HTMX_COSTURERAS),
+    ]
+
+    assert [r.status_code for r in respuestas] == [422, 422, 422]
+    assert [aviso(r) for r in respuestas] == [None, None, None]
+
+
+@pytest.mark.parametrize(
+    ("enviar", "texto"),
+    [
+        (lambda c, t, m: guardar_taller(c, t, nombre="Confecciones de prueba"), "Nombre guardado."),
+        (lambda c, t, m: agregar(c), "Costurera agregada."),
+        (lambda c, t, m: c.post(editar(m), {"accion": "nombre", "nombre_visible": "Martica"}),
+         "Nombre guardado."),
+        (lambda c, t, m: c.post(editar(m), {"accion": "desactivar"}), "Costurera desactivada."),
+    ],
+)
+def test_sin_javascript_el_aviso_sale_en_la_pagina_siguiente(sesion_duena, taller, marta,
+                                                              enviar, texto):
+    respuesta = enviar(sesion_duena, taller, marta)
+
+    assert respuesta.status_code == 302
+    assert f"<p data-aviso>{texto}</p>" in sesion_duena.get(respuesta.url).text
+
+
+# --- Lo que entra y sale sin recargar: se reconoce por su id (static/js/app.js) -----------------
+
+
+def test_la_fila_conserva_su_id_cuando_se_cambia_por_su_formulario(sesion_duena, marta):
+    """La fila y el formulario para cambiar el nombre tienen el mismo id: al abrirlo y al
+    cancelar, la fila no se cierra y se vuelve a abrir."""
+    fila = f'id="costurera-{marta.pk}"'
+
+    pagina = sesion_duena.get(URL).text
+    formulario = sesion_duena.get(editar(marta), headers=HTMX_COSTURERAS).text
+
+    assert f'<div class="fila" {fila}>' in pagina
+    assert f'<form class="fila fila--formulario" {fila}' in formulario
+    assert formulario.count(fila) == 1
+
+
+def test_lo_que_aparece_y_se_va_lleva_un_id_que_no_cambia(sesion_duena, taller):
+    """El "Listo", el logo y la casilla de quitarlo aparecen con un desvanecido y se cierran
+    suave al irse. La costurera nueva entra con el id de su fila."""
+    guardado = guardar_taller(sesion_duena, taller, HTMX_TALLER, logo=imagen_de_prueba()).text
+    otra_vez = guardar_taller(sesion_duena, taller, HTMX_TALLER).text
+    agregada = agregar(sesion_duena, HTMX_COSTURERAS).text
+    persona = Usuario.objects.get(username="carmen")
+
+    for id_ in ("tu-taller-listo", "tu-taller-logo", "tu-taller-quitar-logo"):
+        assert guardado.count(f'id="{id_}"') == otra_vez.count(f'id="{id_}"') == 1
+    assert 'id="costurera-agregada"' in agregada
+    assert f'<div class="fila" id="costurera-{persona.pk}">' in agregada
+
+
+# --- Pantalla fija (computador) -----------------------------------------------------------------
+
+
+def test_la_fila_de_tarjetas_llena_la_hoja_y_la_lista_se_desplaza(sesion_duena, marta):
+    html = sesion_duena.get(URL).text
+
+    assert '<div class="dos-columnas llenar mi-taller">' in html
+    assert '<div class="mi-taller__lista desplazable" id="costureras-lista">' in html
+    assert '<form class="tarjeta__cuerpo desplazable"' in html
+
+
+MEDIR_MI_TALLER = """() => {
+  const hoja = document.querySelector('.hoja__contenido');
+  const lista = document.getElementById('costureras-lista');
+  const fin = (s) => document.querySelector(s).getBoundingClientRect().bottom;
+  const boton = document.querySelector('#costureras .pagos__form [type="submit"]');
+  return {
+    pagina: document.scrollingElement.scrollHeight, ventana: innerHeight,
+    contenido: hoja.scrollHeight, cabe: hoja.clientHeight,
+    lista: lista.clientHeight, listaEntera: lista.scrollHeight,
+    finTaller: fin('#tu-taller'), finCostureras: fin('#costureras'),
+    finHoja: hoja.getBoundingClientRect().bottom,
+    finBoton: boton.getBoundingClientRect().bottom,
+  };
+}"""
+
+
+@pytest.mark.django_db(transaction=True)
+def test_con_muchas_costureras_solo_su_lista_se_desplaza(live_server, taller, duena):
+    """En Chrome, con 18 costureras, en 1366 x 768 y en 1920 x 1080: la página y la hoja no se
+    desplazan, la lista se desplaza dentro de su tarjeta, el formulario para agregar sigue a la
+    vista y las dos tarjetas terminan parejas al final de la hoja, sin hueco abajo."""
+    from tests.test_pantalla_fija import TAMANOS, _chrome
+
+    for numero in range(1, 19):
+        fabricas.crear_usuaria(taller, rol=Usuario.Rol.COSTURERA,
+                               nombre_visible=f"Costurera {numero:02d}")
+    cliente = Client()
+    cliente.force_login(duena)
+    cookie = {"name": "sessionid", "value": cliente.cookies["sessionid"].value,
+              "url": live_server.url}
+    medidas = {}
+    manejador, navegador = _chrome()  # después de usar la base: Django no deja usarla después
+    try:
+        # La pantalla se abre una vez y se mide en cada tamaño cambiando la ventana: cargarla
+        # otra vez no cambia nada y hace la prueba más lenta.
+        ancho, alto = TAMANOS[0]
+        contexto = navegador.new_context(viewport={"width": ancho, "height": alto})
+        contexto.add_cookies([cookie])
+        pagina = contexto.new_page()
+        pagina.goto(live_server.url + URL, wait_until="load")
+        pagina.evaluate("document.fonts.ready")
+        for ancho, alto in TAMANOS:
+            pagina.set_viewport_size({"width": ancho, "height": alto})
+            medidas[(ancho, alto)] = pagina.evaluate(MEDIR_MI_TALLER)
+        contexto.close()
+    finally:
+        navegador.close()
+        manejador.stop()
+
+    for tamano, m in medidas.items():
+        assert m["pagina"] <= m["ventana"], tamano
+        assert m["contenido"] <= m["cabe"] + 1, tamano
+        assert m["listaEntera"] > m["lista"] >= 140, tamano
+        assert m["finBoton"] <= m["finCostureras"], tamano
+        assert abs(m["finTaller"] - m["finCostureras"]) < 1, tamano
+        assert m["finHoja"] - m["finCostureras"] <= 5, tamano  # solo los 4 px del foco
