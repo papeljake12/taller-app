@@ -1,0 +1,7 @@
+{% comment %}
+Un cliente empresa en la ventana "Escribirles" (T19): su nombre y su botón. En celular el
+botón dice la versión corta ("WhatsApp", "Copiar") para que quepa en una línea.
+{% endcomment %}{% with c=empresa.cliente m=empresa.mensaje %}<div class="renglon">
+<div><strong>{{ c.nombre }}</strong>{% if not c.whatsapp %}<div class="fila__detalle">Sin WhatsApp guardado</div>{% elif not m.enlace %}<div class="fila__detalle">El número guardado no sirve para WhatsApp</div>{% endif %}</div>
+{% if m.enlace %}<a class="boton" href="{{ m.enlace }}" target="_blank" rel="noopener" aria-label="Ofrecerle por WhatsApp a {{ c.nombre }}"><span class="texto-computador">Ofrecerle por WhatsApp</span><span class="texto-celular">WhatsApp</span></a>{% else %}<button type="button" class="boton" data-copiar="{{ m.texto }}" title="Copia el mensaje para pegarlo en WhatsApp" aria-label="Copiar mensaje para {{ c.nombre }}"><span class="texto-computador">Copiar mensaje</span><span class="texto-celular">Copiar</span></button>{% endif %}
+</div>{% endwith %}
