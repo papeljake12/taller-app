@@ -100,6 +100,7 @@ def nuevo(request, pk):
         request.POST, instance=Abono(pedido=pedido, registrado_por=request.user)
     )
     if not form.is_valid():
+        form.enfocar()  # el cursor vuelve al campo que hay que corregir
         if _con_tarjeta(request):
             return _tarjeta(request, pedido, status=422, form=form)
         contexto = {
@@ -111,7 +112,8 @@ def nuevo(request, pk):
         return responder_ventana(request, "pedidos/_abono_nuevo.html", contexto, status=422)
     form.save()
     if _con_tarjeta(request):
-        return _tarjeta(request, _pedido(request, pk))
+        # El formulario vuelve vacío y con el cursor listo para el siguiente abono.
+        return _tarjeta(request, _pedido(request, pk), form=FormularioAbono().enfocar())
     return _volver_al_pedido(request, pedido)
 
 

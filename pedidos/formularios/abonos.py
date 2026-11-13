@@ -83,5 +83,15 @@ class FormularioAbono(forms.ModelForm):
         # La fecha empieza en hoy (en Bogotá).
         self.fields["fecha"].initial = timezone.localdate
 
+    def enfocar(self):
+        """Deja el cursor en el primer campo con error, o en el valor si no hay errores.
+
+        HTMX pone el cursor en el campo con `autofocus` cuando cambia la tarjeta, así quien
+        escribe desde el celular no tiene que volver a tocar el campo.
+        """
+        nombre = next((n for n in self.fields if n in self.errors), "valor")
+        self.fields[nombre].widget.attrs["autofocus"] = True
+        return self
+
     def clean_fecha(self):
         return self.cleaned_data.get("fecha") or timezone.localdate()

@@ -1,5 +1,6 @@
 """T08. Abonos: la tarjeta Pagos, registrar y quitar abonos, y el recordatorio del saldo."""
 
+import re
 from datetime import date, timedelta
 
 import pytest
@@ -24,6 +25,11 @@ def tarjeta(pedido, usuaria):
     request.user = usuaria
     request.taller = usuaria.taller
     return render_to_string("pedidos/_pagos.html", contexto_pagos(request, pedido), request)
+
+
+def entrada(html, nombre):
+    """La etiqueta <input> del campo `nombre` dentro del html."""
+    return re.search(rf'<input[^>]*name="{nombre}"[^>]*>', html).group(0)
 
 
 def url_nuevo(pedido):
@@ -160,6 +166,36 @@ def test_el_valor_se_puede_escribir_con_puntos_y_signo_pesos(escrito, pesos):
 @pytest.mark.parametrize("escrito", ["", "abc", "1.5", "380,50", "-100", "1.2345", "12.000,00"])
 def test_lo_que_no_es_un_valor_en_pesos_no_se_lee(escrito):
     assert leer_pesos(escrito) is None
+
+
+def test_al_abrir_el_pedido_el_cursor_no_salta_al_formulario(pedido, duena):
+    html = tarjeta(pedido, duena)
+
+    assert "autofocus" not in html
+
+
+def test_despues_de_registrar_el_cursor_queda_listo_para_el_siguiente_abono(
+    sesion_duena, pedido
+):
+    respuesta = sesion_duena.post(url_nuevo(pedido), {"valor": "100.000"}, headers=HTMX)
+
+    assert respuesta.status_code == 200
+    assert "autofocus" in entrada(respuesta.text, "valor")
+
+
+def test_con_un_error_el_cursor_vuelve_al_campo_que_hay_que_corregir(sesion_duena, pedido):
+    mal_valor = sesion_duena.post(
+        url_nuevo(pedido), {"valor": "cien", "fecha": "2026-11-10"}, headers=HTMX
+    )
+    mala_fecha = sesion_duena.post(
+        url_nuevo(pedido), {"valor": "100.000", "fecha": "31/02/2026"}, headers=HTMX
+    )
+
+    assert mal_valor.status_code == mala_fecha.status_code == 422
+    assert "autofocus" in entrada(mal_valor.text, "valor")
+    assert "autofocus" not in entrada(mal_valor.text, "fecha")
+    assert "autofocus" in entrada(mala_fecha.text, "fecha")
+    assert "autofocus" not in entrada(mala_fecha.text, "valor")
 
 
 def test_sin_fecha_el_abono_queda_con_la_de_hoy(sesion_duena, pedido):
