@@ -1,0 +1,10 @@
+{% extends "piezas/ventana.html" %}
+{% comment %}
+"Registrar abono" como página aparte: solo se ve sin JavaScript, cuando el formulario de la
+tarjeta Pagos llega con errores. Con JavaScript los errores salen en la misma tarjeta.
+{% endcomment %}
+{% block titulo %}Registrar abono{% endblock %}
+{% block cuerpo %}<p class="texto-2">{{ pedido.cliente.nombre }}: {{ pedido.detalle }}</p>
+{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+<div class="campos">{% include "piezas/_campo.html" with campo=form.valor %}{% include "piezas/_campo.html" with campo=form.fecha %}</div>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Registrar abono</button>{% endblock %}

@@ -1,0 +1,7 @@
+{% load piezas %}{% comment %}
+La pregunta antes de quitar un abono, en el lugar del abono dentro de la tarjeta Pagos.
+"Sí, quitar el abono" lo borra; "Cancelar" deja la tarjeta como estaba.
+{% endcomment %}{% url 'pedidos:abono_quitar' pedido.pk abono.pk as url_quitar %}<div class="pagos__confirmar">
+<div class="aviso" role="alert"><p>¿Quitar el abono de <span class="dinero">{{ abono.valor|pesos }}</span> del {{ abono.fecha|fecha_corta }}? El saldo vuelve a subir.</p></div>
+<form class="botones" method="post" action="{{ url_quitar }}" hx-post="{{ url_quitar }}" hx-target="#pagos" hx-swap="outerHTML">{% csrf_token %}<button type="submit" class="boton boton--principal" autofocus>Sí, quitar el abono</button><a class="boton" href="{{ url_quitar }}?cancelar=1" hx-get="{{ url_quitar }}?cancelar=1" hx-target="#pagos" hx-swap="outerHTML">Cancelar</a></form>
+</div>

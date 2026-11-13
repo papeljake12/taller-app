@@ -1,4 +1,26 @@
-{% comment %}Tarjeta "Pagos" (T08). La rellena el carril C de la tanda 3.{% endcomment %}<section class="tarjeta tarjeta--lista" aria-labelledby="t-pagos">
+{% load piezas %}{% comment %}
+Tarjeta "Pagos" del pedido por dentro (T08, diseno/pedido.html).
+
+La dibuja el pedido por dentro y la devuelven, sola, las acciones de pedidos/vistas/abonos.py:
+con HTMX reemplaza a la tarjeta entera (id="pagos"). Los datos llegan en `pagos`, que arma
+abonos.contexto_pagos.
+- Falta por pagar (o "Pedido pagado" en verde), la barra y lo abonado frente al total.
+- Cada abono con su recibo en PDF y el botón para quitarlo, que primero pregunta.
+- El recordatorio del saldo por WhatsApp, o el botón para copiarlo si no hay número.
+- El formulario para registrar un abono. Su campo de valor tiene id="registrar-abono":
+  allá lleva el botón "Registrar abono" de arriba del pedido.
+{% endcomment %}<section class="tarjeta tarjeta--lista" id="pagos" aria-labelledby="t-pagos">
 <div class="tarjeta__cabeza"><h2 id="t-pagos">Pagos</h2></div>
-<p class="tarjeta__nota">Llega con T08.</p>
+{% if pagos %}<div class="tarjeta__cuerpo">
+{% if pagos.saldo > 0 %}<div class="pagos__nombre texto-rojo">Falta por pagar</div>
+<div class="pagos__saldo cifra-grande texto-rojo dinero">{{ pagos.saldo|pesos }}</div>{% else %}<div class="pagos__nombre texto-verde">Pedido pagado</div>
+<div class="pagos__saldo cifra-grande texto-verde dinero">{{ pagos.saldo|pesos }}</div>{% endif %}
+{% include "piezas/_progreso.html" with porcentaje=pagos.porcentaje nombre="Porcentaje pagado" %}
+<div class="pagos__totales"><span>Abonado <span class="dinero">{{ pagos.abonado|pesos }}</span></span><span>Total <span class="dinero">{{ pedido.total|pesos }}</span></span></div>
+{% for abono in pagos.abonos %}{% if abono == pagos.por_quitar %}{% include "pedidos/_abono_confirmar.html" %}{% else %}{% include "pedidos/_abono_fila.html" %}{% endif %}
+{% empty %}<p class="pagos__vacio texto-2">Todavía no hay abonos registrados.</p>
+{% endfor %}{% if pagos.saldo > 0 %}{% if pagos.enlace_cobro %}<a class="boton" href="{{ pagos.enlace_cobro }}" target="_blank" rel="noopener">Recordar el saldo por WhatsApp</a>{% else %}<button type="button" class="boton" data-copiar="{{ pagos.texto_cobro }}">Copiar recordatorio de saldo</button>
+<p class="nota">Escribe abajo el WhatsApp del cliente y aquí aparece el botón para enviarle el mensaje.</p>{% endif %}
+{% endif %}{% include "pedidos/_abono_form.html" with form=pagos.form %}
+</div>{% endif %}
 </section>
