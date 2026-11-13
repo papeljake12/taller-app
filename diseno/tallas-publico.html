@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseño: Envía tu talla</title>
+<!-- Referencia de diseño (rediseño con el lenguaje del panel de Shopify, aprobado el
+     2026-11-13). No es código de la aplicación: de aquí se copian medidas, colores, textos y
+     orden. Las reglas están en docs/08-diseno.md y los estilos en diseno/estilo.css.
+     Se ve igual en computador y en celular: abre la página en una ventana angosta (390 px)
+     para ver el celular. La fuente Inter se carga de Google solo para poder ver el archivo;
+     en la aplicación va guardada en el proyecto. Los datos son los de ejemplo. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="tijeras" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.8"/><circle cx="6" cy="17.5" r="2.8"/><path d="M8.3 8.2L20 18M8.3 15.8L20 6"/></symbol>
+<symbol id="contraer" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></symbol>
+<symbol id="buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+<symbol id="hoy" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></symbol>
+<symbol id="pedidos" viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 3 1.7c-.6.4-1 .8-1 1.5V9"/><path d="M12 9l8.6 6.2a1 1 0 0 1-.6 1.8H4a1 1 0 0 1-.6-1.8L12 9z"/></symbol>
+<symbol id="calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="clientes" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
+<symbol id="cotizador" viewBox="0 0 24 24"><path d="M4 4h8l8 8-8 8-8-8z"/><circle cx="8.5" cy="8.5" r="1.2"/></symbol>
+<symbol id="telas" viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></symbol>
+<symbol id="resumen" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></symbol>
+<symbol id="mi-taller" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+<symbol id="mas" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+<symbol id="visto" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="salir" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></symbol>
+<symbol id="sumar" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="atras" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="adelante" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="arriba" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+<symbol id="abajo" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="foto" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></symbol>
+<symbol id="prenda" viewBox="0 0 24 24"><path d="M9 4l-5 3 2 4 2-1v10h8V10l2 1 2-4-5-3a3 3 0 0 1-6 0z"/></symbol>
+<symbol id="descargar" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+<symbol id="subir" viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 20h14"/></symbol>
+<symbol id="whatsapp" viewBox="0 0 24 24"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/></symbol>
+<symbol id="recibo" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></symbol>
+<symbol id="reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></symbol>
+<symbol id="copiar" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="enlace" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+<symbol id="editar" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></symbol>
+<symbol id="papelera" viewBox="0 0 24 24"><path d="M5 7h14M10 4h4M7 7l1 13h8l1-13"/></symbol>
+<symbol id="informacion" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/></symbol>
+</svg>
+<div class="marco-acceso">
+<main class="acceso">
+<div class="acceso__marca"><span class="menu__avatar" aria-hidden="true">TE</span><span>Taller de ejemplo</span></div>
+<section class="acceso__tarjeta" aria-labelledby="titulo-tallas">
+<h1 id="titulo-tallas">Envía tu talla</h1>
+<div class="acceso__pedido"><span class="mini"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#prenda"></use></svg></span><div><strong>Restaurante El Fogón Costeño</strong><div class="texto-2">18 camisas polo bordadas y 18 delantales</div></div></div>
+<form class="columna" action="#" style="gap: 14px">
+<div class="campo"><label for="tu-nombre-y-apellido">Tu nombre y apellido</label><input class="campo__control" id="tu-nombre-y-apellido" type="text" value="" placeholder=""></div>
+<div class="campo"><label for="talla">Tu talla</label><select class="campo__control" id="talla"><option>Elige tu talla</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>A la medida</option></select><span class="campo__ayuda">Si ninguna te queda, elige «A la medida» y anota tus medidas.</span></div>
+<div class="campo"><label for="nota">Observaciones (opcional)</label><textarea class="campo__control" id="nota" placeholder="Por ejemplo: manga larga, un poco más holgado"></textarea></div>
+<button type="submit" class="boton boton--principal boton--ancho">Enviar mi talla</button>
+</form>
+</section>
+<p class="acceso__nota">Solo el taller ve tu talla.</p>
+</main>
+</div>
+</body>
+</html>

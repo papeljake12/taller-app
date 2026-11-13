@@ -73,7 +73,7 @@ En la demo los clientes se sacaban del nombre escrito en cada pedido. Aquí son 
 | total | entero, pesos | |
 | estado | opción | Ver lista abajo |
 | encargada | relación con Usuario, opcional | |
-| foto | imagen, opcional | Foto del pedido. Es la que pasa en "Trabajos del taller" de la pantalla Hoy |
+| foto | imagen, opcional | Foto del pedido. Sale en su tarjeta de Hoy y en la lista de pedidos |
 | token_tallas | texto único, 32 | Para el enlace público de tallas. Se genera solo |
 | tallas_abiertas | sí o no | Si el enlace público acepta envíos. Por defecto sí |
 | creado_por | relación con Usuario | |
@@ -183,8 +183,6 @@ Estas reglas ya están probadas en la demo. Deben dar los mismos resultados.
 - **Qué hacer hoy:** pedidos atrasados, luego los que están en `listo`, luego los de entrega
   en 7 días, luego los que están en `cotizado`. Un pedido aparece una sola vez, en el primer
   grupo que le corresponda.
-- **Trabajos del taller:** los pedidos del taller que tienen foto, del más reciente al más
-  antiguo, máximo 8.
 - **Cotizador:**
   - costo por prenda = `metros × precio_metro + insumos + mano_obra + extra`
   - precio por unidad = costo × (1 + ganancia % ÷ 100), redondeado hacia arriba a los 500 pesos

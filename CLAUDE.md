@@ -45,11 +45,14 @@ Lee estos documentos antes de escribir código:
 5. **Secretos.** Ninguna clave ni contraseña en el repo. Van en `.env`, que Git ignora.
    `.env.example` lista las variables sin valores reales.
 6. **Dependencias.** No agregar librerías sin preguntarle a David y explicar para qué sirven.
-7. **Diseño.** Copiar medidas, colores, íconos y textos de las páginas de `diseno/` y seguir
-   `docs/08-diseno.md`. No rediseñar. En resumen: panel con marco negro que termina en azul,
-   fuente Inter, botones principales negros, azul para gráficas y "en proceso", ámbar para
-   "pendiente", rojo solo para atrasos y deudas, verde solo para pagado y entregado. Las
-   tarjetas de una misma fila terminan a la misma altura.
+7. **Diseño.** Copiar medidas, colores, íconos y textos de las páginas de `diseno/` (y sus
+   estilos de `diseno/estilo.css`) y seguir `docs/08-diseno.md`. No rediseñar. En resumen
+   (rediseño con el lenguaje del panel de Shopify, aprobado el 2026-11-13): marco negro con
+   un brillo azul, menú negro, hoja blanca cuyo contenido se desplaza por dentro, tarjetas con
+   sombra suave, letra Inter de 13 px, botones de 28 px con el principal negro, insignias con
+   circulito, y lo que está bien va en gris. Azul para gráficas y "en proceso", ámbar para
+   "pendiente", naranja para pagos a medias, rojo solo para atrasos y deudas vencidas, verde
+   solo para "Listo". Las tarjetas que van lado a lado terminan a la misma altura.
 8. **Celular también.** Cada pantalla debe funcionar en 390 px de ancho sin desbordarse y
    verse como su referencia en 1280 px.
 9. **Pruebas.** Cada tarea trae sus pruebas. No se da por terminada si alguna falla.

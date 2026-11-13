@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseño: Nuevo pedido</title>
+<!-- Referencia de diseño (rediseño con el lenguaje del panel de Shopify, aprobado el
+     2026-11-13). No es código de la aplicación: de aquí se copian medidas, colores, textos y
+     orden. Las reglas están en docs/08-diseno.md y los estilos en diseno/estilo.css.
+     Se ve igual en computador y en celular: abre la página en una ventana angosta (390 px)
+     para ver el celular. La fuente Inter se carga de Google solo para poder ver el archivo;
+     en la aplicación va guardada en el proyecto. Los datos son los de ejemplo. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="tijeras" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.8"/><circle cx="6" cy="17.5" r="2.8"/><path d="M8.3 8.2L20 18M8.3 15.8L20 6"/></symbol>
+<symbol id="contraer" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></symbol>
+<symbol id="buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+<symbol id="hoy" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></symbol>
+<symbol id="pedidos" viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 3 1.7c-.6.4-1 .8-1 1.5V9"/><path d="M12 9l8.6 6.2a1 1 0 0 1-.6 1.8H4a1 1 0 0 1-.6-1.8L12 9z"/></symbol>
+<symbol id="calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="clientes" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
+<symbol id="cotizador" viewBox="0 0 24 24"><path d="M4 4h8l8 8-8 8-8-8z"/><circle cx="8.5" cy="8.5" r="1.2"/></symbol>
+<symbol id="telas" viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></symbol>
+<symbol id="resumen" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></symbol>
+<symbol id="mi-taller" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+<symbol id="mas" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+<symbol id="visto" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="salir" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></symbol>
+<symbol id="sumar" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="atras" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="adelante" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="arriba" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+<symbol id="abajo" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="foto" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></symbol>
+<symbol id="prenda" viewBox="0 0 24 24"><path d="M9 4l-5 3 2 4 2-1v10h8V10l2 1 2-4-5-3a3 3 0 0 1-6 0z"/></symbol>
+<symbol id="descargar" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+<symbol id="subir" viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 20h14"/></symbol>
+<symbol id="whatsapp" viewBox="0 0 24 24"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/></symbol>
+<symbol id="recibo" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></symbol>
+<symbol id="reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></symbol>
+<symbol id="copiar" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="enlace" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+<symbol id="editar" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></symbol>
+<symbol id="papelera" viewBox="0 0 24 24"><path d="M5 7h14M10 4h4M7 7l1 13h8l1-13"/></symbol>
+<symbol id="informacion" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/></symbol>
+</svg>
+<div class="marco">
+<nav class="menu" aria-label="Secciones">
+<div class="menu__marca"><a class="menu__logo" href="hoy.html" aria-label="Ir a Hoy"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#tijeras"></use></svg></a><button type="button" class="menu__contraer" aria-label="Contraer el menú" title="Contraer el menú"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#contraer"></use></svg></button></div>
+<button type="button" class="menu__abrir" aria-label="Abrir el menú" title="Abrir el menú"><span class="menu__logo"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#tijeras"></use></svg></span></button>
+<form class="menu__buscar" role="search" action="#"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg><label class="oculto" for="menu-buscar">Buscar pedidos y clientes</label><input type="search" id="menu-buscar" name="q" placeholder="Buscar"><kbd class="menu__atajo">Ctrl K</kbd></form>
+<button type="button" class="menu__lupa" aria-label="Buscar" title="Buscar"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg></button>
+<div class="menu__lista">
+<a class="menu__enlace" href="hoy.html" title="Hoy"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#hoy"></use></svg><span class="menu__texto">Hoy</span></a>
+<a class="menu__enlace es-actual" href="pedidos.html" title="Pedidos" aria-current="page" aria-label="Pedidos (1)"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#pedidos"></use></svg><span class="menu__texto">Pedidos</span><span class="menu__contador">1</span></a>
+<a class="menu__enlace menu__enlace--sub" href="pedidos.html"><span class="menu__texto">Atrasados</span></a>
+<a class="menu__enlace menu__enlace--sub" href="pedidos.html"><span class="menu__texto">Con saldo</span></a>
+<a class="menu__enlace" href="calendario.html" title="Calendario"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#calendario"></use></svg><span class="menu__texto">Calendario</span></a>
+<a class="menu__enlace" href="clientes.html" title="Clientes"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#clientes"></use></svg><span class="menu__texto">Clientes</span></a>
+<a class="menu__enlace" href="cotizador.html" title="Cotizador"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#cotizador"></use></svg><span class="menu__texto">Cotizador</span></a>
+<a class="menu__enlace" href="telas.html" title="Telas" aria-label="Telas (2)"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#telas"></use></svg><span class="menu__texto">Telas</span><span class="menu__contador">2</span></a>
+<a class="menu__enlace" href="resumen.html" title="Resumen"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#resumen"></use></svg><span class="menu__texto">Resumen</span></a>
+</div>
+<div class="menu__pie">
+<a class="menu__enlace" href="mi-taller.html" title="Mi taller"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#mi-taller"></use></svg><span class="menu__texto">Mi taller</span></a>
+<div class="menu__taller"><span class="menu__avatar" aria-hidden="true">TE</span><span class="menu__nombre" id="menu-taller" title="Taller de ejemplo">Taller de ejemplo</span><form action="#"><button type="submit" class="menu__salir" aria-label="Salir" title="Salir"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#salir"></use></svg></button></form></div>
+</div>
+</nav>
+<main class="hoja hoja--completa" id="contenido">
+<header class="encabezado"><div class="encabezado__titulo"><h1 class="encabezado__nombre"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#pedidos"></use></svg>Pedidos</h1></div><div class="encabezado__acciones"><a class="boton" href="#">Descargar para Excel</a><a class="boton boton--redondo-celular solo-celular" href="#" aria-label="Buscar"><span class="boton__icono-celular"><svg class="icono" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg></span></a><a class="boton boton--principal boton--redondo-celular" href="nuevo-pedido.html"><span class="boton__icono-celular"><svg class="icono" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#sumar"></use></svg></span><span class="boton__texto">Nuevo pedido</span></a></div></header>
+<div class="hoja__contenido">
+<section class="cifras cifras--barra" aria-label="Pedidos de un vistazo">
+<div class="cifras__primero"><span class="chip"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#calendario"></use></svg>Hoy</span></div>
+<div class="cifra" title="Pedidos que no se han entregado"><span class="cifra__nombre">Activos</span><span class="cifra__valor">5</span></div>
+<a class="cifra" href="#" title="Confirmados que no se han entregado"><span class="cifra__nombre">En producción</span><span class="cifra__valor">4</span></a>
+<a class="cifra" href="#" title="En producción y se entregan en los próximos 7 días"><span class="cifra__nombre">Se entregan esta semana</span><span class="cifra__valor">1</span></a>
+<a class="cifra cifra--alerta" href="#" title="Pasó la fecha de entrega y no están listos"><span class="cifra__nombre">Atrasados</span><span class="cifra__valor">1</span></a>
+<a class="cifra" href="#" title="Lo que falta por pagar de los pedidos confirmados"><span class="cifra__nombre">Por cobrar</span><span class="cifra__valor">$ 5.790.000</span></a>
+</section>
+<section class="tarjeta tarjeta--recortada tarjeta--lista-celular" aria-labelledby="t-lista">
+<h2 class="oculto" id="t-lista">Lista de pedidos</h2>
+<div class="filtros">
+<div class="filtros__pestanas" role="group" aria-label="Filtrar pedidos">
+<a class="filtro es-elegido" href="#" aria-current="true">Todos <span class="filtro__conteo">6</span></a>
+<a class="filtro" href="#">En producción <span class="filtro__conteo">4</span></a>
+<a class="filtro" href="#">Esta semana <span class="filtro__conteo">1</span></a>
+<a class="filtro" href="#">Atrasados <span class="filtro__conteo">1</span></a>
+<a class="filtro" href="#">Con saldo <span class="filtro__conteo">4</span></a>
+<a class="filtro" href="#">Entregados <span class="filtro__conteo">1</span></a>
+</div>
+<div class="filtros__herramientas solo-computador"><a class="boton boton--icono" href="#" aria-label="Buscar en los pedidos" title="Buscar en los pedidos"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg></a></div>
+</div>
+<div class="tabla-contenedor">
+<table class="tabla tabla--pedidos">
+<thead><tr><th scope="col" class="solo-celular">Foto</th><th scope="col">Cliente</th><th scope="col">Prenda</th><th scope="col">Entrega</th><th scope="col" class="num">Total</th><th scope="col">Pago</th><th scope="col">Etapa</th><th scope="col">Tallas</th><th scope="col">Encargada</th><th scope="col" class="solo-celular">Entrega y encargada</th></tr></thead>
+<tbody>
+<tr class="tabla__fila">
+<td class="celda-mini solo-celular"><span class="mini mini--grande"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#prenda"></use></svg></span></td>
+<td class="celda-cliente"><div class="tabla__cliente"><span class="solo-tabla"><span class="mini"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#prenda"></use></svg></span></span><a class="tabla__enlace" href="pedido.html">Ferretería La Esquina</a></div></td>
+<td class="solo-tabla tabla__prenda">8 overoles con logo estampado</td>
+<td class="solo-tabla"><span class="texto-atraso">11 nov · 2 días tarde</span></td>
+<td class="num dinero celda-total">$ 960.000</td>
+<td class="solo-tabla"><span class="etiqueta etiqueta--rojo etiqueta--alerta">Vencido</span></td>
+<td class="celda-etapa"><span class="solo-celular"><span class="etiqueta etiqueta--rojo etiqueta--alerta">Vencido</span></span><span class="etiqueta etiqueta--azul etiqueta--medio">En confección</span></td>
+<td class="solo-tabla">8 de 8</td>
+<td class="solo-tabla">Carmen</td>
+<td class="celda-apoyo solo-celular">11 nov · Carmen</td>
+</tr>
+<tr class="tabla__fila">
+<td class="celda-mini solo-celular"><span class="mini mini--grande"><img src="img/foto-comparsa.jpg" alt=""></span></td>
+<td class="celda-cliente"><div class="tabla__cliente"><span class="solo-tabla"><span class="mini"><img src="img/foto-comparsa.jpg" alt=""></span></span><a class="tabla__enlace" href="pedido.html">Grupo de danza Tambores del Río</a></div></td>
+<td class="solo-tabla tabla__prenda">15 polleras con blusa</td>
+<td class="solo-tabla">16 nov · <span class="texto-2">en 3 días</span></td>
+<td class="num dinero celda-total">$ 2.250.000</td>
+<td class="solo-tabla"><span class="etiqueta etiqueta--naranja etiqueta--medio">Abonado 67 %</span></td>
+<td class="celda-etapa"><span class="solo-celular"><span class="etiqueta etiqueta--naranja etiqueta--medio">Abonado 67 %</span></span><span class="etiqueta etiqueta--verde etiqueta--lleno">Listo</span></td>
+<td class="solo-tabla">15 de 15</td>
+<td class="solo-tabla">Marta</td>
+<td class="celda-apoyo solo-celular">16 nov · Marta</td>
+</tr>
+<tr class="tabla__fila">
+<td class="celda-mini solo-celular"><span class="mini mini--grande"><img src="img/foto-grado.jpg" alt=""></span></td>
+<td class="celda-cliente"><div class="tabla__cliente"><span class="solo-tabla"><span class="mini"><img src="img/foto-grado.jpg" alt=""></span></span><a class="tabla__enlace" href="pedido.html">Marcela P.</a></div></td>
+<td class="solo-tabla tabla__prenda">Vestido de grado a la medida</td>
+<td class="solo-tabla">3 dic</td>
+<td class="num dinero celda-total">$ 380.000</td>
+<td class="solo-tabla"><span class="etiqueta etiqueta--gris etiqueta--vacio">Sin abonos</span></td>
+<td class="celda-etapa"><span class="solo-celular"><span class="etiqueta etiqueta--gris etiqueta--vacio">Sin abonos</span></span><span class="etiqueta etiqueta--gris etiqueta--vacio">Cotizado</span></td>
+<td class="solo-tabla">0 de 1</td>
+<td class="solo-tabla"><span class="texto-2">Sin asignar</span></td>
+<td class="celda-apoyo solo-celular">3 dic · Sin asignar</td>
+</tr>
+<tr class="tabla__fila">
+<td class="celda-mini solo-celular"><span class="mini mini--grande"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#prenda"></use></svg></span></td>
+<td class="celda-cliente"><div class="tabla__cliente"><span class="solo-tabla"><span class="mini"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#prenda"></use></svg></span></span><a class="tabla__enlace" href="pedido.html">Restaurante El Fogón Costeño</a></div></td>
+<td class="solo-tabla tabla__prenda">18 camisas polo bordadas y 18 delantales</td>
+<td class="solo-tabla">16 dic</td>
+<td class="num dinero celda-total">$ 2.520.000</td>
+<td class="solo-tabla"><span class="etiqueta etiqueta--naranja etiqueta--medio">Abonado 50 %</span></td>
+<td class="celda-etapa"><span class="solo-celular"><span class="etiqueta etiqueta--naranja etiqueta--medio">Abonado 50 %</span></span><span class="etiqueta etiqueta--azul etiqueta--medio">En corte</span></td>
+<td class="solo-tabla">14 de 18</td>
+<td class="solo-tabla">Marta</td>
+<td class="celda-apoyo solo-celular">16 dic · Marta</td>
+</tr>
+<tr class="tabla__fila">
+<td class="celda-mini solo-celular"><span class="mini mini--grande"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#prenda"></use></svg></span></td>
+<td class="celda-cliente"><div class="tabla__cliente"><span class="solo-tabla"><span class="mini"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#prenda"></use></svg></span></span><a class="tabla__enlace" href="pedido.html">Colegio Nuevo Amanecer</a></div></td>
+<td class="solo-tabla tabla__prenda">40 uniformes de diario</td>
+<td class="solo-tabla">14 ene</td>
+<td class="num dinero celda-total">$ 4.800.000</td>
+<td class="solo-tabla"><span class="etiqueta etiqueta--naranja etiqueta--medio">Abonado 31 %</span></td>
+<td class="celda-etapa"><span class="solo-celular"><span class="etiqueta etiqueta--naranja etiqueta--medio">Abonado 31 %</span></span><span class="etiqueta etiqueta--ambar etiqueta--vacio">Confirmado</span></td>
+<td class="solo-tabla">9 de 40</td>
+<td class="solo-tabla">Yolima</td>
+<td class="celda-apoyo solo-celular">14 ene · Yolima</td>
+</tr>
+<tr class="tabla__fila">
+<td class="celda-mini solo-celular"><span class="mini mini--grande"><img src="img/foto-fiesta.jpg" alt=""></span></td>
+<td class="celda-cliente"><div class="tabla__cliente"><span class="solo-tabla"><span class="mini"><img src="img/foto-fiesta.jpg" alt=""></span></span><a class="tabla__enlace" href="pedido.html">Comparsa Brisa Caribe</a></div></td>
+<td class="solo-tabla tabla__prenda">12 vestidos de fantasía</td>
+<td class="solo-tabla">8 nov</td>
+<td class="num dinero celda-total">$ 2.400.000</td>
+<td class="solo-tabla"><span class="etiqueta etiqueta--gris etiqueta--lleno">Pagado</span></td>
+<td class="celda-etapa"><span class="solo-celular"><span class="etiqueta etiqueta--gris etiqueta--lleno">Pagado</span></span><span class="etiqueta etiqueta--gris etiqueta--lleno">Entregado</span></td>
+<td class="solo-tabla">12 de 12</td>
+<td class="solo-tabla"><span class="texto-2">Sin asignar</span></td>
+<td class="celda-apoyo solo-celular">8 nov</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="paginas">6 pedidos</div>
+</section>
+</div>
+</main>
+<nav class="navegacion-celular" aria-label="Secciones">
+<a class="navegacion-celular__enlace" href="hoy.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#hoy"></use></svg>Hoy</a>
+<a class="navegacion-celular__enlace es-actual" href="pedidos.html" aria-current="page"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#pedidos"></use></svg>Pedidos</a>
+<a class="navegacion-celular__enlace" href="calendario.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#calendario"></use></svg>Calendario</a>
+<a class="navegacion-celular__enlace" href="clientes.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#clientes"></use></svg>Clientes</a>
+<button type="button" class="navegacion-celular__enlace" aria-expanded="false" aria-controls="panel-mas"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#mas"></use></svg>Más</button>
+</nav>
+</div>
+<dialog class="ventana" id="ventana" aria-labelledby="ventana-titulo">
+<form class="ventana__formulario" action="#" method="dialog">
+<div class="ventana__cabeza"><h2 id="ventana-titulo">Nuevo pedido</h2><button type="button" class="ventana__cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#cerrar"></use></svg></button></div>
+<div class="ventana__cuerpo">
+<div class="campos"><div class="campo"><label for="cliente">Cliente</label><input class="campo__control" id="cliente" type="text" value="" placeholder="Ej.: Colegio San José"></div><div class="campo"><label for="tipo-de-cliente">Tipo de cliente</label><select class="campo__control" id="tipo-de-cliente"><option>Comparsa</option><option>Empresa</option><option>Colegio</option><option>Particular</option></select></div></div>
+<div class="campos"><div class="campo"><label for="¿qué-pidió?">¿Qué pidió?</label><input class="campo__control" id="¿qué-pidió?" type="text" value="" placeholder="Ej.: 20 camisas polo con logo bordado"></div></div>
+<div class="campos"><div class="campo"><label for="¿para-cuántas-personas?">¿Para cuántas personas?</label><input class="campo__control" id="¿para-cuántas-personas?" type="number" value="" placeholder=""><span class="campo__ayuda">De 1 a 2000.</span></div><div class="campo"><label for="tallas">Tallas</label><select class="campo__control" id="tallas"><option>Adulto (XS a XXL)</option><option>Niño (2 a 16)</option><option>A la medida</option></select></div></div>
+<div class="campos"><div class="campo"><label for="fecha-de-entrega">Fecha de entrega</label><input class="campo__control" id="fecha-de-entrega" type="date" value="" placeholder=""></div><div class="campo"><label for="valor-total-pesos">Valor total (pesos)</label><input class="campo__control" id="valor-total-pesos" type="text" value="" placeholder="Ej.: 1.200.000"></div></div>
+<div class="campos"><div class="campo"><label for="whatsapp-opcional">WhatsApp (opcional)</label><input class="campo__control" id="whatsapp-opcional" type="tel" value="" placeholder="Ej.: 300 123 4567"></div></div>
+</div>
+<div class="ventana__pie"><button type="button" class="boton">Cancelar</button><button type="submit" class="boton boton--principal">Guardar pedido</button></div>
+</form>
+</dialog>
+<script>document.getElementById('ventana').showModal();</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseño: Telas sin datos</title>
+<!-- Referencia de diseño (rediseño con el lenguaje del panel de Shopify, aprobado el
+     2026-11-13). No es código de la aplicación: de aquí se copian medidas, colores, textos y
+     orden. Las reglas están en docs/08-diseno.md y los estilos en diseno/estilo.css.
+     Se ve igual en computador y en celular: abre la página en una ventana angosta (390 px)
+     para ver el celular. La fuente Inter se carga de Google solo para poder ver el archivo;
+     en la aplicación va guardada en el proyecto. Los datos son los de ejemplo. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="tijeras" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.8"/><circle cx="6" cy="17.5" r="2.8"/><path d="M8.3 8.2L20 18M8.3 15.8L20 6"/></symbol>
+<symbol id="contraer" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></symbol>
+<symbol id="buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+<symbol id="hoy" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></symbol>
+<symbol id="pedidos" viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 3 1.7c-.6.4-1 .8-1 1.5V9"/><path d="M12 9l8.6 6.2a1 1 0 0 1-.6 1.8H4a1 1 0 0 1-.6-1.8L12 9z"/></symbol>
+<symbol id="calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="clientes" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
+<symbol id="cotizador" viewBox="0 0 24 24"><path d="M4 4h8l8 8-8 8-8-8z"/><circle cx="8.5" cy="8.5" r="1.2"/></symbol>
+<symbol id="telas" viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></symbol>
+<symbol id="resumen" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></symbol>
+<symbol id="mi-taller" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+<symbol id="mas" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+<symbol id="visto" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="salir" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></symbol>
+<symbol id="sumar" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="atras" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="adelante" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="arriba" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+<symbol id="abajo" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="foto" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></symbol>
+<symbol id="prenda" viewBox="0 0 24 24"><path d="M9 4l-5 3 2 4 2-1v10h8V10l2 1 2-4-5-3a3 3 0 0 1-6 0z"/></symbol>
+<symbol id="descargar" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+<symbol id="subir" viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 20h14"/></symbol>
+<symbol id="whatsapp" viewBox="0 0 24 24"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/></symbol>
+<symbol id="recibo" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></symbol>
+<symbol id="reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></symbol>
+<symbol id="copiar" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="enlace" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+<symbol id="editar" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></symbol>
+<symbol id="papelera" viewBox="0 0 24 24"><path d="M5 7h14M10 4h4M7 7l1 13h8l1-13"/></symbol>
+<symbol id="informacion" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/></symbol>
+</svg>
+<div class="marco">
+<nav class="menu" aria-label="Secciones">
+<div class="menu__marca"><a class="menu__logo" href="hoy.html" aria-label="Ir a Hoy"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#tijeras"></use></svg></a><button type="button" class="menu__contraer" aria-label="Contraer el menú" title="Contraer el menú"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#contraer"></use></svg></button></div>
+<button type="button" class="menu__abrir" aria-label="Abrir el menú" title="Abrir el menú"><span class="menu__logo"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#tijeras"></use></svg></span></button>
+<form class="menu__buscar" role="search" action="#"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg><label class="oculto" for="menu-buscar">Buscar pedidos y clientes</label><input type="search" id="menu-buscar" name="q" placeholder="Buscar"><kbd class="menu__atajo">Ctrl K</kbd></form>
+<button type="button" class="menu__lupa" aria-label="Buscar" title="Buscar"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg></button>
+<div class="menu__lista">
+<a class="menu__enlace" href="hoy.html" title="Hoy"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#hoy"></use></svg><span class="menu__texto">Hoy</span></a>
+<a class="menu__enlace" href="pedidos.html" title="Pedidos" aria-label="Pedidos (1)"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#pedidos"></use></svg><span class="menu__texto">Pedidos</span><span class="menu__contador">1</span></a>
+<a class="menu__enlace" href="calendario.html" title="Calendario"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#calendario"></use></svg><span class="menu__texto">Calendario</span></a>
+<a class="menu__enlace" href="clientes.html" title="Clientes"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#clientes"></use></svg><span class="menu__texto">Clientes</span></a>
+<a class="menu__enlace" href="cotizador.html" title="Cotizador"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#cotizador"></use></svg><span class="menu__texto">Cotizador</span></a>
+<a class="menu__enlace es-actual" href="telas.html" title="Telas" aria-current="page" aria-label="Telas (2)"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#telas"></use></svg><span class="menu__texto">Telas</span><span class="menu__contador">2</span></a>
+<a class="menu__enlace" href="resumen.html" title="Resumen"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#resumen"></use></svg><span class="menu__texto">Resumen</span></a>
+</div>
+<div class="menu__pie">
+<a class="menu__enlace" href="mi-taller.html" title="Mi taller"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#mi-taller"></use></svg><span class="menu__texto">Mi taller</span></a>
+<div class="menu__taller"><span class="menu__avatar" aria-hidden="true">TE</span><span class="menu__nombre" id="menu-taller" title="Taller de ejemplo">Taller de ejemplo</span><form action="#"><button type="submit" class="menu__salir" aria-label="Salir" title="Salir"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#salir"></use></svg></button></form></div>
+</div>
+</nav>
+<main class="hoja" id="contenido">
+<header class="encabezado"><div class="encabezado__titulo"><h1 class="encabezado__nombre"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#telas"></use></svg>Telas</h1></div><div class="encabezado__acciones"><a class="boton boton--principal boton--redondo-celular" href="#"><span class="boton__icono-celular"><svg class="icono" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#sumar"></use></svg></span><span class="boton__texto">Agregar tela</span></a></div></header>
+<div class="hoja__contenido">
+<section class="tarjeta" aria-labelledby="t-vacio">
+<div class="vacio">
+<svg class="vacio__dibujo" viewBox="0 0 168 150" role="img" aria-label="Dibujo de un rollo de tela y una cinta de medir">
+<defs><pattern id="rayas" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(90)"><rect width="4" height="10" fill="rgba(255,255,255,.12)"/></pattern></defs>
+<circle cx="84" cy="78" r="70" fill="#F1F1F1"/><path d="M14 98a70 70 0 0 0 140 0z" fill="#DCE7F8"/>
+<rect x="40" y="44" width="70" height="76" rx="6" fill="#2563C9"/><rect x="40" y="44" width="70" height="76" rx="6" fill="url(#rayas)"/>
+<ellipse cx="110" cy="82" rx="12" ry="38" fill="#1D4FA3"/><ellipse cx="110" cy="82" rx="5" ry="16" fill="#0F3270"/>
+<path d="M40 120c18 6 40 6 58 0v10H40z" fill="#3B76D6"/><rect x="58" y="56" width="26" height="16" rx="3" fill="#FFFFFF"/>
+<path d="M63 62h16M63 66h10" stroke="#8A8A8A" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M96 128c10-14 30-16 44-8" fill="none" stroke="#F2B807" stroke-width="7" stroke-linecap="round"/>
+<path d="M104 121l1.5 4M112 117l1 4M120 116l.5 4M128 117l0 4" stroke="#7A5C00" stroke-width="1.4" stroke-linecap="round"/>
+</svg>
+<h2 id="t-vacio">Aquí vas a ver tus telas</h2>
+<p>Anota cuántos metros te quedan de cada tela. Te avisamos cuando alguna se esté acabando.</p>
+<div class="botones"><a class="boton boton--principal" href="#">Agregar tela</a></div>
+</div>
+</section>
+<details class="mas-info"><summary class="enlace">Cómo llevar las telas del taller</summary>
+<p class="mas-info__texto">Agrega cada tela con los metros que tienes y desde cuántos metros quieres que te avise. Cuando compres, toca «Entró» y suma los metros; cuando cortes, toca «Usé» y réstalos. Cada movimiento queda en el historial de la tela.</p>
+</details>
+</div>
+</main>
+<nav class="navegacion-celular" aria-label="Secciones">
+<a class="navegacion-celular__enlace" href="hoy.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#hoy"></use></svg>Hoy</a>
+<a class="navegacion-celular__enlace" href="pedidos.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#pedidos"></use></svg>Pedidos</a>
+<a class="navegacion-celular__enlace" href="calendario.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#calendario"></use></svg>Calendario</a>
+<a class="navegacion-celular__enlace" href="clientes.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#clientes"></use></svg>Clientes</a>
+<button type="button" class="navegacion-celular__enlace es-actual" aria-expanded="false" aria-controls="panel-mas"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#mas"></use></svg>Más</button>
+</nav>
+</div>
+</body>
+</html>

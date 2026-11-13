@@ -1,0 +1,3104 @@
+/* ==========================================================================
+   Estilos del diseño aprobado (rediseño con el lenguaje del panel de Shopify, 2026-11-13).
+
+   Es la referencia: las páginas de diseno/ los usan tal cual, y static/css/app.css copia
+   estas mismas reglas (secciones 1 a 6) y les suma lo que solo existe en la aplicación
+   (animaciones, estados de HTMX, menos movimiento). Las reglas en palabras están en
+   docs/08-diseno.md.
+
+   Orden: 1. colores, letra y medidas · 2. base · 3. marco, menú y hoja · 4. piezas ·
+   5. pantallas · 6. celular (menos de 768 px).
+
+   Los nombres de las clases son los de la aplicación: así una plantilla puede copiar el HTML
+   de su página de diseno/ sin traducir nada.
+   ========================================================================== */
+
+
+/* 1. Colores, letra y medidas ---------------------------------------------- */
+
+:root {
+  /* El marco negro y el menú */
+  --marco: #0A0A0A;
+  --brillo: radial-gradient(closest-side, rgba(37, 99, 201, 0.7), rgba(37, 99, 201, 0));
+  --menu-texto: #DCDCDC;
+  --menu-icono: #B5B5B5;
+  --menu-apagado: #A6A6A6;
+  --menu-encima: #1F1F1F;
+  --menu-actual: #2B2B2B;
+  --menu-campo: #262626;
+  --menu-campo-borde: #333333;
+
+  /* La hoja blanca y sus textos */
+  --hoja: #FFFFFF;
+  --negro: #1A1A1A;
+  --texto-2: #616161;
+  --texto-3: #8A8A8A;
+  --linea: #EBEBEB;
+  --borde: #E3E3E3;
+  --borde-abajo: #D4D4D4;
+  --borde-campo: #8A8A8A;
+  --borde-punteado: #C9C9C9;
+  --suave: #F7F7F7;
+  --gris: #F1F1F1;
+  --riel: #EDEDED;
+  --enlace: #005BD3;
+
+  /* Los colores que dicen algo */
+  --azul: #2563C9;
+  --azul-oscuro: #1D4FA3;
+  --azul-claro: #DCE7F8;
+  --rojo: #C5280C;
+  --gris-grafica: #B5B5B5;
+  --ambar: #E5C700;         /* solo para las barritas del calendario en celular */
+
+  /* Insignias: fondo y texto de cada tono */
+  --gris-fondo: #EBEBEB;
+  --gris-texto: #303030;
+  --azul-fondo: #E0F0FF;
+  --azul-texto: #00527C;
+  --verde-fondo: #CDFEE1;
+  --verde-texto: #0C5132;
+  --ambar-fondo: #FFEF9D;
+  --ambar-texto: #4F4700;
+  --naranja-fondo: #FFD6A4;
+  --naranja-texto: #5E4200;
+  --rojo-fondo: #FEDAD9;
+  --rojo-texto: #8E0B21;
+
+  /* El circulito de cada insignia: vacío, a medias, lleno o con alerta */
+  --circulo-vacio: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4.4' fill='none' stroke='%23000' stroke-width='1.4' stroke-dasharray='2.2 1.6'/%3E%3C/svg%3E");
+  --circulo-medio: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4.4' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3Cpath d='M6 2.6a3.4 3.4 0 0 1 0 6.8z'/%3E%3C/svg%3E");
+  --circulo-lleno: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='5'/%3E%3C/svg%3E");
+  --circulo-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cmask id='m'%3E%3Crect width='12' height='12' fill='%23fff'/%3E%3Cpath d='M6 3.4v3.2' stroke='%23000' stroke-width='1.4' stroke-linecap='round'/%3E%3Ccircle cx='6' cy='8.5' r='.8'/%3E%3C/mask%3E%3Ccircle cx='6' cy='6' r='5' mask='url(%23m)'/%3E%3C/svg%3E");
+  --flecha-lista: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+
+  /* Sombras suaves (no bordes): tarjetas, botones y lo que flota */
+  --sombra-tarjeta: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(0, 0, 0, 0.05), 0 2px 5px -3px rgba(0, 0, 0, 0.08);
+  --sombra-flotante: 0 0 0 1px #E3E3E3, 0 4px 18px -8px rgba(0, 0, 0, 0.14);
+  --sombra-menu: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 20px -6px rgba(0, 0, 0, 0.2);
+  --sombra-ventana: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 24px 48px -12px rgba(0, 0, 0, 0.35);
+  --sombra-boton: inset 0 0 0 1px #E3E3E3, inset 0 -1px 0 #D4D4D4, 0 1px 1px rgba(0, 0, 0, 0.04);
+  --sombra-principal: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 #000000, 0 1px 2px rgba(0, 0, 0, 0.25);
+  --principal: linear-gradient(180deg, #3A3A3A, #1A1A1A);
+  --principal-encima: linear-gradient(180deg, #4A4A4A, #262626);
+
+  /* Letra y medidas */
+  --letra: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ancho-pagina: 1200px;   /* el contenido de la hoja no pasa de aquí en pantallas grandes */
+  --alto-barra: 66px;       /* la barra de abajo del celular, sin el borde seguro del equipo */
+}
+
+
+/* 2. Base ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--marco);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--letra);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 450;
+  color: var(--negro);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--enlace);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+p,
+figure,
+ul,
+ol {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+h1 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+h2,
+h3 {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 650;
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--enlace);
+  outline-offset: 1px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.icono {
+  flex: none;
+}
+
+/* Visible solo para lectores de pantalla */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.texto-2 { color: var(--texto-2); }
+.texto-3 { color: var(--texto-3); }
+.texto-rojo { color: var(--rojo-texto); }
+.texto-verde { color: var(--verde-texto); }
+.nota { font-size: 12px; line-height: 18px; color: var(--texto-2); }
+.dinero { white-space: nowrap; }
+.fuerte { font-weight: 650; }
+.tachado { text-decoration: line-through; color: var(--texto-2); }
+.enlace { color: var(--enlace); font-weight: 550; }
+.texto-celular { display: none; }
+
+/* Lo que solo se ve en celular (o solo en computador) */
+@media (min-width: 768px) {
+  .solo-celular { display: none !important; }
+}
+
+
+/* 3. Marco, menú y hoja ---------------------------------------------------- */
+
+/* El marco negro ocupa la ventana. El menú va a la izquierda y la hoja blanca a la derecha.
+   La página no se mueve: lo que se desplaza es el contenido de la hoja, debajo de su
+   encabezado (como en Shopify). Abajo a la izquierda asoma un brillo azul. */
+.marco {
+  position: relative;
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--marco);
+}
+
+.marco::before {
+  content: "";
+  position: absolute;
+  left: -140px;
+  bottom: -150px;
+  width: 560px;
+  height: 280px;
+  background: var(--brillo);
+  pointer-events: none;
+}
+
+/* Menú lateral */
+.menu {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  padding: 12px 10px 10px 12px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  color: var(--menu-texto);
+}
+
+.menu :focus-visible {
+  outline-color: #FFFFFF;
+}
+
+.menu__marca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  margin-bottom: 8px;
+  padding: 0 2px 0 4px;
+}
+
+/* El logo: las tijeras en un cuadrito blanco (o el logo del taller, si lo subió) */
+.menu__logo {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #FFFFFF;
+  color: var(--marco);
+}
+
+.menu__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.menu__contraer,
+.menu__abrir,
+.menu__lupa,
+.menu__salir {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--menu-apagado);
+  cursor: pointer;
+}
+
+.menu__contraer,
+.menu__salir {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.menu__contraer:hover,
+.menu__salir:hover {
+  background: var(--menu-actual);
+  color: #FFFFFF;
+}
+
+.menu__abrir,
+.menu__lupa {
+  display: none;
+}
+
+.menu__buscar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  margin-bottom: 12px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--menu-campo);
+  box-shadow: inset 0 0 0 1px var(--menu-campo-borde);
+  color: var(--menu-apagado);
+}
+
+.menu__buscar:focus-within {
+  box-shadow: inset 0 0 0 1px #6B6B6B;
+}
+
+.menu__buscar input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #FFFFFF;
+}
+
+.menu__buscar input::placeholder {
+  color: var(--menu-apagado);
+  opacity: 1;
+}
+
+.menu__atajo {
+  flex: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--menu-apagado);
+}
+
+.menu__lista,
+.menu__pie {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu__pie {
+  gap: 2px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.menu__pie form {
+  margin: 0;
+}
+
+.menu__enlace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--menu-texto);
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu__enlace .icono {
+  color: var(--menu-icono);
+}
+
+.menu__enlace:hover {
+  background: var(--menu-encima);
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.menu__enlace[aria-disabled="true"] {
+  cursor: default;
+}
+
+.menu__enlace[aria-disabled="true"]:hover {
+  background: transparent;
+}
+
+.menu__enlace.es-actual {
+  background: var(--menu-actual);
+  color: #FFFFFF;
+  font-weight: 650;
+}
+
+.menu__enlace.es-actual .icono {
+  color: #FFFFFF;
+}
+
+.menu__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu__contador {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--menu-apagado);
+}
+
+/* Las subsecciones (Pedidos: Atrasados y Con saldo) se ven solo dentro de su sección */
+.menu__enlace--sub {
+  height: 28px;
+  padding-left: 34px;
+  color: var(--menu-apagado);
+}
+
+.menu__enlace--sub.es-actual {
+  background: transparent;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Abajo: el taller con su logo (o sus iniciales) y el botón para salir */
+.menu__taller {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 0 0 6px;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.menu__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--azul);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.menu__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.menu__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu__salir {
+  margin-left: auto;
+}
+
+/* Menú contraído: una tira de 60 px con íconos. Cada ícono dice su nombre al pasar el mouse. */
+.marco--contraido .menu {
+  width: 60px;
+  align-items: center;
+  padding: 12px 8px 10px;
+}
+
+.marco--contraido .menu__marca,
+.marco--contraido .menu__buscar,
+.marco--contraido .menu__enlace--sub,
+.marco--contraido .menu__nombre {
+  display: none;
+}
+
+.marco--contraido .menu__abrir {
+  display: grid;
+  width: 44px;
+  height: 32px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.marco--contraido .menu__abrir:hover {
+  background: var(--menu-actual);
+}
+
+.marco--contraido .menu__lupa {
+  display: grid;
+  width: 44px;
+  height: 28px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: var(--menu-campo);
+  box-shadow: inset 0 0 0 1px var(--menu-campo-borde);
+}
+
+.marco--contraido .menu__lista,
+.marco--contraido .menu__pie {
+  align-items: center;
+}
+
+.marco--contraido .menu__enlace {
+  position: relative;
+  justify-content: center;
+  width: 44px;
+  height: 32px;
+  padding: 0;
+}
+
+.marco--contraido .menu__texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.marco--contraido .menu__contador {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  min-width: 14px;
+  height: 14px;
+  margin: 0;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: #FFFFFF;
+  color: var(--marco);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+.marco--contraido .menu__taller {
+  flex-direction: column;
+  gap: 6px;
+  height: auto;
+  padding: 0;
+}
+
+.marco--contraido .menu__salir {
+  margin: 0;
+}
+
+/* La hoja blanca, encima del marco */
+.hoja {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 4px 4px 4px 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--hoja);
+}
+
+/* Pantallas de lista ancha (Pedidos): el contenido usa todo el ancho */
+.hoja--completa {
+  --ancho-pagina: 100%;
+}
+
+/* Encabezado de la hoja: 52 px, quieto arriba. A la izquierda, el nombre de la sección con su
+   ícono (o la miga para volver); a la derecha, los botones, el principal de último. */
+.encabezado {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 max(12px, calc((100% - var(--ancho-pagina)) / 2)) 0 max(16px, calc((100% - var(--ancho-pagina)) / 2));
+}
+
+.encabezado__logo,
+.encabezado__volver {
+  display: none;
+}
+
+.encabezado__titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.encabezado h1,
+.encabezado__nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 550;
+  letter-spacing: 0;
+}
+
+.encabezado__apoyo {
+  color: var(--texto-2);
+  white-space: nowrap;
+}
+
+.encabezado__acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.encabezado__acciones:empty {
+  display: none;
+}
+
+/* Miga para volver (Pedido por dentro): flecha redonda y la sección */
+.miga {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--negro);
+  font-weight: 550;
+}
+
+.miga:hover {
+  text-decoration: none;
+}
+
+.miga__volver {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px #E3E3E3, inset 0 -1px 0 #D4D4D4;
+}
+
+.miga:hover .miga__volver {
+  background: var(--suave);
+}
+
+/* El contenido: se desplaza por dentro, con 16 px entre bloques */
+.hoja__contenido {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 16px 24px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.hoja__contenido > * {
+  flex: none;
+  width: 100%;
+  max-width: var(--ancho-pagina);
+  margin-inline: auto;
+}
+
+/* La barra de abajo y el panel "Más" solo existen en celular */
+.navegacion-celular,
+.panel-mas {
+  display: none;
+}
+
+
+/* 4. Piezas ---------------------------------------------------------------- */
+
+/* Botones: 28 px de alto, esquinas de 10 px. El principal es negro con un degradado suave
+   (uno por zona); el secundario es blanco con su sombra; el plano no tiene fondo. */
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-boton);
+  color: var(--negro);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: var(--suave);
+  color: var(--negro);
+  text-decoration: none;
+}
+
+.boton--principal {
+  background: var(--principal);
+  box-shadow: var(--sombra-principal);
+  color: #FFFFFF;
+}
+
+.boton--principal:hover {
+  background: var(--principal-encima);
+  color: #FFFFFF;
+}
+
+.boton--plano {
+  padding: 0 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--texto-2);
+}
+
+.boton--plano:hover {
+  background: var(--gris);
+}
+
+/* Solo ícono: un cuadrado de 28 px. Lleva aria-label. */
+.boton--icono {
+  width: 28px;
+  padding: 0;
+}
+
+/* Flechas grises (pedido anterior y siguiente, páginas de una lista) */
+.boton--flecha {
+  width: 28px;
+  padding: 0;
+  background: var(--gris);
+  box-shadow: none;
+  color: var(--texto-2);
+}
+
+.boton--flecha:hover {
+  background: var(--gris-fondo);
+}
+
+/* El ícono del botón redondo del celular (Nuevo pedido): en computador no se ve */
+.boton__icono-celular {
+  display: none;
+}
+
+.boton:disabled,
+.boton[aria-disabled="true"] {
+  background: var(--gris);
+  box-shadow: none;
+  color: var(--texto-3);
+  cursor: not-allowed;
+}
+
+.boton--ancho {
+  width: 100%;
+}
+
+/* Botones pegados (buscar y filtrar en una lista) */
+.grupo-botones {
+  display: inline-flex;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px #E3E3E3, inset 0 -1px 0 #D4D4D4;
+}
+
+.grupo-botones > .boton {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.grupo-botones > .boton:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.grupo-botones > .boton:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.grupo-botones > .boton + .boton {
+  border-left: 1px solid var(--borde);
+}
+
+/* Chip: un atajo gris y bajo ("Nuevo pedido", "Noviembre") */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--gris);
+  color: var(--negro);
+  font-size: 12.5px;
+  font-weight: 550;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+a.chip:hover,
+button.chip:hover {
+  background: var(--gris-fondo);
+  text-decoration: none;
+}
+
+/* Tarjeta: blanca, esquinas de 12 px y una sombra suave en vez de borde. No tiene relleno:
+   lo ponen su cabeza, su cuerpo y su pie. */
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 12px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.tarjeta--recortada {
+  overflow: hidden;
+}
+
+.tarjeta__cabeza {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 12px 16px 4px;
+}
+
+.tarjeta__aparte {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--texto-2);
+}
+
+.tarjeta__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 16px 16px;
+}
+
+.tarjeta__pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.tarjeta__nota {
+  padding: 4px 16px 16px;
+  color: var(--texto-2);
+}
+
+/* Insignia: 20 px de alto, esquinas de 8 px, seis tonos. Casi siempre lleva su circulito, que
+   dice cómo va: vacío (no ha empezado), a medias, lleno (completo) o alerta (atrasado). */
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--gris-fondo);
+  color: var(--gris-texto);
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.etiqueta__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.etiqueta--gris { background: var(--gris-fondo); color: var(--gris-texto); }
+.etiqueta--azul { background: var(--azul-fondo); color: var(--azul-texto); }
+.etiqueta--verde { background: var(--verde-fondo); color: var(--verde-texto); }
+.etiqueta--ambar { background: var(--ambar-fondo); color: var(--ambar-texto); }
+.etiqueta--naranja { background: var(--naranja-fondo); color: var(--naranja-texto); }
+.etiqueta--rojo { background: var(--rojo-fondo); color: var(--rojo-texto); }
+
+.etiqueta--vacio,
+.etiqueta--medio,
+.etiqueta--lleno,
+.etiqueta--alerta {
+  padding-left: 6px;
+}
+
+.etiqueta--vacio::before,
+.etiqueta--medio::before,
+.etiqueta--lleno::before,
+.etiqueta--alerta::before {
+  content: "";
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: var(--circulo) center / contain no-repeat;
+  mask: var(--circulo) center / contain no-repeat;
+}
+
+.etiqueta--vacio { --circulo: var(--circulo-vacio); }
+.etiqueta--medio { --circulo: var(--circulo-medio); }
+.etiqueta--lleno { --circulo: var(--circulo-lleno); }
+.etiqueta--alerta { --circulo: var(--circulo-alerta); }
+
+/* Miniatura: la foto del pedido (o un ícono de prenda) en un cuadrito gris */
+.mini {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--gris);
+  color: var(--texto-3);
+}
+
+.mini::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.mini img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini--grande {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+/* Iniciales en un círculo (costureras) */
+.iniciales {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gris);
+  color: var(--negro);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+/* Campos: etiqueta arriba, control de 32 px con borde gris de 1 px y esquinas de 8 px */
+.campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.campos > .campo {
+  flex: 1 1 180px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.campo__control {
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 12px;
+  border: 1px solid var(--borde-campo);
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--negro);
+  line-height: 20px;
+}
+
+.campo__control:hover {
+  border-color: var(--texto-2);
+}
+
+.campo__control::placeholder {
+  color: var(--texto-3);
+  opacity: 1;
+}
+
+select.campo__control {
+  padding-right: 32px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #FFFFFF var(--flecha-lista) no-repeat right 10px center / 16px;
+}
+
+textarea.campo__control {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.campo__control:disabled {
+  border-color: var(--borde);
+  background-color: var(--suave);
+  color: var(--texto-2);
+  cursor: not-allowed;
+}
+
+.campo__ayuda {
+  color: var(--texto-2);
+}
+
+.campo__error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--rojo-texto);
+}
+
+.campo__error::before {
+  content: "";
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: var(--circulo-alerta) center / contain no-repeat;
+  mask: var(--circulo-alerta) center / contain no-repeat;
+}
+
+.campo--error .campo__control {
+  border-color: var(--rojo);
+  background-color: #FFF8F7;
+}
+
+/* Elegir un archivo: el botón del archivo se ve como un botón secundario */
+input[type="file"].campo__control {
+  padding: 4px;
+}
+
+input[type="file"].campo__control::file-selector-button {
+  min-height: 24px;
+  margin-right: 10px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-boton);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Aviso de un formulario ("faltan datos", "usuario o contraseña"): en ámbar */
+.aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--ambar-fondo);
+  color: var(--ambar-texto);
+}
+
+/* Aviso grande dentro de la hoja (la dotación de Clientes): tarjeta azul clara */
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--azul-fondo);
+  color: var(--negro);
+}
+
+.banner > .icono {
+  color: var(--azul-texto);
+}
+
+.banner__texto {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.banner__titulo {
+  font-weight: 650;
+}
+
+/* Buscador: campo con lupa */
+.buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--borde-campo);
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--texto-2);
+}
+
+.buscador:focus-within {
+  outline: 2px solid var(--enlace);
+  outline-offset: 1px;
+}
+
+.buscador input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--negro);
+}
+
+.buscador input::placeholder {
+  color: var(--texto-3);
+  opacity: 1;
+}
+
+/* Pestañas de una lista (Todos, En producción...): dentro de la tarjeta, arriba de la tabla */
+.filtros {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.filtros__pestanas {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--texto-2);
+  font-weight: 550;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filtro:hover {
+  background: var(--gris);
+  color: var(--negro);
+  text-decoration: none;
+}
+
+.filtro.es-elegido,
+.filtro[aria-pressed="true"] {
+  background: var(--gris-fondo);
+  color: var(--negro);
+  font-weight: 650;
+}
+
+.filtro__conteo {
+  color: var(--texto-2);
+  font-weight: 450;
+}
+
+.filtros__herramientas {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+/* Tabla compacta: encabezado gris claro, filas de una línea con su línea abajo */
+/* position: relative deja dentro de la caja lo que va oculto para lectores de pantalla */
+.tabla-contenedor {
+  position: relative;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla th {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linea);
+  background: var(--suave);
+  color: var(--texto-2);
+  font-size: 12px;
+  font-weight: 550;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabla td {
+  height: 44px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linea);
+  vertical-align: middle;
+}
+
+.tabla tr > :first-child {
+  padding-left: 16px;
+}
+
+.tabla tr > :last-child {
+  padding-right: 16px;
+}
+
+.tabla tbody tr:last-child > td {
+  border-bottom: 0;
+}
+
+.tabla .num {
+  text-align: right;
+}
+
+/* Fila que abre algo: el enlace de la primera celda cubre la fila entera */
+.tabla__fila {
+  position: relative;
+}
+
+.tabla__fila:hover > td {
+  background: var(--suave);
+}
+
+.tabla__enlace {
+  color: var(--negro);
+  font-weight: 650;
+}
+
+.tabla__enlace::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.tabla__enlace:hover {
+  text-decoration: none;
+}
+
+.tabla__enlace:focus-visible {
+  outline: 0;
+}
+
+.tabla__fila:has(.tabla__enlace:focus-visible) {
+  outline: 2px solid var(--enlace);
+  outline-offset: -2px;
+}
+
+.tabla__acciones {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Pie de una lista: cuántos se ven y las flechas */
+.paginas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-top: 1px solid var(--linea);
+  color: var(--texto-2);
+}
+
+/* Cifras: una tarjeta partida en casillas con una línea entre ellas. El nombre lleva un
+   subrayado punteado: al pasar el mouse, dice de dónde sale el número. */
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--linea);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 12px 16px 14px;
+  background: #FFFFFF;
+  color: var(--negro);
+  text-decoration: none;
+}
+
+a.cifra:hover {
+  background: var(--suave);
+  text-decoration: none;
+}
+
+.cifra__nombre {
+  align-self: flex-start;
+  color: var(--texto-2);
+}
+
+/* Con su explicación (title), el nombre lleva un subrayado punteado */
+.cifra[title] .cifra__nombre {
+  text-decoration: underline dotted #B5B5B5;
+  text-underline-offset: 4px;
+}
+
+.cifra__valor {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.cifra__apoyo {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--texto-2);
+}
+
+.cifra--alerta .cifra__valor {
+  color: var(--rojo-texto);
+}
+
+/* Barra de cifras de una lista (Pedidos, Telas): más baja, con un chip al comienzo */
+.cifras--barra {
+  display: flex;
+}
+
+.cifras--barra .cifra {
+  flex: 1 1 0;
+  padding: 10px 16px;
+}
+
+.cifras--barra .cifra__valor {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.cifras__primero {
+  display: flex;
+  align-items: center;
+  flex: none;
+  padding: 10px 12px;
+  background: #FFFFFF;
+}
+
+/* Riel de progreso: gris claro con relleno azul (rojo si está atrasado) */
+.progreso {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--riel);
+}
+
+.progreso__relleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--azul);
+}
+
+.progreso--delgado {
+  height: 5px;
+}
+
+.progreso--atrasado .progreso__relleno {
+  background: var(--rojo);
+}
+
+/* Barra sin riel, proporcional ("Quién te debe", "Ventas por tipo de cliente") */
+.proporcion {
+  display: block;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--azul);
+}
+
+.proporcion--atrasado {
+  background: var(--rojo);
+}
+
+.fila-proporcion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 9px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.fila-proporcion > .proporcion {
+  grid-column: 1 / -1;
+}
+
+.fila-proporcion__nombre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--negro);
+}
+
+/* Pasos de etapa: seis barritas con su nombre. Las cumplidas en negro, la actual en azul.
+   Cada una es un botón: tocarla mueve el pedido. */
+.pasos {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 0 2px;
+  border: 0;
+  background: none;
+  color: var(--texto-2);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.paso::before {
+  content: "";
+  height: 4px;
+  border-radius: 4px;
+  background: var(--borde);
+}
+
+.paso:hover:not(:disabled)::before {
+  background: var(--borde-punteado);
+}
+
+.paso--hecho::before,
+.paso--hecho:hover:not(:disabled)::before {
+  background: var(--negro);
+}
+
+.paso--actual {
+  color: var(--negro);
+  font-weight: 650;
+}
+
+.paso--actual::before,
+.paso--actual:hover:not(:disabled)::before {
+  background: var(--azul);
+}
+
+.paso:disabled {
+  cursor: default;
+}
+
+/* Cuentas (pagos de un pedido, cotización): nombre a la izquierda, valor a la derecha */
+.cuentas {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 16px;
+}
+
+.cuentas__fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.cuentas__fila--total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--linea);
+  font-weight: 650;
+}
+
+/* Renglón: nombre a la izquierda y valor (o un botón) a la derecha */
+.renglon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+/* Fila de lista: relleno de 12 por 16 px y una línea arriba */
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.fila--compacta {
+  padding: 8px 16px;
+}
+
+.fila__texto {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.fila__titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.fila__titulo strong {
+  font-weight: 650;
+}
+
+.fila__detalle {
+  color: var(--texto-2);
+}
+
+.fila__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Casilla de marcar (materiales comprados): 16 px, negra con visto bueno al marcarla */
+.casilla {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1.5px var(--texto-3);
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.casilla--marcada {
+  background: var(--negro);
+  box-shadow: none;
+}
+
+/* Cronología del pedido: los días y lo que pasó, con un circulito y una línea */
+.cronologia {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 16px 16px;
+}
+
+.cronologia__dia {
+  padding: 12px 0 6px 26px;
+  color: var(--texto-2);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.cronologia__evento {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0 8px 26px;
+}
+
+.cronologia__evento::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 2px var(--texto-3);
+}
+
+.cronologia__evento::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 21px;
+  bottom: -6px;
+  width: 2px;
+  background: var(--borde);
+}
+
+.cronologia__evento:last-child::after {
+  display: none;
+}
+
+.cronologia__quien {
+  flex: none;
+  color: var(--texto-2);
+}
+
+/* Zona para subir una foto: borde punteado */
+.subir {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 104px;
+  margin: 4px 16px 16px;
+  padding: 12px;
+  border: 1.5px dashed #CFCFCF;
+  border-radius: 10px;
+  color: var(--texto-2);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Foto dentro de una tarjeta (la del pedido) */
+.foto {
+  margin: 4px 16px 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--gris);
+  aspect-ratio: 4 / 3;
+}
+
+.foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Pantalla vacía: dibujo, título, para qué sirve y el botón para empezar */
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 56px 24px 64px;
+  text-align: center;
+}
+
+.vacio__dibujo {
+  width: 168px;
+  height: 150px;
+}
+
+.vacio h2 {
+  margin-top: 18px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.vacio p {
+  max-width: 420px;
+}
+
+.vacio .botones {
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* Debajo de la pantalla vacía: "Cómo llevar ..." se abre ahí mismo */
+.mas-info {
+  text-align: center;
+}
+
+.mas-info > summary {
+  display: inline-block;
+  font-weight: 550;
+  cursor: pointer;
+  list-style: none;
+}
+
+.mas-info > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mas-info > summary:hover {
+  text-decoration: underline;
+}
+
+.mas-info__texto {
+  max-width: 520px;
+  margin: 8px auto 0;
+  color: var(--texto-2);
+  text-align: left;
+}
+
+/* Menú desplegable ("Más acciones", "Cambiar etapa", "Mis prendas guardadas"): un <details>
+   cuyo <summary> es el botón; las opciones salen en una tarjeta flotante */
+.desplegable {
+  position: relative;
+  display: inline-block;
+}
+
+.desplegable > summary {
+  list-style: none;
+}
+
+.desplegable > summary::-webkit-details-marker {
+  display: none;
+}
+
+.desplegable__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-menu);
+}
+
+.desplegable--izquierda .desplegable__menu {
+  right: auto;
+  left: 0;
+}
+
+.desplegable--arriba .desplegable__menu {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+.desplegable__opcion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--negro);
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.desplegable__opcion:hover {
+  background: var(--gris);
+  text-decoration: none;
+}
+
+.desplegable__opcion[aria-current="true"] {
+  font-weight: 650;
+}
+
+.desplegable__separador {
+  height: 1px;
+  margin: 6px -6px;
+  background: var(--linea);
+}
+
+/* Punto de estado (arriba en Hoy: "1 pedido atrasado") */
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--negro);
+}
+
+.estado:hover {
+  text-decoration: none;
+}
+
+.estado__punto {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rojo);
+  box-shadow: 0 0 0 3px var(--rojo-fondo);
+}
+
+/* Título dentro del contenido (Pedido por dentro): nombre grande con sus insignias al lado */
+.titulo-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+.titulo-pagina h1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.titulo-pagina__apoyo {
+  color: var(--texto-2);
+}
+
+/* Título de una sección dentro de la hoja ("Tu mes") */
+.seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.seccion-titulo h2 {
+  font-size: 15px;
+}
+
+/* Columnas: la principal y una de 300 px a la derecha (Pedido, Calendario, Cotizador).
+   Cada columna es una pila de tarjetas y mide lo que mide su contenido. */
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Dos tarjetas lado a lado: se reparten 1,6 a 1 y terminan a la misma altura */
+.dos-columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.dos-columnas--iguales {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Gráfica de barras: azul y gris, con leyenda arriba a la derecha */
+.grafica {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.leyenda {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  color: var(--texto-2);
+}
+
+.leyenda__serie {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.leyenda__color {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.leyenda__color--cobrado { background: var(--azul); }
+.leyenda__color--gastado { background: var(--gris-grafica); }
+
+/* Ventana ("Nuevo pedido"): tarjeta flotante con cabeza gris, cuerpo y pie con los botones */
+.ventana {
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100dvh - 64px);
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-ventana);
+  color: var(--negro);
+  overflow: hidden;
+}
+
+.ventana::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.ventana__formulario {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 64px);
+}
+
+.ventana__cabeza {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--linea);
+  background: var(--suave);
+}
+
+.ventana__cerrar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--texto-2);
+  cursor: pointer;
+}
+
+.ventana__cerrar:hover {
+  background: var(--gris-fondo);
+  color: var(--negro);
+}
+
+.ventana__cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.ventana__pie {
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+/* Abierta como página (sin JavaScript): una tarjeta de 620 px */
+.ventana--pagina {
+  max-width: 620px;
+  border-radius: 12px;
+  box-shadow: var(--sombra-tarjeta);
+}
+
+/* Aviso corto de confirmación ("Abono registrado."): abajo, en el centro */
+.avisos {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.aviso-corto {
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--negro);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+  color: #FFFFFF;
+  font-weight: 550;
+  text-align: center;
+}
+
+
+/* 5. Pantallas ------------------------------------------------------------- */
+
+/* --- Hoy --- */
+
+/* Lo de Hoy va en una columna de 940 px, centrada */
+.angosto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 940px;
+}
+
+.bienvenida {
+  padding: 34px 0 6px;
+  text-align: center;
+}
+
+.bienvenida h1 {
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.bienvenida__taller {
+  text-decoration: underline dotted #B5B5B5;
+  text-underline-offset: 4px;
+}
+
+.bienvenida__apoyo {
+  display: none;
+  color: var(--texto-2);
+}
+
+/* La caja grande: buscar y atajos */
+.caja-grande {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 620px;
+  margin: 6px auto 0;
+  padding: 14px 16px 10px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-flotante);
+}
+
+.caja-grande:focus-within {
+  box-shadow: 0 0 0 2px var(--enlace), 0 4px 18px -8px rgba(0, 0, 0, 0.14);
+}
+
+/* En computador el buscador de la caja no lleva borde ni lupa: la caja ya es el campo */
+.caja-grande .buscador {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.caja-grande .buscador > .icono {
+  display: none;
+}
+
+.caja-grande .buscador input {
+  padding: 0;
+}
+
+.caja-grande__atajos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Lo que hay que hacer hoy: tarjetas grandes con la foto del pedido, de a tres por fila */
+.cartas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.carta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 8px 14px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 1px var(--borde), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.carta__foto {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--gris);
+}
+
+.carta__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carta__foto .etiqueta {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.carta__sin-foto {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border: 1.5px dashed var(--borde-punteado);
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: var(--texto-3);
+}
+
+.carta__texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 6px;
+}
+
+.carta h3 {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.carta h3 a {
+  color: var(--negro);
+}
+
+.carta__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 6px 0;
+}
+
+/* Pedidos por etapa: seis casillas separadas por una línea */
+.etapas {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--linea);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.etapas__etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 16px 14px;
+  background: #FFFFFF;
+  color: var(--negro);
+}
+
+a.etapas__etapa:hover {
+  background: var(--suave);
+  text-decoration: none;
+}
+
+.etapas__nombre {
+  color: var(--texto-2);
+}
+
+.etapas__cantidad {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 650;
+}
+
+/* --- Pedidos --- */
+
+.tabla--pedidos td {
+  white-space: nowrap;
+}
+
+.tabla__cliente {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tabla__prenda {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--texto-2);
+}
+
+.texto-atraso {
+  color: var(--rojo-texto);
+  font-weight: 550;
+}
+
+/* --- Pedido por dentro --- */
+
+.articulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 16px 12px;
+}
+
+.articulo__que {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.articulo .pasos {
+  padding: 0;
+}
+
+.tarjeta > .pasos {
+  padding: 4px 16px 14px;
+}
+
+.tallas-barras {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 10px;
+  font-weight: 550;
+}
+
+.cifra-grande {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 650;
+}
+
+.cifra-grande__apoyo {
+  color: var(--texto-2);
+  font-size: 13px;
+  font-weight: 450;
+}
+
+.tarjeta--lado .tarjeta__cuerpo {
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.tarjeta__subtitulo {
+  margin-top: 10px;
+  font-weight: 650;
+}
+
+/* --- Calendario --- */
+
+.calendario {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendario__semana {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linea);
+  background: var(--suave);
+  color: var(--texto-2);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.calendario__dia {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  min-height: 92px;
+  padding: 6px 6px 8px;
+  border: 0;
+  border-right: 1px solid var(--linea);
+  border-bottom: 1px solid var(--linea);
+  background: #FFFFFF;
+  color: var(--negro);
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendario__dia:nth-child(7n) {
+  border-right: 0;
+}
+
+.calendario__dia:hover {
+  background: var(--suave);
+}
+
+.calendario__dia--fuera {
+  background: var(--suave);
+  color: var(--texto-3);
+}
+
+.calendario__dia[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 2px var(--enlace);
+}
+
+.calendario__numero {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.calendario__dia--hoy .calendario__numero {
+  background: var(--negro);
+  color: #FFFFFF;
+}
+
+.calendario__entregas {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+}
+
+.calendario__entregas .etiqueta {
+  display: flex;
+  max-width: 100%;
+}
+
+.calendario__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 16px;
+}
+
+/* --- Cotizador --- */
+
+.cotizacion {
+  position: sticky;
+  top: 0;
+}
+
+.cotizacion__total {
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.cotizacion .tarjeta__pie {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* --- Mi taller: cada bloque con su explicación a la izquierda, como los ajustes de Shopify --- */
+
+.ajustes {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1000px;
+}
+
+.ajuste {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 12px 24px;
+  align-items: start;
+}
+
+.ajuste + .ajuste {
+  padding-top: 24px;
+  border-top: 1px solid var(--linea);
+}
+
+.ajuste__explica {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.ajuste__explica p {
+  color: var(--texto-2);
+}
+
+.persona {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.persona__texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Entrar, formulario público de tallas y avisos sin sesión --- */
+
+.marco-acceso {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 32px 16px;
+  overflow: hidden;
+  background: var(--marco);
+}
+
+.marco-acceso::before {
+  content: "";
+  position: absolute;
+  left: -140px;
+  bottom: -150px;
+  width: 560px;
+  height: 280px;
+  background: var(--brillo);
+  pointer-events: none;
+}
+
+.acceso {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.acceso__marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 4px;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.acceso__tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 20px 20px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.5);
+}
+
+.acceso__tarjeta .campo__control {
+  min-height: 36px;
+}
+
+.acceso__tarjeta .boton {
+  min-height: 36px;
+}
+
+.acceso__pedido {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--suave);
+}
+
+.acceso__nota {
+  color: var(--menu-apagado);
+  font-size: 12px;
+  text-align: center;
+}
+
+.acceso__listo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gris-fondo);
+  color: var(--negro);
+}
+
+
+/* 6. Celular (menos de 768 px) --------------------------------------------- */
+
+@media (max-width: 1023.98px) {
+  .columnas,
+  .dos-columnas,
+  .dos-columnas--iguales {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cartas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ajuste {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cotizacion {
+    position: static;
+  }
+}
+
+@media (max-width: 767.98px) {
+  /* Como la app de Shopify: hoja blanca, título grande arriba y barra de abajo. La página se
+     desliza normal. Lo que se toca mide al menos 40 px. */
+  html {
+    background: #FFFFFF;
+    scroll-padding-bottom: calc(var(--alto-barra) + 16px + env(safe-area-inset-bottom));
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .solo-computador { display: none !important; }
+  .texto-celular { display: inline; }
+  .texto-computador { display: none; }
+
+  .marco {
+    display: block;
+    height: auto;
+    overflow: visible;
+    background: #FFFFFF;
+  }
+
+  .marco::before,
+  .menu {
+    display: none;
+  }
+
+  .hoja {
+    min-height: 100vh;
+    margin: 0;
+    overflow: visible;
+    border-radius: 0;
+  }
+
+  /* Arriba: una fila de botones redondos y, debajo, el título grande */
+  .encabezado {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "izquierda . acciones" "titulo titulo titulo";
+    align-items: center;
+    gap: 10px 4px;
+    min-height: 0;
+    padding: 14px 16px 6px;
+  }
+
+  .encabezado__logo,
+  .encabezado__volver {
+    grid-area: izquierda;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin: 0;
+    border-radius: 50%;
+    background: var(--gris);
+    box-shadow: none;
+    color: var(--negro);
+  }
+
+  .encabezado__titulo {
+    grid-area: titulo;
+    display: block;
+  }
+
+  .encabezado h1,
+  .encabezado__nombre {
+    font-size: 28px;
+    line-height: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .encabezado__nombre > .icono {
+    display: none;
+  }
+
+  .encabezado__apoyo {
+    display: block;
+    white-space: normal;
+  }
+
+  .encabezado__acciones {
+    grid-area: acciones;
+    gap: 4px;
+    min-height: 36px;
+  }
+
+  .encabezado__acciones:empty {
+    display: flex;
+  }
+
+  /* Arriba solo van botones redondos con ícono; los de solo texto se quedan en el contenido */
+  .encabezado__acciones > .boton:not(.boton--redondo-celular),
+  .encabezado__acciones > .desplegable:not(.desplegable--celular) {
+    display: none;
+  }
+
+  .boton--redondo-celular {
+    width: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--gris);
+    box-shadow: none;
+  }
+
+  .boton--redondo-celular.boton--principal {
+    background: var(--negro);
+  }
+
+  .boton--redondo-celular .boton__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .boton--redondo-celular .boton__icono-celular {
+    display: block;
+  }
+
+  .hoja__contenido {
+    overflow: visible;
+    gap: 14px;
+    padding: 4px 16px calc(var(--alto-barra) + 24px + env(safe-area-inset-bottom));
+  }
+
+  .boton {
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  .boton--icono,
+  .boton--flecha {
+    width: 40px;
+    padding: 0;
+  }
+
+  .boton--plano {
+    padding: 0 10px;
+  }
+
+  .chip {
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .campo__control {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+
+  .buscador {
+    min-height: 44px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--gris);
+  }
+
+  .buscador input {
+    font-size: 16px;
+  }
+
+  .titulo-pagina h1 {
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  /* Pestañas: píldoras que se deslizan de lado */
+  .filtros {
+    gap: 6px;
+    padding: 0;
+    border: 0;
+  }
+
+  .filtros__pestanas {
+    gap: 6px;
+  }
+
+  .filtro {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--borde);
+  }
+
+  .filtro.es-elegido,
+  .filtro[aria-pressed="true"] {
+    background: var(--negro);
+    box-shadow: none;
+    color: #FFFFFF;
+  }
+
+  .filtro.es-elegido .filtro__conteo,
+  .filtro[aria-pressed="true"] .filtro__conteo {
+    color: #D4D4D4;
+  }
+
+  /* En celular la barra de cifras de una lista no va: las pestañas ya dicen cuántos hay */
+  .cifras--barra {
+    display: none;
+  }
+
+  .tarjeta--lista-celular .filtros {
+    padding: 0 16px 10px;
+  }
+
+  .tabla th,
+  .tabla td {
+    white-space: nowrap;
+  }
+
+  .pasos {
+    gap: 3px;
+  }
+
+  .paso {
+    font-size: 11px;
+    line-height: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  .desplegable__menu {
+    position: fixed;
+    top: auto;
+    right: 8px;
+    bottom: calc(var(--alto-barra) + 8px + env(safe-area-inset-bottom));
+    left: 8px;
+    min-width: 0;
+  }
+
+  .desplegable__opcion {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  /* La ventana sube desde abajo, como una hoja */
+  .ventana {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 24px);
+    margin: auto 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .ventana__formulario {
+    max-height: calc(100dvh - 24px);
+  }
+
+  .ventana__pie {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .ventana__pie .boton {
+    flex: 1;
+  }
+
+  .avisos {
+    bottom: calc(var(--alto-barra) + 12px + env(safe-area-inset-bottom));
+  }
+
+  /* La barra de abajo: blanca, cinco botones con ícono; la sección actual en negro */
+  .navegacion-celular {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+    background: #FFFFFF;
+    box-shadow: 0 -1px 0 var(--linea);
+  }
+
+  .navegacion-celular__enlace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 50px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--texto-2);
+    font-size: 11px;
+    font-weight: 550;
+    line-height: 14px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .navegacion-celular__enlace:hover {
+    text-decoration: none;
+  }
+
+  .navegacion-celular__enlace.es-actual,
+  .navegacion-celular__enlace[aria-expanded="true"] {
+    color: var(--negro);
+    font-weight: 650;
+  }
+
+  /* El panel "Más": una tarjeta encima de la barra */
+  .panel-mas {
+    position: fixed;
+    right: 8px;
+    bottom: calc(var(--alto-barra) + 8px + env(safe-area-inset-bottom));
+    left: 8px;
+    z-index: 19;
+    display: block;
+  }
+
+  .panel-mas > .tarjeta {
+    overflow: hidden;
+    box-shadow: var(--sombra-menu);
+  }
+
+  .panel-mas__enlace {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 0;
+    border-top: 1px solid var(--linea);
+    background: none;
+    color: var(--negro);
+    font-size: 14px;
+    font-weight: 550;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .panel-mas .tarjeta > :first-child,
+  .panel-mas .tarjeta > :first-child .panel-mas__enlace {
+    border-top: 0;
+  }
+
+  .panel-mas__enlace.es-actual {
+    font-weight: 650;
+  }
+
+  /* Hoy en celular: saludo grande a la izquierda y lo de hoy se desliza de lado */
+  .bienvenida {
+    padding: 0;
+    text-align: left;
+  }
+
+  .bienvenida h1 {
+    font-size: 28px;
+    line-height: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .bienvenida__resto {
+    display: none;
+  }
+
+  .bienvenida__apoyo {
+    display: block;
+    margin-top: 2px;
+  }
+
+  .caja-grande {
+    gap: 0;
+    padding: 0;
+    border-radius: 12px;
+    background: var(--gris);
+    box-shadow: none;
+  }
+
+  .caja-grande .buscador {
+    min-height: 44px;
+    padding: 0 14px;
+  }
+
+  .caja-grande .buscador > .icono {
+    display: block;
+  }
+
+  .caja-grande__atajos {
+    display: none;
+  }
+
+  .cartas {
+    display: flex;
+    gap: 12px;
+    margin: 0 -16px;
+    padding: 0 16px 4px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+  }
+
+  .carta {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+  }
+
+  .carta__foto {
+    height: 150px;
+  }
+
+  .seccion-titulo {
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+
+  .seccion-titulo h2 {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .cifras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Una cifra sola al final va a lo ancho */
+  .cifras > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .cifra__valor {
+    font-size: 19px;
+  }
+
+  .etapas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .etapas__etapa {
+    padding: 10px 12px 12px;
+  }
+
+  /* Pedidos en celular: cada pedido es una fila con su foto, nombre, total, fecha y encargada,
+     y sus dos insignias (la tabla se vuelve lista) */
+  .tabla--pedidos,
+  .tabla--pedidos tbody,
+  .tabla--pedidos td {
+    display: block;
+  }
+
+  .tabla--pedidos thead,
+  .tabla--pedidos colgroup,
+  .tabla--pedidos .solo-tabla {
+    display: none;
+  }
+
+  .tabla--pedidos tr {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "mini cliente total"
+      "mini apoyo apoyo"
+      "mini insignias insignias";
+    column-gap: 12px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--linea);
+  }
+
+  .tabla--pedidos td {
+    height: auto;
+    padding: 0 !important;
+    border: 0;
+    white-space: normal;
+  }
+
+  .tabla--pedidos .celda-mini { grid-area: mini; }
+  .tabla--pedidos .celda-cliente { grid-area: cliente; font-weight: 650; min-width: 0; }
+  .tabla--pedidos .celda-total { grid-area: total; font-weight: 650; text-align: right; white-space: nowrap; }
+  .tabla--pedidos .celda-apoyo { grid-area: apoyo; color: var(--texto-2); }
+
+  /* En celular la celda de la etapa lleva también la insignia del pago (solo-celular) */
+  .tabla--pedidos .celda-etapa { grid-area: insignias; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+
+  .tabla--pedidos .celda-cliente .tabla__enlace {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tarjeta--lista-celular {
+    width: calc(100% + 32px);
+    max-width: none;
+    margin: 0 -16px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .paginas {
+    border-top: 1px solid var(--linea);
+  }
+
+  /* Calendario en celular: los días más bajos y cada entrega es una barrita de color */
+  .calendario__dia {
+    min-height: 56px;
+    padding: 4px 3px 6px;
+  }
+
+  .calendario__entregas .etiqueta {
+    width: 100%;
+    height: 6px;
+    padding: 0;
+    border-radius: 3px;
+    font-size: 0;
+  }
+
+  .calendario__entregas .etiqueta::before {
+    display: none;
+  }
+
+  .calendario__entregas .etiqueta--ambar { background: var(--ambar); }
+  .calendario__entregas .etiqueta--rojo { background: var(--rojo); }
+  .calendario__entregas .etiqueta--gris { background: var(--gris-grafica); }
+
+  .tarjeta__pie .boton {
+    flex: 1 1 auto;
+  }
+}
