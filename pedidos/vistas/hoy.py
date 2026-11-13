@@ -5,9 +5,12 @@ solo se arman las frases y los botones de cada tarjeta, siempre con los datos de
 la usuaria (request.taller).
 
 Las acciones de "Qué hacer hoy" ("Marcar como listo" y "Marcar como entregado") cambian la
-etapa del pedido. Con HTMX responden la tarjeta "Qué hacer hoy" y, con hx-swap-oob, las
-otras partes que dependen de ella: las cifras, "Quién te debe", "Pedidos por etapa" y el
-contador de atrasados del menú. Sin JavaScript, vuelven a Hoy.
+etapa del pedido. Con HTMX responden lo de adentro de la lista de "Qué hacer hoy" (así la
+lista, que en el computador se desplaza por dentro, no vuelve arriba) y, con hx-swap-oob, las
+otras partes que dependen de ella: la cuenta de pendientes, las cifras, "Quién te debe",
+"Pedidos por etapa" y el contador de atrasados del menú. Sin JavaScript, vuelven a Hoy.
+No llevan aviso corto (config/avisos.py): el cambio se ve justo donde se tocó (la fila cambia
+o se cierra) y la demo tampoco lo tiene al cambiar de etapa.
 
 "Trabajos del taller" (_trabajos.html) es de T13.
 
@@ -48,8 +51,8 @@ ACCIONES = {
     "entregado": (Estado.ENTREGADO, (Estado.LISTO,)),
 }
 
-# Las partes que cambian, además de "Qué hacer hoy", cuando se hace una acción.
-CAMBIAN_CON_UNA_ACCION = ("cifras", "quien_debe", "etapas", "hoy_menu")
+# Las partes que cambian, además de la lista de "Qué hacer hoy", cuando se hace una acción.
+CAMBIAN_CON_UNA_ACCION = ("hoy_cuenta", "cifras", "quien_debe", "etapas", "hoy_menu")
 # Las que tienen plata: la costurera no las recibe (T21).
 PARTES_CON_PLATA = ("quien_debe",)
 
@@ -348,7 +351,7 @@ def accion(request, pk, accion):
         return redirect(reverse("pedidos:hoy") + "#hoy-que-hacer")
     contexto = contexto_de_hoy(request, timezone.localdate())
     contexto["menu_lateral"] = menu_de_hoy(request)
-    html = render_to_string("pedidos/_que_hacer.html", contexto, request=request)
+    html = render_to_string("pedidos/_hoy_pendientes.html", contexto, request=request)
     for parte in CAMBIAN_CON_UNA_ACCION:
         if parte in PARTES_CON_PLATA and not puede_ver_plata(request):
             continue

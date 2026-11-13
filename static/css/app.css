@@ -2909,6 +2909,170 @@ details > summary.fila::after {
 
 /* --- Hoy (inicio) --- */
 
+/* Hoy en la pantalla fija (pedidos/templates/pedidos/hoy.html). El tablero toma el alto de la
+   hoja y se reparte así, de arriba abajo:
+     - las cifras, la fila de la plata y "Pedidos por etapa" miden lo que su contenido;
+     - la fila de "Qué hacer hoy" y "Trabajos del taller" toma lo que queda: la lista se
+       desplaza por dentro y la foto crece o se achica;
+     - en la fila de la plata manda la gráfica; "Quién te debe" se desplaza por dentro.
+   La costurera no tiene la fila de la plata: su primera fila toma ese alto también. */
+@media (min-width: 768px) {
+  /* Si la ventana es tan baja que ni así cabe, se desplaza la hoja (no se monta nada encima) */
+  .hoja__contenido > .tablero.llenar {
+    min-height: min-content;
+  }
+
+  /* La primera fila no baja de lo que necesita "Trabajos del taller" con su foto más pequeña */
+  .tablero > .dos-columnas.llenar {
+    min-height: 210px;
+  }
+
+  /* La gráfica baja (alto_computador en _grafica.html) crece con el ancho de su tarjeta, hasta
+     un tope: con el menú contraído en una pantalla grande, queda centrada en vez de crecer más */
+  #hoy-grafica .grafica--computador {
+    max-height: 190px;
+  }
+
+  /* Pedidos por etapa: el número y su etiqueta ("1 atrasado", "Pagado") en la misma línea */
+  #hoy-etapas .etapas__etapa {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 8px;
+  }
+
+  #hoy-etapas .etapas__nombre {
+    flex-basis: 100%;
+  }
+}
+
+/* Pantallas bajas (1366 x 768): todo un poco más apretado para que quepa */
+@media (min-width: 768px) and (max-height: 900px) {
+  /* Cifras: menos relleno y renglones más juntos */
+  #hoy-cifras .cifra {
+    padding: 9px 16px;
+  }
+
+  #hoy-cifras .cifra__nombre,
+  #hoy-cifras .cifra__apoyo {
+    line-height: 1.35;
+  }
+
+  #hoy-cifras .cifra__valor {
+    line-height: 1.15;
+  }
+
+  /* Cabezas de tarjeta un poco más bajas */
+  #hoy-que-hacer .tarjeta__cabeza,
+  .tablero .tarjeta--fotos .tarjeta__cabeza,
+  #hoy-quien-debe .tarjeta__cabeza,
+  #hoy-etapas .tarjeta__cabeza {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  /* La gráfica no pasa de 114 px de alto (su alto con el menú abierto en 1366 px de ancho): si
+     su tarjeta es más ancha, queda centrada */
+  #hoy-grafica {
+    gap: 6px;
+    padding: 10px 16px;
+  }
+
+  #hoy-grafica .cifra-grande {
+    line-height: 1.2;
+  }
+
+  #hoy-grafica .grafica--computador {
+    max-height: 114px;
+  }
+
+  /* Quién te debe: filas un poco más juntas (caben las de la altura de la gráfica) */
+  #hoy-quien-debe .fila-proporcion {
+    gap: 3px 12px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    line-height: 1.35;
+  }
+
+  /* La nota de "Trabajos del taller", más junta */
+  .tablero .tarjeta--fotos .tarjeta__nota {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    line-height: 1.35;
+  }
+
+  #hoy-etapas .etapas__etapa {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  #hoy-etapas .etapas__nombre {
+    line-height: 1.35;
+  }
+
+  #hoy-etapas .etapas__cantidad {
+    line-height: 1.2;
+  }
+}
+
+/* Si el tablero es angosto (una tableta, o el computador con la ventana a medio ancho) y las
+   tarjetas de una fila ya no caben de lado a lado (440 + 300 px y su separación), Hoy se
+   apila como antes: cada tarjeta mide lo que su contenido y lo que no cabe se desplaza en la
+   hoja. Se mide el ancho del tablero, no el de la ventana (@container), porque depende de si
+   el menú está contraído. */
+@media (min-width: 768px) {
+  .hoja__contenido > .tablero.llenar {
+    container-type: inline-size;
+  }
+}
+
+@container (max-width: 755.98px) {
+  .tablero > .dos-columnas.llenar {
+    flex: none;
+    flex-wrap: wrap;
+  }
+
+  .tablero > .dos-columnas.llenar > * {
+    min-height: auto;
+  }
+
+  #hoy-que-hacer.llenar,
+  #hoy-quien-debe.llenar,
+  .tablero .tarjeta--fotos.llenar {
+    flex: 1 0 auto;
+  }
+
+  #hoy-que-hacer .desplazable,
+  #hoy-quien-debe .desplazable {
+    flex: none;
+    overflow-y: visible;
+  }
+
+  .tablero .tarjeta--fotos.llenar .fotos {
+    flex: none;
+    height: 264px;
+  }
+
+  .tablero .tarjeta--fotos.llenar .fotos-vacio {
+    flex: 1 0 auto;
+    min-height: 264px;
+  }
+}
+
+/* En celular, Hoy queda como estaba. La lista de "Quién te debe" va ahora dentro de su parte
+   que se desplaza (en el computador): la cabeza conserva el relleno apretado de celular. */
+@media (max-width: 767.98px) {
+  #hoy-quien-debe .tarjeta__cabeza:has(+ .desplazable) {
+    padding-bottom: 3px;
+  }
+}
+
+/* La nota de "Qué hacer hoy" sin pendientes va dentro de su lista: sin relleno de más arriba,
+   como cuando iba justo debajo de la cabeza. */
+#hoy-que-hacer-lista > .tarjeta__nota:only-child {
+  padding-top: 0;
+}
+
 /* --- Hoy (fin) --- */
 
 

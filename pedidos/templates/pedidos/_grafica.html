@@ -1,9 +1,11 @@
 {% load piezas %}{% comment %}
 Tarjeta "Cobrado y gastado por mes" (T06): lo cobrado en el mes actual y la gráfica de los
 últimos seis meses (calculos.grafica_cobrado_y_gastado, dibujada con la pieza grafica_barras).
+En el computador va la gráfica baja (alto_computador), para que Hoy quepa en la pantalla fija;
+en celular, la de siempre.
 {% endcomment %}<section class="tarjeta tarjeta--grafica" id="hoy-grafica" aria-labelledby="t-grafica">
 <div class="tarjeta__cabeza"><h2 id="t-grafica">Cobrado y gastado por mes</h2><div class="leyenda"><span class="leyenda__serie"><span class="leyenda__color leyenda__color--cobrado"></span>Cobrado</span><span class="leyenda__serie"><span class="leyenda__color leyenda__color--gastado"></span>Gastado</span></div></div>
 <div class="cifra-grande"><span class="dinero">{{ cobrado_del_mes|pesos }}</span> <span class="cifra-grande__apoyo">cobrado en {{ nombre_del_mes }}</span></div>
-{% grafica_barras meses %}
+{% grafica_barras meses alto_computador=114 %}
 <p class="nota">{{ nota_grafica }}</p>
 </section>
