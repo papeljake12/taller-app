@@ -1,0 +1,3 @@
+# Los archivos para el servidor (Linux) siempre con fin de línea de Linux, aunque se editen
+# en Windows: un script de bash con fines de línea de Windows no corre.
+herramientas/servidor/** text eol=lf

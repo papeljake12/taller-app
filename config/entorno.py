@@ -60,6 +60,22 @@ def booleano(nombre: str, defecto: bool) -> bool:
     raise ImproperlyConfigured(f"La variable {nombre} debe ser True o False, no «{valor}».")
 
 
-def lista(nombre: str, defecto: str = "") -> list[str]:
-    """Devuelve una lista a partir de valores separados por comas."""
+def lista(nombre: str, defecto: str | None = "") -> list[str]:
+    """Devuelve una lista a partir de valores separados por comas.
+
+    Con defecto=None es obligatoria, igual que texto().
+    """
     return [parte.strip() for parte in texto(nombre, defecto).split(",") if parte.strip()]
+
+
+def elegir_ajustes(raiz: Path, defecto: str) -> None:
+    """Lee el .env de la raíz y deja escogido el archivo de ajustes (DJANGO_SETTINGS_MODULE).
+
+    Lo usan manage.py y config/wsgi.py antes de arrancar Django. Así, en el servidor basta
+    con escribir DJANGO_SETTINGS_MODULE=config.settings.produccion en el .env (o en el
+    servicio de Gunicorn) para que todos los comandos usen los ajustes de producción.
+    Si no está, o está vacía, se usa el valor por defecto.
+    """
+    cargar(raiz / ".env")
+    if not os.environ.get("DJANGO_SETTINGS_MODULE", "").strip():
+        os.environ["DJANGO_SETTINGS_MODULE"] = defecto

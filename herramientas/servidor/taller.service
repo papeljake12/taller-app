@@ -1,0 +1,49 @@
+# Servicio de systemd que mantiene encendida la aplicación (Gunicorn) en el servidor.
+#
+# PLANTILLA: reemplaza TU_USUARIO por tu usuario de Linux en el servidor (el que creaste en
+# el paso 4 de docs/guia-publicacion.md). No hay más valores que cambiar.
+#
+# Va en /etc/systemd/system/taller.service (paso 12 de la guía). Se maneja con:
+#   sudo systemctl start taller      encender
+#   sudo systemctl stop taller       apagar
+#   sudo systemctl restart taller    reiniciar (después de cada actualización)
+#   sudo systemctl status taller     ver si está encendida
+#   journalctl -u taller -f          ver lo que va escribiendo (Ctrl+C para salir)
+
+[Unit]
+Description=Taller: aplicación web (Gunicorn)
+# Arranca después de la red y de PostgreSQL.
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+# Gunicorn le avisa a systemd cuando ya está listo para recibir visitas.
+Type=notify
+NotifyAccess=main
+# Corre con tu usuario, nunca como root. El grupo www-data es el de NGINX.
+User=TU_USUARIO
+Group=www-data
+# Los archivos que se suban (fotos, logos) quedan legibles para NGINX.
+UMask=0022
+WorkingDirectory=/srv/taller/app
+# Los ajustes de producción (config/settings/produccion.py). Los demás valores, en el .env.
+Environment=DJANGO_SETTINGS_MODULE=config.settings.produccion
+# 3 procesos atienden a la vez (alcanza para un taller en un servidor de 1 o 2 núcleos).
+# Solo escucha en 127.0.0.1: desde internet no se llega aquí directo, solo pasando por NGINX.
+ExecStart=/srv/taller/app/.venv/bin/gunicorn config.wsgi:application \
+    --workers 3 \
+    --bind 127.0.0.1:8000 \
+    --timeout 60
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=10
+# Si se cae, systemd la vuelve a encender a los 5 segundos.
+Restart=on-failure
+RestartSec=5
+# Protecciones sencillas: carpeta temporal propia y sin forma de ganar más permisos.
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+# Arranca sola cuando el servidor se reinicia.
+WantedBy=multi-user.target
