@@ -1,0 +1,7 @@
+{% comment %}
+Los filtros de Pedidos con su conteo. Cada uno guarda lo que se está buscando (?filtro=&q=).
+Mientras se escribe en el buscador, llegan de nuevo junto a la tabla (hx-swap-oob) para que
+sus enlaces lleven lo buscado.
+{% endcomment %}<div class="filtros" id="filtros-pedidos" role="group" aria-label="Filtrar pedidos"{% if fuera_de_lugar %} hx-swap-oob="true"{% endif %}>
+{% for f in filtros %}{% include "piezas/_filtro.html" with texto=f.texto conteo=f.conteo elegido=f.elegido url=f.url %}
+{% endfor %}</div>

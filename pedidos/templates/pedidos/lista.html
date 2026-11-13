@@ -1,12 +1,28 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Pedidos (diseno/pedidos.html), T05. La rellena el carril A de la tanda 3.{% endcomment %}
+{% comment %}Pedidos (diseno/pedidos.html), T05: filtros con su conteo, buscador y la tabla.{% endcomment %}
 {% block pestana %}Pedidos{% endblock %}
 {% block titulo %}Pedidos{% endblock %}
-{% block apoyo %}{% endblock %}
+{% block apoyo %}<span class="encabezado__apoyo">{{ total }} pedido{{ total|pluralize }}</span>{% endblock %}
 {% block acciones %}{% include "piezas/_boton_excel.html" %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-lista">
-<div class="tarjeta__cabeza"><h2 id="t-lista">Lista de pedidos</h2></div>
-<p class="tarjeta__nota">Llega con T05.</p>
+{% if total %}
+{% include "pedidos/_lista_filtros.html" %}
+<section class="tarjeta tarjeta--lista tarjeta--con-buscador" aria-labelledby="t-lista">
+<h2 class="oculto" id="t-lista">Lista de pedidos</h2>
+{# Sin JavaScript, el buscador se envía con Enter. Con HTMX, la tabla cambia mientras se escribe. #}
+<form role="search" action="{% url 'pedidos:lista' %}" hx-get="{% url 'pedidos:lista' %}" hx-trigger="input delay:300ms, submit" hx-target="#lista-pedidos" hx-swap="outerHTML" hx-push-url="true">
+<input type="hidden" name="filtro" value="{{ filtro }}">
+<label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar pedido</span><input type="search" name="q" value="{{ q }}" placeholder="Buscar por cliente, prenda o encargada" autocomplete="off"></label>
+</form>
+{% include "pedidos/_lista_tabla.html" %}
 </section>
+{% else %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-lista">
+<div class="tarjeta__cabeza"><h2 id="t-lista">Todavía no hay pedidos</h2></div>
+<div class="tarjeta__cuerpo">
+<p>Crea el primero y aparecerá aquí, con su etapa, su fecha de entrega y lo que falta por pagar.</p>
+<div class="botones">{% include "piezas/_boton_nuevo_pedido.html" %}</div>
+</div>
+</section>
+{% endif %}
 {% endblock %}

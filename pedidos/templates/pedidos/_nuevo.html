@@ -1,3 +1,12 @@
 {% extends "piezas/ventana.html" %}
+{% comment %}Ventana "Nuevo pedido" (T05). El cuadro "pega el mensaje y la IA lo llena" es de la etapa 3.{% endcomment %}
 {% block titulo %}Nuevo pedido{% endblock %}
-{% block cuerpo %}<p class="texto-2">Llega con T05.</p>{% endblock %}
+{% block cuerpo %}
+{% include "piezas/_aviso.html" with mensajes=aviso %}
+<div class="campos">{% include "piezas/_campo.html" with campo=form.cliente %}{% include "piezas/_campo.html" with campo=form.tipo %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.detalle %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.cantidad %}{% include "piezas/_campo.html" with campo=form.tallaje %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.fecha_entrega %}{% include "piezas/_campo.html" with campo=form.total %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.whatsapp %}</div>
+{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">Guardar pedido</button>{% endblock %}
