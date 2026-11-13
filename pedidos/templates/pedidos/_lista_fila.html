@@ -1,7 +1,9 @@
 {% load piezas %}{% comment %}
 Una fila de la tabla de pedidos. El nombre del cliente es el enlace que abre el pedido.
 `fila` sale de pedidos/vistas/lista.py (FilaPedido). La columna Saldo solo la ve la dueña (T21).
-{% endcomment %}{% with p=fila.pedido %}<tr class="tabla__fila">
+Su id (pedido-12) no cambia: mientras se escribe en el buscador, solo entran y salen las filas
+que cambian (static/js/app.js, "Lo que entra y sale"); las que siguen se quedan quietas.
+{% endcomment %}{% with p=fila.pedido %}<tr class="tabla__fila" id="pedido-{{ p.pk }}">
 <td><a class="tabla__enlace" href="{% url 'pedidos:detalle' p.pk %}"><strong>{{ p.cliente.nombre }}</strong></a><br><span class="texto-2">{{ p.detalle }}</span></td>
 <td>{% include "piezas/_etiqueta.html" with texto=fila.etapa.texto tono=fila.etapa.tono %}</td>
 <td>{{ p.fecha_entrega|fecha_corta }}{% if fila.urgencia %}<br>{% include "piezas/_etiqueta.html" with texto=fila.urgencia.texto tono=fila.urgencia.tono %}{% endif %}</td>

@@ -139,8 +139,35 @@ def test_cada_fila_abre_su_pedido(sesion_duena, ejemplo):
 def test_la_tabla_se_desplaza_dentro_de_su_tarjeta(sesion_duena, ejemplo):
     html = sesion_duena.get(LISTA).text
 
-    assert '<div class="tabla-contenedor">' in html
+    # Pantalla fija: la tarjeta llega hasta abajo y solo la tabla se desplaza por dentro.
+    assert 'class="tarjeta tarjeta--lista tarjeta--con-buscador llenar"' in html
+    assert '<div class="zona-tabla" id="lista-pedidos">' in html
+    assert '<div class="tabla-contenedor desplazable" id="lista-pedidos-tabla">' in html
     assert '<table class="tabla tabla--pedidos">' in html
+
+
+def test_cada_fila_tiene_un_id_que_no_cambia_al_buscar(sesion_duena, ejemplo):
+    """Mientras se escribe, solo entran y salen las filas que cambian: se reconocen por su id."""
+    ferreteria = Pedido.objects.get(taller=ejemplo, cliente__nombre="Ferretería La Esquina")
+    pagina = sesion_duena.get(LISTA).text
+    buscado = sesion_duena.get(LISTA, {"q": "esquina"}, headers=HTMX).text
+
+    ids = re.findall(r'<tr class="tabla__fila" id="([^"]+)">', pagina)
+    assert len(ids) == 6
+    assert ids == [
+        f"pedido-{Pedido.objects.get(taller=ejemplo, cliente__nombre=nombre).pk}"
+        for nombre in clientes_en_orden(pagina)
+    ]
+    # La misma fila lleva el mismo id en la página y en la respuesta del buscador.
+    assert re.findall(r'<tr class="tabla__fila" id="([^"]+)">', buscado) == [
+        f"pedido-{ferreteria.pk}"]
+
+
+def test_el_aviso_de_nada_coincide_tiene_su_id(sesion_duena, ejemplo):
+    html = sesion_duena.get(LISTA, {"q": "zapatos"}, headers=HTMX).text
+
+    assert '<div class="tarjeta__cuerpo" id="lista-pedidos-vacia">' in html
+    assert "lista-pedidos-tabla" not in html
 
 
 def test_sin_pedidos_invita_a_crear_el_primero(sesion_duena):
@@ -213,7 +240,7 @@ def test_mientras_se_escribe_htmx_recibe_solo_la_tabla_y_los_filtros(sesion_duen
     html = respuesta.text
 
     assert "<html" not in html
-    assert html.lstrip().startswith('<div id="lista-pedidos">')
+    assert html.lstrip().startswith('<div class="zona-tabla" id="lista-pedidos">')
     assert clientes_en_orden(html) == ["Ferretería La Esquina"]
     assert 'aria-label="Filtrar pedidos" hx-swap-oob="true"' in html
     assert "HX-Request" in respuesta["Vary"]
@@ -315,6 +342,35 @@ def test_crear_un_pedido_sin_javascript_lleva_al_detalle(sesion_duena):
     pedido = Pedido.objects.get()
     assert respuesta.status_code == 302
     assert respuesta.url == reverse("pedidos:detalle", args=[pedido.pk])
+
+
+AVISO_PEDIDO = '<div id="avisos-pendientes" hidden><p data-aviso>Pedido guardado.</p></div>'
+
+
+def test_al_crear_un_pedido_el_detalle_muestra_el_aviso_de_la_demo(sesion_duena):
+    """La ventana lleva al pedido nuevo: el aviso ("Pedido guardado.", de la demo) sale allí."""
+    respuesta = sesion_duena.post(NUEVO, datos_validos(), headers=HTMX)
+
+    assert "HX-Trigger" not in respuesta  # se va a otra página: no va en la cabecera
+    detalle = sesion_duena.get(respuesta["HX-Redirect"]).text
+    assert AVISO_PEDIDO in detalle
+    # Sale una sola vez: al volver a abrir el pedido ya no está.
+    assert "avisos-pendientes" not in sesion_duena.get(respuesta["HX-Redirect"]).text
+
+
+def test_al_crear_un_pedido_sin_javascript_tambien_avisa(sesion_duena):
+    respuesta = sesion_duena.post(NUEVO, datos_validos(), follow=True)
+
+    assert respuesta.redirect_chain[0][1] == 302
+    assert AVISO_PEDIDO in respuesta.text
+
+
+def test_un_formulario_con_errores_no_avisa(sesion_duena):
+    respuesta = sesion_duena.post(NUEVO, datos_validos(cliente=""), headers=HTMX)
+
+    assert respuesta.status_code == 422
+    assert "HX-Trigger" not in respuesta
+    assert "avisos-pendientes" not in sesion_duena.get(LISTA).text
 
 
 def test_sin_javascript_la_ventana_abre_como_pagina(sesion_duena):
@@ -499,6 +555,15 @@ def test_el_buscador_del_menu_encuentra_pedidos_y_clientes(sesion_duena, ejemplo
     assert "Empresa" in html
 
 
+def test_en_buscar_cada_lista_de_resultados_se_desplaza_en_su_tarjeta(sesion_duena, ejemplo):
+    html = sesion_duena.get(BUSCAR, {"q": "ESQUINA"}).text
+
+    assert html.count('class="tarjeta tarjeta--lista tarjeta--resultados"') == 2
+    assert '<div class="tabla-contenedor desplazable" id="resultados-pedidos-tabla">' in html
+    assert re.search(r'<div class="desplazable">\s*<div class="fila fila--compacta fila--enlace">',
+                     html)
+
+
 def test_el_buscador_del_menu_no_mira_tildes_ni_mayusculas(sesion_duena, ejemplo):
     html = sesion_duena.get(BUSCAR, {"q": "fogon costeno"}).text
 
@@ -545,3 +610,97 @@ def test_el_buscador_del_menu_no_muestra_nada_de_otro_taller(sesion_duena, talle
 
     assert "Cliente ajeno" not in html and "Otro ajeno" not in html
     assert "No hay pedidos ni clientes que coincidan" in html
+
+
+# --- Pantalla fija con muchos pedidos (en Chrome) -----------------------------------------------
+
+# Cada lista que se desplaza por dentro: cuánto se ve y cuánto mide. Después de bajarla, si el
+# encabezado de su tabla quedó arriba (fijo).
+MEDIR_LISTAS = """() => {
+  const pagina = document.scrollingElement;
+  const hoja = document.querySelector('.hoja__contenido');
+  const listas = {};
+  document.querySelectorAll('.desplazable').forEach(lista => {
+    const nombre = lista.closest('section').getAttribute('aria-labelledby');
+    lista.scrollTop = 400;
+    const th = lista.querySelector('th');
+    listas[nombre] = {
+      se_ve: lista.clientHeight, mide: lista.scrollHeight,
+      encabezado_fijo: th ? Math.abs(th.getBoundingClientRect().top
+                                     - lista.getBoundingClientRect().top) < 1 : null,
+    };
+  });
+  return {pagina: pagina.scrollHeight, ventana: innerHeight,
+          hoja: hoja.scrollHeight, cabe: hoja.clientHeight, listas: listas};
+}"""
+
+
+def _abrir_chrome():
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        pytest.skip("Playwright no está instalado (uv sync con el grupo dev).")
+    manejador = sync_playwright().start()
+    try:
+        return manejador, manejador.chromium.launch(channel="chrome")
+    except Exception as error:  # noqa: BLE001 (sin Chrome no hay prueba)
+        manejador.stop()
+        pytest.skip(f"No se pudo abrir Chrome: {error}")
+
+
+@pytest.mark.django_db(transaction=True)
+def test_con_muchos_pedidos_solo_la_lista_se_desplaza(live_server):
+    """Con 40 pedidos y 25 clientes más, Pedidos y Buscar caben en 1366 x 768 y en 1920 x 1080:
+    la página y la hoja quedan quietas y solo las listas se desplazan, con el encabezado fijo.
+    En Buscar, una lista corta se ve entera y la larga toma el resto. En celular, igual que
+    antes: la página se desliza."""
+    from django.test import Client
+
+    from cuentas.models import Usuario
+
+    taller = ejemplos.cargar(con_fotos=False)
+    grande = fabricas.crear_cliente(taller, "Colegio grande de prueba", tipo="colegio")
+    for numero in range(40):
+        fabricas.crear_pedido(taller, grande, detalle=f"Uniformes de prueba {numero}")
+    for numero in range(25):
+        fabricas.crear_cliente(taller, f"Colegio de prueba {numero}")
+    navegador_django = Client()
+    navegador_django.force_login(Usuario.objects.get(taller=taller, rol=Usuario.Rol.DUENA))
+    sesion = navegador_django.cookies["sessionid"].value
+
+    manejador, navegador = _abrir_chrome()
+    medidas = {}
+    try:
+        for ancho, alto in [(1366, 768), (1920, 1080), (390, 844)]:
+            contexto = navegador.new_context(viewport={"width": ancho, "height": alto})
+            contexto.add_cookies([{"name": "sessionid", "value": sesion,
+                                   "url": live_server.url}])
+            pagina = contexto.new_page()
+            for direccion in ["/pedidos/", "/buscar/?q=colegio", "/buscar/?q=colegio+grande"]:
+                pagina.goto(live_server.url + direccion, wait_until="load")
+                pagina.evaluate("document.fonts.ready")
+                medidas[(direccion, ancho)] = pagina.evaluate(MEDIR_LISTAS)
+            contexto.close()
+    finally:
+        navegador.close()
+        manejador.stop()
+
+    for (direccion, ancho), medida in medidas.items():
+        donde = f"{direccion} en {ancho} px"
+        if ancho < 768:
+            assert medida["pagina"] > medida["ventana"], f"{donde}: el celular se desliza"
+            continue
+        assert medida["pagina"] <= medida["ventana"], f"{donde}: la página se desplaza"
+        assert medida["hoja"] <= medida["cabe"] + 1, f"{donde}: la hoja no cabe"
+        pedidos = medida["listas"]["t-lista" if direccion == "/pedidos/" else "t-pedidos"]
+        assert pedidos["mide"] > pedidos["se_ve"], f"{donde}: la tabla se desplaza por dentro"
+        assert pedidos["encabezado_fijo"], f"{donde}: el encabezado de la tabla queda fijo"
+    for ancho in (1366, 1920):
+        # Muchos pedidos y muchos clientes: las dos listas se desplazan, mitad y mitad.
+        listas = medidas[("/buscar/?q=colegio", ancho)]["listas"]
+        assert listas["t-clientes"]["mide"] > listas["t-clientes"]["se_ve"]
+        assert abs(listas["t-clientes"]["se_ve"] - listas["t-pedidos"]["se_ve"]) <= 2
+        # Muchos pedidos y un cliente: el cliente se ve entero y los pedidos toman el resto.
+        listas = medidas[("/buscar/?q=colegio+grande", ancho)]["listas"]
+        assert listas["t-clientes"]["mide"] <= listas["t-clientes"]["se_ve"] + 1
+        assert listas["t-pedidos"]["se_ve"] > 3 * listas["t-clientes"]["se_ve"]
