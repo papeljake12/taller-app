@@ -21,9 +21,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
 
-from config.esqueleto import todavia_no
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
+from finanzas.excel import TIPO_DE_ARCHIVO, libro_del_taller, nombre_del_archivo
 from finanzas.formularios import FormularioGasto
 from finanzas.models import Gasto
 from pedidos import calculos
@@ -222,5 +222,13 @@ def gasto_quitar(request, pk):
 # --- Descarga para Excel ------------------------------------------------------------------
 
 
+@require_GET
 def excel(request):
-    return todavia_no("T18")
+    """Todo lo del taller en un archivo de Excel (finanzas/excel.py), para descargar.
+
+    Es el mismo archivo desde Hoy, Pedidos y Resumen (piezas/_boton_excel.html).
+    """
+    respuesta = HttpResponse(libro_del_taller(request.taller), content_type=TIPO_DE_ARCHIVO)
+    nombre = nombre_del_archivo(request.taller, timezone.localdate())
+    respuesta["Content-Disposition"] = f'attachment; filename="{nombre}"'
+    return respuesta
