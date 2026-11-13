@@ -27,6 +27,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from config.red import ip_del_cliente
 from config.ventanas import es_htmx
 from pedidos.formularios.publico import TallaPublicaForm
 from pedidos.models import Pedido, Talla
@@ -48,9 +49,9 @@ def _pagina(request, parte, contexto, status=200):
 
 
 def _ip(request):
-    # Por ahora, la dirección con la que llega la petición. Detrás de NGINX (T24) hay que
-    # leer la que NGINX deja en X-Forwarded-For, o todos los celulares contarían como uno.
-    return request.META.get("REMOTE_ADDR", "")
+    # La dirección real del celular, también detrás de NGINX: si no, todos los celulares
+    # contarían como uno solo (127.0.0.1). Ver config/red.py.
+    return ip_del_cliente(request)
 
 
 def _demasiados_envios(request, token):
