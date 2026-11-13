@@ -2517,6 +2517,12 @@ select.campo__control:not(.boton-select) {
     min-height: 0;
   }
 
+  /* ... pero sus columnas sí se angostan si la hoja es angosta (van en fila): así la de la
+     derecha no se sale por el borde (lo notó el carril de Resumen) */
+  .dos-columnas.llenar > * {
+    flex-shrink: 1;
+  }
+
   /* La parte de una tarjeta que se desplaza por dentro (una tabla, una lista de filas) */
   .desplazable {
     flex: 1 1 0;
