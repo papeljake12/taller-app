@@ -1,12 +1,29 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Resultados del buscador del menú (pedidos y clientes), T05. La rellena el carril A de la tanda 3.{% endcomment %}
+{% comment %}Resultados del buscador del menú (T05): pedidos y clientes del taller, sin importar tildes ni mayúsculas.{% endcomment %}
 {% block pestana %}Buscar{% endblock %}
 {% block titulo %}Buscar{% endblock %}
 {% block apoyo %}{% if q %}<span class="encabezado__apoyo">«{{ q }}»</span>{% endif %}{% endblock %}
-{% block acciones %}{% endblock %}
+{% block acciones %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-resultados">
-<div class="tarjeta__cabeza"><h2 id="t-resultados">Resultados</h2></div>
-<p class="tarjeta__nota">Llega con T05.</p>
+<section class="tarjeta tarjeta--lista tarjeta--con-buscador" aria-labelledby="t-buscar">
+<h2 class="oculto" id="t-buscar">Buscar pedidos y clientes</h2>
+<form role="search" action="{% url 'pedidos:buscar' %}">
+<label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar pedidos y clientes</span><input type="search" name="q" value="{{ q }}" placeholder="Buscar por cliente, prenda o encargada" autocomplete="off"></label>
+</form>
+{% if not q %}<p class="tarjeta__nota">Escribe el nombre de un cliente, una prenda o una encargada. No importan las tildes ni las mayúsculas.</p>
+{% elif not filas and not clientes %}<p class="tarjeta__nota">No hay pedidos ni clientes que coincidan con «{{ q }}». Revisa cómo lo escribiste o busca con menos letras.</p>
+{% endif %}
 </section>
+{% if filas %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-pedidos">
+<div class="tarjeta__cabeza"><h2 id="t-pedidos">Pedidos</h2><span class="tarjeta__aparte">{{ filas|length }} pedido{{ filas|length|pluralize }}</span></div>
+{% include "pedidos/_lista_tabla.html" with id_tabla="resultados-pedidos" %}
+</section>
+{% endif %}
+{% if clientes %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-clientes">
+<div class="tarjeta__cabeza"><h2 id="t-clientes">Clientes</h2><span class="tarjeta__aparte">{{ clientes|length }} cliente{{ clientes|length|pluralize }}</span></div>
+{% for cliente in clientes %}<div class="fila fila--compacta"><div class="fila__texto"><a href="{% url 'pedidos:clientes' %}?q={{ cliente.nombre|urlencode }}"><strong>{{ cliente.nombre }}</strong></a> <span class="texto-2">· {{ cliente.get_tipo_display }}</span></div></div>
+{% endfor %}</section>
+{% endif %}
 {% endblock %}

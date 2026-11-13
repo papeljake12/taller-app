@@ -1,0 +1,19 @@
+{% load piezas %}{% comment %}
+La tabla de Pedidos (o su aviso de "nada coincide"). El buscador la pide sola mientras se
+escribe, por eso tiene un id fijo. También la usa la página del buscador del menú.
+  {% include "pedidos/_lista_tabla.html" with filas=filas %}
+- url_todos: si se da, el aviso de "nada coincide" ofrece "Ver todos".
+{% endcomment %}<div id="{{ id_tabla|default:'lista-pedidos' }}">
+{% if filas %}<div class="tabla-contenedor">
+<table class="tabla">
+<thead><tr><th scope="col">Cliente y pedido</th><th scope="col">Etapa</th><th scope="col">Entrega</th><th scope="col">Encargada</th><th scope="col">Tallas</th><th scope="col" class="num">Saldo</th></tr></thead>
+<tbody>
+{% for fila in filas %}{% include "pedidos/_lista_fila.html" %}
+{% endfor %}</tbody>
+</table>
+</div>
+{% else %}<div class="tarjeta__cuerpo">
+<p>{% if q %}Ningún pedido coincide con lo que buscas.{% else %}Ningún pedido en este filtro.{% endif %}</p>
+{% if url_todos %}<div class="botones"><a class="boton" href="{{ url_todos }}">Ver todos</a></div>{% endif %}
+</div>{% endif %}
+</div>
