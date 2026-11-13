@@ -63,6 +63,25 @@ def test_muestra_recibidas_y_una_barra_por_talla_como_el_diseno(pedido, duena):
     assert "Copiar resumen" in html
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason="Falta que el coordinador ponga tarjeta_tallas en pedidos/vistas/detalle.py. "
+    "Cuando lo haga, esta prueba pasa: hay que quitar esta marca y la tarjeta de reserva "
+    "({% else %}) de pedidos/_tallas.html.",
+)
+def test_la_ficha_del_pedido_muestra_la_tarjeta_completa(sesion_duena, pedido):
+    fabricas.crear_talla(pedido, talla="M")
+
+    html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
+
+    assert 'id="tarjeta-tallas"' in html
+    assert "1 de 18 <span" in html
+    assert "Copiar enlace para el cliente" in html
+    assert "Copiar resumen" in html
+    assert f'action="{reverse("pedidos:tallas_enlace", args=[pedido.pk])}"' in html
+    assert f'action="{reverse("pedidos:talla_nueva", args=[pedido.pk])}"' in html
+
+
 def test_sin_tallas_invita_a_mandar_el_enlace(pedido, duena):
     html = dibujar(pedido, duena)
 
