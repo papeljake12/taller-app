@@ -1,0 +1,39 @@
+{% load piezas %}{% comment %}
+El formulario del cotizador (T15, diseno/cotizador.html): las cuatro tarjetas de datos a la
+izquierda y el resultado a la derecha (_resultado.html).
+
+Mientras se escribe, HTMX lo manda a cotizador:calcular y cambia solo el resultado
+(id="resultado"). Los botones que guardan o crean algo mandan el formulario entero a su
+dirección (formaction) y reciben el formulario entero (id="cotizador").
+hx-sync: si se escribe mientras un cálculo no ha vuelto, se hace uno más al final (el resultado
+siempre es el de lo último escrito). Los botones van aparte (this:drop).
+Sin JavaScript, "Calcular" (en el resultado) hace un envío normal.
+El primer botón del formulario es un "Calcular" escondido: Enter en un campo calcula, en
+vez de tocar el primer botón que se vea (que podría ser "Quitar de mi lista").
+{% endcomment %}{% url 'cotizador:calcular' as url_calcular %}{% url 'cotizador:prenda_guardar' as url_guardar %}<form class="dos-columnas" id="cotizador" method="post" action="{{ url_calcular }}" hx-post="{{ url_calcular }}" hx-trigger="input changed delay:300ms, change, submit" hx-target="#resultado" hx-swap="outerHTML" hx-sync="this:queue last" novalidate>
+{% csrf_token %}{{ form.aplicada }}<button type="submit" class="oculto" tabindex="-1" aria-hidden="true">Calcular</button>
+<div class="columna-ancha columna">
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-para-quien">
+<div class="tarjeta__cabeza"><h2 id="t-para-quien">Para quién</h2></div>
+<div class="tarjeta__cuerpo">
+<div class="campos">{% include "piezas/_campo.html" with campo=form.cliente %}{% include "piezas/_campo.html" with campo=form.tipo %}{% include "piezas/_campo.html" with campo=form.whatsapp %}</div>
+</div>
+</section>
+{% include "cotizador/_que_prenda.html" %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-costo">
+<div class="tarjeta__cabeza"><h2 id="t-costo">Cuánto cuesta hacer una</h2></div>
+<div class="tarjeta__cuerpo">
+<div class="campos">{% include "piezas/_campo.html" with campo=form.metros %}{% include "piezas/_campo.html" with campo=form.precio_metro %}{% include "piezas/_campo.html" with campo=form.insumos %}</div>
+<div class="campos">{% include "piezas/_campo.html" with campo=form.mano_obra %}{% include "piezas/_campo.html" with campo=form.extra %}</div>
+</div>
+</section>
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-ganancia">
+<div class="tarjeta__cabeza"><h2 id="t-ganancia">Tu ganancia</h2></div>
+<div class="tarjeta__cuerpo">
+<div class="campos">{% include "piezas/_campo.html" with campo=form.ganancia %}{% include "piezas/_campo.html" with campo=form.abono %}</div>
+<div class="botones"><button type="submit" class="boton" formaction="{{ url_guardar }}" hx-post="{{ url_guardar }}" hx-target="#cotizador" hx-swap="outerHTML" hx-sync="this:drop">Guardar esta prenda en mi lista</button></div>
+</div>
+</section>
+</div>
+{% include "cotizador/_resultado.html" %}
+</form>
