@@ -137,6 +137,12 @@
     ];
   }
 
+  // Si el servidor dice que esa acción no le toca (403), la página estaba desactualizada
+  // (por ejemplo, le quitaron el pedido a la costurera): se recarga para mostrar lo de ahora.
+  document.addEventListener("htmx:responseError", function (evento) {
+    if (evento.detail.xhr && evento.detail.xhr.status === 403) window.location.reload();
+  });
+
   /* 5. Ventana ------------------------------------------------------------- */
 
   // En base.html hay una sola <dialog id="ventana">. Un botón o enlace la llena así:

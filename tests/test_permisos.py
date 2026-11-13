@@ -326,6 +326,8 @@ def test_abrir_y_cerrar_el_enlace_de_tallas_es_de_la_duena(entrar, rol, pedido):
 
 @pytest.mark.parametrize("rol", ROLES)
 def test_agregar_tallas_a_mano(entrar, rol, pedido):
+    # Las dos agregan tallas a mano; quitarlas es solo de la dueña (la tabla solo le da a
+    # la costurera "agregar"; ver test_la_costurera_agrega_tallas_pero_no_las_quita).
     cliente = entrar(rol)
 
     agregar = cliente.post(
@@ -337,8 +339,13 @@ def test_agregar_tallas_a_mano(entrar, rol, pedido):
         reverse("pedidos:talla_quitar", args=[pedido.pk, nueva.pk]), headers=HTMX
     )
 
-    assert agregar.status_code == 200 and quitar.status_code == 200
-    assert not Talla.objects.filter(pk=nueva.pk).exists()
+    assert agregar.status_code == 200
+    if rol == DUENA:
+        assert quitar.status_code == 200
+        assert not Talla.objects.filter(pk=nueva.pk).exists()
+    else:
+        assert quitar.status_code == 403
+        assert Talla.objects.filter(pk=nueva.pk).exists()
 
 
 def test_enviar_su_propia_talla_es_del_cliente_con_enlace(client, pedido):
@@ -813,8 +820,17 @@ def test_con_el_numero_de_otro_taller_la_costurera_recibe_404(entrar, nombre):
 
     respuestas = {cliente.get(url).status_code, cliente.post(url).status_code}
 
+    if nombre in SOLO_DUENA_ANTES_DE_BUSCAR:
+        # Ahí el rol se revisa antes de buscar: la costurera recibe 403 con cualquier
+        # número, exista o no, así que tampoco se revela nada.
+        assert respuestas == {403}
+        return
     assert 404 in respuestas
     assert respuestas <= {404, 405}
+
+
+# Direcciones que revisan el rol antes de buscar el número.
+SOLO_DUENA_ANTES_DE_BUSCAR = {"cuentas:costurera_editar"}
 
 
 # --- El menú de cada rol --------------------------------------------------------------------
@@ -906,3 +922,66 @@ def test_un_taller_sin_dueña_no_cambia_nada_para_sus_costureras(client):
 
     assert client.get(reverse("finanzas:resumen")).status_code == 403
     assert sin_plata(client.get(reverse("pedidos:hoy")).text)
+
+
+# --- Arreglos de la revisión de T21 (coordinador) -------------------------------------------
+
+
+@pytest.mark.django_db
+def test_la_costurera_agrega_tallas_pero_no_las_quita(client, taller):
+    from pedidos.models import Talla
+    from tests import fabricas
+
+    costurera = fabricas.crear_usuaria(taller, rol="costurera")
+    pedido = fabricas.crear_pedido(taller)
+    persona = fabricas.crear_talla(pedido)
+    client.force_login(costurera)
+
+    url = f"/pedidos/{pedido.pk}/tallas/{persona.pk}/quitar/"
+    assert client.post(url).status_code == 403
+    assert Talla.objects.filter(pk=persona.pk).exists()
+    html = client.get(f"/pedidos/{pedido.pk}/").text
+    assert f"Quitar a {persona.nombre}" not in html
+
+
+@pytest.mark.django_db
+def test_la_costurera_sube_la_foto_pero_no_la_quita(client, taller):
+    from tests import fabricas
+
+    costurera = fabricas.crear_usuaria(taller, rol="costurera")
+    pedido = fabricas.crear_pedido(taller)
+    client.force_login(costurera)
+
+    assert client.get(f"/pedidos/{pedido.pk}/foto/quitar/").status_code == 403
+    assert client.post(f"/pedidos/{pedido.pk}/foto/quitar/").status_code == 403
+
+
+@pytest.mark.django_db
+def test_la_costurera_no_averigua_que_numeros_son_costureras(client, taller):
+    from tests import fabricas
+
+    costurera = fabricas.crear_usuaria(taller, rol="costurera")
+    otra = fabricas.crear_usuaria(taller, rol="costurera")
+    client.force_login(costurera)
+
+    # Para un número que existe y para uno que no, la misma respuesta.
+    assert client.post(f"/mi-taller/costureras/{otra.pk}/").status_code == 403
+    assert client.post("/mi-taller/costureras/999999/").status_code == 403
+
+
+def test_hoy_sin_saber_quien_pregunta_no_muestra_plata():
+    import inspect
+
+    from pedidos.vistas import hoy
+
+    for funcion in (hoy.cifras, hoy.etapas, hoy.aviso_de_etapa):
+        assert inspect.signature(funcion).parameters["con_plata"].default is False
+
+
+def test_un_403_con_htmx_recarga_la_pagina():
+    from django.conf import settings
+    from pathlib import Path
+
+    js = (Path(settings.BASE_DIR) / "static/js/app.js").read_text("utf-8")
+    assert "xhr.status === 403) window.location.reload()" in js
+

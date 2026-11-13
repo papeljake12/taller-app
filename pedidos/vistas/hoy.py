@@ -87,7 +87,7 @@ def apoyo_mas_cercana(dias):
     return f"La más cercana: en {dias} días"
 
 
-def cifras(taller, hoy, con_plata=True):
+def cifras(taller, hoy, con_plata=False):
     """Las cuatro cifras de arriba, en el orden del computador, cada una con su filtro.
 
     Sin plata (la costurera), son tres: sin "Por cobrar".
@@ -188,8 +188,9 @@ def fila_pendiente(pendiente, hoy, request=None):
     listo" y "Marcar como entregado" solo si es la encargada; y en un cotizado, "Ver el
     pedido" en vez de "Preguntar si confirma", porque ese mensaje dice el precio."""
     pedido = pendiente.pedido
-    con_plata = request is None or puede_ver_plata(request)
-    puede_mover = request is None or puede_mover_etapa(request, pedido)
+    # Sin saber quién pregunta, no se muestra plata ni se deja mover (falla cerrado).
+    con_plata = request is not None and puede_ver_plata(request)
+    puede_mover = request is not None and puede_mover_etapa(request, pedido)
     if pedido.estado == Estado.LISTO:
         # Un listo atrasado sigue en el grupo de los atrasados, pero lo que sigue es entregarlo.
         siguiente, mensaje = "entregar", None
@@ -259,7 +260,7 @@ def deudores(taller, hoy):
     ]
 
 
-def aviso_de_etapa(etapa, con_plata=True):
+def aviso_de_etapa(etapa, con_plata=False):
     """La etiqueta debajo del número de una etapa: "1 atrasado" en rojo; en Entregado,
     "Pagado" en verde si ninguno debe, o cuántos deben en rojo. None si no hay nada que decir.
     Sin plata (la costurera), Entregado no dice si deben.
@@ -273,7 +274,7 @@ def aviso_de_etapa(etapa, con_plata=True):
     return None
 
 
-def etapas(taller, hoy, con_plata=True):
+def etapas(taller, hoy, con_plata=False):
     return [
         {
             "nombre": etapa.nombre,

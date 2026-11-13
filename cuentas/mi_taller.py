@@ -218,8 +218,8 @@ def costurera_editar(request, pk):
     Desactivar no borra nada: ella ya no puede entrar, pero sus pedidos y lo que anotó
     siguen ahí, y se puede volver a activar cuando se quiera.
     """
+    exigir_duena(request)  # antes de buscar: así una costurera no averigua qué números existen
     costurera = obtener_o_404(request, _costureras(request), pk=pk)
-    exigir_duena(request)
     if request.method == "GET":
         if "cancelar" in request.GET:
             if _con_tarjeta(request):

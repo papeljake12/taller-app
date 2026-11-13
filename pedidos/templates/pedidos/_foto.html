@@ -22,7 +22,7 @@ de error) y `foto_por_quitar` (mostrar la pregunta antes de quitar).
 <input class="campo__control" type="file" name="foto" id="pedido-foto-archivo" accept="image/*" aria-describedby="pedido-foto-ayuda{% if form_foto.foto.errors %} pedido-foto-error{% endif %}"{% if form_foto.foto.errors %} aria-invalid="true" autofocus{% endif %}>
 {% if form_foto.foto.errors %}<span class="campo__error" id="pedido-foto-error" role="alert">{{ form_foto.foto.errors|join:" " }}</span>{% endif %}
 </div>
-{% if pedido.foto %}<div class="botones"><noscript><button type="submit" class="boton">Cambiar la foto</button></noscript><a class="boton" href="{{ url_quitar }}" hx-get="{{ url_quitar }}" hx-target="#pedido-foto" hx-swap="outerHTML">Quitar la foto</a></div>
+{% if pedido.foto %}<div class="botones"><noscript><button type="submit" class="boton">Cambiar la foto</button></noscript>{% if es_duena %}<a class="boton" href="{{ url_quitar }}" hx-get="{{ url_quitar }}" hx-target="#pedido-foto" hx-swap="outerHTML">Quitar la foto</a>{% endif %}</div>
 {% else %}<noscript><div class="botones"><button type="submit" class="boton">Subir la foto</button></div></noscript>
 {% endif %}</form>
 {% endif %}</section>

@@ -87,7 +87,7 @@ def test_las_cifras_salen_como_en_el_diseno(sesion_duena, ejemplo):
 
 
 def test_en_celular_las_cifras_van_en_el_orden_del_diseno(taller):
-    cifras = vista.cifras(taller, HOY)
+    cifras = vista.cifras(taller, HOY, con_plata=True)  # las de la dueña
 
     en_celular = sorted(cifras, key=lambda c: c.orden_celular)
 

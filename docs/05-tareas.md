@@ -66,7 +66,7 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
 
 ## Cierre
 
-- [ ] **T21. Permisos por rol.** Aplicar la tabla de `docs/04-permisos.md` en todas las
+- [x] **T21. Permisos por rol.** Aplicar la tabla de `docs/04-permisos.md` en todas las
   vistas, con una prueba por cada fila de la tabla.
 - [x] **T22. Datos de ejemplo.** Comando `cargar_ejemplos` con los mismos pedidos, tallas,
   telas y gastos de las páginas de `diseno/`, marcados como ejemplo. Se construye temprano

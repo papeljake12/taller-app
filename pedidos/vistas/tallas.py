@@ -124,7 +124,10 @@ def nueva(request, pk):
 def quitar(request, pk, talla):
     pedido = obtener_o_404(request, Pedido.objects.select_related("cliente"), pk=pk)
     # La talla tiene que ser de este pedido (y por lo tanto de este taller).
-    obtener_o_404(request, Talla.objects.filter(pedido=pedido), pk=talla).delete()
+    persona = obtener_o_404(request, Talla.objects.filter(pedido=pedido), pk=talla)
+    # La costurera agrega tallas, pero no las quita (docs/04-permisos.md).
+    exigir_duena(request)
+    persona.delete()
     return _responder(request, pedido, ver_personas=True)
 
 

@@ -8,7 +8,7 @@ Va plegada para que la tarjeta no crezca; se deja abierta después de agregar o 
 {% csrf_token %}
 <div class="fila__texto"><div class="fila__titulo"><strong>{{ persona.talla.nombre }}</strong>{% include "piezas/_etiqueta.html" with texto=persona.nombre_talla tono="gris" %}</div>
 <div class="fila__detalle">{{ persona.detalle }}</div></div>
-<button type="submit" class="boton" aria-label="Quitar a {{ persona.talla.nombre }}">Quitar</button>
+{% if es_duena %}<button type="submit" class="boton" aria-label="Quitar a {{ persona.talla.nombre }}">Quitar</button>{% endif %}
 </form>
 {% endfor %}</details>
 {% else %}<p class="fila fila--compacta texto-2">Nadie ha enviado su talla todavía. Copia el enlace y mándaselo al cliente, o agrégalas a mano.</p>
