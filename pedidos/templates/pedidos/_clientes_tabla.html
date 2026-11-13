@@ -2,15 +2,19 @@
 Tabla de Clientes (diseno/clientes.html), ordenada por lo que más han comprado
 (calculos.cuentas_de_clientes). El buscador la pide sola mientras se escribe (id
 "clientes-lista"). Sin compras: "Sin compras" y, si tiene una cotización abierta, lo dice.
-{% endcomment %}<div id="clientes-lista">
-{% if filas %}<div class="tabla-contenedor">
-<table class="tabla">
+
+Pantalla fija (docs/08-diseno.md): en computador la tarjeta llena el alto que queda
+(.llenar en clientes.html) y esta caja se desplaza por dentro (.desplazable), con el
+encabezado de la tabla fijo; el aviso de dotación y el buscador quedan quietos arriba.
+Animaciones: cada fila lleva el id de su cliente, y la tabla y las notas el suyo, para que
+al buscar solo entren y salgan las filas que cambian (static/js/app.js, sección 11).
+{% endcomment %}<div id="clientes-lista" class="tabla-contenedor desplazable">
+{% if filas %}<table class="tabla" id="clientes-tabla">
 <thead><tr><th scope="col">Cliente</th><th scope="col">Tipo</th><th scope="col">Pedidos</th><th scope="col" class="num">Ha comprado</th><th scope="col" class="num">Debe</th><th scope="col" class="num">Acción</th></tr></thead>
 <tbody>
-{% for fila in filas %}<tr><td><strong>{{ fila.cliente.nombre }}</strong></td><td>{{ fila.cliente.get_tipo_display }}</td><td>{{ fila.pedidos }}</td><td class="num">{% if fila.ha_comprado %}<span class="dinero">{{ fila.ha_comprado|pesos }}</span>{% else %}<span class="texto-2">Sin compras</span>{% endif %}</td><td class="num">{% if fila.debe %}<strong class="texto-rojo dinero">{{ fila.debe|pesos }}</strong>{% elif not fila.ha_comprado and fila.cotizacion_abierta %}<span class="texto-2">Cotización abierta</span>{% elif fila.ha_comprado %}<strong class="texto-verde">Al día</strong>{% else %}<span class="texto-2">Al día</span>{% endif %}</td><td class="num">{% include "pedidos/_clientes_acciones.html" with cliente=fila.cliente %}</td></tr>
+{% for fila in filas %}<tr id="cliente-{{ fila.cliente.pk }}"><td><strong>{{ fila.cliente.nombre }}</strong></td><td>{{ fila.cliente.get_tipo_display }}</td><td>{{ fila.pedidos }}</td><td class="num">{% if fila.ha_comprado %}<span class="dinero">{{ fila.ha_comprado|pesos }}</span>{% else %}<span class="texto-2">Sin compras</span>{% endif %}</td><td class="num">{% if fila.debe %}<strong class="texto-rojo dinero">{{ fila.debe|pesos }}</strong>{% elif not fila.ha_comprado and fila.cotizacion_abierta %}<span class="texto-2">Cotización abierta</span>{% elif fila.ha_comprado %}<strong class="texto-verde">Al día</strong>{% else %}<span class="texto-2">Al día</span>{% endif %}</td><td class="num">{% include "pedidos/_clientes_acciones.html" with cliente=fila.cliente %}</td></tr>
 {% endfor %}</tbody>
 </table>
-</div>
-{% elif hay_clientes %}<p class="tarjeta__nota">Ningún cliente coincide con «{{ busqueda }}».</p>
-{% else %}<p class="tarjeta__nota">Todavía no tienes clientes. Crea el primero con «Nuevo cliente», o aparecerán aquí cuando crees un pedido.</p>
+{% elif hay_clientes %}<p class="tarjeta__nota" id="clientes-ninguno">Ningún cliente coincide con «{{ busqueda }}».</p>
+{% else %}<p class="tarjeta__nota" id="clientes-vacio">Todavía no tienes clientes. Crea el primero con «Nuevo cliente», o aparecerán aquí cuando crees un pedido.</p>
 {% endif %}</div>
