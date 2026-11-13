@@ -1,6 +1,12 @@
 {% comment %}
-Pieza Etiqueta: píldora de 12 px con uno de los cinco tonos.
-  {% include "piezas/_etiqueta.html" with texto="Atrasado 2 días" tono="rojo" %}
-Tonos: rojo (atrasado, deuda vencida), verde (pagado, entregado), ambar (hay que estar
-pendiente), azul (en proceso), gris (sin urgencia). El texto siempre dice lo mismo que el color.
-{% endcomment %}<span class="etiqueta etiqueta--{{ tono|default:'gris' }}">{{ texto }}</span>
+Pieza Insignia: píldora de 20 px con uno de los seis tonos y, casi siempre, su circulito
+(docs/08-diseno.md, "Insignias").
+  {% include "piezas/_etiqueta.html" with texto="Atrasado 2 días" tono="rojo" circulo="alerta" %}
+  {% include "piezas/_etiqueta.html" with insignia=fila.etapa %}   (una calculos.Etiqueta)
+Tonos: gris (lo que está bien), azul (en proceso), verde (solo "Listo"), ambar (estar
+pendiente), naranja (pago a medias) y rojo (atrasos y deudas vencidas).
+Circulito: vacio (no ha empezado), medio (va por la mitad), lleno (completo) o alerta (se pasó
+la fecha). Sin circulo, la insignia va sin circulito ("1 atrasado", "Vencida").
+El texto siempre dice lo mismo que el color.
+Si se da `texto`, manda sobre `insignia`.
+{% endcomment %}{% if texto or not insignia %}<span class="etiqueta etiqueta--{{ tono|default:'gris' }}{% if circulo %} etiqueta--{{ circulo }}{% endif %}">{{ texto }}</span>{% else %}<span class="etiqueta etiqueta--{{ insignia.tono|default:'gris' }}{% if insignia.circulo %} etiqueta--{{ insignia.circulo }}{% endif %}">{{ insignia.texto }}</span>{% endif %}

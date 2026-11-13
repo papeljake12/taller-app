@@ -796,7 +796,7 @@ def test_lo_prohibido_responde_403_con_una_pagina_clara(entrar, htmx):
     respuesta = entrar(COSTURERA).get(reverse("finanzas:resumen"), headers=headers)
 
     assert respuesta.status_code == 403
-    assert "<h1>Sin permiso</h1>" in respuesta.text
+    assert re.search(r"<h1[^>]*>(?:<svg.*?</svg>)?Sin permiso</h1>", respuesta.text)
     assert SOLO_LA_DUENA in respuesta.text
     assert "Volver a Hoy" in respuesta.text
     assert 'class="menu"' in respuesta.text  # con el marco y el menú de siempre
@@ -846,16 +846,18 @@ def test_el_menu_de_cada_rol(entrar, rol):
     lateral = re.findall(r'class="menu__texto">([^<]+)<', html)
     barra = re.findall(r'class="navegacion-celular__enlace[^"]*"[^>]*>.*?</svg>([^<]+)<', html)
     mas = html.split('id="panel-mas"')[1]
+    # "Salir" va al fondo del menú lateral, como botón junto al nombre del taller
+    assert 'class="menu__salir" aria-label="Salir"' in html
 
     if rol == DUENA:
         assert lateral == ["Hoy", "Pedidos", "Calendario", "Clientes", "Cotizador", "Telas",
-                           "Resumen", "Mi taller", "Salir"]
+                           "Resumen", "Mi taller"]
         assert barra == ["Hoy", "Pedidos", "Calendario", "Clientes", "Más"]
         for nombre in SOLO_DE_LA_DUENA:
             assert f'href="{reverse(nombre)}"' in html
         assert mas.count("panel-mas__enlace") == 6
     else:
-        assert lateral == ["Hoy", "Pedidos", "Calendario", "Telas", "Salir"]
+        assert lateral == ["Hoy", "Pedidos", "Calendario", "Telas"]
         assert barra == ["Hoy", "Pedidos", "Calendario", "Telas", "Más"]
         for nombre in SOLO_DE_LA_DUENA:
             assert f'href="{reverse(nombre)}"' not in html

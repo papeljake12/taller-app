@@ -1,14 +1,15 @@
-"""Pantalla fija en computador (docs/08-diseno.md, "Pantalla fija").
+"""Desplazamiento (docs/08-diseno.md, "Desplazamiento"; reemplaza la "pantalla fija").
 
 Abre cada pantalla en un Chrome de verdad (sin ventana, con Playwright), con los datos de
-ejemplo, en 1366 x 768 y en 1920 x 1080, y comprueba:
+ejemplo, y comprueba:
 
-1. que la página no se desplaza nunca: mide lo mismo que la ventana;
-2. qué pantallas caben completas: el contenido de la hoja no se desplaza por dentro. Lo que
-   sí puede desplazarse por dentro son las listas largas (.desplazable), en su tarjeta. Las
-   que no caben tienen que ser exactamente las de NO_CABEN, cada una con su razón.
+1. en computador (1366 x 768 y 1920 x 1080), que la página misma no se desplaza nunca: mide
+   lo mismo que la ventana. Lo que se desplaza es el contenido de la hoja, debajo de su
+   encabezado, como en Shopify;
+2. en ningún tamaño (tampoco en celular, 390 px) algo se sale de lo ancho de la pantalla;
+3. en celular, la página se desliza normal.
 
-Y en celular (390 px), que la página se sigue deslizando normal.
+Ya no se pide que cada pantalla quepa completa en 1366 x 768.
 
 Es una sola prueba que recorre todas las pantallas: abrir Chrome y cargar los ejemplos una
 vez por pantalla tomaría más de un minuto. Necesita Google Chrome instalado (como
@@ -25,6 +26,7 @@ from pedidos.calculos import sumar_meses
 from pedidos.models import Pedido
 
 TAMANOS = [(1366, 768), (1920, 1080)]
+CELULAR = {"viewport": {"width": 390, "height": 844}, "is_mobile": True, "has_touch": True}
 
 # (nombre, dirección, rol, cookie del menú). {pedido} y {mes_anterior} se llenan con los
 # datos de ejemplo; el pedido es el del diseño (Restaurante), que la costurera también tiene.
@@ -47,29 +49,13 @@ PANTALLAS = [
     ("buscar", "/buscar/?q=esquina", "duena", None),
 ]
 
-# Pantallas que no caben completas en algún tamaño, con su razón. Si una empieza a caber, o
-# una nueva deja de caber, la prueba falla y dice cuál: se corrige la pantalla o esta lista.
-NO_CABEN = {
-    # En 1920 x 1080 ya caben las dos con el pedido de ejemplo (sin foto y con un abono); un
-    # pedido con foto y dos abonos o más tampoco cabe ahí. En 1366 x 768 no caben, aun con las
-    # tarjetas apretadas y Materiales desplazándose por dentro: hace falta una decisión de
-    # diseño de David (docs/bitacora/ajuste-pantalla-fija/pedido.md, "Opciones para David").
-    "pedido": "En 1366 x 768 faltan unos 315 px (997 de contenido en 682): la columna de la "
-              "derecha (Pagos, Entrega, Cliente y Foto) mide unos 915 px y no tiene ninguna "
-              "lista larga que se pueda desplazar; sin quitar ni mover tarjetas no cabe.",
-    "pedido-costurera": "En 1366 x 768 faltan unos 80 px (761 de contenido en 682): la columna "
-                        "de la izquierda (Etapa, Tallas y Materiales con solo dos materiales a "
-                        "la vista) mide unos 754 px; apretarla más dejaría la lista sin espacio.",
-}
-
 MEDIR = """() => {
   const pagina = document.scrollingElement || document.documentElement;
-  const contenido = document.querySelector('.hoja__contenido');
   return {
     pagina: pagina.scrollHeight,
     ventana: window.innerHeight,
-    contenido: contenido ? contenido.scrollHeight : 0,
-    cabe: contenido ? contenido.clientHeight : 0,
+    ancho: pagina.scrollWidth,
+    ventana_ancho: window.innerWidth,
   };
 }"""
 
@@ -126,38 +112,34 @@ def _medir(navegador, url, sesion, menu=None, **formato):
     return medida
 
 
-def test_la_pagina_no_se_desplaza_y_las_pantallas_caben(live_server, ejemplos_con_sesiones):
+def test_la_pagina_no_se_mueve_y_nada_se_sale_de_lo_ancho(live_server, ejemplos_con_sesiones):
     sesiones, datos = ejemplos_con_sesiones["sesiones"], ejemplos_con_sesiones["datos"]
-    se_desplazan, no_caben = [], {}
+    se_desplazan, se_salen = [], []
     manejador, navegador = _chrome()
     try:
         for nombre, url, rol, menu in PANTALLAS:
             direccion = live_server.url + url.format(**datos)
-            for ancho, alto in TAMANOS:
-                medida = _medir(navegador, direccion, sesiones[rol], menu,
-                                viewport={"width": ancho, "height": alto})
-                tamano = f"{ancho} x {alto}"
-                if medida["pagina"] > medida["ventana"]:
+            formatos = [(f"{a} x {b}", {"viewport": {"width": a, "height": b}}) for a, b in TAMANOS]
+            if not menu:
+                formatos.append(("celular", CELULAR))
+            for tamano, formato in formatos:
+                medida = _medir(navegador, direccion, sesiones[rol], menu, **formato)
+                if tamano != "celular" and medida["pagina"] > medida["ventana"]:
                     se_desplazan.append(f"{nombre} en {tamano} ({medida['pagina']} px)")
-                if medida["contenido"] > medida["cabe"] + 1:
-                    no_caben.setdefault(nombre, []).append(
-                        f"{tamano}: {medida['contenido']} px en {medida['cabe']} px")
+                if medida["ancho"] > medida["ventana_ancho"]:
+                    se_salen.append(f"{nombre} en {tamano} ({medida['ancho']} px)")
     finally:
         navegador.close()
         manejador.stop()
     assert not se_desplazan, "La página se desplaza en: " + "; ".join(se_desplazan)
-    sobran = {n: m for n, m in no_caben.items() if n not in NO_CABEN}
-    ya_caben = sorted(set(NO_CABEN) - set(no_caben))
-    assert not sobran, f"No caben completas (y no están en NO_CABEN): {sobran}"
-    assert not ya_caben, f"Ya caben completas: quítalas de NO_CABEN: {ya_caben}"
+    assert not se_salen, "Algo se sale de lo ancho en: " + "; ".join(se_salen)
 
 
 def test_en_celular_la_pagina_se_sigue_deslizando(live_server, ejemplos_con_sesiones):
     sesion = ejemplos_con_sesiones["sesiones"]["duena"]
     manejador, navegador = _chrome()
     try:
-        medida = _medir(navegador, live_server.url + "/", sesion,
-                        viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
+        medida = _medir(navegador, live_server.url + "/", sesion, **CELULAR)
     finally:
         navegador.close()
         manejador.stop()

@@ -6,6 +6,8 @@ cliente, tela...). Si un carril agrega una dirección nueva con número, entra a
 hacer nada; si es de un modelo nuevo, hay que decir cuál en MODELO_DE_LA_DIRECCION.
 """
 
+import re
+
 import pytest
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
 
@@ -91,7 +93,7 @@ def test_la_ventana_con_htmx_trae_solo_su_contenido(sesion_duena):
     assert "data-cerrar-ventana" in ventana
     # Como página, el título va una sola vez (el de la hoja), sin la X que no cierra nada,
     # y "Cancelar" es un enlace de verdad (T23).
-    assert "<html" in pagina and "<h1>Nuevo pedido</h1>" in pagina
+    assert "<html" in pagina and re.search(r"<h1[^>]*>(?:<svg.*?</svg>)?Nuevo pedido</h1>", pagina)
     assert "ventana__cabeza" not in pagina and "data-cerrar-ventana" not in pagina
     assert f'<a class="boton" href="{reverse("pedidos:lista")}">Cancelar</a>' in pagina
 

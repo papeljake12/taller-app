@@ -11,6 +11,7 @@
    10. Botones que esperan: "cargando" si la acción tarda.
    11. Lo que entra y sale sin recargar (HTMX): se desvanece, y una fila que se va se cierra.
    12. Aviso corto de confirmación ("Abono registrado.").
+   13. Atajo Ctrl K, menús desplegables y lo que se muestra con un botón (rediseño).
 
    Las duraciones de las animaciones se leen de static/css/app.css (:root), donde se definen
    una sola vez. Si la persona pidió menos movimiento en su equipo, valen 0 y nada se anima.
@@ -101,7 +102,10 @@
     if (evento.target.closest("[data-menu-contraer]")) {
       contraerMenu(true);
     } else if (evento.target.closest("[data-menu-abrir]")) {
+      const buscar = evento.target.closest("[data-enfocar-buscar]");
       contraerMenu(false);
+      // La lupa del menú contraído abre el menú y deja el cursor en el buscador.
+      if (buscar) enfocarBuscador();
     }
   });
 
@@ -734,5 +738,78 @@
       mostrarAviso(mensaje.textContent.trim());
     });
     pendientes.remove();
+  });
+
+  /* 13. Atajo Ctrl K, menús desplegables y lo que se muestra con un botón --- */
+
+  // Ctrl K (o Cmd K en Mac) lleva al buscador del menú, como en Shopify. Con el menú
+  // contraído, primero lo abre. En celular no hay menú lateral: abre la página de buscar.
+  function enfocarBuscador() {
+    const campo = document.querySelector("[data-atajo-buscar]");
+    if (!campo) return false;
+    if (campo.offsetParent === null) {
+      const marco = document.querySelector("[data-marco]");
+      if (marco && marco.classList.contains("marco--contraido") &&
+          window.matchMedia("(min-width: 768px)").matches) {
+        contraerMenu(false);
+      } else {
+        const formulario = campo.closest("form");
+        if (formulario && formulario.action) window.location.href = formulario.action;
+        return true;
+      }
+    }
+    campo.focus();
+    campo.select();
+    return true;
+  }
+
+  document.addEventListener("keydown", function (evento) {
+    if ((evento.ctrlKey || evento.metaKey) && !evento.altKey && !evento.shiftKey &&
+        evento.key.toLowerCase() === "k") {
+      if (enfocarBuscador()) evento.preventDefault();
+    }
+  });
+
+  // Menús desplegables (<details class="desplegable">): se abre uno a la vez y se cierran al
+  // tocar afuera, al elegir una opción o con Escape (el cursor vuelve a su botón).
+  function cerrarDesplegables(salvo) {
+    document.querySelectorAll("details.desplegable[open]").forEach(function (menu) {
+      if (menu !== salvo) menu.open = false;
+    });
+  }
+
+  document.addEventListener("click", function (evento) {
+    const menu = evento.target.closest("details.desplegable");
+    cerrarDesplegables(menu);
+    if (menu && evento.target.closest(".desplegable__opcion")) {
+      // Se deja pasar el clic (un enlace o un botón de envío) y después se cierra.
+      window.setTimeout(function () { menu.open = false; }, 0);
+    }
+  });
+
+  document.addEventListener("keydown", function (evento) {
+    if (evento.key !== "Escape") return;
+    const abierto = document.querySelector("details.desplegable[open]");
+    if (!abierto) return;
+    abierto.open = false;
+    const boton = abierto.querySelector("summary");
+    if (boton) boton.focus();
+  });
+
+  // Un botón (o enlace) con data-mostrar="id" muestra u oculta esa parte y deja el cursor en
+  // su primer campo (el buscador de Pedidos detrás de la lupa). Sin JavaScript, el enlace lleva
+  // a la misma página con la parte ya a la vista.
+  document.addEventListener("click", function (evento) {
+    const boton = evento.target.closest("[data-mostrar]");
+    if (!boton) return;
+    const parte = document.getElementById(boton.dataset.mostrar);
+    if (!parte) return;
+    evento.preventDefault();
+    parte.hidden = !parte.hidden;
+    boton.setAttribute("aria-expanded", String(!parte.hidden));
+    if (!parte.hidden) {
+      const campo = parte.querySelector("input, select, textarea");
+      if (campo) campo.focus();
+    }
   });
 })();

@@ -8,8 +8,7 @@
 - {{ valor|pesos }}: "$ 1.260.000" (va dentro de <span class="dinero"> para que no se parta).
 - {{ metros|metros }}: "6,5 m".
 - {% control form.campo %}: dibuja el control de un campo con la pieza Campo.
-- {% grafica_barras meses %}: la gráfica de cobrado y gastado por mes (Hoy y Resumen). Con
-  alto_computador=130, también una versión más baja para la pantalla fija del computador.
+- {% grafica_barras meses %}: la gráfica de cobrado y gastado por mes (Hoy y Resumen).
 """
 
 from decimal import Decimal
@@ -110,11 +109,12 @@ def metros(valor):
 
 # --- Gráfica de barras: cobrado (azul) y gastado (gris) por mes ----------------------------
 
-# Medidas de diseno/hoy.html: un lienzo de 600 por 200; las barras nacen en la línea de
-# abajo (y=170) y la más alta mide 134; seis grupos de dos barras de 22, cada 94 unidades.
-_ALTO_LIENZO, _BASE, _ALTO_MAXIMO, _ANCHO_BARRA, _PRIMERA_X = 200, 170, 134, 22, 62
+# Medidas de diseno/hoy.html (rediseño del 2026-11-13): un lienzo de 600 por 160; las barras
+# nacen en la línea de abajo (y=124) y la más alta mide 112; seis grupos de dos barras de 22,
+# cada 94 unidades; los meses van en y=148. Letra de 11, gris de texto; el mes actual en negro.
+_ALTO_LIENZO, _BASE, _ALTO_MAXIMO, _ANCHO_BARRA, _PRIMERA_X, _Y_MESES = 160, 124, 112, 22, 62, 148
 _AZUL, _GRIS, _LINEA, _EJE, _TEXTO_2, _NEGRO = (
-    "#2563C9", "#A6A6A6", "#E1E1E1", "#C9C9C9", "#555555", "#1A1A1A",
+    "#2563C9", "#B5B5B5", "#F1F1F1", "#E3E3E3", "#616161", "#1A1A1A",
 )
 
 
@@ -149,44 +149,28 @@ def grafica_barras(meses, alto_computador=None):
     `meses` es una lista de objetos con mes (una fecha), cobrado y gastado. El último mes
     (el actual) va en negrita. Lleva una descripción para lectores de pantalla.
 
-    Con `alto_computador` (por ejemplo 130) dibuja dos versiones: una más baja, de ese alto,
-    para la pantalla fija del computador, y la de siempre (alto 200) para el celular. Solo se
-    ve una (static/css/app.css: .grafica--computador y .grafica--celular).
+    `alto_computador` era de la "pantalla fija", que ya no existe: se acepta y no hace nada.
     """
     meses = list(meses)
     if not meses:
         return ""
-    if alto_computador:
-        return format_html(
-            "{}{}",
-            _dibujar_grafica(meses, int(alto_computador), "grafica grafica--computador"),
-            _dibujar_grafica(meses, _ALTO_LIENZO, "grafica grafica--celular"),
-        )
-    return _dibujar_grafica(meses, _ALTO_LIENZO, "grafica")
+    return _dibujar_grafica(meses)
 
 
-def _dibujar_grafica(meses, alto_lienzo, clase):
-    """Un <svg> de 600 de ancho por `alto_lienzo` de alto. Con el alto de siempre (200), las
-    medidas son las de diseno/hoy.html. Más bajo, se acortan las barras y, en la misma
-    proporción, el espacio libre sobre la más alta (así las barras aprovechan el alto); el
-    espacio de los meses y las letras quedan iguales (lo pidió el carril de Hoy)."""
-    base = alto_lienzo - (_ALTO_LIENZO - _BASE)            # la línea de abajo: 170 en 200
-    arriba_de_siempre = _ALTO_LIENZO - _ALTO_MAXIMO - (_ALTO_LIENZO - _BASE)  # 36 en 200
-    arriba = max(16, round(arriba_de_siempre * alto_lienzo / _ALTO_LIENZO))
-    alto_maximo = base - arriba                             # la barra más alta: 134 en 200
-    y_meses = alto_lienzo - 10                              # los nombres de los meses: 190
+def _dibujar_grafica(meses):
+    """Un <svg> de 600 por 160 con las medidas de diseno/hoy.html."""
     maximo = max(max(m.cobrado, m.gastado) for m in meses)
     paso_x = 94 * 6 / len(meses)
 
     def alto(valor):
-        return round(valor * alto_maximo / maximo) if maximo else 0
+        return round(valor * _ALTO_MAXIMO / maximo) if maximo else 0
 
     lineas, textos_eje = [], []
     if maximo:
         paso = _paso_redondo(maximo)
         guia = paso
         while guia <= maximo:
-            y = base - alto(guia)
+            y = _BASE - alto(guia)
             lineas.append((y,))
             textos_eje.append((y + 4, _texto_eje(guia)))
             guia += paso
@@ -196,10 +180,10 @@ def _dibujar_grafica(meses, alto_lienzo, clase):
         for desplazamiento, valor, color in ((0, mes.cobrado, _AZUL), (24, mes.gastado, _GRIS)):
             h = alto(valor)
             if h:
-                barras.append((x + desplazamiento, base - h, _ANCHO_BARRA, h, color))
+                barras.append((x + desplazamiento, _BASE - h, _ANCHO_BARRA, h, color))
         actual = i == len(meses) - 1
         nombre = str(MONTHS[mes.mes.month]).lower()[:3]
-        nombres.append((x + 23, y_meses, mark_safe(' font-weight="700"') if actual else "",
+        nombres.append((x + 23, _Y_MESES, mark_safe(' font-weight="650"') if actual else "",
                         _NEGRO if actual else _TEXTO_2, nombre))
     ultimo = meses[-1]
     primero_nombre = str(MONTHS[meses[0].mes.month]).lower()
@@ -210,20 +194,19 @@ def _dibujar_grafica(meses, alto_lienzo, clase):
         f"{_millones(ultimo.gastado)} millones."
     )
     return format_html(
-        '<svg class="{}" role="img" aria-label="{}" viewBox="0 0 600 {}">{}{}{}'
+        '<svg class="grafica" role="img" aria-label="{}" viewBox="0 0 600 {}">{}{}{}'
         '<line x1="36" y1="{}" x2="596" y2="{}" stroke="{}" stroke-width="1"></line>{}</svg>',
-        clase,
         descripcion,
-        alto_lienzo,
+        _ALTO_LIENZO,
         format_html_join("", '<line x1="36" y1="{}" x2="596" y2="{}" stroke="' + _LINEA
                          + '" stroke-width="1"></line>', ((y, y) for (y,) in lineas)),
-        format_html_join("", '<text x="0" y="{}" font-size="12" fill="' + _TEXTO_2
+        format_html_join("", '<text x="0" y="{}" font-size="11" fill="' + _TEXTO_2
                          + '">{}</text>', textos_eje),
         format_html_join("", '<rect x="{}" y="{}" width="{}" height="{}" rx="4" fill="{}"></rect>',
                          barras),
-        base,
-        base,
+        _BASE,
+        _BASE,
         _EJE,
-        format_html_join("", '<text x="{}" y="{}" font-size="12"{} text-anchor="middle" '
+        format_html_join("", '<text x="{}" y="{}" font-size="11"{} text-anchor="middle" '
                          'fill="{}">{}</text>', nombres),
     )

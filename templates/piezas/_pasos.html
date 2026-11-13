@@ -1,6 +1,6 @@
-{% load piezas %}{% comment %}
-Pieza Pasos de etapa: seis círculos; los cumplidos en negro con visto bueno, el actual con
-punto y los que faltan en blanco.
+{% comment %}
+Pieza Pasos de etapa: seis barritas con su nombre; las cumplidas en negro, la actual en azul y
+las que faltan en gris.
   {% include "piezas/_pasos.html" with pasos=pasos %}
 `pasos` es una lista con, para cada etapa: nombre, estado ("hecho", "actual" o "pendiente")
 y valor (lo que se envía al tocarla). Cada paso es un botón de envío (name="estado"): dentro
@@ -9,8 +9,8 @@ de un formulario guarda la etapa, también sin JavaScript; fuera de uno no hace 
 Con `solo_ver=True` los pasos se ven igual pero no se pueden tocar (disabled): así los ve una
 costurera que no es la encargada del pedido (T21).
 Cada paso lleva un id fijo ("paso-corte"; con `id_pasos` se cambia "paso"): así, cuando HTMX
-trae la tarjeta otra vez, el paso que cambia se marca con una transición (static/css/app.css,
-sección 7). El visto bueno siempre está; solo se ve en los pasos cumplidos.
+trae la tarjeta otra vez, la barrita que cambia lo hace con una transición (static/css/app.css,
+sección 7).
 {% endcomment %}<div class="pasos"{% if etiqueta_grupo %} role="group" aria-label="{{ etiqueta_grupo }}"{% endif %}>
-{% for paso in pasos %}<button type="submit" class="paso paso--{{ paso.estado }}" name="estado" value="{{ paso.valor }}"{% if solo_ver %} disabled{% endif %}{% if paso.estado == "actual" %} aria-current="step"{% endif %} id="{{ id_pasos|default:'paso' }}-{{ paso.valor }}"><span class="paso__circulo">{% icono "visto" 16 %}</span>{{ paso.nombre }}</button>
+{% for paso in pasos %}<button type="submit" class="paso paso--{{ paso.estado }}" name="estado" value="{{ paso.valor }}"{% if solo_ver %} disabled{% endif %}{% if paso.estado == "actual" %} aria-current="step"{% endif %} id="{{ id_pasos|default:'paso' }}-{{ paso.valor }}">{{ paso.nombre }}</button>
 {% endfor %}</div>

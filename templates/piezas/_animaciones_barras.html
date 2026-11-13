@@ -1,10 +1,11 @@
 {% load piezas %}{% comment %}
 Ejemplo de /piezas/: barras y gráfica que crecen hasta su valor (config/vistas.py,
-piezas_barras). La gráfica va en sus dos versiones: la baja del computador y la del celular.
-{% endcomment %}<section class="tarjeta tarjeta--grafica" id="p-animaciones-barras" aria-labelledby="p-barras-titulo">
-<div class="tarjeta__cabeza"><h2 id="p-barras-titulo">Barras que crecen</h2><a class="boton" href="{% url 'piezas_barras' %}" hx-get="{% url 'piezas_barras' %}" hx-target="#p-animaciones-barras" hx-swap="outerHTML">Verlas crecer otra vez</a></div>
+piezas_barras).
+{% endcomment %}<section class="tarjeta" id="p-animaciones-barras" aria-labelledby="p-barras-titulo">
+<div class="tarjeta__cabeza"><h2 id="p-barras-titulo">Barras que crecen</h2><a class="boton tarjeta__aparte" href="{% url 'piezas_barras' %}" hx-get="{% url 'piezas_barras' %}" hx-target="#p-animaciones-barras" hx-swap="outerHTML">Verlas crecer otra vez</a></div>
+<div class="tarjeta__cuerpo">
 {% include "piezas/_progreso.html" with porcentaje=78 nombre="Tallas recibidas (ejemplo)" %}
 {% include "piezas/_progreso.html" with porcentaje=40 atrasado=True nombre="Ejemplo atrasado" %}
-{% grafica_barras meses_grafica alto_computador=130 %}
-<p class="nota">En computador, la gráfica baja (alto 130) de la pantalla fija; en celular, la de siempre.</p>
+{% grafica_barras meses_grafica %}
+</div>
 </section>

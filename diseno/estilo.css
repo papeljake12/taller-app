@@ -666,6 +666,7 @@ textarea {
 
 /* El contenido: se desplaza por dentro, con 16 px entre bloques */
 .hoja__contenido {
+  position: relative;  /* lo que va oculto para lectores de pantalla se queda adentro */
   flex: 1;
   min-height: 0;
   display: flex;
@@ -1023,6 +1024,11 @@ button.chip:hover {
 
 .campo__control:hover {
   border-color: var(--texto-2);
+}
+
+/* Al llegar a un campo con un enlace (#registrar-abono) queda aire arriba */
+.campo__control {
+  scroll-margin-top: 48px;
 }
 
 .campo__control::placeholder {
@@ -2836,6 +2842,17 @@ a.etapas__etapa:hover {
 
   .avisos {
     bottom: calc(var(--alto-barra) + 12px + env(safe-area-inset-bottom));
+  }
+
+  .ventana__cerrar {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* La gráfica se dibuja a 600 de ancho y en celular se achica a unos 330 px: con la letra
+     de 11 quedaría en 6 px; con 20 queda en unos 11 px */
+  .grafica text {
+    font-size: 20px;
   }
 
   /* La barra de abajo: blanca, cinco botones con ícono; la sección actual en negro */

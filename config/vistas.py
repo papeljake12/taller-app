@@ -45,6 +45,27 @@ class EjemploForm(forms.Form):
 
 ETAPAS = ["Cotizado", "Confirmado", "En corte", "En confección", "Listo", "Entregado"]
 
+# Los colores de docs/08-diseno.md, para verlos en /piezas/ (las pruebas los comparan con
+# static/css/app.css).
+COLORES = [
+    ("--marco", "#0A0A0A"), ("--menu-actual", "#2B2B2B"), ("--menu-campo", "#262626"),
+    ("--hoja", "#FFFFFF"), ("--negro", "#1A1A1A"),
+    ("--texto-2", "#616161"), ("--texto-3", "#8A8A8A"), ("--linea", "#EBEBEB"),
+    ("--borde", "#E3E3E3"), ("--borde-campo", "#8A8A8A"), ("--suave", "#F7F7F7"),
+    ("--gris", "#F1F1F1"), ("--riel", "#EDEDED"), ("--enlace", "#005BD3"),
+    ("--azul", "#2563C9"), ("--gris-grafica", "#B5B5B5"), ("--rojo", "#C5280C"),
+    ("--gris-fondo", "#EBEBEB"), ("--azul-fondo", "#E0F0FF"), ("--verde-fondo", "#CDFEE1"),
+    ("--ambar-fondo", "#FFEF9D"), ("--naranja-fondo", "#FFD6A4"), ("--rojo-fondo", "#FEDAD9"),
+]
+
+# Todos los íconos de static/iconos/iconos.svg
+ICONOS = [
+    "tijeras", "contraer", "buscar", "hoy", "pedidos", "calendario", "clientes", "cotizador",
+    "telas", "resumen", "mi-taller", "mas", "visto", "cerrar", "salir", "sumar", "atras",
+    "adelante", "arriba", "abajo", "foto", "prenda", "descargar", "subir", "whatsapp",
+    "recibo", "reloj", "copiar", "enlace", "editar", "papelera", "informacion",
+]
+
 # Los valores de ejemplo de la gráfica de diseno/hoy.html, de junio a noviembre.
 MESES_GRAFICA = [
     MesDeGrafica(date(2026, mes, 1), cobrado, gastado)
@@ -90,17 +111,9 @@ def piezas(request):
         "fotos": fotos,
         "meses_grafica": MESES_GRAFICA,
         "filas": _filas_de_ejemplo(request),
-        "colores": [
-            ("--negro", "#1A1A1A"), ("--texto-2", "#555555"), ("--texto-3", "#8A8A8A"),
-            ("--hoja", "#F1F1F1"), ("--tarjeta", "#FFFFFF"), ("--suave", "#F7F7F7"),
-            ("--linea", "#E1E1E1"), ("--borde-control", "#C9C9C9"), ("--borde-campo", "#8A8A8A"),
-            ("--riel", "#EDEDED"),
-            ("--azul", "#2563C9"), ("--gris-grafica", "#A6A6A6"), ("--rojo", "#B3261E"),
-            ("--verde", "#1B6E3C"),
-        ],
-        "iconos": ["tijeras", "contraer", "buscar", "hoy", "pedidos", "calendario",
-                   "clientes", "cotizador", "telas", "resumen", "mi-taller", "mas",
-                   "visto", "salir"],
+        # Los colores de docs/08-diseno.md (rediseño del 2026-11-13)
+        "colores": COLORES,
+        "iconos": ICONOS,
     }
     return render(request, "piezas/muestrario.html", contexto)
 

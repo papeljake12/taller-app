@@ -29,8 +29,9 @@ DURACIONES = ["--duracion-corta", "--duracion", "--duracion-larga"]
 
 
 def _raiz(css):
-    """El bloque :root del comienzo de app.css."""
-    return css[css.index(":root {"):css.index("}", css.index(":root {"))]
+    """El bloque :root de app.css donde se definen las duraciones."""
+    inicio = css.rindex(":root {", 0, css.index("--duracion-corta"))
+    return css[inicio:css.index("}", inicio)]
 
 
 def _sin_comentarios(css):
@@ -92,14 +93,14 @@ def test_el_cambio_de_seccion_usa_la_transicion_del_navegador():
     assert "view-transition-name: menu;" in CSS
 
 
-def test_la_pantalla_fija_solo_aplica_en_computador():
-    inicio = CSS.index("/* 6. Pantalla fija")
-    fin = CSS.index("/* 7. Animaciones")
-    seccion = _sin_comentarios(CSS[inicio:fin])
-    medias = re.findall(r"@media ([^{]+)\{", seccion)
-    assert medias and all("min-width: 768px" in m for m in medias)
-    # Fuera de un @media no hay reglas: en celular todo sigue como está.
-    assert re.sub(r"@media[^{]+\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}", "", seccion).strip() == ""
+def test_la_pagina_quieta_solo_aplica_en_computador():
+    # Ya no hay "pantalla fija" (docs/08-diseno.md, "Desplazamiento"): en computador la página
+    # no se mueve y se desplaza la hoja; en celular la página se desliza normal.
+    assert "Pantalla fija" not in CSS
+    bloque = re.search(r"@media \(min-width: 768px\) \{\s*html \{\s*overflow: hidden;", CSS)
+    assert bloque
+    celular = CSS[CSS.index("@media (max-width: 767.98px) {"):]
+    assert re.search(r"\.marco \{\s*display: block;\s*height: auto;\s*overflow: visible;", celular)
 
 
 # --- Aviso corto de confirmación (config/avisos.py) ----------------------------------------
@@ -176,30 +177,24 @@ def test_cada_paso_tiene_su_id_y_su_visto_bueno():
              {"nombre": "Listo", "valor": "listo", "estado": "pendiente"}]
     html = Template('{% include "piezas/_pasos.html" %}').render(Context({"pasos": pasos}))
     assert 'id="paso-cotizado"' in html and 'id="paso-corte"' in html
-    assert html.count("#visto") == 3  # siempre está; app.css lo muestra solo en los hechos
+    # Barritas: la cumplida en negro, la actual en azul; el color cambia con una transición
+    assert 'class="paso paso--hecho"' in html and 'class="paso paso--actual"' in html
+    assert re.search(r"\.paso,\s*\.paso::before \{\s*transition:", CSS)
     otro = Template('{% include "piezas/_pasos.html" with id_pasos="p" %}').render(
         Context({"pasos": pasos}))
     assert 'id="p-listo"' in otro
 
 
-def test_la_grafica_puede_venir_baja_para_el_computador():
+def test_la_grafica_es_una_sola_y_crece_al_aparecer():
     from config.piezas import grafica_barras
     from pedidos.calculos import MesDeGrafica
 
     meses = [MesDeGrafica(date(2026, m, 1), 1_000_000 * (m - 5), 500_000) for m in range(6, 12)]
     sola = grafica_barras(meses)
-    assert sola.count("<svg") == 1 and 'class="grafica"' in sola
-    dos = grafica_barras(meses, alto_computador=130)
-    assert dos.count("<svg") == 2
-    assert 'class="grafica grafica--computador" role="img"' in dos
-    assert 'viewBox="0 0 600 130"' in dos and 'viewBox="0 0 600 200"' in dos
-    # La del celular es igual a la de siempre.
-    assert dos.split("</svg>")[1] + "</svg>" == sola.replace(
-        'class="grafica"', 'class="grafica grafica--celular"')
-    # En la baja, la base va en 100 y el espacio libre de arriba se achica en proporción
-    # (36 * 130 / 200 = 23): la barra más alta mide 100 - 23 = 77.
-    baja = dos.split("</svg>")[0]
-    assert 'y="23" width="22" height="77"' in baja
+    assert sola.count("<svg") == 1 and 'class="grafica" role="img"' in sola
+    # alto_computador era de la pantalla fija: se acepta y ya no cambia nada
+    assert grafica_barras(meses, alto_computador=130) == sola
+    assert re.search(r"\.grafica rect \{[^}]*animation: crecer-alto", CSS)
 
 
 # --- Ejemplos de /piezas/ ------------------------------------------------------------------
@@ -240,7 +235,7 @@ def test_piezas_etapa_y_barras_de_ejemplo(sesion_duena, settings):
     etapa = sesion_duena.post("/piezas/animaciones/etapa/", {"estado": "4"},
                               HTTP_HX_REQUEST="true").text
     assert 'class="paso paso--actual" name="estado" value="4" aria-current="step" id="p-paso-4"' in etapa
-    assert 'class="grafica grafica--computador"' in sesion_duena.get(
+    assert 'class="grafica" role="img"' in sesion_duena.get(
         "/piezas/animaciones/barras/", HTTP_HX_REQUEST="true").text
 
 

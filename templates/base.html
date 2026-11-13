@@ -1,23 +1,36 @@
-{% load static %}<!doctype html>
+{% load static piezas %}<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block pestana %}{% endblock %} · {% block sufijo %}{% if request.taller %}{{ request.taller.nombre }}{% else %}Pedidos del taller{% endif %}{% endblock %}</title>
-<link rel="preload" href="{% static 'fuentes/inter-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="{% static 'fuentes/inter-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{% static 'fuentes/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="{% static 'iconos/favicon.svg' %}" type="image/svg+xml">
 <link rel="stylesheet" href="{% static 'css/app.css' %}">
 <script src="{% static 'js/htmx.min.js' %}" defer></script>
 <script src="{% static 'js/app.js' %}" defer></script>
 </head>
 <body data-csrf="{{ csrf_token }}">
+{% comment %}
+El marco con el menú y la hoja (docs/08-diseno.md, "Estructura de la página"). La hoja tiene
+su encabezado quieto arriba y el contenido, que se desplaza por dentro. Cada pantalla llena:
+  pestana       el nombre en la pestaña del navegador;
+  titulo        el nombre de la sección, junto a su ícono (el de la sección actual del menú;
+                icono_titulo lo cambia);
+  apoyo         un dato al lado del título ("6 clientes · 4 te deben");
+  acciones      los botones de la derecha, el principal de último;
+  contenido     lo de la hoja;
+y, si hace falta:
+  clase_hoja            " hoja--completa" para usar todo el ancho (Pedidos);
+  encabezado_izquierda  lo que va antes del título (el logo de Hoy, la flecha del pedido);
+  encabezado_titulo     todo el lado izquierdo del encabezado (la miga del pedido).
+{% endcomment %}
 {% block cuerpo %}
 <div class="marco{% if menu_contraido %} marco--contraido{% endif %}" data-marco>
 {% include "_menu.html" %}
-<main class="hoja" id="contenido">
-<header class="encabezado">
-<div class="encabezado__titulo"><h1>{% block titulo %}{% endblock %}</h1>{% block apoyo %}{% endblock %}</div>
+<main class="hoja{% block clase_hoja %}{% endblock %}" id="contenido">
+<header class="encabezado">{% block encabezado_izquierda %}{% endblock %}
+<div class="encabezado__titulo">{% block encabezado_titulo %}<h1 class="encabezado__nombre">{% block icono_titulo %}{% if menu.icono_actual %}{% icono menu.icono_actual %}{% endif %}{% endblock %}{% block titulo %}{% endblock %}</h1>{% block apoyo %}{% endblock %}{% endblock %}</div>
 <div class="encabezado__acciones">{% block acciones %}{% endblock %}</div>
 </header>
 <div class="hoja__contenido">

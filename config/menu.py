@@ -5,8 +5,12 @@ menú lateral, y `_menu_celular.html` en la barra de abajo del celular y el pane
 
 Si la dirección de una sección no existe, la entrada se ve pero no lleva a ninguna parte.
 
+Rediseño (docs/08-diseno.md): dentro de Pedidos, cuando es la sección actual, el menú muestra
+dos subsecciones, "Atrasados" y "Con saldo" (los filtros de la lista). Abajo va el taller con
+su logo o sus iniciales, y el título de cada pantalla lleva el ícono de su sección.
+
 Permisos (T21, docs/04-permisos.md): la costurera no ve las secciones que no puede abrir
-(Clientes, Cotizador, Resumen y Mi taller). Como Clientes deja libre su lugar en la barra
+(Clientes, Cotizador, Resumen y Mi taller), ni la subsección "Con saldo". Como Clientes deja libre su lugar en la barra
 de abajo del celular, ahí va Telas; así la barra sigue con cinco botones y "Más" queda con
 "Buscar" y "Salir".
 """
@@ -79,6 +83,42 @@ class Entrada:
     url: str | None
     actual: bool
     contador: int | None
+    subsecciones: tuple = ()
+
+
+# Subsecciones de Pedidos: (filtro de la lista, nombre, True si habla de plata).
+SUBSECCIONES_PEDIDOS = (("atrasados", "Atrasados", False), ("saldo", "Con saldo", True))
+
+# Palabras que no cuentan para las iniciales del taller ("Taller de ejemplo" -> "TE").
+_SIN_INICIAL = {"de", "del", "la", "las", "el", "los", "y", "e"}
+
+
+def iniciales(nombre):
+    """Dos letras para el cuadrito del taller cuando no tiene logo."""
+    palabras = [p for p in (nombre or "").split() if p.lower() not in _SIN_INICIAL]
+    return "".join(p[0] for p in palabras[:2]).upper() or "T"
+
+
+def _subsecciones_de_pedidos(request, duena):
+    """Atrasados y Con saldo, con su dirección. La actual es la del filtro que se ve."""
+    url = _direccion(SECCIONES[1])
+    if not url:
+        return ()
+    coincidencia = getattr(request, "resolver_match", None)
+    en_lista = coincidencia is not None and coincidencia.view_name == "pedidos:lista"
+    filtro = request.GET.get("filtro") if en_lista else None
+    return tuple(
+        Entrada(
+            clave=f"pedidos-{clave}",
+            nombre=nombre,
+            icono="",
+            url=f"{url}?filtro={clave}",
+            actual=filtro == clave,
+            contador=None,
+        )
+        for clave, nombre, con_plata in SUBSECCIONES_PEDIDOS
+        if duena or not con_plata
+    )
 
 
 def contar_pendientes(request):
@@ -104,6 +144,8 @@ def construir_menu(request, contadores=None):
     coincidencia = getattr(request, "resolver_match", None)
     vista_actual = coincidencia.view_name if coincidencia else None
 
+    duena = permisos.es_duena(request)
+
     def entrada(seccion):
         return Entrada(
             clave=seccion.clave,
@@ -112,23 +154,35 @@ def construir_menu(request, contadores=None):
             url=_direccion(seccion),
             actual=vista_actual in seccion.vistas,
             contador=contadores.get(seccion.clave) or None,
+            subsecciones=(
+                _subsecciones_de_pedidos(request, duena) if seccion.clave == "pedidos" else ()
+            ),
         )
 
     # La costurera no ve lo que no puede abrir. El administrador (sin taller) nunca llega a
     # una pantalla con menú: se le lleva a /admin/ (cuentas/aislamiento.py).
-    duena = permisos.es_duena(request)
     visibles = [s for s in SECCIONES if duena or not s.solo_duena]
     secciones = [entrada(s) for s in visibles]
     mi_taller = entrada(MI_TALLER) if duena else None
     en_mas = [e for e, s in zip(secciones, visibles) if not s.en_la_barra(duena)]
     if mi_taller:
         en_mas.append(mi_taller)
+    actual = next((e for e in [*secciones, mi_taller] if e and e.actual), None)
+    taller = getattr(request, "taller", None)
+    logo = getattr(taller, "logo", None)
     return {
         "secciones": secciones,
         "mi_taller": mi_taller,
         "barra": [e for e, s in zip(secciones, visibles) if s.en_la_barra(duena)],
         "mas": en_mas,
         "mas_actual": any(e.actual for e in en_mas),
+        # El ícono que va junto al título de la pantalla (base.html)
+        "icono_actual": actual.icono if actual else None,
+        # El taller, abajo en el menú: su logo o sus iniciales
+        "taller": {
+            "iniciales": iniciales(getattr(taller, "nombre", "")),
+            "logo": logo.url if logo else None,
+        },
     }
 
 
