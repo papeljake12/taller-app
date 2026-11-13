@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Mi taller (sin página de referencia), T20. Lo rellena el carril F de la tanda 5.{% endcomment %}
+{% block pestana %}Mi taller{% endblock %}
+{% block titulo %}Mi taller{% endblock %}
+{% block apoyo %}{% endblock %}
+{% block acciones %}{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-taller">
+<div class="tarjeta__cabeza"><h2 id="t-taller">Tu taller</h2></div>
+<p class="tarjeta__nota">Llega con T20.</p>
+</section>
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-costureras">
+<div class="tarjeta__cabeza"><h2 id="t-costureras">Costureras</h2></div>
+<p class="tarjeta__nota">Llega con T20.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% comment %}
+Pedido por dentro (diseno/pedido.html). Esta plantilla solo reúne las partes y queda
+congelada después de la tanda 2:
+  arriba: _pedido_apoyo (etiqueta y detalle) y _pedido_acciones (T07);
+  columna izquierda: _etapa (T07), _tallas (T10), _materiales (T12);
+  columna derecha: _pagos (T08), _entrega (T07), _cliente (T07), _foto (T13);
+  abajo: _eliminar (T07).
+Las dos columnas terminan a la misma altura: la última tarjeta de cada una crece.
+{% endcomment %}
+{% block pestana %}{{ pedido.cliente.nombre }}{% endblock %}
+{% block titulo %}{{ pedido.cliente.nombre }}{% endblock %}
+{% block apoyo %}{% include "pedidos/_pedido_apoyo.html" %}{% endblock %}
+{% block acciones %}{% include "pedidos/_pedido_acciones.html" %}{% endblock %}
+{% block contenido %}
+<div class="dos-columnas">
+<div class="columna-ancha columna">
+{% include "pedidos/_etapa.html" %}
+{% include "pedidos/_tallas.html" %}
+{% include "pedidos/_materiales.html" %}
+</div>
+<div class="columna-angosta columna">
+{% include "pedidos/_pagos.html" %}
+{% include "pedidos/_entrega.html" %}
+{% include "pedidos/_cliente.html" %}
+{% include "pedidos/_foto.html" %}
+</div>
+</div>
+{% include "pedidos/_eliminar.html" %}
+{% endblock %}

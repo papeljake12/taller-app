@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Resumen del mes (diseno/resumen.html), T17 y T18. Lo rellena el carril A de la tanda 4.{% endcomment %}
+{% block pestana %}Resumen{% endblock %}
+{% block titulo %}Resumen{% endblock %}
+{% block apoyo %}{% endblock %}
+{% block acciones %}{% include "piezas/_boton_excel.html" %}{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-resumen">
+<div class="tarjeta__cabeza"><h2 id="t-resumen">Resumen del mes</h2></div>
+<p class="tarjeta__nota">Llega con T17.</p>
+</section>
+{% endblock %}

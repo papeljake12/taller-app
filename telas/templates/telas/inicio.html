@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Telas (diseno/telas.html), T16. La rellena el carril B de la tanda 5.{% endcomment %}
+{% block pestana %}Telas{% endblock %}
+{% block titulo %}Telas{% endblock %}
+{% block apoyo %}{% endblock %}
+{% block acciones %}<a class="boton boton--principal" href="{% url 'telas:nueva' %}" hx-get="{% url 'telas:nueva' %}" hx-target="#ventana">Nueva tela</a>{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-telas">
+<div class="tarjeta__cabeza"><h2 id="t-telas">Telas</h2></div>
+<p class="tarjeta__nota">Llega con T16.</p>
+</section>
+{% endblock %}

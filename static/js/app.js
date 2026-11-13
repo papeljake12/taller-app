@@ -2,7 +2,9 @@
    1. Menú que se contrae (y se recuerda en este navegador).
    2. Panel "Más" de la barra de abajo en celular.
    3. Fotos que pasan ("Trabajos del taller").
-   4. HTMX envía la protección CSRF en cada petición.
+   4. HTMX envía la protección CSRF en cada petición, y dibuja los formularios con errores.
+   5. Ventana (para "Nuevo pedido" y otros formularios cortos).
+   6. Botones "Copiar".
 
    Este archivo es compartido: después de la tanda 2 solo lo cambia el coordinador. */
 
@@ -122,5 +124,82 @@
   document.addEventListener("htmx:configRequest", function (evento) {
     const ficha = document.body.dataset.csrf;
     if (ficha) evento.detail.headers["X-CSRFToken"] = ficha;
+  });
+
+  // Un formulario con errores responde 422 ("datos que no sirven"): HTMX lo dibuja igual,
+  // para que se vean los mensajes. Los demás errores no reemplazan nada.
+  if (window.htmx) {
+    window.htmx.config.responseHandling = [
+      { code: "204", swap: false },
+      { code: "[23]..", swap: true },
+      { code: "422", swap: true },
+      { code: "[45]..", swap: false, error: true },
+    ];
+  }
+
+  /* 5. Ventana ------------------------------------------------------------- */
+
+  // En base.html hay una sola <dialog id="ventana">. Un botón o enlace la llena así:
+  //   <a href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}"
+  //      hx-target="#ventana">Nuevo pedido</a>
+  // Sin JavaScript, el enlace abre la misma página completa. El contenido usa la plantilla
+  // piezas/ventana.html. Se cierra con Escape, con [data-cerrar-ventana] o al tocar fuera.
+
+  function ventana() {
+    return document.getElementById("ventana");
+  }
+
+  document.addEventListener("htmx:afterSwap", function (evento) {
+    const dialogo = ventana();
+    if (!dialogo || evento.detail.target !== dialogo) return;
+    if (!dialogo.open) dialogo.showModal();
+    const primero = dialogo.querySelector("[autofocus], input, select, textarea, button");
+    if (primero) primero.focus();
+  });
+
+  document.addEventListener("click", function (evento) {
+    // Abierta como página (sin la ventana): "Cancelar" vuelve a la página anterior.
+    if (evento.target.closest(".ventana--pagina [data-cerrar-ventana]")) {
+      window.history.back();
+      return;
+    }
+    const dialogo = ventana();
+    if (!dialogo || !dialogo.open) return;
+    // Tocar el fondo oscuro (fuera de la ventana) también la cierra.
+    if (evento.target.closest("[data-cerrar-ventana]") || evento.target === dialogo) {
+      dialogo.close();
+    }
+  });
+
+  document.addEventListener("close", function (evento) {
+    if (evento.target === ventana()) evento.target.replaceChildren();
+  }, true);
+
+  /* 6. Botones "Copiar" ---------------------------------------------------- */
+
+  // <button type="button" data-copiar="texto a copiar">Copiar resumen</button>
+  // o, para copiar lo que dice otro elemento: data-copiar-de="#id-del-elemento".
+  // Al copiar, el botón dice "Copiado" un momento.
+
+  const COPIADO_MS = 2000;
+
+  document.addEventListener("click", function (evento) {
+    const boton = evento.target.closest("[data-copiar], [data-copiar-de]");
+    if (!boton) return;
+    let texto = boton.dataset.copiar;
+    if (boton.dataset.copiarDe) {
+      const origen = document.querySelector(boton.dataset.copiarDe);
+      texto = origen ? (origen.value !== undefined ? origen.value : origen.innerText) : "";
+    }
+    if (!texto || !navigator.clipboard) return;
+    navigator.clipboard.writeText(texto).then(function () {
+      if (boton.dataset.textoOriginal) return;
+      boton.dataset.textoOriginal = boton.textContent;
+      boton.textContent = "Copiado";
+      window.setTimeout(function () {
+        boton.textContent = boton.dataset.textoOriginal;
+        delete boton.dataset.textoOriginal;
+      }, COPIADO_MS);
+    });
   });
 })();

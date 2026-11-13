@@ -171,9 +171,9 @@ def test_el_administrador_puede_salir(sesion_administrador):
 
 # --- Ninguna pantalla nueva queda abierta sin querer ---------------------------------------
 
-# Las únicas pantallas que se abren sin sesión. Si una tarea agrega otra pública (como el
-# formulario de tallas en T11), se agrega aquí a propósito.
-PANTALLAS_PUBLICAS = {"cuentas:entrar", "admin:login"}
+# Las únicas pantallas que se abren sin sesión. Si una tarea agrega otra pública, se agrega
+# aquí a propósito. El formulario de tallas (T11) es público: lo abre el cliente con su enlace.
+PANTALLAS_PUBLICAS = {"cuentas:entrar", "admin:login", "pedidos:publico_tallas"}
 
 
 def nombres_de_pantallas_publicas(resolver=None, prefijo=""):

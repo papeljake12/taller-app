@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Clientes (diseno/clientes.html), T04 y T19. La rellenan el carril D de la tanda 3 (lista, crear y editar) y el carril D de la tanda 5 (aviso de dotación y mensajes).{% endcomment %}
+{% block pestana %}Clientes{% endblock %}
+{% block titulo %}Clientes{% endblock %}
+{% block apoyo %}{% endblock %}
+{% block acciones %}<a class="boton boton--principal" href="{% url 'pedidos:cliente_nuevo' %}" hx-get="{% url 'pedidos:cliente_nuevo' %}" hx-target="#ventana">Nuevo cliente</a>{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-clientes">
+<div class="tarjeta__cabeza"><h2 id="t-clientes">Clientes</h2></div>
+<p class="tarjeta__nota">Llega con T04.</p>
+</section>
+{% endblock %}

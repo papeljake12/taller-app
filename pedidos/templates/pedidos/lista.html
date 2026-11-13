@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Pedidos (diseno/pedidos.html), T05. La rellena el carril A de la tanda 3.{% endcomment %}
+{% block pestana %}Pedidos{% endblock %}
+{% block titulo %}Pedidos{% endblock %}
+{% block apoyo %}{% endblock %}
+{% block acciones %}{% include "piezas/_boton_excel.html" %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
+{% block contenido %}
+<section class="tarjeta tarjeta--lista" aria-labelledby="t-lista">
+<div class="tarjeta__cabeza"><h2 id="t-lista">Lista de pedidos</h2></div>
+<p class="tarjeta__nota">Llega con T05.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,4 @@
+{% comment %}
+Botón "Nuevo pedido": abre la ventana desde cualquier pantalla (sin JavaScript, abre la página).
+  {% include "piezas/_boton_nuevo_pedido.html" %}
+{% endcomment %}<a class="boton boton--principal" href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}" hx-target="#ventana">Nuevo pedido</a>

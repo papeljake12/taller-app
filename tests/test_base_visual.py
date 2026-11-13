@@ -410,3 +410,10 @@ def test_en_celular_la_letra_de_la_grafica_se_agranda():
     # letra de 12 de computador quedaría en ~6 px; con 20 queda en ~11 px.
     regla = re.search(r"\.grafica text \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
     assert regla and "font-size: 20px;" in regla.group(1)
+
+
+def test_en_celular_las_columnas_del_tablero_miden_lo_que_su_contenido():
+    # Con las filas abiertas (display: contents), el "flex: 3 1 440px" de cada columna se
+    # volvería un alto de 440 px y las tarjetas de Hoy quedarían enormes.
+    regla = re.search(r"\.tablero > \.dos-columnas > \* \{(.*?)\}", _reglas_de_celular(), re.DOTALL)
+    assert regla and "flex: none;" in regla.group(1)

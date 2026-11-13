@@ -51,6 +51,18 @@ PANTALLAS = {
                  solo_computador=True),
         Pantalla("piezas", "/piezas/"),
     ],
+    2: [
+        Pantalla("pedidos", "/pedidos/", "pedidos.html"),
+        Pantalla("pedido", "/pedidos/{pedido}/", "pedido.html"),
+        Pantalla("nuevo-pedido", "/pedidos/nuevo/"),
+        Pantalla("calendario", "/calendario/", "calendario.html"),
+        Pantalla("clientes", "/clientes/", "clientes.html"),
+        Pantalla("cotizador", "/cotizador/", "cotizador.html"),
+        Pantalla("telas", "/telas/", "telas.html"),
+        Pantalla("resumen", "/resumen/", "resumen.html"),
+        Pantalla("mi-taller", "/mi-taller/"),
+        Pantalla("tallas-publico", "/tallas/{token}/", sin_sesion=True),
+    ],
 }
 
 DESBORDE = """(ancho) => {
@@ -111,6 +123,17 @@ def abrir_sesion(usuario):
     return cliente.cookies["sessionid"].value, persona.username
 
 
+def datos_para_direcciones(usuario):
+    """Lo que va en las direcciones con número: el pedido del diseño (el del Restaurante)."""
+    from pedidos.models import Pedido
+
+    pedidos = Pedido.objects.filter(taller__usuarias__username=usuario)
+    pedido = pedidos.filter(detalle__startswith="18 camisas").first() or pedidos.first()
+    if pedido is None:
+        return {}
+    return {"pedido": pedido.pk, "token": pedido.token_tallas}
+
+
 def cerrar_sesion(clave):
     from django.contrib.sessions.models import Session
 
@@ -152,6 +175,10 @@ def main():
     from playwright.sync_api import sync_playwright
 
     clave, usuario = abrir_sesion(opciones.usuario)
+    datos = datos_para_direcciones(usuario)
+    faltan = [p.nombre for p in pantallas if "{" in p.url and not datos]
+    if faltan:
+        raise SystemExit(f"Faltan pedidos para {faltan}: carga los ejemplos (cargar_ejemplos).")
     puerto = puerto_libre()
     servidor = levantar_servidor(puerto)
     base = f"http://127.0.0.1:{puerto}"
@@ -171,7 +198,7 @@ def main():
                 for nombre_formato, formato, referencia in formatos:
                     ancho = formato["viewport"]["width"]
                     archivo = salida / f"{pantalla.nombre}-{nombre_formato}.png"
-                    problemas = capturar(navegador, base + pantalla.url, archivo, formato,
+                    problemas = capturar(navegador, base + pantalla.url.format(**datos), archivo, formato,
                                          cookies, ancho)
                     total += len(problemas)
                     estado = "bien" if not problemas else "REVISAR"

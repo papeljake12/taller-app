@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Cotizador (diseno/cotizador.html), T15. Lo rellena el carril C de la tanda 5.{% endcomment %}
+{% block pestana %}Cotizador{% endblock %}
+{% block titulo %}Cotizador{% endblock %}
+{% block apoyo %}{% endblock %}
+{% block acciones %}{% endblock %}
+{% block contenido %}
+<div class="dos-columnas">
+<div class="columna-ancha columna"><section class="tarjeta tarjeta--lista" aria-labelledby="t-para-quien">
+<div class="tarjeta__cabeza"><h2 id="t-para-quien">Para quién</h2></div>
+<p class="tarjeta__nota">Llega con T15.</p>
+</section></div>
+<div class="columna-angosta columna"><section class="tarjeta tarjeta--lista" aria-labelledby="t-total">
+<div class="tarjeta__cabeza"><h2 id="t-total">Total de la cotización</h2></div>
+<p class="tarjeta__nota">Llega con T15.</p>
+</section></div>
+</div>
+{% endblock %}

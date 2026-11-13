@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% load piezas %}
+{% comment %}Formulario público de tallas (T11): sin menú ni nada del panel. Lo rellena el carril E de la tanda 5.{% endcomment %}
+{% block pestana %}Tallas{% endblock %}
+{% block cuerpo %}
+<div class="marco-acceso">
+<main class="acceso">
+<div class="acceso__marca">{% icono "tijeras" 22 %}<span>{{ pedido.taller.nombre }}</span></div>
+<section class="tarjeta acceso__tarjeta" aria-labelledby="titulo-tallas">
+<h1 id="titulo-tallas">Tallas</h1>
+<p class="texto-2">Llega con T11.</p>
+</section>
+</main>
+</div>
+{% endblock %}
