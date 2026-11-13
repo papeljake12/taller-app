@@ -52,6 +52,13 @@ FECHAS_DOTACION = ((4, 30), (8, 31), (12, 20))
 MAXIMO_FOTOS = 8
 
 
+def porcentaje(parte, todo):
+    """De 0 a 100, redondeado al entero más cercano (como las barras del diseño)."""
+    if todo <= 0:
+        return 0
+    return int((Decimal(parte) * 100 / Decimal(todo)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
 def _hoy(hoy=None):
     return hoy or timezone.localdate()
 
@@ -187,6 +194,22 @@ def etiqueta_urgencia(pedido, hoy=None):
         if dias == 1:
             return Etiqueta("Se entrega mañana", "ambar")
         return Etiqueta(f"Faltan {dias} días", "ambar")
+    return None
+
+
+def etiqueta_entrega(pedido, hoy=None):
+    """La etiqueta de la entrega, como tagUrgencia de la demo:
+
+    atrasado (rojo) o pronto (ámbar); si no, "Entregado" (verde) o "Por confirmar" (ámbar,
+    para los cotizados). None si el pedido va en producción sin afán.
+    """
+    urgencia = etiqueta_urgencia(pedido, hoy)
+    if urgencia:
+        return urgencia
+    if pedido.estado == Estado.ENTREGADO:
+        return Etiqueta("Entregado", "verde")
+    if pedido.estado == Estado.COTIZADO:
+        return Etiqueta("Por confirmar", "ambar")
     return None
 
 
@@ -345,7 +368,9 @@ def quien_te_debe(taller, hoy=None):
         (c for c in por_cliente.values() if c[1] > 0), key=lambda c: (-c[1], c[0].nombre)
     )
     mayor = deudas[0][1] if deudas else 1
-    return [Deudor(cliente, debe, atraso, debe * 100 // mayor) for cliente, debe, atraso in deudas]
+    return [
+        Deudor(cliente, debe, atraso, porcentaje(debe, mayor)) for cliente, debe, atraso in deudas
+    ]
 
 
 @dataclass(frozen=True)
@@ -363,7 +388,12 @@ def pedidos_por_etapa(taller, hoy=None):
     pedidos = con_cuentas(_pedidos(taller))
     cantidades = dict(pedidos.values_list("estado").annotate(n=Count("pk")))
     atrasados = dict(pedidos_atrasados(pedidos, hoy).values_list("estado").annotate(n=Count("pk")))
-    deben = dict(pedidos.filter(saldo__gt=0).values_list("estado").annotate(n=Count("pk")))
+    deben = dict(
+        pedidos.exclude(estado=Estado.COTIZADO)
+        .filter(saldo__gt=0)
+        .values_list("estado")
+        .annotate(n=Count("pk"))
+    )
     return [
         Etapa(estado, nombre, cantidades.get(estado, 0), atrasados.get(estado, 0),
               deben.get(estado, 0))
@@ -530,6 +560,11 @@ def cuentas_de_clientes(taller):
     return sorted(filas, key=lambda f: (-f.ha_comprado, sin_tildes(f.cliente.nombre)))
 
 
+def clientes_empresa(taller):
+    """Los clientes de tipo empresa: a ellos va el aviso de dotación."""
+    return Cliente.objects.del_taller(taller).filter(tipo=Cliente.Tipo.EMPRESA)
+
+
 def proxima_dotacion(hoy=None):
     """La próxima fecha de dotación: hoy mismo si cae hoy."""
     hoy = _hoy(hoy)
@@ -551,6 +586,12 @@ def tela_baja(tela):
 
 def telas_bajas(telas):
     return telas.filter(minimo__gt=0, metros__lte=F("minimo"))
+
+
+def telas_en_orden(taller):
+    """Las telas del taller: primero las que se están acabando, después por nombre."""
+    telas = list(Tela.objects.del_taller(taller))
+    return sorted(telas, key=lambda t: (not tela_baja(t), sin_tildes(t.nombre)))
 
 
 def resumen_de_telas(taller):
@@ -648,13 +689,23 @@ class Cotizacion:
     metros_totales: Decimal
 
 
+# Más que esto no es un dato del cotizador: se toma como vacío.
+LIMITE_COTIZADOR = Decimal("1000000000")
+
+
 def _numero(valor):
-    """Un número positivo o 0, a partir de lo que llegue (texto con coma, None, etc.)."""
+    """Un número positivo o 0, a partir de lo que llegue (texto con coma, None, etc.).
+
+    Lo que no es un número ("abc", "nan", "inf"), lo negativo y lo absurdamente grande
+    cuentan como 0.
+    """
     try:
         numero = Decimal(str(valor if valor not in (None, "") else 0).replace(",", "."))
     except ArithmeticError:
         return Decimal("0")
-    return numero if numero > 0 else Decimal("0")
+    if not numero.is_finite() or numero <= 0 or numero > LIMITE_COTIZADOR:
+        return Decimal("0")
+    return numero
 
 
 def _redondear(numero):
@@ -670,19 +721,21 @@ def cotizar(metros, precio_metro, insumos, mano_obra, extra, ganancia, cantidad,
     abono para empezar = total × porcentaje de abono ÷ 100 (máximo 100 %)
     """
     metros = _numero(metros)
-    tela = _redondear(metros * _numero(precio_metro))
-    costo = tela + sum(_redondear(_numero(v)) for v in (insumos, mano_obra, extra))
-    con_ganancia = Decimal(costo) * (1 + _numero(ganancia) / 100)
+    # Como la demo: se redondea hacia arriba a 500 el costo exacto (con centavos), y solo
+    # para mostrar se redondean la tela y el costo al peso.
+    tela = metros * _numero(precio_metro)
+    costo = tela + _numero(insumos) + _numero(mano_obra) + _numero(extra)
+    con_ganancia = costo * (1 + _numero(ganancia) / 100)
     precio = int((con_ganancia / 500).to_integral_value(rounding=ROUND_CEILING)) * 500
     unidades = int(_numero(cantidad))
     total = precio * unidades
     porcentaje_abono = min(Decimal("100"), _numero(abono))
     return Cotizacion(
-        tela=tela,
-        costo=costo,
+        tela=_redondear(tela),
+        costo=_redondear(costo),
         precio_unidad=precio,
         total=total,
         abono=_redondear(total * porcentaje_abono / 100),
-        ganancia=(precio - costo) * unidades,
+        ganancia=_redondear((precio - costo) * unidades),
         metros_totales=(metros * unidades).quantize(Decimal("0.01")),
     )

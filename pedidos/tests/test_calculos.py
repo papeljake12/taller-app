@@ -66,7 +66,8 @@ def test_quien_te_debe_como_en_el_diseno(ejemplo):
         ("Grupo de danza Tambores del Río", 750_000, False),
         ("Ferretería La Esquina", 480_000, True),
     ]
-    assert [d.porcentaje for d in deudores] == [100, 38, 22, 14]
+    # Redondeado como las barras de diseno/hoy.html (100 %, 38 %, 23 % y 15 %).
+    assert [d.porcentaje for d in deudores] == [100, 38, 23, 15]
 
 
 def test_pedidos_por_etapa_como_en_el_diseno(ejemplo):
@@ -82,6 +83,7 @@ def test_pedidos_por_etapa_como_en_el_diseno(ejemplo):
     ]
     entregado = etapas[-1]
     assert entregado.con_saldo == 0  # "Pagado"
+    assert etapas[0].con_saldo == 0  # los cotizados no cuentan como "con saldo"
 
 
 def test_la_grafica_termina_en_noviembre_como_en_el_diseno(ejemplo):
@@ -91,6 +93,20 @@ def test_la_grafica_termina_en_noviembre_como_en_el_diseno(ejemplo):
     assert (grafica[-1].cobrado, grafica[-1].gastado) == (4_460_000, 939_000)
     # Octubre: 1.200.000 + 480.000 + 1.000.000 de abonos, como la barra del diseño.
     assert grafica[-2].cobrado == 2_680_000
+
+
+def test_gastos_del_mes_en_el_orden_del_diseno(ejemplo):
+    from finanzas.models import Gasto
+
+    gastos = Gasto.objects.del_taller(ejemplo)
+
+    assert [g.concepto for g in gastos] == [
+        "Recibo de luz del taller",
+        "Hilos y botones",
+        "Transporte de telas",
+        "Tela piqué blanca, 22 m",
+        "Dril para delantales, 16 m",
+    ]
 
 
 def test_resumen_de_noviembre_como_en_el_diseno(ejemplo):
@@ -181,6 +197,12 @@ def test_clientes_como_en_el_diseno(ejemplo):
 
 def test_telas_y_contadores_del_menu_como_en_el_diseno(ejemplo):
     resumen = calculos.resumen_de_telas(ejemplo)
+
+    # diseno/telas.html: primero las que se acaban.
+    assert [t.nombre for t in calculos.telas_en_orden(ejemplo)] == [
+        "Piqué blanco", "Popelina blanca", "Dril azul", "Tela estampada para polleras",
+    ]
+    assert calculos.clientes_empresa(ejemplo).count() == 2  # "Tienes 2 clientes empresa"
 
     assert resumen["cantidad"] == 4
     assert resumen["metros"] == Decimal("60")
@@ -419,6 +441,38 @@ def test_el_abono_no_pasa_del_100_por_ciento_y_lo_invalido_cuenta_como_0():
 
     assert resultado.costo == 10_000
     assert resultado.abono == resultado.total == 30_000
+
+
+def test_el_cotizador_redondea_a_500_el_costo_exacto_como_la_demo():
+    # 0,01 m a 40 pesos = 0,40 de tela. Costo exacto 1.000,40: sube a 1.500, como en la demo.
+    resultado = calculos.cotizar("0.01", 40, 1_000, 0, 0, 0, 1, 0)
+
+    assert (resultado.tela, resultado.costo, resultado.precio_unidad) == (0, 1_000, 1_500)
+
+
+@pytest.mark.parametrize("raro", ["nan", "inf", "-inf", "1e30", "NaN"])
+def test_el_cotizador_no_se_rompe_con_numeros_raros(raro):
+    resultado = calculos.cotizar(raro, 18_000, 3_000, raro, 0, raro, raro, raro)
+
+    assert resultado.costo == 3_000
+    assert resultado.total == 0
+
+
+def test_etiqueta_de_entrega_como_en_hoy_y_el_calendario(taller):
+    assert calculos.etiqueta_entrega(pedido_con(taller, "cotizado", 20), HOY) == calculos.Etiqueta(
+        "Por confirmar", "ambar"
+    )
+    assert calculos.etiqueta_entrega(pedido_con(taller, "entregado", -5), HOY) == calculos.Etiqueta(
+        "Entregado", "verde"
+    )
+    assert calculos.etiqueta_entrega(pedido_con(taller, "corte", -2), HOY).texto == "Atrasado 2 días"
+    assert calculos.etiqueta_entrega(pedido_con(taller, "corte", 30), HOY) is None
+
+
+def test_porcentaje_redondea_al_entero_mas_cercano():
+    assert calculos.porcentaje(480_000, 3_300_000) == 15
+    assert calculos.porcentaje(1, 3) == 33
+    assert calculos.porcentaje(5, 0) == 0
 
 
 def test_buscar_sin_tildes_ni_mayusculas():

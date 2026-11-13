@@ -37,7 +37,8 @@ class Gasto(ModeloDeTaller):
     class Meta:
         verbose_name = "gasto"
         verbose_name_plural = "gastos"
-        ordering = ["-fecha", "-pk"]
+        # Del más nuevo al más viejo; los del mismo día, en el orden en que se anotaron.
+        ordering = ["-fecha", "pk"]
         constraints = [
             models.CheckConstraint(
                 condition=Q(valor__gt=0),
