@@ -7,6 +7,7 @@ import pytest
 from django.urls import reverse
 
 from pedidos import ejemplos
+from pedidos.formularios.clientes import MENSAJE_NOMBRE_REPETIDO, ClienteForm
 from pedidos.models import Cliente, Pedido
 from tests import fabricas
 
@@ -202,6 +203,22 @@ def test_un_nombre_repetido_sin_importar_mayusculas_da_un_aviso(sesion_duena, ta
 
     assert respuesta.status_code == 422
     assert "Ya tienes un cliente con ese nombre." in respuesta.text
+    assert Cliente.objects.count() == 1
+
+
+def test_dos_personas_creando_el_mismo_nombre_a_la_vez_reciben_el_aviso(
+    sesion_duena, taller, monkeypatch
+):
+    """Si la otra persona guarda justo entre la revisión del nombre y el guardado, la base de
+    datos lo frena y la ventana muestra el mismo aviso, sin romperse."""
+    fabricas.crear_cliente(taller, nombre="Comparsa Brisa Caribe")
+    # La revisión del formulario "no alcanza a ver" el cliente que se acaba de crear.
+    monkeypatch.setattr(ClienteForm, "clean_nombre", lambda form: form.cleaned_data["nombre"])
+
+    respuesta = nuevo(sesion_duena, nombre="comparsa brisa caribe")
+
+    assert respuesta.status_code == 422
+    assert MENSAJE_NOMBRE_REPETIDO in respuesta.text
     assert Cliente.objects.count() == 1
 
 
