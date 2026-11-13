@@ -1,11 +1,13 @@
 {% extends "piezas/ventana.html" %}
 {% comment %}
 Ventana "Nueva tela" (T16), con los textos de la demo: el nombre, los metros que hay y cuándo
-avisar. Con errores vuelve con status 422 y el mensaje junto a cada campo. Al guardar se
+avisar. En celular los metros y el aviso van uno debajo del otro (campo--ancho-celular): la
+etiqueta "Avisarme cuando queden (metros)" ocupa dos líneas y los campos quedaban
+desparejos. Con errores vuelve con status 422 y el mensaje junto a cada campo. Al guardar se
 cierra y la tela aparece en la tabla (telas/vistas.py, nueva).
 {% endcomment %}
 {% block titulo %}Nueva tela{% endblock %}
 {% block cuerpo %}{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
 {% include "piezas/_campo.html" with campo=form.nombre %}
-<div class="campos">{% include "piezas/_campo.html" with campo=form.metros %}{% include "piezas/_campo.html" with campo=form.minimo %}</div>{% endblock %}
+<div class="campos">{% include "piezas/_campo.html" with campo=form.metros clase_campo="campo--ancho-celular" %}{% include "piezas/_campo.html" with campo=form.minimo clase_campo="campo--ancho-celular" %}</div>{% endblock %}
 {% block pie %}<button type="submit" class="boton boton--principal">Agregar tela</button>{% endblock %}

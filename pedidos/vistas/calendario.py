@@ -212,6 +212,8 @@ def contexto_calendario(request, mes, dia):
         "nombres_de_la_semana": NOMBRES_DE_LA_SEMANA,
         "dias": dias_del_mes(mes, entregas, hoy, dia),
         "dia": dia,
+        # Al tocar "Ver todo el mes", el cursor vuelve al día que estaba elegido (su id).
+        "id_dia": f"dia-{texto_del_dia(dia)}" if dia else "",
         "titulo_lista": titulo_de_la_lista(mes, dia),
         "filas": [FilaEntrega(p, etiqueta_de_la_lista(p, hoy)) for p in en_la_lista],
         "frase_semana": frase_de_la_semana(taller, hoy),

@@ -88,7 +88,12 @@ def test_la_ventana_con_htmx_trae_solo_su_contenido(sesion_duena):
     pagina = sesion_duena.get(url).text
 
     assert "<html" not in ventana and "ventana__cabeza" in ventana
-    assert "<html" in pagina and "ventana__cabeza" in pagina
+    assert "data-cerrar-ventana" in ventana
+    # Como página, el título va una sola vez (el de la hoja), sin la X que no cierra nada,
+    # y "Cancelar" es un enlace de verdad (T23).
+    assert "<html" in pagina and "<h1>Nuevo pedido</h1>" in pagina
+    assert "ventana__cabeza" not in pagina and "data-cerrar-ventana" not in pagina
+    assert f'<a class="boton" href="{reverse("pedidos:lista")}">Cancelar</a>' in pagina
 
 
 def test_cada_pantalla_trae_la_ventana_y_el_boton_nuevo_pedido_la_abre(sesion_duena):

@@ -65,11 +65,19 @@ class Cifra:
     url: str
     alerta: bool
     # En celular van 2 por 2 en otro orden (diseno/hoy-celular.html): clase orden-celular-N.
+    # Con 0 se quedan en el orden del computador (la costurera, que ve tres).
     orden_celular: int
+    # La plata va un poco más pequeña en celular (diseno/hoy-celular.html: "Por cobrar").
+    dinero: bool = False
 
     @property
     def clase(self):
-        return f"orden-celular-{self.orden_celular}"
+        clases = []
+        if self.orden_celular:
+            clases.append(f"orden-celular-{self.orden_celular}")
+        if self.dinero:
+            clases.append("cifra--dinero")
+        return " ".join(clases)
 
 
 def _plural(cantidad, singular, plural):
@@ -90,7 +98,9 @@ def apoyo_mas_cercana(dias):
 def cifras(taller, hoy, con_plata=False):
     """Las cuatro cifras de arriba, en el orden del computador, cada una con su filtro.
 
-    Sin plata (la costurera), son tres: sin "Por cobrar".
+    Sin plata (la costurera), son tres: sin "Por cobrar". Esas tres no cambian de orden en
+    celular: van 2 y 1 a lo ancho (static/css/app.css), en el mismo orden en que se llega a
+    ellas con el teclado.
     """
     datos = calculos.cifras_de_hoy(taller, hoy)
     lista = reverse("pedidos:lista")
@@ -127,7 +137,7 @@ def cifras(taller, hoy, con_plata=False):
         ),
     ]
     if not con_plata:
-        return produccion
+        return [replace(cifra, orden_celular=0) for cifra in produccion]
     return [
         *produccion,
         Cifra(
@@ -137,6 +147,7 @@ def cifras(taller, hoy, con_plata=False):
             filtro("saldo"),
             alerta=False,
             orden_celular=4,
+            dinero=True,
         ),
     ]
 

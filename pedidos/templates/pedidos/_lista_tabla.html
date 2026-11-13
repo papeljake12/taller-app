@@ -4,9 +4,12 @@ escribe, por eso tiene un id fijo. También la usa la página del buscador del m
   {% include "pedidos/_lista_tabla.html" with filas=filas %}
 - url_todos: si se da, el aviso de "nada coincide" ofrece "Ver todos".
 La costurera no ve la columna Saldo (T21, docs/04-permisos.md).
+Las columnas tienen el ancho de diseno/pedidos.html (<colgroup>, tabla--pedidos): así no
+saltan de lugar al cambiar de filtro ni al buscar.
 {% endcomment %}<div id="{{ id_tabla|default:'lista-pedidos' }}">
 {% if filas %}<div class="tabla-contenedor">
-<table class="tabla">
+<table class="tabla tabla--pedidos">
+<colgroup><col><col class="col-etapa"><col class="col-entrega"><col class="col-encargada"><col class="col-tallas">{% if puede_ver_plata %}<col class="col-saldo">{% endif %}</colgroup>
 <thead><tr><th scope="col">Cliente y pedido</th><th scope="col">Etapa</th><th scope="col">Entrega</th><th scope="col">Encargada</th><th scope="col">Tallas</th>{% if puede_ver_plata %}<th scope="col" class="num">Saldo</th>{% endif %}</tr></thead>
 <tbody>
 {% for fila in filas %}{% include "pedidos/_lista_fila.html" %}

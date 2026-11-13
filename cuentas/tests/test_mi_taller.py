@@ -129,8 +129,8 @@ def test_cambiar_el_nombre_devuelve_la_tarjeta_y_el_nombre_para_el_menu(sesion_d
     assert "<html" not in html
     assert 'id="tu-taller"' in html
     assert "Listo: se guardaron los cambios." in html
-    assert ('<span hx-swap-oob="innerHTML:#menu-taller">Confecciones de prueba</span>'
-            in html)
+    assert ('<span class="menu__taller" id="menu-taller" title="Confecciones de prueba" '
+            'hx-swap-oob="true">Confecciones de prueba</span>' in html)
     assert "<title>Mi taller · Confecciones de prueba</title>" in html
 
 
@@ -140,7 +140,8 @@ def test_el_nombre_nuevo_sale_en_el_menu_y_en_los_mensajes(sesion_duena, taller)
     guardar_taller(sesion_duena, taller, nombre="Confecciones de prueba")
 
     html = sesion_duena.get(reverse("pedidos:hoy")).text
-    assert '<span class="menu__taller" id="menu-taller">Confecciones de prueba</span>' in html
+    assert ('<span class="menu__taller" id="menu-taller" title="Confecciones de prueba">'
+            'Confecciones de prueba</span>') in html
     pedido.refresh_from_db()
     assert mensajes.firma(pedido.taller) == "de Confecciones de prueba"
 
@@ -181,7 +182,7 @@ def test_con_un_error_el_menu_sigue_con_el_nombre_guardado(sesion_duena, taller)
 
     assert respuesta.status_code == 422
     assert "<html" in respuesta.text
-    assert f'<span class="menu__taller" id="menu-taller">{anterior}</span>' in respuesta.text
+    assert f'<span class="menu__taller" id="menu-taller" title="{anterior}">{anterior}</span>' in respuesta.text
     taller.refresh_from_db()
     assert taller.nombre == anterior
 
@@ -509,7 +510,7 @@ def test_sin_javascript_cambiar_nombre_abre_una_pagina(sesion_duena, marta):
 
     assert respuesta.status_code == 200
     assert "<html" in respuesta.text
-    assert ">Cambiar nombre</h2>" in respuesta.text
+    assert "<h1>Cambiar nombre</h1>" in respuesta.text  # como página, el título va en la hoja
     assert "Usuario: marta. Hoy aparece como Marta." in respuesta.text
 
 

@@ -146,7 +146,8 @@ def lista(request):
 @require_http_methods(["GET", "POST"])
 def nuevo(request):
     """Ventana "Nuevo pedido". Se abre desde el botón de cualquier pantalla. Solo la dueña."""
-    contexto = {"accion": reverse("pedidos:nuevo"), "titulo_pagina": "Nuevo pedido"}
+    contexto = {"accion": reverse("pedidos:nuevo"), "titulo_pagina": "Nuevo pedido",
+                "volver": reverse("pedidos:lista")}
     if request.method != "POST":
         contexto["form"] = NuevoPedidoForm()
         return responder_ventana(request, "pedidos/_nuevo.html", contexto)

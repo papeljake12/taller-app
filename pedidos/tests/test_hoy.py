@@ -116,7 +116,9 @@ def test_que_hacer_hoy_sale_como_en_el_diseno(sesion_duena, ejemplo):
         '<span class="texto-computador">Marcar como entregado</span>'
         '<span class="texto-celular">Entregado</span>',
         '<span class="etiqueta etiqueta--ambar">Por confirmar</span>',
-        'Vestido de grado a la medida. Cotizado en <span class="dinero">$ 380.000</span>.',
+        # En celular la frase del pedido se esconde: queda "Cotizado en ..." (hoy-celular).
+        '<span class="texto-computador">Vestido de grado a la medida.</span> Cotizado en '
+        '<span class="dinero">$ 380.000</span>.',
         '<span class="texto-computador">Preguntar si confirma</span>'
         '<span class="texto-celular">Preguntar</span></button>',
     ):
@@ -271,6 +273,8 @@ def test_el_que_se_entrega_pronto_lleva_a_su_pedido(sesion_duena, taller, duena)
 
     detalle = reverse("pedidos:detalle", args=[pedido.pk])
     assert f'<a class="boton" href="{detalle}">Ver el pedido</a>' in tarjeta
+    # Un solo botón secundario: en celular va al lado de la frase, como "Preguntar" (T23).
+    assert f'<div class="fila fila--accion-al-lado" id="pendiente-{pedido.pk}">' in tarjeta
     assert f"En corte con {duena.nombre}. Pagado." in tarjeta
     assert "<form" not in tarjeta
 

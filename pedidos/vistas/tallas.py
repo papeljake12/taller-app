@@ -114,6 +114,7 @@ def nueva(request, pk):
             "plantilla_ventana": "pedidos/_talla_ventana.html",
             "accion": reverse("pedidos:talla_nueva", args=[pedido.pk]),
             "titulo_pagina": "Agregar talla",
+            "volver": reverse("pedidos:detalle", args=[pedido.pk]),
         }
         return render(request, "piezas/pagina_ventana.html", contexto, status=422)
     form.save()

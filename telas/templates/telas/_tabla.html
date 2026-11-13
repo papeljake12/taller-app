@@ -2,11 +2,14 @@
 La tabla de Telas (diseno/telas.html): primero las que se están acabando y después por
 nombre (calculos.telas_en_orden). Cada fila es _fila.html.
 Las acciones la devuelven entera, en el lugar de la que había (id="telas").
+En celular no caben las cinco columnas: "Avisar cuando queden" y "Estado" se esconden
+(solo-computador) y el estado va debajo del nombre, así "Entró" y "Usé" se ven sin correr la
+tabla. Cuánto avisa se ve al tocar la tela (su historial).
 {% endcomment %}<section class="tarjeta tarjeta--lista" id="telas" aria-labelledby="t-telas">
 <h2 class="oculto" id="t-telas">Lista de telas</h2>
 {% if filas %}<div class="tabla-contenedor">
-<table class="tabla">
-<thead><tr><th scope="col">Tela</th><th scope="col" class="num">Quedan</th><th scope="col" class="num">Avisar cuando queden</th><th scope="col">Estado</th><th scope="col" class="num">Acción</th></tr></thead>
+<table class="tabla tabla--telas">
+<thead><tr><th scope="col">Tela</th><th scope="col" class="num">Quedan</th><th scope="col" class="num solo-computador">Avisar cuando queden</th><th scope="col" class="solo-computador">Estado</th><th scope="col" class="num">Acción</th></tr></thead>
 <tbody>
 {% for fila in filas %}{% include "telas/_fila.html" %}
 {% endfor %}</tbody>

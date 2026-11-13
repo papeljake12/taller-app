@@ -2,7 +2,9 @@
 Pieza Campo: etiqueta visible arriba, el control, la ayuda y los errores.
   {% include "piezas/_campo.html" with campo=form.fecha_entrega %}
 Varios campos en fila van dentro de <div class="campos">.
-{% endcomment %}<div class="campo{% if campo.errors %} campo--error{% endif %}">
+- clase_campo: clases de más para el campo (por ejemplo, campo--ancho-celular: en celular
+  toma toda la fila, para nombres largos).
+{% endcomment %}<div class="campo{% if clase_campo %} {{ clase_campo }}{% endif %}{% if campo.errors %} campo--error{% endif %}">
 <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
 {% control campo %}
 {% if campo.help_text %}<span class="campo__ayuda" id="{{ campo.auto_id }}_helptext">{{ campo.help_text }}</span>{% endif %}

@@ -140,7 +140,7 @@ def test_la_tabla_se_desplaza_dentro_de_su_tarjeta(sesion_duena, ejemplo):
     html = sesion_duena.get(LISTA).text
 
     assert '<div class="tabla-contenedor">' in html
-    assert '<table class="tabla">' in html
+    assert '<table class="tabla tabla--pedidos">' in html
 
 
 def test_sin_pedidos_invita_a_crear_el_primero(sesion_duena):

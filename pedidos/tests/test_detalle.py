@@ -15,7 +15,16 @@ from tests import fabricas
 pytestmark = pytest.mark.django_db
 
 HTMX = {"HX-Request": "true"}
-HOY = timezone.localdate()
+
+
+def hoy():
+    """Hoy en Bogotá, en el momento de la prueba.
+
+    Antes era una constante que se calculaba al cargar el archivo. Si las pruebas empezaban
+    antes de la medianoche y estas corrían después, la página ya contaba desde el día
+    siguiente ("Se entrega en 32 días" en vez de 33) y la prueba fallaba esa única vez (T23).
+    """
+    return timezone.localdate()
 
 
 def url(nombre, pedido):
@@ -31,7 +40,7 @@ def pedido(taller):
         detalle="18 camisas polo de prueba",
         estado=Pedido.Estado.CORTE,
         total=2_520_000,
-        fecha_entrega=HOY + timedelta(days=33),
+        fecha_entrega=hoy() + timedelta(days=33),
     )
 
 
@@ -125,14 +134,15 @@ def test_un_pedido_de_otro_taller_responde_404(sesion_duena, ajeno):
     ],
 )
 def test_frase_de_entrega(taller, estado, dias, frase, atrasado):
-    pedido = fabricas.crear_pedido(taller, estado=estado, fecha_entrega=HOY + timedelta(days=dias))
+    dia = hoy()
+    pedido = fabricas.crear_pedido(taller, estado=estado, fecha_entrega=dia + timedelta(days=dias))
 
-    assert frase_de_entrega(pedido, hoy=HOY) == (frase, atrasado)
+    assert frase_de_entrega(pedido, hoy=dia) == (frase, atrasado)
 
 
 def test_el_atraso_va_en_rojo(sesion_duena, taller):
     pedido = fabricas.crear_pedido(
-        taller, estado="confeccion", fecha_entrega=HOY - timedelta(days=2)
+        taller, estado="confeccion", fecha_entrega=hoy() - timedelta(days=2)
     )
 
     assert '<div class="texto-rojo">Lleva 2 días de atraso.</div>' in sesion_duena.get(
@@ -229,7 +239,7 @@ def test_sin_nada_que_avisar_no_hay_boton_de_avisar(sesion_duena, taller):
 
 
 def test_cambiar_la_fecha_la_guarda_y_dice_los_dias(sesion_duena, pedido):
-    nueva = HOY + timedelta(days=1)
+    nueva = hoy() + timedelta(days=1)
 
     respuesta = sesion_duena.post(
         url("entrega", pedido), {"fecha_entrega": nueva.isoformat()}, headers=HTMX

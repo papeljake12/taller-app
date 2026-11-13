@@ -13,9 +13,13 @@ Todo va dentro de un formulario. `accion` es la dirección a la que se envía y 
 dónde se dibuja la respuesta (por defecto, la misma ventana, para mostrar los errores).
 La vista responde con config.ventanas.responder_ventana: dentro de la ventana si la pidió
 HTMX, o como página completa si se abrió el enlace sin JavaScript.
+
+Como página (`en_pagina`, lo pone piezas/pagina_ventana.html) no hay X: no hay ventana que
+cerrar, y el título ya está arriba en la hoja (si no hay `titulo_pagina`, va aquí sin la X).
+"Cancelar" es un enlace de verdad que vuelve a `volver` (lo calcula responder_ventana).
 {% endcomment %}<form class="ventana__formulario" method="post" action="{{ accion }}"{% if accion %} hx-post="{{ accion }}" hx-target="{{ objetivo|default:'#ventana' }}"{% endif %}{% if con_archivos %} enctype="multipart/form-data"{% endif %} novalidate>
 {% csrf_token %}
-<div class="ventana__cabeza"><h2 id="ventana-titulo">{% block titulo %}{% endblock %}</h2><button type="button" class="ventana__cerrar" data-cerrar-ventana aria-label="Cerrar">{% icono "cerrar" %}</button></div>
+{% if not en_pagina or not titulo_pagina %}<div class="ventana__cabeza"><h2 id="ventana-titulo">{% block titulo %}{% endblock %}</h2>{% if not en_pagina %}<button type="button" class="ventana__cerrar" data-cerrar-ventana aria-label="Cerrar">{% icono "cerrar" %}</button>{% endif %}</div>{% endif %}
 <div class="ventana__cuerpo">{% block cuerpo %}{% endblock %}</div>
-<div class="ventana__pie"><button type="button" class="boton" data-cerrar-ventana>{% block cerrar %}Cancelar{% endblock %}</button>{% block pie %}{% endblock %}</div>
+<div class="ventana__pie">{% if en_pagina %}<a class="boton" href="{{ volver }}">{% else %}<button type="button" class="boton" data-cerrar-ventana>{% endif %}{% block cerrar %}Cancelar{% endblock %}{% if en_pagina %}</a>{% else %}</button>{% endif %}{% block pie %}{% endblock %}</div>
 </form>
