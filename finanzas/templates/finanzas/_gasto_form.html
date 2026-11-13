@@ -1,0 +1,13 @@
+{% comment %}
+Formulario "Registrar gasto" dentro de la tarjeta de gastos: en qué se gastó, el tipo, el
+valor (con o sin puntos) y la fecha (hoy, si no se cambia). Lleva el mes que se está
+viendo. Con HTMX devuelve la tarjeta con el gasto nuevo y el formulario listo para el
+siguiente, o con los errores. "Cancelar" lo cierra.
+Usa las mismas clases que el formulario de abonos (pagos__form).
+{% endcomment %}{% url 'finanzas:gasto_nuevo' as url_nuevo %}<form class="tarjeta__cuerpo pagos__form" method="post" action="{{ url_nuevo }}" hx-post="{{ url_nuevo }}" hx-target="#gastos" hx-swap="outerHTML" novalidate>
+{% csrf_token %}<input type="hidden" name="mes" value="{{ texto_mes }}">
+{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+{% include "piezas/_campo.html" with campo=form.concepto %}
+<div class="campos">{% include "piezas/_campo.html" with campo=form.categoria %}{% include "piezas/_campo.html" with campo=form.valor %}{% include "piezas/_campo.html" with campo=form.fecha %}</div>
+<div class="botones"><button type="submit" class="boton boton--principal">Registrar gasto</button><a class="boton" href="{{ url_nuevo }}?mes={{ texto_mes }}&amp;cancelar=1" hx-get="{{ url_nuevo }}?mes={{ texto_mes }}&amp;cancelar=1" hx-target="#gastos" hx-swap="outerHTML">Cancelar</a></div>
+</form>

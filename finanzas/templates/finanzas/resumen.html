@@ -1,12 +1,39 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Resumen del mes (diseno/resumen.html), T17 y T18. Lo rellena el carril A de la tanda 4.{% endcomment %}
+{% comment %}
+Resumen del mes (diseno/resumen.html), T17 y T18. Muestra el mes de ?mes=AAAA-MM (si falta
+o no sirve, el de hoy). Lo que cambia con un gasto vive en su propia parte, porque las
+acciones de gastos lo devuelven solo (finanzas/vistas.py):
+  _cifras (vendido, cobrado, gastado y te quedó), _grafica y _gastos (la lista y el
+  formulario).
+Las ventas por tipo de cliente y quién tiene qué usan _barra.
+{% endcomment %}
 {% block pestana %}Resumen{% endblock %}
 {% block titulo %}Resumen{% endblock %}
-{% block apoyo %}{% endblock %}
-{% block acciones %}{% include "piezas/_boton_excel.html" %}{% endblock %}
+{% block apoyo %}<span class="encabezado__apoyo">{{ mes|mes_y_anio }}</span>{% endblock %}
+{% comment %}En Resumen, "Descargar para Excel" es el botón principal (negro), como en el diseño: por eso no usa la pieza _boton_excel, que es blanca.{% endcomment %}
+{% block acciones %}<a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a><a class="boton boton--principal" href="{% url 'finanzas:excel' %}">Descargar para Excel</a>{% endblock %}
 {% block contenido %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-resumen">
-<div class="tarjeta__cabeza"><h2 id="t-resumen">Resumen del mes</h2></div>
-<p class="tarjeta__nota">Llega con T17.</p>
+{% include "finanzas/_cifras.html" %}
+<div class="dos-columnas">
+{% include "finanzas/_grafica.html" %}
+{% include "finanzas/_gastos.html" %}
+</div>
+{# Dos tarjetas del mismo ancho: las dos crecen igual desde 300 px y terminan a la misma altura. #}
+<div class="dos-columnas">
+<section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="t-ventas">
+<div class="tarjeta__cabeza"><h2 id="t-ventas">Ventas por tipo de cliente</h2></div>
+<div class="tarjeta__cuerpo">
+{% for barra in ventas %}{% include "finanzas/_barra.html" with valor=barra.valor|pesos dinero=True %}
+{% empty %}<p class="texto-2">No hay ventas confirmadas en este mes.</p>
+{% endfor %}</div>
 </section>
+<section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="t-personas">
+<div class="tarjeta__cabeza"><h2 id="t-personas">Quién tiene qué</h2></div>
+<div class="tarjeta__cuerpo">
+{% if personas %}<p class="texto-2">Pedidos en producción hoy, por persona.</p>
+{% for barra in personas %}{% include "finanzas/_barra.html" with valor=barra.valor %}
+{% endfor %}{% else %}<p class="texto-2">No hay pedidos en producción.</p>{% endif %}
+</div>
+</section>
+</div>
 {% endblock %}

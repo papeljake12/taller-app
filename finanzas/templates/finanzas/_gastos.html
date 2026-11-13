@@ -1,0 +1,16 @@
+{% load piezas %}{% comment %}
+Tarjeta "Gastos de <mes>" del Resumen (T17, diseno/resumen.html).
+
+La dibuja el resumen y la devuelven, sola, las acciones de finanzas/vistas.py: con HTMX
+reemplaza a la tarjeta entera (id="gastos").
+- Cada gasto del mes, del más nuevo al más viejo: concepto, "9 de nov, servicios" y el
+  valor, con el botón para quitarlo, que primero pregunta.
+- "Registrar gasto" abre el formulario al final de la tarjeta (sin JavaScript, en una
+  página aparte). Cerrado, la tarjeta se ve como en el diseño. Abierto, el botón de arriba
+  lleva al primer campo (id="registrar-gasto").
+{% endcomment %}{% url 'finanzas:gasto_nuevo' as url_nuevo %}<section class="tarjeta tarjeta--lista columna-angosta" id="gastos" aria-labelledby="t-gastos">
+<div class="tarjeta__cabeza"><h2 id="t-gastos">Gastos de {{ mes|date:"F"|lower }}</h2>{% if form %}<a class="boton" href="#registrar-gasto">Registrar gasto</a>{% else %}<a class="boton" href="{{ url_nuevo }}?mes={{ texto_mes }}" hx-get="{{ url_nuevo }}?mes={{ texto_mes }}" hx-target="#gastos" hx-swap="outerHTML">Registrar gasto</a>{% endif %}</div>
+{% for gasto in gastos %}{% if gasto == por_quitar %}{% include "finanzas/_gasto_confirmar.html" %}{% else %}{% include "finanzas/_gasto_fila.html" %}{% endif %}
+{% empty %}<p class="tarjeta__nota">No hay gastos anotados en este mes.</p>
+{% endfor %}{% if form %}{% include "finanzas/_gasto_form.html" %}{% endif %}
+</section>
