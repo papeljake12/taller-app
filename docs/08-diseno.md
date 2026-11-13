@@ -188,7 +188,11 @@ Regla pedida por David (rama `ajuste-pantalla-fija-y-animaciones`). Solo en comp
 - Las tarjetas de una misma fila siguen terminando a la misma altura, y la última tarjeta
   llega hasta abajo: no queda un hueco vacío al final de la hoja.
 - La gráfica de barras tiene una versión más baja para el computador (`grafica_barras` con
-  `alto_computador`); en celular va la de siempre.
+  `alto_computador`); en celular va la de siempre. En la baja se acortan las barras y el
+  espacio sobre la más alta; las letras quedan del mismo tamaño.
+- Una lista que se desplaza por dentro no vuelve arriba cuando se actualiza su tarjeta.
+- En una ventana larga ("Escribirles por la dotación" con muchas empresas) se desplaza solo su
+  cuerpo: el título con la X y los botones de abajo quedan a la vista (también en celular).
 - La foto de "Trabajos del taller" puede tomar el alto que quede en su tarjeta (mínimo 120 px).
 
 Se comprueba con `tests/test_pantalla_fija.py` (abre cada pantalla en Chrome) y con
@@ -219,15 +223,20 @@ de antes).
   desvanece, y una fila que se quita se cierra suavemente. Se reconoce por el `id`: lo que
   tiene el mismo id antes y después no se anima. Por eso las filas de las listas llevan id, y
   un bloque que se cambia por otro en el mismo lugar conserva el suyo. Una parte que se
-  actualiza mientras se escribe y no debe parpadear lleva `data-sin-animar`.
+  actualiza mientras se escribe y no debe parpadear lleva `data-sin-animar`. Una fila de tabla
+  que se quita se desvanece y las de abajo suben suave a su lugar.
 - **Ventanas** ("Nuevo pedido") y el **panel "Más"** abren y cierran con transición. En
-  celular la ventana sube desde abajo.
+  celular la ventana sube desde abajo. Al cerrarse, el cursor vuelve al botón que la abrió (o
+  al que la respuesta marcó con `autofocus`, si ese ya no está).
 - **Barras de progreso, la barra de pagos, "Quién te debe" y las gráficas** crecen hasta su
   valor al aparecer.
 - **Cambio de etapa:** el paso se marca con una transición (cada paso tiene su id).
 - **Aviso corto** al guardar ("Abono registrado."): una píldora negra abajo, en el centro (en
   celular, encima de la barra), que se va sola. Los textos son los de la demo. El servidor lo
-  manda con `config/avisos.py`; los lectores de pantalla lo oyen.
+  manda con `config/avisos.py`; los lectores de pantalla lo oyen. Al copiar un mensaje sale
+  "Copiado. Ya lo puedes pegar en WhatsApp.", como en la demo. No llevan aviso los errores, los
+  filtros y búsquedas, ni los cambios que ya se ven donde se tocó (mover la etapa, marcar un
+  material).
 - **Menú:** se contrae y se abre con transición.
 - **Cambio entre secciones:** el contenido pasa con un desvanecido corto, sin parpadeo; el
   menú queda quieto (View Transitions del navegador; en uno que no lo sepa hacer, la página
