@@ -1,0 +1,8 @@
+{% extends "piezas/ventana.html" %}{% load piezas %}
+{% comment %}
+La pregunta antes de quitar una tela. Avisa que su historial también se borra.
+"Sí, quitar la tela" la quita; "Cancelar" cierra la ventana sin cambiar nada.
+{% endcomment %}
+{% block titulo %}Quitar tela{% endblock %}
+{% block cuerpo %}<div class="aviso" role="alert"><p>¿Quitar la tela «{{ tela.nombre }}»? Quedan {{ tela.metros|metros }}.{% if movimientos %} También se borra su historial ({{ movimientos }} movimiento{{ movimientos|pluralize }}).{% endif %}</p></div>{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal" autofocus>Sí, quitar la tela</button>{% endblock %}

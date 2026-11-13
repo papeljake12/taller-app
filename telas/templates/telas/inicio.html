@@ -1,12 +1,16 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Telas (diseno/telas.html), T16. La rellena el carril B de la tanda 5.{% endcomment %}
+{% comment %}
+Telas (diseno/telas.html), T16. Lo que cambia con una tela vive en su propia parte, porque
+las acciones de telas/vistas.py lo devuelven solo, sin recargar:
+  _apoyo ("4 telas, 60 m en total"), _cifras (las tres cifras) y _tabla (cada tela con
+  "Entró" y "Usé").
+"Nueva tela", "Entró", "Usé", el historial y "Quitar tela" se abren en la ventana.
+{% endcomment %}
 {% block pestana %}Telas{% endblock %}
 {% block titulo %}Telas{% endblock %}
-{% block apoyo %}{% endblock %}
+{% block apoyo %}{% include "telas/_apoyo.html" %}{% endblock %}
 {% block acciones %}<a class="boton boton--principal" href="{% url 'telas:nueva' %}" hx-get="{% url 'telas:nueva' %}" hx-target="#ventana">Nueva tela</a>{% endblock %}
 {% block contenido %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-telas">
-<div class="tarjeta__cabeza"><h2 id="t-telas">Telas</h2></div>
-<p class="tarjeta__nota">Llega con T16.</p>
-</section>
+{% include "telas/_cifras.html" %}
+{% include "telas/_tabla.html" %}
 {% endblock %}

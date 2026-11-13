@@ -1,0 +1,14 @@
+{% extends "piezas/ventana.html" %}{% load piezas %}
+{% comment %}
+El historial de una tela, en la ventana: cada "Entró" y cada "Usé", del más nuevo al más
+viejo, con la fecha, los metros y quién lo anotó. Abajo, "Quitar tela" (que pregunta
+primero). Se abre al tocar el nombre de la tela en la tabla.
+{% endcomment %}
+{% block titulo %}{{ tela.nombre }}{% endblock %}
+{% block cuerpo %}<p class="texto-2">Quedan <strong>{{ tela.metros|metros }}</strong>{% if tela.minimo %}. Avisa cuando queden {{ tela.minimo|metros }} o menos{% else %}. Sin aviso{% endif %}.</p>
+<div>
+{% for movimiento in movimientos %}<div class="renglon"><span>{% if movimiento.metros > 0 %}Entró{% else %}Usé{% endif %}<br><span class="texto-2">{{ movimiento.fecha|date:"j \d\e M, g:i a"|lower }}, {{ movimiento.usuario.nombre }}</span></span><strong>{% if movimiento.metros > 0 %}+{{ movimiento.metros|metros }}{% else %}{{ movimiento.metros|metros }}{% endif %}</strong></div>
+{% empty %}<p class="renglon texto-2">Todavía no hay movimientos de esta tela.</p>
+{% endfor %}{% if hay_mas %}<p class="nota">Se ven los últimos {{ maximo }} movimientos.</p>{% endif %}
+</div>{% endblock %}
+{% block pie %}{% url 'telas:quitar' tela.pk as url_quitar %}<a class="boton" href="{{ url_quitar }}" hx-get="{{ url_quitar }}" hx-target="#ventana">Quitar tela</a>{% endblock %}

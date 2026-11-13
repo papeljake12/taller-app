@@ -1,0 +1,12 @@
+{% extends "piezas/ventana.html" %}{% load piezas %}
+{% comment %}
+Ventana "Entró" o "Usé" de una tela: pregunta cuántos metros. Dice cuánto queda, para no
+pedir más de lo que hay. `tipo` es "entro" o "uso" (telas/vistas.py, TIPOS).
+Con errores vuelve con status 422; al guardar se cierra y la tabla cambia sola.
+{% endcomment %}
+{% block titulo %}{% if tipo == "entro" %}Entró{% else %}Usé{% endif %}: {{ tela.nombre }}{% endblock %}
+{% block cuerpo %}<input type="hidden" name="tipo" value="{{ tipo }}">
+<p class="texto-2">Quedan <strong>{{ tela.metros|metros }}</strong>{% if tela.minimo %}. Avisa cuando queden {{ tela.minimo|metros }} o menos{% endif %}.</p>
+{% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}
+{% include "piezas/_campo.html" with campo=form.metros %}{% endblock %}
+{% block pie %}<button type="submit" class="boton boton--principal">{% if tipo == "entro" %}Sumar metros{% else %}Restar metros{% endif %}</button>{% endblock %}
