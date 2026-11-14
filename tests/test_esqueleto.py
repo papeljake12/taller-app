@@ -6,6 +6,8 @@ cliente, tela...). Si un carril agrega una dirección nueva con número, entra a
 hacer nada; si es de un modelo nuevo, hay que decir cuál en MODELO_DE_LA_DIRECCION.
 """
 
+import re
+
 import pytest
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
 
@@ -47,21 +49,24 @@ def test_el_pedido_por_dentro_abre_con_sus_partes(sesion_duena, taller):
     html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
 
     assert pedido.cliente.nombre in html
-    for titulo in ("Etapa", "Tallas", "Materiales", "Pagos", "Entrega", "Cliente"):
+    # Las tarjetas de la etapa y del pago no llevan título visible: se nombran con aria-label.
+    for nombre in ("Etapa", "Pago"):
+        assert f'aria-label="{nombre}"' in html, nombre
+    for titulo in ("Tallas", "Cronología", "Materiales", "Entrega", "Cliente", "Foto"):
         assert f">{titulo}</h2>" in html, titulo
 
 
 def test_hoy_reune_sus_partes_en_el_orden_del_diseno(sesion_duena):
+    # Rediseño (diseno/hoy.html): el saludo, la caja para buscar, lo de hoy en tarjetas, "Tu
+    # mes" con sus cifras, la gráfica junto a "Quién te debe" y los pedidos por etapa.
     html = sesion_duena.get("/").text
-    titulos = ["Qué hacer hoy", "Trabajos del taller", "Cobrado y gastado por mes",
-               "Quién te debe", "Pedidos por etapa"]
+    partes = ['class="bienvenida"', 'class="caja-grande"', 'id="hoy-que-hacer"', ">Tu mes</h2>",
+              'id="hoy-cifras"', 'id="hoy-grafica"', 'id="hoy-quien-debe"', 'id="hoy-etapas"']
 
-    posiciones = [html.index(f">{t}</h2>") for t in titulos]
+    posiciones = [html.index(parte) for parte in partes]
 
     assert posiciones == sorted(posiciones)
-    # En celular: qué hacer hoy, quién te debe, trabajos, gráfica y etapas.
-    for orden in range(1, 6):
-        assert f"orden-celular-{orden}" in html
+    assert "Trabajos del taller" not in html
 
 
 def test_el_menu_lleva_a_cada_seccion(sesion_duena):
@@ -91,7 +96,7 @@ def test_la_ventana_con_htmx_trae_solo_su_contenido(sesion_duena):
     assert "data-cerrar-ventana" in ventana
     # Como página, el título va una sola vez (el de la hoja), sin la X que no cierra nada,
     # y "Cancelar" es un enlace de verdad (T23).
-    assert "<html" in pagina and "<h1>Nuevo pedido</h1>" in pagina
+    assert "<html" in pagina and re.search(r"<h1[^>]*>(?:<svg.*?</svg>)?Nuevo pedido</h1>", pagina)
     assert "ventana__cabeza" not in pagina and "data-cerrar-ventana" not in pagina
     assert f'<a class="boton" href="{reverse("pedidos:lista")}">Cancelar</a>' in pagina
 

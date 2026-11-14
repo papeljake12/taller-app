@@ -1,0 +1,20 @@
+{% comment %}
+Pieza Pantalla vacía (docs/08-diseno.md, "Pantallas vacías"): una tarjeta con un dibujo, un
+título que dice qué va a aparecer ahí, para qué sirve y el botón para agregar el primero.
+Debajo, un enlace que abre ahí mismo una explicación corta.
+  {% include "piezas/_vacio.html" with dibujo="telas" titulo="Aquí vas a ver tus telas" texto="Anota cuántos metros..." boton_texto="Agregar tela" boton_url=url ventana=True como="Cómo llevar las telas del taller" explicacion="Agrega cada tela..." %}
+- dibujo: telas, pedidos, clientes o prendas (templates/piezas/dibujos/).
+- boton_texto y boton_url: el botón principal (opcional). Con ventana=True abre la ventana
+  (HTMX); sin JavaScript abre la página.
+- como y explicacion: el enlace de abajo y su explicación (opcionales).
+{% endcomment %}<section class="tarjeta" aria-labelledby="vacio-titulo">
+<div class="vacio">
+{% include "piezas/dibujos/_"|add:dibujo|add:".html" %}
+<h2 id="vacio-titulo">{{ titulo }}</h2>
+<p>{{ texto }}</p>
+{% if boton_texto %}<div class="botones"><a class="boton boton--principal" href="{{ boton_url }}"{% if ventana %} hx-get="{{ boton_url }}" hx-target="#ventana"{% endif %}>{{ boton_texto }}</a></div>{% endif %}
+</div>
+</section>
+{% if como %}<details class="mas-info"><summary class="enlace">{{ como }}</summary>
+<p class="mas-info__texto">{{ explicacion }}</p>
+</details>{% endif %}

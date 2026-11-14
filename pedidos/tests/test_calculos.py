@@ -156,14 +156,51 @@ def test_etiquetas_como_en_el_diseno(ejemplo):
     restaurante = pedido_de(ejemplo, "Restaurante El Fogón Costeño")
 
     assert calculos.etiqueta_urgencia(ferreteria, DIA_DEL_DISENO) == calculos.Etiqueta(
-        "Atrasado 2 días", "rojo"
+        "Atrasado 2 días", "rojo", "alerta"
     )
     assert calculos.etiqueta_urgencia(tambores, DIA_DEL_DISENO) == calculos.Etiqueta(
-        "Faltan 3 días", "ambar"
+        "Faltan 3 días", "ambar", "vacio"
     )
     assert calculos.etiqueta_urgencia(restaurante, DIA_DEL_DISENO) is None
-    assert calculos.etiqueta_etapa(ferreteria) == calculos.Etiqueta("En confección", "azul")
-    assert calculos.etiqueta_etapa(tambores) == calculos.Etiqueta("Listo", "gris")
+    # Rediseño (docs/08-diseno.md, "Insignias"): lo que está bien en gris, verde solo "Listo"
+    assert calculos.etiqueta_etapa(ferreteria) == calculos.Etiqueta("En confección", "azul", "medio")
+    assert calculos.etiqueta_etapa(tambores) == calculos.Etiqueta("Listo", "verde", "lleno")
+    assert calculos.etiqueta_etapa(restaurante) == calculos.Etiqueta("En corte", "azul", "medio")
+    assert calculos.etiqueta_etapa(pedido_de(ejemplo, "Colegio Nuevo Amanecer")) == (
+        calculos.Etiqueta("Confirmado", "ambar", "vacio")
+    )
+    assert calculos.etiqueta_etapa(pedido_de(ejemplo, "Marcela P.")) == (
+        calculos.Etiqueta("Cotizado", "gris", "vacio")
+    )
+    assert calculos.etiqueta_etapa(pedido_de(ejemplo, "Comparsa Brisa Caribe")) == (
+        calculos.Etiqueta("Entregado", "gris", "lleno")
+    )
+
+
+def test_la_insignia_del_pago_como_en_el_diseno(ejemplo):
+    def pago(cliente):
+        return calculos.etiqueta_pago(pedido_de(ejemplo, cliente), DIA_DEL_DISENO)
+
+    # Los mismos de diseno/pedidos.html
+    assert pago("Ferretería La Esquina") == calculos.Etiqueta("Vencido", "rojo", "alerta")
+    assert pago("Grupo de danza Tambores del Río") == calculos.Etiqueta("Abonado 67 %", "naranja", "medio")
+    assert pago("Marcela P.") == calculos.Etiqueta("Sin abonos", "gris", "vacio")
+    assert pago("Restaurante El Fogón Costeño") == calculos.Etiqueta("Abonado 50 %", "naranja", "medio")
+    assert pago("Colegio Nuevo Amanecer") == calculos.Etiqueta("Abonado 31 %", "naranja", "medio")
+    assert pago("Comparsa Brisa Caribe") == calculos.Etiqueta("Pagado", "gris", "lleno")
+
+
+def test_la_insignia_del_pago_sin_abonos_y_casi_pagado(taller):
+    confirmado = pedido_con(taller, "confirmado", 30)
+    assert calculos.etiqueta_pago(confirmado, HOY) == calculos.Etiqueta("Sin abonos", "naranja", "vacio")
+    # Con casi todo pagado no dice "100 %" mientras falte algo, ni "0 %" con un abono chiquito.
+    confirmado.total = 1_000
+    fabricas.crear_abono(confirmado, valor=999)
+    assert calculos.etiqueta_pago(confirmado, HOY).texto == "Abonado 99 %"
+    otro = pedido_con(taller, "confirmado", 30)
+    otro.total = 1_000_000
+    fabricas.crear_abono(otro, valor=100)
+    assert calculos.etiqueta_pago(otro, HOY).texto == "Abonado 1 %"
 
 
 def test_pedido_por_dentro_como_en_el_diseno(ejemplo):
@@ -235,17 +272,6 @@ def test_cotizador_como_en_el_diseno():
         tela=21_600, costo=41_600, precio_unidad=54_500, total=1_090_000, abono=545_000,
         ganancia=258_000, metros_totales=Decimal("24.00"),
     )
-
-
-def test_trabajos_del_taller_son_los_pedidos_con_foto_del_mas_reciente(db, settings, tmp_path):
-    settings.MEDIA_ROOT = tmp_path
-    taller = ejemplos.cargar(hoy=DIA_DEL_DISENO)
-
-    trabajos = calculos.trabajos_del_taller(taller)
-
-    assert [p.detalle for p in trabajos] == [
-        "Vestido de grado a la medida", "15 polleras con blusa", "12 vestidos de fantasía",
-    ]
 
 
 # --- 2. Casos de docs/06-pruebas.md: plata ---------------------------------------------------
@@ -460,10 +486,10 @@ def test_el_cotizador_no_se_rompe_con_numeros_raros(raro):
 
 def test_etiqueta_de_entrega_como_en_hoy_y_el_calendario(taller):
     assert calculos.etiqueta_entrega(pedido_con(taller, "cotizado", 20), HOY) == calculos.Etiqueta(
-        "Por confirmar", "ambar"
+        "Por confirmar", "gris", "vacio"
     )
     assert calculos.etiqueta_entrega(pedido_con(taller, "entregado", -5), HOY) == calculos.Etiqueta(
-        "Entregado", "verde"
+        "Entregado", "gris", "lleno"
     )
     assert calculos.etiqueta_entrega(pedido_con(taller, "corte", -2), HOY).texto == "Atrasado 2 días"
     assert calculos.etiqueta_entrega(pedido_con(taller, "corte", 30), HOY) is None

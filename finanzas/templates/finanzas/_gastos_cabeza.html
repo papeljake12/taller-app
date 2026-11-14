@@ -1,11 +1,8 @@
-{% comment %}
-Cabeza de la tarjeta de gastos: "Gastos de noviembre" y el botón "Registrar gasto".
+{% load piezas %}{% comment %}
+Cabeza de la tarjeta de gastos: "Gastos de noviembre" y el botón "Registrar gasto" a la derecha.
 - Cerrado el formulario, el botón lo abre al final de la lista (sin JavaScript, en una
   página aparte). Abierto, el botón lleva al primer campo (id="registrar-gasto").
 - El botón tiene el mismo id abierto o cerrado (id="gastos-registrar"): así no parpadea al
   cambiar, y "Cancelar" devuelve el cursor a él (data-foco-despues).
-- Al abrir el formulario, la lista baja hasta el final para que se vea entero
-  (scroll:#gastos-lista:bottom). Eso solo pasa en computador, donde la lista se desplaza
-  por dentro; en celular la lista no se desplaza sola y todo sigue igual.
 Las acciones de gastos la devuelven con hx-swap-oob (oob), junto con la lista.
-{% endcomment %}{% url 'finanzas:gasto_nuevo' as url_nuevo %}<div class="tarjeta__cabeza" id="gastos-cabeza"{% if oob %} hx-swap-oob="true"{% endif %}><h2 id="t-gastos">Gastos de {{ mes|date:"F"|lower }}</h2>{% if form %}<a class="boton" id="gastos-registrar" href="#registrar-gasto">Registrar gasto</a>{% else %}<a class="boton" id="gastos-registrar" href="{{ url_nuevo }}?mes={{ texto_mes }}" hx-get="{{ url_nuevo }}?mes={{ texto_mes }}" hx-target="#gastos-lista" hx-swap="innerHTML scroll:#gastos-lista:bottom">Registrar gasto</a>{% endif %}</div>
+{% endcomment %}{% url 'finanzas:gasto_nuevo' as url_nuevo %}<div class="tarjeta__cabeza" id="gastos-cabeza"{% if oob %} hx-swap-oob="true"{% endif %}><h2 id="t-gastos">Gastos de {{ mes|date:"F"|lower }}</h2>{% if form %}<a class="boton tarjeta__aparte" id="gastos-registrar" href="#registrar-gasto">{% icono "sumar" 14 %}Registrar gasto</a>{% else %}<a class="boton tarjeta__aparte" id="gastos-registrar" href="{{ url_nuevo }}?mes={{ texto_mes }}" hx-get="{{ url_nuevo }}?mes={{ texto_mes }}" hx-target="#gastos-lista" hx-swap="innerHTML">{% icono "sumar" 14 %}Registrar gasto</a>{% endif %}</div>

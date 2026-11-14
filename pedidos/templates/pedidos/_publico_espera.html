@@ -2,5 +2,5 @@
 Parte del formulario público: llegaron demasiados envíos seguidos desde el mismo celular
 (status 429, ver LIMITE en pedidos/vistas/publico.py). No se guardó nada.
 {% endcomment %}<h1 id="titulo-tallas">Espera un minuto</h1>
-<p>Llegaron muchos envíos seguidos desde este celular. Espera un minuto y vuelve a enviar tu talla.</p>
-<a class="boton" href="{% url 'pedidos:publico_tallas' pedido.token_tallas %}">Volver al formulario</a>
+<p class="texto-2">Llegaron muchos envíos seguidos desde este celular. Espera un minuto y vuelve a enviar tu talla.</p>
+<a class="boton boton--ancho" href="{% url 'pedidos:publico_tallas' pedido.token_tallas %}">Volver al formulario</a>

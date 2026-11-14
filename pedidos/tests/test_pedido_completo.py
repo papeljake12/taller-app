@@ -43,7 +43,7 @@ def test_cambiar_la_etapa_actualiza_tambien_pagos(sesion_duena, pedido):
 
     html = respuesta.text
     assert respuesta.status_code == 200
-    assert 'id="pagos" aria-labelledby="t-pagos" hx-swap-oob="true"' in html
+    assert 'id="pagos" aria-label="Pago" hx-swap-oob="true"' in html
 
 
 def test_cambiar_el_whatsapp_actualiza_el_recordatorio_de_pagos(sesion_duena, pedido):
@@ -64,7 +64,7 @@ def test_registrar_un_abono_actualiza_el_boton_avisar_al_cliente(sesion_duena, p
 
     html = respuesta.text
     assert respuesta.status_code == 200
-    assert "Pedido pagado" in html
+    assert "<span>Pagado</span>" in html
     # Ya no debe plata y no está listo: el botón de arriba queda escondido.
     assert '<span id="pedido-avisar" hidden hx-swap-oob="true">' in html
 

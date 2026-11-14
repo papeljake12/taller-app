@@ -48,10 +48,6 @@ DIAS_PRONTO = 7
 # del Trabajo.
 FECHAS_DOTACION = ((4, 30), (8, 31), (12, 20))
 
-# Máximo de fotos en "Trabajos del taller".
-MAXIMO_FOTOS = 8
-
-
 def porcentaje(parte, todo):
     """De 0 a 100, redondeado al entero más cercano (como las barras del diseño)."""
     if todo <= 0:
@@ -157,60 +153,94 @@ def esta_pronto(pedido, hoy=None):
     return esta_en_produccion(pedido) and 0 <= dias_para_entrega(pedido, hoy) <= DIAS_PRONTO
 
 
-# --- Etiquetas (texto y tono de docs/08-diseno.md) ------------------------------------------
+# --- Insignias (texto, tono y circulito de docs/08-diseno.md, "Insignias") -------------------
 
 
 @dataclass(frozen=True)
 class Etiqueta:
+    """Una insignia. Se dibuja con piezas/_etiqueta.html (texto, tono y circulo)."""
+
     texto: str
-    tono: str  # rojo, verde, ambar, azul o gris
+    tono: str  # gris, azul, verde, ambar, naranja o rojo
+    # El circulito: vacio (no ha empezado), medio (va por la mitad), lleno (completo) o
+    # alerta (se pasó la fecha). Vacío ("") si la insignia no lleva circulito.
+    circulo: str = ""
 
 
+# Lo que está bien va en gris; verde solo para "Listo" (rediseño del 2026-11-13).
 TONO_ETAPA = {
-    Estado.COTIZADO: "gris",
-    Estado.CONFIRMADO: "gris",
-    Estado.CORTE: "azul",
-    Estado.CONFECCION: "azul",
-    Estado.LISTO: "gris",
-    Estado.ENTREGADO: "verde",
+    Estado.COTIZADO: ("gris", "vacio"),
+    Estado.CONFIRMADO: ("ambar", "vacio"),
+    Estado.CORTE: ("azul", "medio"),
+    Estado.CONFECCION: ("azul", "medio"),
+    Estado.LISTO: ("verde", "lleno"),
+    Estado.ENTREGADO: ("gris", "lleno"),
 }
 
 
 def etiqueta_etapa(pedido):
-    """'En confección' en azul, 'Entregado' en verde, etc."""
+    """'En confección' en azul a medias, 'Listo' en verde lleno, 'Entregado' en gris lleno..."""
     estado = Estado(pedido.estado)
-    return Etiqueta(estado.label, TONO_ETAPA[estado])
+    tono, circulo = TONO_ETAPA[estado]
+    return Etiqueta(estado.label, tono, circulo)
 
 
 def etiqueta_urgencia(pedido, hoy=None):
-    """'Atrasado 2 días' (rojo) o 'Faltan 3 días' (ámbar). None si no hay urgencia."""
+    """'Atrasado 2 días' (rojo, alerta) o 'Faltan 3 días' (ámbar, vacío). None si no hay
+    urgencia."""
     dias = dias_para_entrega(pedido, hoy)
     if esta_atrasado(pedido, hoy):
         atraso = -dias
-        return Etiqueta(f"Atrasado {atraso} {'día' if atraso == 1 else 'días'}", "rojo")
+        return Etiqueta(f"Atrasado {atraso} {'día' if atraso == 1 else 'días'}", "rojo", "alerta")
     if esta_pronto(pedido, hoy):
         if dias == 0:
-            return Etiqueta("Se entrega hoy", "ambar")
+            return Etiqueta("Se entrega hoy", "ambar", "vacio")
         if dias == 1:
-            return Etiqueta("Se entrega mañana", "ambar")
-        return Etiqueta(f"Faltan {dias} días", "ambar")
+            return Etiqueta("Se entrega mañana", "ambar", "vacio")
+        return Etiqueta(f"Faltan {dias} días", "ambar", "vacio")
     return None
 
 
 def etiqueta_entrega(pedido, hoy=None):
     """La etiqueta de la entrega, como tagUrgencia de la demo:
 
-    atrasado (rojo) o pronto (ámbar); si no, "Entregado" (verde) o "Por confirmar" (ámbar,
-    para los cotizados). None si el pedido va en producción sin afán.
+    atrasado (rojo) o pronto (ámbar); si no, "Entregado" (gris lleno) o "Por confirmar" (gris
+    vacío, para los cotizados). None si el pedido va en producción sin afán.
     """
     urgencia = etiqueta_urgencia(pedido, hoy)
     if urgencia:
         return urgencia
     if pedido.estado == Estado.ENTREGADO:
-        return Etiqueta("Entregado", "verde")
+        return Etiqueta("Entregado", "gris", "lleno")
     if pedido.estado == Estado.COTIZADO:
-        return Etiqueta("Por confirmar", "ambar")
+        return Etiqueta("Por confirmar", "gris", "vacio")
     return None
+
+
+def porcentaje_abonado(pedido):
+    """El porcentaje pagado para la insignia ("Abonado 67 %"): redondeado, y nunca 0 ni 100
+    mientras haya un abono y quede algo por pagar."""
+    if pedido.total <= 0:
+        return 100
+    return min(99, max(1, round(abonado(pedido) * 100 / pedido.total)))
+
+
+def etiqueta_pago(pedido, hoy=None):
+    """La insignia del pago (Pedidos y el pedido por dentro):
+
+    "Pagado" (gris lleno); "Vencido" (rojo, alerta) si va atrasado y debe; "Abonado 50 %"
+    (naranja a medias); "Sin abonos" (gris vacío si está cotizado, naranja vacío si ya se
+    confirmó y no ha abonado nada).
+    """
+    if saldo(pedido) <= 0:
+        return Etiqueta("Pagado", "gris", "lleno")
+    if esta_atrasado(pedido, hoy):
+        return Etiqueta("Vencido", "rojo", "alerta")
+    if abonado(pedido) <= 0:
+        if pedido.estado == Estado.COTIZADO:
+            return Etiqueta("Sin abonos", "gris", "vacio")
+        return Etiqueta("Sin abonos", "naranja", "vacio")
+    return Etiqueta(f"Abonado {porcentaje_abonado(pedido)} %", "naranja", "medio")
 
 
 # --- Listas de pedidos: filtros, conteos y orden --------------------------------------------
@@ -338,11 +368,6 @@ def que_hacer_hoy(taller, hoy=None):
                 vistos.add(pedido.pk)
                 pendientes.append(Pendiente(pedido, motivo))
     return pendientes
-
-
-def trabajos_del_taller(taller):
-    """Los pedidos con foto, del más reciente al más antiguo, máximo 8."""
-    return _pedidos(taller).exclude(foto="").order_by("-creado", "-pk")[:MAXIMO_FOTOS]
 
 
 @dataclass(frozen=True)

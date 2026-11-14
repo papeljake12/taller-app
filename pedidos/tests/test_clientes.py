@@ -5,10 +5,11 @@ cada fila lleva el id de su cliente y al guardar sale un aviso corto.
 """
 
 import re
-from datetime import date
+from datetime import date, timedelta
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 from pedidos import ejemplos
 from pedidos.formularios.clientes import MENSAJE_NOMBRE_REPETIDO, ClienteForm
@@ -23,11 +24,11 @@ URL = "/clientes/"
 
 def filas(html):
     """Los nombres de la tabla, en orden."""
-    return re.findall(r'<tr id="cliente-\d+"><td><strong>([^<]+)</strong>', html)
+    return re.findall(r'<tr class="tabla__fila" id="cliente-\d+"><td><span class="fuerte">([^<]+)</span>', html)
 
 
 def ids_de_filas(html):
-    return re.findall(r'<tr id="(cliente-\d+)">', html)
+    return re.findall(r'<tr class="tabla__fila" id="(cliente-\d+)">', html)
 
 
 def avisos_pendientes(html):
@@ -49,7 +50,7 @@ def test_la_lista_sale_como_el_diseno(client):
 
     html = client.get(URL).text
 
-    assert "6 clientes, 4 te deben" in html
+    assert "6 clientes · 4 te deben" in html
     assert filas(html) == [
         "Colegio Nuevo Amanecer",
         "Restaurante El Fogón Costeño",
@@ -59,15 +60,15 @@ def test_la_lista_sale_como_el_diseno(client):
         "Marcela P.",
     ]
     colegio = html[html.index("Colegio Nuevo Amanecer"):html.index("</tr>", html.index("Colegio"))]
-    assert "<td>Colegio</td><td>1</td>" in colegio
+    assert "<td>Colegio</td><td class=\"num\">1</td>" in colegio
     assert "$ 4.800.000" in colegio
-    assert '<strong class="texto-rojo dinero">$ 3.300.000</strong>' in colegio
+    assert '<span class="dinero">$ 3.300.000</span>' in colegio
     comparsa = html[html.index("Comparsa Brisa Caribe"):]
-    assert '<strong class="texto-verde">Al día</strong>' in comparsa[:comparsa.index("</tr>")]
+    assert '<span class="texto-2">Al día</span>' in comparsa[:comparsa.index("</tr>")]
     marcela = html[html.index("Marcela P."):]
     marcela = marcela[:marcela.index("</tr>")]
     assert "Sin compras" in marcela and "Cotización abierta" in marcela
-    for titulo in ("Cliente", "Tipo", "Pedidos", "Ha comprado", "Debe", "Acción"):
+    for titulo in ("Cliente", "Tipo", "Pedidos", "Ha comprado", "Debe"):
         assert f">{titulo}</th>" in html
 
 
@@ -86,10 +87,10 @@ def test_un_cliente_sin_pedidos(sesion_duena, taller):
 
     html = sesion_duena.get(URL).text
 
-    assert "1 cliente, ninguno te debe" in html
+    assert "1 cliente · ninguno te debe" in html
     fila = html[html.index("Recién llegado"):]
     fila = fila[:fila.index("</tr>")]
-    assert "<td>0</td>" in fila and "Sin compras" in fila
+    assert "<td class=\"num\">0</td>" in fila and "Sin compras" in fila
     assert "texto-verde" not in fila  # verde solo para lo pagado
 
 
@@ -110,13 +111,13 @@ def test_no_muestra_los_clientes_de_otro_taller(sesion_duena, taller):
 
     assert "Cliente propio" in html
     assert "Cliente ajeno" not in html
-    assert "1 cliente, ninguno te debe" in html
+    assert "1 cliente · ninguno te debe" in html
 
 
 def test_cuenta_uno_que_debe_en_singular(sesion_duena, taller):
     fabricas.crear_pedido(taller, estado=Pedido.Estado.CONFIRMADO, total=200_000)
 
-    assert "1 cliente, 1 te debe" in sesion_duena.get(URL).text
+    assert "1 cliente · 1 te debe" in sesion_duena.get(URL).text
 
 
 # --- El buscador -------------------------------------------------------------------------------
@@ -147,7 +148,7 @@ def test_buscar_sin_resultados_lo_dice(sesion_duena, taller):
 
     assert "Ningún cliente coincide con «zapatos»." in html
     # El encabezado sigue contando a todos.
-    assert "1 cliente, ninguno te debe" in html
+    assert "1 cliente · ninguno te debe" in html
 
 
 def test_el_buscador_trae_solo_la_tabla(sesion_duena, taller):
@@ -156,27 +157,80 @@ def test_el_buscador_trae_solo_la_tabla(sesion_duena, taller):
     respuesta = sesion_duena.get(URL, {"q": "marcela"}, headers={**HTMX, "HX-Target": "clientes-lista"})
 
     assert respuesta.text.startswith(
-        '<div id="clientes-lista" class="tabla-contenedor desplazable">')
+        '<div id="clientes-lista">')
     assert "<html" not in respuesta.text
     assert filas(respuesta.text) == ["Marcela Ejemplo"]
 
 
-# --- Pantalla fija y animaciones (docs/08-diseno.md) --------------------------------------------
+# --- La hoja, el pie y las animaciones (docs/08-diseno.md) --------------------------------------------
 
 
-def test_en_computador_solo_la_tabla_se_desplaza(sesion_duena, taller):
-    """La tarjeta de la lista toma el alto que queda (.llenar) y la caja de la tabla se
-    desplaza por dentro (.desplazable): el aviso de dotación y el buscador quedan quietos."""
+def test_la_hoja_ya_no_es_de_pantalla_fija(sesion_duena, taller):
+    """La tarjeta es .tarjeta--recortada con el buscador en una fila .filtros; el aviso azul
+    va arriba y el pie dice cuántos clientes hay. Sin .llenar ni .desplazable."""
     fabricas.crear_cliente(taller, nombre="Marcela Ejemplo")
 
     html = sesion_duena.get(URL).text
 
     tarjeta = re.search(r'<section class="([^"]*)" aria-labelledby="t-clientes">', html)
-    assert "llenar" in tarjeta.group(1).split()
+    assert tarjeta.group(1) == "tarjeta tarjeta--recortada"
+    assert html.index('class="banner"') < tarjeta.start()
     lista = html[tarjeta.end():]
-    assert lista.index('role="search"') < lista.index(
-        '<div id="clientes-lista" class="tabla-contenedor desplazable">')
-    assert html.index("tarjeta-oscura") < tarjeta.start()
+    assert lista.index('class="filtros"') < lista.index('<div id="clientes-lista">')
+    assert '<div class="paginas">1 cliente</div>' in lista
+    for vieja in ("llenar", "desplazable", "tarjeta-oscura", "boton--claro"):
+        assert vieja not in html
+
+
+def test_el_boton_nuevo_cliente_es_redondo_en_celular(sesion_duena, taller):
+    fabricas.crear_cliente(taller, nombre="Marcela Ejemplo")
+
+    html = sesion_duena.get(URL).text
+
+    assert 'boton boton--principal boton--redondo-celular' in html
+    assert '<span class="boton__texto">Nuevo cliente</span>' in html
+
+
+def test_el_pie_cuenta_los_clientes_que_salen_en_la_busqueda(sesion_duena, taller):
+    fabricas.crear_cliente(taller, nombre="Marcela Ejemplo")
+    fabricas.crear_cliente(taller, nombre="Ferretería La Esquina")
+
+    todos = sesion_duena.get(URL).text
+    uno = sesion_duena.get(URL, {"q": "marcela"},
+                           headers={**HTMX, "HX-Target": "clientes-lista"}).text
+
+    assert '<div class="paginas">2 clientes</div>' in todos
+    assert '<div class="paginas">1 cliente</div>' in uno
+
+
+def test_la_deuda_de_un_pedido_atrasado_va_en_rojo_con_vencida(sesion_duena, taller):
+    hoy = timezone.localdate()
+    atrasado = fabricas.crear_cliente(taller, nombre="Cliente atrasado")
+    fabricas.crear_pedido(taller, cliente=atrasado, estado=Pedido.Estado.CONFIRMADO,
+                          total=300_000, fecha_entrega=hoy - timedelta(days=3))
+    al_dia_en_fecha = fabricas.crear_cliente(taller, nombre="Cliente en fecha")
+    fabricas.crear_pedido(taller, cliente=al_dia_en_fecha, estado=Pedido.Estado.CONFIRMADO,
+                          total=200_000, fecha_entrega=hoy + timedelta(days=20))
+
+    html = sesion_duena.get(URL).text
+
+    rojo = html[html.index("Cliente atrasado"):]
+    rojo = rojo[:rojo.index("</tr>")]
+    assert '<span class="dinero texto-rojo fuerte">$ 300.000</span>' in rojo
+    assert '<span class="etiqueta etiqueta--rojo">Vencida</span>' in rojo
+    normal = html[html.index("Cliente en fecha"):]
+    normal = normal[:normal.index("</tr>")]
+    assert '<span class="dinero">$ 200.000</span>' in normal
+    assert "Vencida" not in normal and "texto-rojo" not in normal
+
+
+def test_sin_clientes_sale_la_pantalla_vacia(sesion_duena):
+    html = sesion_duena.get(URL).text
+
+    assert "Aquí vas a ver tus clientes" in html
+    assert "Cómo llevar los clientes del taller" in html
+    assert 'hx-get="/clientes/nuevo/"' in html and ">Nuevo cliente</a>" in html
+    assert 'class="banner"' not in html and 'class="buscador"' not in html
 
 
 def test_cada_fila_lleva_el_id_de_su_cliente_y_no_cambia_al_buscar(sesion_duena, taller):
@@ -219,10 +273,11 @@ def test_buscar_no_lleva_aviso(sesion_duena, taller):
     assert "HX-Trigger" not in respuesta.headers
 
 
-def test_el_buscador_funciona_sin_javascript(sesion_duena):
+def test_el_buscador_funciona_sin_javascript(sesion_duena, taller):
+    fabricas.crear_cliente(taller, nombre="Marcela Ejemplo")
     html = sesion_duena.get(URL).text
 
-    assert f'<form method="get" action="{URL}"' in html
+    assert f'<form class="filtros" method="get" action="{URL}"' in html
     assert 'name="q"' in html
 
 

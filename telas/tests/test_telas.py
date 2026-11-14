@@ -1,7 +1,7 @@
 """T16. Telas: la pantalla, "Entró" y "Usé" con su historial, agregar y quitar una tela.
 
-Y el ajuste "pantalla fija y animaciones": la tabla llena su tarjeta y se desplaza por dentro,
-cada fila lleva el id de su tela y cada acción que guarda trae su aviso corto."""
+Y el ajuste de animaciones: cada fila lleva el id de su tela y cada acción que guarda trae su
+aviso corto. Rediseño estilo Shopify: tarjeta de cifras, tabla recortada y pantalla vacía."""
 
 import json
 import re
@@ -37,12 +37,12 @@ def url_quitar(tela):
 
 def filas(html):
     """Los nombres de las telas de la tabla, en orden."""
-    return re.findall(r'ver el historial"><strong>([^<]+)</strong>', html)
+    return re.findall(r'ver el historial">([^<]+)</a>', html)
 
 
 def fila(html, nombre):
     """El html de la fila de una tela."""
-    inicio = html.index(f"<strong>{nombre}</strong>")
+    inicio = html.index(f'aria-label="{nombre}: ver el historial"')
     return html[inicio:html.index("</tr>", inicio)]
 
 
@@ -71,36 +71,55 @@ def test_la_pantalla_sale_como_el_diseno(client):
 
     assert respuesta.status_code == 200
     html = respuesta.text
-    assert '<span class="encabezado__apoyo" id="telas-apoyo">4 telas, 60 m en total</span>' in html
-    assert f'hx-get="{reverse("telas:nueva")}" hx-target="#ventana">Nueva tela</a>' in html
+    # El encabezado ya no lleva dato de apoyo; la acción es "Agregar tela", redonda en celular.
+    assert "encabezado__apoyo" not in html
+    assert (f'<a class="boton boton--principal boton--redondo-celular" '
+            f'href="{reverse("telas:nueva")}" hx-get="{reverse("telas:nueva")}" '
+            f'hx-target="#ventana"><span class="boton__icono-celular">') in html
+    assert '<span class="boton__texto">Agregar tela</span>' in html
+    assert "Nueva tela</a>" not in html
     inicio = html.index('id="telas-cifras"')
     cifras = html[inicio:html.index("</section>", inicio)]
-    assert re.search(r"Telas</div>\s*<div class=\"cifra__valor\">4</div>\s*"
-                     r"<div class=\"cifra__apoyo\">En inventario", cifras)
-    assert re.search(r"Metros en total</div>\s*<div class=\"cifra__valor\">60 m</div>\s*"
-                     r"<div class=\"cifra__apoyo\">Suma de todas", cifras)
-    # En ámbar, no en rojo: el rojo es solo para atrasos y deudas (CLAUDE.md, regla 7, y
-    # docs/03 y docs/08: "tela que se acaba" va en ámbar). diseno/telas.html la pintaba roja.
-    assert re.search(r'<div class="tarjeta cifra cifra--ambar cifra--apoyo-celular">\s*'
-                     r'<div class="cifra__nombre">'
-                     r"Se están acabando</div>\s*<div class=\"cifra__valor\">2</div>\s*"
-                     r'<div class="cifra__apoyo">Piqué blanco y popelina blanca</div>', cifras)
-    for titulo in ("Tela", "Quedan", "Avisar cuando queden", "Estado", "Acción"):
+    assert re.search(r'cifra__nombre">Telas</span><span class="cifra__valor">4</span>'
+                     r'<span class="cifra__apoyo">En inventario', cifras)
+    assert re.search(r'cifra__nombre">Metros en total</span><span class="cifra__valor">60 m</span>'
+                     r'<span class="cifra__apoyo">Suma de todas', cifras)
+    # Sin borde ni número de color (diseno/telas.html).
+    assert re.search(r'cifra__nombre">Se están acabando</span><span class="cifra__valor">2</span>'
+                     r'<span class="cifra__apoyo">Piqué blanco y popelina blanca</span>', cifras)
+    assert "cifra--ambar" not in html and "cifra--alerta" not in html
+    assert '<section class="tarjeta tarjeta--recortada" id="telas"' in html
+    for titulo in ("Tela", "Quedan", "Avisar cuando queden", "Estado"):
         assert f">{titulo}</th>" in html
     # Primero las que se están acabando y después por nombre (calculos.telas_en_orden).
     assert filas(html) == ["Piqué blanco", "Popelina blanca", "Dril azul",
                            "Tela estampada para polleras"]
     pique = fila(html, "Piqué blanco")
-    assert '<strong class="texto-ambar">6 m</strong>' in pique
-    assert '<td class="num solo-computador">10 m</td>' in pique
-    # En celular el estado va debajo del nombre (las columnas Avisar y Estado no caben).
-    assert ('<div class="solo-celular"><span class="etiqueta etiqueta--ambar">'
-            'Se está acabando</span>') in pique
-    assert '<span class="etiqueta etiqueta--ambar">Se está acabando</span>' in pique
+    assert '<td class="num fuerte">6 m</td>' in pique
+    assert '<td class="num texto-2">10 m</td>' in pique
+    assert '<span class="etiqueta etiqueta--ambar etiqueta--medio">Se está acabando</span>' in pique
+    assert '<div class="tabla__acciones">' in pique
     assert ">Entró</a>" in pique and ">Usé</a>" in pique
     dril = fila(html, "Dril azul")
-    assert "<strong>18 m</strong>" in dril
-    assert '<span class="etiqueta etiqueta--verde">Suficiente</span>' in dril
+    assert '<td class="num fuerte">18 m</td>' in dril
+    # "Suficiente" va en gris, con el circulito lleno: el verde es solo de pagado y entregado.
+    assert '<span class="etiqueta etiqueta--gris etiqueta--lleno">Suficiente</span>' in dril
+    assert "etiqueta--verde" not in html
+    assert ('<div class="paginas">Toca el nombre de una tela para ver su historial o '
+            "quitarla.</div>") in html
+    contenido = html[html.index("id=\"telas-cifras\""):html.index("</main>")]
+    assert "tarjeta--lista" not in contenido and "llenar" not in contenido
+    assert "desplazable" not in contenido
+
+
+def test_la_costurera_ve_la_pantalla_sin_agregar_ni_entro(client, taller, pique):
+    client.force_login(fabricas.crear_usuaria(taller, rol="costurera"))
+
+    html = client.get(URL).text
+
+    assert "Agregar tela" not in html and ">Entró</a>" not in html
+    assert ">Usé</a>" in html
+    assert "Toca el nombre de una tela para ver su historial.</div>" in html
 
 
 def test_cada_tela_abre_su_historial_y_sus_ventanas(sesion_duena, pique):
@@ -112,20 +131,52 @@ def test_cada_tela_abre_su_historial_y_sus_ventanas(sesion_duena, pique):
         assert f'hx-get="{url_movimiento(pique, tipo)}" hx-target="#ventana"' in html
 
 
-def test_sin_telas_invita_a_anotar_la_primera(sesion_duena):
+def test_sin_telas_se_ve_la_pantalla_vacia(sesion_duena):
     html = sesion_duena.get(URL).text
 
-    assert "0 telas, 0 m en total" in html
-    assert "Todavía no has anotado ninguna tela" in html
-    assert "<table" not in html
-    assert "cifra--ambar" not in html and "cifra--alerta" not in html
-    assert "Ninguna por ahora" in html
+    assert "<table" not in html and "cifra__nombre" not in html
+    assert '<svg class="vacio__dibujo"' in html
+    assert '<h2 id="vacio-titulo">Aquí vas a ver tus telas</h2>' in html
+    assert ("Anota cuántos metros te quedan de cada tela. "
+            "Te avisamos cuando alguna se esté acabando.") in html
+    url = reverse("telas:nueva")
+    assert (f'<a class="boton boton--principal" href="{url}" hx-get="{url}" '
+            f'hx-target="#ventana">Agregar tela</a>') in html
+    assert "Cómo llevar las telas del taller" in html
+    assert "toca «Entró» y suma los metros" in html
+    # El marcador de las cifras y el lugar de la tabla siguen ahí para cuando llegue la primera.
+    assert 'id="telas-cifras" hidden' in html and 'id="telas"' in html
+
+
+def test_sin_telas_la_costurera_no_ve_el_boton_de_agregar(client, taller):
+    client.force_login(fabricas.crear_usuaria(taller, rol="costurera"))
+
+    html = client.get(URL).text
+
+    assert "Aquí vas a ver tus telas" in html
+    assert "Agregar tela" not in html and "Cómo llevar las telas" not in html
+
+
+def test_la_primera_tela_reemplaza_la_pantalla_vacia(sesion_duena):
+    html = sesion_duena.post(reverse("telas:nueva"), {"nombre": "Lino", "metros": "2"},
+                             headers=HTMX).text
+
+    assert '<section class="tarjeta tarjeta--recortada" id="telas"' in html
+    assert re.search(r'<section class="cifras" id="telas-cifras"[^>]*hx-swap-oob="true"', html)
+
+
+def test_quitar_la_ultima_tela_vuelve_a_la_pantalla_vacia(sesion_duena, pique):
+    html = sesion_duena.post(url_quitar(pique), headers=HTMX).text
+
+    assert "Aquí vas a ver tus telas" in html
+    assert '<div id="telas-cifras" hidden hx-swap-oob="true"></div>' in html
 
 
 def test_una_sola_tela_va_en_singular(sesion_duena, taller):
     fabricas.crear_tela(taller, nombre="Lino", metros=Decimal("6.5"))
 
-    assert "1 tela, 6,5 m en total" in sesion_duena.get(URL).text
+    assert re.search(r'cifra__nombre">Telas</span><span class="cifra__valor">1</span>',
+                     sesion_duena.get(URL).text)
 
 
 def test_sin_aviso_solo_hay_dos_estados(sesion_duena, taller):
@@ -137,12 +188,13 @@ def test_sin_aviso_solo_hay_dos_estados(sesion_duena, taller):
     html = sesion_duena.get(URL).text
 
     lino = fila(html, "Lino")
-    assert '<span class="texto-2">Sin aviso</span>' in lino
-    assert '<span class="etiqueta etiqueta--verde">Suficiente</span>' in lino
-    assert '<span class="etiqueta etiqueta--verde">Suficiente</span>' in fila(html, "Seda")
+    assert '<td class="num texto-2">Sin aviso</td>' in lino
+    suficiente = '<span class="etiqueta etiqueta--gris etiqueta--lleno">Suficiente</span>'
+    assert suficiente in lino
+    assert suficiente in fila(html, "Seda")
     assert "Se acabó" not in html
     # Sin aviso, ninguna "se está acabando".
-    assert "cifra--ambar" not in html and "cifra--alerta" not in html
+    assert "Ninguna por ahora" in html
 
 
 def test_no_muestra_las_telas_de_otro_taller(sesion_duena, pique):
@@ -152,8 +204,8 @@ def test_no_muestra_las_telas_de_otro_taller(sesion_duena, pique):
     html = sesion_duena.get(URL).text
 
     assert "Tela ajena" not in html
-    assert "1 tela, 6 m en total" in html
-    assert re.search(r'cifra__valor">1</div>\s*<div class="cifra__apoyo">Piqué blanco</div>', html)
+    assert re.search(r'cifra__valor">1</span><span class="cifra__apoyo">En inventario', html)
+    assert re.search(r'cifra__valor">1</span><span class="cifra__apoyo">Piqué blanco</span>', html)
 
 
 def test_los_nombres_que_se_acaban_van_juntos_como_en_el_diseno():
@@ -260,19 +312,20 @@ def test_usar_mas_de_lo_que_queda_lo_dice_y_no_guarda(sesion_duena, pique):
     assert not MovimientoTela.objects.exists()
 
 
-def test_al_guardar_cierra_la_ventana_y_trae_la_tabla_las_cifras_y_el_apoyo(sesion_duena, pique):
+def test_al_guardar_cierra_la_ventana_y_trae_la_tabla_y_las_cifras(sesion_duena, pique):
     respuesta = mover(sesion_duena, pique, "entro", "10")
 
     assert respuesta.headers["HX-Retarget"] == "#telas"
     assert respuesta.headers["HX-Reswap"] == "outerHTML"
     html = respuesta.text
-    assert html.startswith('<section class="tarjeta tarjeta--lista llenar" id="telas"')
+    assert html.startswith('<section class="tarjeta tarjeta--recortada" id="telas"')
     # Con 16 m ya no se está acabando.
-    assert '<span class="etiqueta etiqueta--verde">Suficiente</span>' in fila(html, "Piqué blanco")
+    assert ('<span class="etiqueta etiqueta--gris etiqueta--lleno">Suficiente</span>'
+            in fila(html, "Piqué blanco"))
     cifras = re.search(r'<section class="cifras" id="telas-cifras"[^>]*>', html).group(0)
     assert 'hx-swap-oob="true"' in cifras
-    assert ('<span class="encabezado__apoyo" id="telas-apoyo" hx-swap-oob="true">'
-            "1 tela, 16 m en total</span>") in html
+    assert "encabezado__apoyo" not in html
+    assert re.search(r'cifra__valor">16 m</span>', html)
     assert "Ninguna por ahora" in html
     # Cierra la ventana y avisa cuánto quedó (config/avisos.py).
     assert json.loads(respuesta.headers["HX-Trigger"]) == {
@@ -493,7 +546,7 @@ def test_agregar_una_tela_la_guarda_con_su_primer_movimiento(sesion_duena, talle
     # La ventana se cierra y la tela aparece en la tabla, que dice que se está acabando.
     assert respuesta.headers["HX-Retarget"] == "#telas"
     assert "Se está acabando" in fila(respuesta.text, "Lino crudo")
-    assert "1 tela, 7,5 m en total" in respuesta.text
+    assert re.search(r'cifra__valor">7,5 m</span>', respuesta.text)
 
 
 def test_una_tela_sin_metros_no_anota_movimiento(sesion_duena):
@@ -593,7 +646,7 @@ def test_quitar_borra_la_tela_y_su_historial(sesion_duena, taller, pique):
     assert list(MovimientoTela.objects.values_list("tela", flat=True)) == [dril.pk]
     assert respuesta.headers["HX-Retarget"] == "#telas"
     assert "Piqué blanco" not in respuesta.text
-    assert "1 tela, 18 m en total" in respuesta.text
+    assert re.search(r'cifra__valor">18 m</span>', respuesta.text)
 
 
 def test_sin_javascript_quitar_vuelve_a_telas(sesion_duena, pique):
@@ -628,24 +681,6 @@ def aviso(respuesta):
 def avisos_pendientes(html):
     """Los avisos que una página trae de la acción anterior (base.html, #avisos-pendientes)."""
     return re.findall(r"<p data-aviso>([^<]*)</p>", html)
-
-
-def test_la_tabla_llena_su_tarjeta_y_se_desplaza_por_dentro(sesion_duena, pique):
-    """docs/08-diseno.md, "Pantalla fija": la tarjeta llega hasta abajo y, si hay muchas telas,
-    solo la tabla se desplaza (con el encabezado fijo); las cifras se quedan quietas."""
-    html = sesion_duena.get(URL).text
-
-    assert '<section class="tarjeta tarjeta--lista llenar" id="telas"' in html
-    assert '<div class="tabla-contenedor desplazable">' in html
-    # Las cifras van antes de la tarjeta, fuera de lo que se desplaza.
-    assert html.index('id="telas-cifras"') < html.index('id="telas"')
-
-
-def test_sin_telas_la_tarjeta_tambien_llena(sesion_duena):
-    html = sesion_duena.get(URL).text
-
-    assert '<section class="tarjeta tarjeta--lista llenar" id="telas"' in html
-    assert "desplazable" not in html
 
 
 def test_cada_fila_lleva_el_id_de_su_tela(sesion_duena, taller, pique):

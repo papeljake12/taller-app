@@ -55,20 +55,22 @@ def pedido(taller):
 # --- La tarjeta ---------------------------------------------------------------------------
 
 
-def test_la_tarjeta_muestra_saldo_barra_abonado_total_y_cada_abono(pedido, duena):
+def test_la_tarjeta_muestra_la_insignia_las_cuentas_y_cada_abono(pedido, duena):
     html = tarjeta(pedido, duena)
 
-    assert 'id="pagos"' in html and ">Pagos</h2>" in html
-    assert "Falta por pagar" in html
-    assert "$ 1.260.000" in html
-    assert 'aria-valuenow="50"' in html
-    assert "Abonado <span class=\"dinero\">$ 1.260.000</span>" in html
-    assert "Total <span class=\"dinero\">$ 2.520.000</span>" in html
-    assert 'Abono del </span>5 de nov' in html
+    assert 'id="pagos"' in html and 'aria-label="Pago"' in html
+    assert '<span class="etiqueta etiqueta--naranja etiqueta--medio">Abonado 50 %</span>' in html
+    assert '<span>Valor total</span><span class="dinero">$ 2.520.000</span>' in html
+    assert "Falta por pagar</span><span class=\"dinero\">$ 1.260.000</span>" in html
+    assert 'Abono del 5 de nov · <a href=' in html
+    assert '<span class="dinero">− $ 1.260.000</span>' in html
     abono = pedido.abonos.get()
-    assert f'href="{reverse("pedidos:recibo", args=[pedido.pk, abono.pk])}"' in html
+    assert f'href="{reverse("pedidos:recibo", args=[pedido.pk, abono.pk])}" download>Recibo</a>' in html
     assert f'hx-get="{url_quitar(abono)}"' in html
-    assert "Pedido pagado" not in html
+    assert ">Quitar</a>" in html
+    assert 'href="#registrar-abono">Registrar abono</a>' in html
+    assert "progressbar" not in html
+    assert "Pagado" not in html
 
 
 def test_el_formulario_trae_el_campo_al_que_lleva_el_boton_de_arriba_y_la_fecha_de_hoy(
@@ -84,23 +86,25 @@ def test_el_formulario_trae_el_campo_al_que_lleva_el_boton_de_arriba_y_la_fecha_
     assert 'hx-target="#pagos" hx-swap="outerHTML"' in html
 
 
-def test_sin_abonos_lo_dice(taller, duena):
+def test_sin_abonos_solo_trae_el_total_y_lo_que_falta(taller, duena):
     pedido = fabricas.crear_pedido(taller, total=380_000)
 
     html = tarjeta(pedido, duena)
 
-    assert "Todavía no hay abonos registrados." in html
-    assert 'aria-valuenow="0"' in html
+    assert "Sin abonos</span>" in html
+    assert "Abono del" not in html
+    assert "Falta por pagar</span><span class=\"dinero\">$ 380.000</span>" in html
 
 
-def test_con_saldo_en_0_dice_pedido_pagado_en_verde_y_no_pide_recordar(pedido, duena):
+def test_con_saldo_en_0_dice_pagado_en_gris_y_no_pide_recordar(pedido, duena):
     fabricas.crear_abono(pedido, valor=1_260_000)
 
     html = tarjeta(pedido, duena)
 
-    assert '<div class="pagos__nombre texto-verde">Pedido pagado</div>' in html
+    assert '<span class="etiqueta etiqueta--gris etiqueta--lleno">Pagado</span>' in html
+    assert '<span>Pagado</span><span class="dinero">$ 0</span>' in html
     assert "Falta por pagar" not in html
-    assert 'aria-valuenow="100"' in html
+    assert "texto-verde" not in html
     assert "Recordar el saldo" not in html
     assert "Copiar recordatorio" not in html
 
@@ -146,9 +150,12 @@ def test_registrar_un_abono_baja_el_saldo_y_devuelve_solo_la_tarjeta(sesion_duen
     html = respuesta.text
     assert "<html" not in html and 'id="pagos"' in html
     assert "$ 880.000" in html  # el saldo: 2.520.000 - 1.260.000 - 380.000
-    assert "Abonado <span class=\"dinero\">$ 1.640.000</span>" in html
-    assert 'aria-valuenow="65"' in html
-    assert 'Abono del </span>10 de nov' in html
+    assert '<span class="dinero">− $ 380.000</span>' in html
+    assert "Abono del 10 de nov" in html
+    # Lo que cambia con el saldo viaja aparte: el título con la insignia y la cronología.
+    assert 'id="pedido-apoyo" hx-swap-oob="true"' in html
+    assert 'id="pedido-cronologia" aria-labelledby="t-cronologia" hx-swap-oob="true"' in html
+    assert "Se registró un abono de <span class=\"dinero\">$ 380.000</span>" in html
     nuevo = pedido.abonos.get(valor=380_000)
     assert nuevo.fecha == date(2026, 11, 10)
     assert nuevo.registrado_por == duena
@@ -243,10 +250,9 @@ def test_un_abono_mayor_que_el_saldo_se_guarda_y_el_saldo_queda_en_0(sesion_duen
     respuesta = sesion_duena.post(url_nuevo(pedido), {"valor": "2.000.000"}, headers=HTMX)
 
     assert respuesta.status_code == 200
-    assert "Pedido pagado" in respuesta.text
-    assert "$ 0" in respuesta.text
-    assert "Abonado <span class=\"dinero\">$ 3.260.000</span>" in respuesta.text
-    assert 'aria-valuenow="100"' in respuesta.text
+    assert "Pagado</span>" in respuesta.text
+    assert '<span>Pagado</span><span class="dinero">$ 0</span>' in respuesta.text
+    assert '<span class="dinero">− $ 2.000.000</span>' in respuesta.text
 
 
 def test_sin_javascript_registrar_vuelve_al_pedido(sesion_duena, pedido):
@@ -309,7 +315,7 @@ def test_cancelar_deja_la_tarjeta_como_estaba(sesion_duena, pedido):
     respuesta = sesion_duena.get(url_quitar(abono) + "?cancelar=1", headers=HTMX)
 
     assert "¿Quitar el abono" not in respuesta.text
-    assert 'Abono del </span>5 de nov' in respuesta.text
+    assert "Abono del 5 de nov" in respuesta.text
     assert Abono.objects.filter(pk=abono.pk).exists()
 
 
@@ -321,7 +327,8 @@ def test_al_confirmar_se_quita_y_el_saldo_sube(sesion_duena, pedido):
     assert respuesta.status_code == 200
     assert not Abono.objects.filter(pk=abono.pk).exists()
     assert "$ 2.520.000" in respuesta.text
-    assert "Todavía no hay abonos registrados." in respuesta.text
+    assert "Abono del" not in respuesta.text
+    assert "Sin abonos</span>" in respuesta.text
 
 
 def test_sin_javascript_quitar_pregunta_en_una_pagina_y_vuelve_al_pedido(sesion_duena, pedido):
@@ -462,6 +469,6 @@ def test_cada_abono_lleva_su_id_y_la_pregunta_conserva_el_mismo(sesion_duena, pe
     pagina = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
     pregunta = sesion_duena.get(url_quitar(abono), headers=HTMX).text
 
-    assert f'<div class="renglon pagos__abono" id="abono-{abono.pk}">' in pagina
+    assert f'<div class="cuentas__fila" id="abono-{abono.pk}">' in pagina
     assert f'<div class="pagos__confirmar" id="abono-{abono.pk}">' in pregunta
     assert pregunta.count(f'id="abono-{abono.pk}"') == 1

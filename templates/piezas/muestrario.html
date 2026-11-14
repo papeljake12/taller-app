@@ -1,17 +1,18 @@
 {% extends "base.html" %}{% load piezas %}
 {% comment %}
-Página interna "Piezas" (/piezas/): todas las piezas del diseño juntas. Solo en desarrollo.
-Los textos y valores son de ejemplo, copiados de las páginas de diseno/.
+Página interna "Piezas" (/piezas/): todas las piezas del diseño juntas (docs/08-diseno.md).
+Solo en desarrollo. Los textos y valores son de ejemplo, copiados de las páginas de diseno/.
 {% endcomment %}
 {% block pestana %}Piezas{% endblock %}
+{% block icono_titulo %}{% icono "mi-taller" %}{% endblock %}
 {% block titulo %}Piezas{% endblock %}
 {% block apoyo %}<span class="encabezado__apoyo">Todas las piezas del diseño. Valores de ejemplo.</span>{% endblock %}
-{% block acciones %}<button type="button" class="boton">Descargar para Excel</button><button type="button" class="boton boton--principal">Nuevo pedido</button>{% endblock %}
+{% block acciones %}<button type="button" class="boton">Descargar para Excel</button><a class="boton boton--principal boton--redondo-celular" href="#p-botones"><span class="boton__icono-celular">{% icono "sumar" 20 %}</span><span class="boton__texto">Nuevo pedido</span></a>{% endblock %}
 {% block contenido %}
 
 <p class="aviso">Página interna para revisar las piezas de un vistazo. Solo existe en el computador de desarrollo. El menú de esta página muestra contadores de ejemplo (Pedidos 1 y Telas 2); en las demás, sin pendientes, no se muestran.</p>
 
-<section class="tarjeta tarjeta--lista" aria-labelledby="p-animaciones">
+<section class="tarjeta" aria-labelledby="p-animaciones">
 <div class="tarjeta__cabeza"><h2 id="p-animaciones">Animaciones</h2><span class="tarjeta__aparte">150, 200 y 250 ms: variables de static/css/app.css</span></div>
 <div class="tarjeta__cuerpo">
 <p>Pasa el mouse por cualquier botón y presiónalo: responde. Los botones de esta tarjeta y de las dos de abajo tardan un segundo a propósito, para ver el "cargando"; al guardar sale un aviso corto abajo. El menú se contrae y se abre con su botón, y al cambiar de sección el contenido pasa con un desvanecido.</p>
@@ -21,196 +22,198 @@ Los textos y valores son de ejemplo, copiados de las páginas de diseno/.
 </section>
 
 <div class="dos-columnas">
-<div class="columna columna-ancha">
+<div class="columna">
 {% include "piezas/_animaciones_filas.html" %}
 {% include "piezas/_animaciones_etapa.html" %}
 </div>
-<div class="columna columna-angosta">
 {% include "piezas/_animaciones_barras.html" %}
 </div>
-</div>
 
-<section class="tarjeta tarjeta--lista" aria-labelledby="p-colores">
-<div class="tarjeta__cabeza"><h2 id="p-colores">Colores</h2><span class="tarjeta__aparte">Variables de static/css/app.css</span></div>
+<section class="tarjeta" aria-labelledby="p-colores">
+<div class="tarjeta__cabeza"><h2 id="p-colores">Colores e insignias</h2><span class="tarjeta__aparte">Variables de static/css/app.css</span></div>
 <div class="tarjeta__cuerpo">
-<div class="cifras">
-{% for nombre, valor in colores %}<div style="display: flex; align-items: center; gap: 10px"><span style="flex: none; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--linea); background: var({{ nombre }})"></span><span><strong>{{ nombre }}</strong><br><span class="texto-2">{{ valor }}</span></span></div>
+<div class="campos">
+{% for nombre, valor in colores %}<div style="display: flex; flex: 1 1 160px; align-items: center; gap: 10px"><span style="flex: none; width: 32px; height: 32px; border-radius: 8px; box-shadow: var(--sombra-tarjeta); background: var({{ nombre }})"></span><span><strong>{{ nombre }}</strong><br><span class="texto-2">{{ valor }}</span></span></div>
 {% endfor %}</div>
 <div class="botones">
-{% include "piezas/_etiqueta.html" with texto="Rojo: atrasado" tono="rojo" %}
-{% include "piezas/_etiqueta.html" with texto="Verde: pagado" tono="verde" %}
-{% include "piezas/_etiqueta.html" with texto="Ámbar: pendiente" tono="ambar" %}
-{% include "piezas/_etiqueta.html" with texto="Azul: en proceso" tono="azul" %}
-{% include "piezas/_etiqueta.html" with texto="Gris: sin urgencia" tono="gris" %}
+{% include "piezas/_etiqueta.html" with texto="Cotizado" tono="gris" circulo="vacio" %}
+{% include "piezas/_etiqueta.html" with texto="Confirmado" tono="ambar" circulo="vacio" %}
+{% include "piezas/_etiqueta.html" with texto="En corte" tono="azul" circulo="medio" %}
+{% include "piezas/_etiqueta.html" with texto="Listo" tono="verde" circulo="lleno" %}
+{% include "piezas/_etiqueta.html" with texto="Entregado" tono="gris" circulo="lleno" %}
+{% include "piezas/_etiqueta.html" with texto="Abonado 50 %" tono="naranja" circulo="medio" %}
+{% include "piezas/_etiqueta.html" with texto="Pagado" tono="gris" circulo="lleno" %}
+{% include "piezas/_etiqueta.html" with texto="Atrasado 2 días" tono="rojo" circulo="alerta" %}
+{% include "piezas/_etiqueta.html" with texto="Faltan 3 días" tono="ambar" circulo="vacio" %}
+{% include "piezas/_etiqueta.html" with texto="1 atrasado" tono="rojo" %}
 </div>
-</div>
-</section>
-
-<section class="tarjeta tarjeta--lista" aria-labelledby="p-tipografia">
-<div class="tarjeta__cabeza"><h2 id="p-tipografia">Tipografía</h2><span class="tarjeta__aparte">Inter, guardada en el proyecto</span></div>
-<div class="tarjeta__cuerpo">
-<p style="font-size: 20px; font-weight: 700">Título de pantalla: 20 px, 700</p>
-<p style="font-size: 15px; font-weight: 700">Título de tarjeta: 15 px, 700</p>
-<p class="cifra-grande">$ 4.460.000 <span class="cifra-grande__apoyo">cifra grande: 24 px, 700</span></p>
-<p>Texto base: 14 px, interlineado 1.45, peso 400. Los valores en pesos no se parten: <span class="dinero">$ 1.260.000</span>.</p>
-<p style="font-weight: 500">Peso 500</p>
-<p style="font-weight: 600">Peso 600</p>
-<p class="nota">Nota y texto pequeño: 13 px.</p>
+<p class="nota">Lo que está bien va en gris. El circulito dice cómo va: vacío (no ha empezado), a medias, lleno (completo) o alerta (se pasó la fecha).</p>
 </div>
 </section>
 
-<section class="tarjeta tarjeta--lista" aria-labelledby="p-botones">
-<div class="tarjeta__cabeza"><h2 id="p-botones">Botones y filtros</h2></div>
+<section class="tarjeta" aria-labelledby="p-tipografia">
+<div class="tarjeta__cabeza"><h2 id="p-tipografia">Tipografía</h2><span class="tarjeta__aparte">Inter variable, guardada en el proyecto</span></div>
 <div class="tarjeta__cuerpo">
-<div class="botones"><button type="button" class="boton boton--principal">Marcar como listo</button><button type="button" class="boton">Avisar al cliente</button><button type="button" class="boton" disabled>Deshabilitado</button><a class="boton" href="#p-botones">Un enlace con forma de botón</a></div>
-<p class="nota">Un solo botón principal (negro) por zona. En celular miden 44 px de alto.</p>
+<p style="font-size: 26px; line-height: 34px; font-weight: 600">Saludo de Hoy: 26 px, 600</p>
+<p style="font-size: 20px; line-height: 28px; font-weight: 650">Título de la página: 20 px, 650</p>
+<p style="font-size: 15px; font-weight: 650">Título de sección: 15 px, 650</p>
+<h3>Título de tarjeta: 13 px, 650</h3>
+<p>Texto base: 13 px, interlineado de 20 px, peso 450. Los valores en pesos no se parten: <span class="dinero">$ 1.260.000</span>.</p>
+<p style="font-weight: 550">Peso 550</p>
+<p class="nota">Nota y texto pequeño: 12 px.</p>
+</div>
+</section>
+
+<section class="tarjeta" aria-labelledby="p-botones">
+<div class="tarjeta__cabeza"><h2 id="p-botones">Botones, chips y pestañas</h2></div>
+<div class="tarjeta__cuerpo">
+<div class="botones"><button type="button" class="boton boton--principal">Marcar como listo</button><button type="button" class="boton">Copiar resumen</button><button type="button" class="boton boton--plano">Avisar</button><button type="button" class="boton" disabled>Deshabilitado</button><button type="button" class="boton boton--icono" aria-label="Buscar" title="Buscar">{% icono "buscar" 16 %}</button><button type="button" class="boton boton--flecha" aria-label="Siguiente" title="Siguiente">{% icono "abajo" 16 %}</button><span class="grupo-botones"><button type="button" class="boton boton--icono" aria-label="Anterior" title="Anterior">{% icono "atras" 16 %}</button><button type="button" class="boton boton--icono" aria-label="Siguiente" title="Siguiente">{% icono "adelante" 16 %}</button></span>
+<details class="desplegable"><summary class="boton">Más acciones{% icono "abajo" 14 %}</summary><div class="desplegable__menu"><button type="button" class="desplegable__opcion">{% icono "copiar" 16 %}Copiar</button><button type="button" class="desplegable__opcion">{% icono "papelera" 16 %}Eliminar</button></div></details></div>
+<div class="botones"><a class="chip" href="#p-botones">{% icono "sumar" 14 %}Nuevo pedido</a><a class="chip" href="#p-botones">{% icono "calendario" 14 %}Noviembre</a></div>
+<p class="nota">Un solo botón principal (negro) por zona. En celular miden 40 px de alto.</p>
+</div>
 <div class="filtros">
+<div class="filtros__pestanas" role="group" aria-label="Pestañas de ejemplo">
 {% include "piezas/_filtro.html" with texto="Todos" conteo=6 elegido=True url="#p-botones" %}
 {% include "piezas/_filtro.html" with texto="En producción" conteo=4 url="#p-botones" %}
 {% include "piezas/_filtro.html" with texto="Esta semana" conteo=1 url="#p-botones" %}
 {% include "piezas/_filtro.html" with texto="Atrasados" conteo=1 url="#p-botones" %}
-{% include "piezas/_filtro.html" with texto="Con saldo" conteo=4 url="#p-botones" %}
-{% include "piezas/_filtro.html" with texto="Entregados" conteo=1 url="#p-botones" %}
 </div>
 </div>
 </section>
 
 <section class="cifras" aria-label="Cifras de ejemplo">
-{% include "piezas/_cifra.html" with nombre="En producción" valor=4 apoyo="1 por confirmar" url="#p-cifras" %}
-{% include "piezas/_cifra.html" with nombre="Entregas en 7 días" valor=1 apoyo="La más cercana: en 3 días" %}
-{% include "piezas/_cifra.html" with nombre="Atrasados" valor=1 apoyo="Pasó la fecha de entrega" alerta=True %}
-{% include "piezas/_cifra.html" with nombre="Por cobrar" valor="$ 5.790.000" apoyo="4 pedidos con saldo" %}
+{% include "piezas/_cifra.html" with nombre="Cobrado" valor="$ 4.460.000" url="#p-botones" explica="Los abonos que recibiste este mes" %}
+{% include "piezas/_cifra.html" with nombre="Gastado" valor="$ 939.000" explica="Los gastos que anotaste este mes" %}
+{% include "piezas/_cifra.html" with nombre="Atrasados" valor=1 alerta=True %}
+{% include "piezas/_cifra.html" with nombre="Te quedó" valor="$ 3.521.000" apoyo="Cobrado menos gastado" %}
 </section>
-<p class="nota" id="p-cifras">Arriba, la pieza Cifra: cuatro en una rejilla que se acomoda sola. "Atrasados" va en rojo solo si hay alguno. Abajo, "Te quedó" en verde.</p>
-<section class="cifras" aria-label="Más cifras de ejemplo">
-{% include "piezas/_cifra.html" with nombre="Cobrado" valor="$ 4.460.000" apoyo="En noviembre" %}
-{% include "piezas/_cifra.html" with nombre="Gastado" valor="$ 940.000" apoyo="En noviembre" %}
-{% include "piezas/_cifra.html" with nombre="Te quedó" valor="$ 3.520.000" apoyo="Cobrado menos gastado" buena=True %}
+<section class="cifras cifras--barra" aria-label="Barra de cifras de ejemplo">
+<div class="cifras__primero"><span class="chip">{% icono "calendario" 14 %}Hoy</span></div>
+{% include "piezas/_cifra.html" with nombre="Activos" valor=5 %}
+{% include "piezas/_cifra.html" with nombre="En producción" valor=4 %}
+{% include "piezas/_cifra.html" with nombre="Por cobrar" valor="$ 5.790.000" %}
 </section>
 
 <div class="dos-columnas">
-<section class="tarjeta tarjeta--lista columna-ancha" aria-labelledby="p-filas">
-<div class="tarjeta__cabeza"><h2 id="p-filas">Qué hacer hoy</h2><span class="tarjeta__aparte">3 pendientes</span></div>
-<div class="fila"><div class="fila__texto"><div class="fila__titulo"><strong>Ferretería La Esquina</strong>{% include "piezas/_etiqueta.html" with texto="Atrasado 2 días" tono="rojo" %}</div><div class="fila__detalle">8 overoles con logo. En confección con Carmen. Debe <span class="dinero">$ 480.000</span>.</div></div><div class="fila__acciones"><button type="button" class="boton boton--principal">Marcar como listo</button><button type="button" class="boton">Avisar al cliente</button></div></div>
-<div class="fila"><div class="fila__texto"><div class="fila__titulo"><strong>Grupo de danza Tambores del Río</strong>{% include "piezas/_etiqueta.html" with texto="Faltan 3 días" tono="ambar" %}</div><div class="fila__detalle">15 polleras con blusa. Ya está listo. Debe <span class="dinero">$ 750.000</span>.</div></div><div class="fila__acciones"><button type="button" class="boton boton--principal">Cobrar el saldo</button><button type="button" class="boton"><span class="texto-computador">Marcar como entregado</span><span class="texto-celular">Entregado</span></button></div></div>
-<div class="fila"><div class="fila__texto"><div class="fila__titulo"><strong>Marcela P.</strong>{% include "piezas/_etiqueta.html" with texto="Por confirmar" tono="ambar" %}</div><div class="fila__detalle">Vestido de grado a la medida. Cotizado en <span class="dinero">$ 380.000</span>.</div></div><div class="fila__acciones"><button type="button" class="boton">Preguntar si confirma</button></div></div>
+<section class="tarjeta" aria-labelledby="p-tarjeta">
+<div class="tarjeta__cabeza"><h2 id="p-tarjeta">Tarjeta con cabeza, cuerpo y pie</h2><span class="tarjeta__aparte">Un dato aparte</span></div>
+<div class="cuentas">
+<div class="cuentas__fila"><span>Valor total</span><span class="dinero">$ 2.520.000</span></div>
+<div class="cuentas__fila"><span>Abono del 7 de nov · <a href="#p-tarjeta">Recibo</a></span><span class="dinero">− $ 1.260.000</span></div>
+<div class="cuentas__fila cuentas__fila--total"><span>Falta por pagar</span><span class="dinero">$ 1.260.000</span></div>
+</div>
+<div class="tarjeta__pie"><button type="button" class="boton">Copiar recordatorio de saldo</button><button type="button" class="boton boton--principal">Registrar abono</button></div>
 </section>
-<section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="p-deben">
-<div class="tarjeta__cabeza"><h2 id="p-deben">Quién te debe</h2></div>
-<div class="fila-proporcion"><span style="font-weight: 600">Colegio Nuevo Amanecer</span><strong class="dinero">$ 3.300.000</strong><span class="proporcion" style="width: 100%"></span></div>
-<div class="fila-proporcion"><span style="font-weight: 600">Restaurante El Fogón Costeño</span><strong class="dinero">$ 1.260.000</strong><span class="proporcion" style="width: 38%"></span></div>
-<div class="fila-proporcion"><span style="font-weight: 600">Tambores del Río</span><strong class="dinero">$ 750.000</strong><span class="proporcion" style="width: 23%"></span></div>
-<div class="fila-proporcion"><span class="texto-rojo" style="font-weight: 600">Ferretería La Esquina</span><strong class="texto-rojo dinero">$ 480.000</strong><span class="proporcion proporcion--atrasado" style="width: 15%"></span></div>
+<section class="tarjeta" aria-labelledby="p-deben">
+<div class="tarjeta__cabeza"><h2 id="p-deben">Quién te debe</h2><span class="tarjeta__aparte dinero">$ 5.790.000</span></div>
+<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="#p-deben">Colegio Nuevo Amanecer</a><strong class="dinero">$ 3.300.000</strong><span class="proporcion" style="width: 100%"></span></div>
+<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="#p-deben">Restaurante El Fogón Costeño</a><strong class="dinero">$ 1.260.000</strong><span class="proporcion" style="width: 38%"></span></div>
+<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="#p-deben">Ferretería La Esquina {% include "piezas/_etiqueta.html" with texto="Vencida" tono="rojo" %}</a><strong class="dinero">$ 480.000</strong><span class="proporcion proporcion--atrasado" style="width: 15%"></span></div>
 </section>
 </div>
-<p class="nota">Arriba, dos tarjetas en una fila repartidas 3 a 2: terminan a la misma altura y se apilan solas cuando no caben.</p>
+<p class="nota">Arriba, dos tarjetas en una fila: se reparten 1,6 a 1, terminan a la misma altura y se apilan solas cuando no caben.</p>
 
-<div class="dos-columnas">
-{% include "piezas/_fotos.html" with fotos=fotos clase="columna-ancha" nota="Fotos de ejemplo hechas con IA. Aquí van las fotos reales de los pedidos." %}
-{% include "piezas/_fotos.html" with fotos=None clase="columna-angosta" titulo="Trabajos del taller (sin fotos)" url_subir="#p-filas" %}
-</div>
-
-<section class="tarjeta tarjeta--lista tarjeta--con-buscador" aria-labelledby="p-tabla">
+<section class="tarjeta tarjeta--recortada" aria-labelledby="p-tabla">
 <h2 class="oculto" id="p-tabla">Tabla</h2>
-<label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar pedido</span><input type="search" placeholder="Buscar por cliente, prenda o encargada"></label>
 <div class="tabla-contenedor">
 <table class="tabla">
-<thead><tr><th scope="col">Cliente y pedido</th><th scope="col">Etapa</th><th scope="col">Entrega</th><th scope="col">Encargada</th><th scope="col">Tallas</th><th scope="col" class="num">Saldo</th></tr></thead>
+<thead><tr><th scope="col">Cliente</th><th scope="col">Entrega</th><th scope="col" class="num">Total</th><th scope="col">Pago</th><th scope="col">Etapa</th><th scope="col">Encargada</th></tr></thead>
 <tbody>
-<tr><td><strong>Ferretería La Esquina</strong><br><span class="texto-2">8 overoles con logo estampado</span></td><td>{% include "piezas/_etiqueta.html" with texto="En confección" tono="azul" %}</td><td>9 de nov<br>{% include "piezas/_etiqueta.html" with texto="Atrasado 2 días" tono="rojo" %}</td><td>Carmen</td><td>8 de 8</td><td class="num"><strong class="texto-rojo dinero">$ 480.000</strong></td></tr>
-<tr><td><strong>Grupo de danza Tambores del Río</strong><br><span class="texto-2">15 polleras con blusa</span></td><td>{% include "piezas/_etiqueta.html" with texto="Listo" tono="gris" %}</td><td>14 de nov<br>{% include "piezas/_etiqueta.html" with texto="Faltan 3 días" tono="ambar" %}</td><td>Marta</td><td>15 de 15</td><td class="num"><strong class="texto-rojo dinero">$ 750.000</strong></td></tr>
-<tr><td><strong>Comparsa Brisa Caribe</strong><br><span class="texto-2">12 vestidos de fantasía</span></td><td>{% include "piezas/_etiqueta.html" with texto="Entregado" tono="verde" %}</td><td>6 de nov</td><td><span class="texto-2">Sin asignar</span></td><td>12 de 12</td><td class="num"><strong class="texto-verde">Pagado</strong></td></tr>
+<tr class="tabla__fila"><td><div class="tabla__cliente"><span class="mini">{% icono "prenda" 16 %}</span><a class="tabla__enlace" href="#p-tabla">Ferretería La Esquina</a></div></td><td><span class="texto-atraso">11 nov · 2 días tarde</span></td><td class="num dinero">$ 960.000</td><td>{% include "piezas/_etiqueta.html" with texto="Vencido" tono="rojo" circulo="alerta" %}</td><td>{% include "piezas/_etiqueta.html" with texto="En confección" tono="azul" circulo="medio" %}</td><td>Carmen</td></tr>
+<tr class="tabla__fila"><td><div class="tabla__cliente"><span class="mini">{% icono "prenda" 16 %}</span><a class="tabla__enlace" href="#p-tabla">Comparsa Brisa Caribe</a></div></td><td>8 nov</td><td class="num dinero">$ 2.400.000</td><td>{% include "piezas/_etiqueta.html" with texto="Pagado" tono="gris" circulo="lleno" %}</td><td>{% include "piezas/_etiqueta.html" with texto="Entregado" tono="gris" circulo="lleno" %}</td><td><span class="texto-2">Sin asignar</span></td></tr>
 </tbody>
 </table>
 </div>
+<div class="paginas">2 pedidos</div>
 </section>
-<p class="nota">Arriba, la tabla con buscador. En celular se desplaza dentro de su tarjeta, nunca la página completa.</p>
 
 <div class="dos-columnas">
-<section class="tarjeta tarjeta--lista columna-ancha" aria-labelledby="p-campos">
+<section class="tarjeta" aria-labelledby="p-campos">
 <div class="tarjeta__cabeza"><h2 id="p-campos">Campos</h2><span class="tarjeta__aparte">Etiqueta visible arriba</span></div>
 <div class="tarjeta__cuerpo">
+<label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar pedido</span><input type="search" placeholder="Buscar por cliente, prenda o encargada"></label>
 <div class="campos">{% include "piezas/_campo.html" with campo=vacio.cliente %}{% include "piezas/_campo.html" with campo=vacio.tipo %}{% include "piezas/_campo.html" with campo=vacio.whatsapp %}</div>
 <div class="campos">{% include "piezas/_campo.html" with campo=vacio.fecha_entrega %}{% include "piezas/_campo.html" with campo=vacio.cantidad %}</div>
 <div class="campos">{% include "piezas/_campo.html" with campo=vacio.notas %}</div>
 </div>
 </section>
-<section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="p-errores">
-<div class="tarjeta__cabeza"><h2 id="p-errores">Campos con errores</h2></div>
+<section class="tarjeta" aria-labelledby="p-errores">
+<div class="tarjeta__cabeza"><h2 id="p-errores">Campos con errores y avisos</h2></div>
 <div class="tarjeta__cuerpo">
 <div class="aviso" role="alert"><p>Faltan datos. Revisa los campos marcados.</p></div>
 <div class="campos">{% include "piezas/_campo.html" with campo=con_errores.fecha_entrega %}</div>
 <div class="campos">{% include "piezas/_campo.html" with campo=con_errores.cantidad %}</div>
-<p class="nota">Los errores van en ámbar: el rojo queda solo para atrasos y deudas.</p>
+<div class="banner">{% icono "calendario" 20 %}<div class="banner__texto"><p class="banner__titulo">Dotación del 20 de diciembre: faltan 37 días</p><p>Texto de ejemplo de diseno/clientes.html.</p></div><button type="button" class="boton">Escribirles a los 2</button></div>
 </div>
 </section>
 </div>
 
-<div class="dos-columnas">
-<div class="columna columna-ancha">
-<section class="tarjeta tarjeta--lista" aria-labelledby="p-etapa">
-<div class="tarjeta__cabeza"><h2 id="p-etapa">Pasos de etapa</h2></div>
-<div class="tarjeta__cuerpo">
-{% include "piezas/_pasos.html" with pasos=pasos %}
-<div class="texto-2">Toca una etapa para mover el pedido.</div>
-</div>
+<div class="columnas">
+<div class="columna">
+<section class="tarjeta" aria-labelledby="p-etapa">
+<div class="tarjeta__cabeza">{% include "piezas/_etiqueta.html" with texto="En corte" tono="azul" circulo="medio" %}<span class="tarjeta__aparte">Lo está haciendo Marta</span></div>
+<div class="articulo"><span class="mini mini--grande">{% icono "prenda" %}</span><div class="articulo__que"><span class="fuerte" id="p-etapa">18 camisas polo bordadas</span><span class="texto-2">Tallaje de adulto</span></div><span class="fuerte dinero">$ 2.520.000</span></div>
+<div class="pasos" role="group" aria-label="Etapa de ejemplo">{% for paso in pasos %}<button type="button" class="paso paso--{{ paso.estado }}">{{ paso.nombre }}</button>{% endfor %}</div>
+<div class="tarjeta__pie"><button type="button" class="boton">Cambiar etapa{% icono "abajo" 14 %}</button><button type="button" class="boton boton--principal">Pasar a En confección</button></div>
 </section>
-<section class="tarjeta tarjeta--lista" aria-labelledby="p-materiales">
-<div class="tarjeta__cabeza"><h2 id="p-materiales">Materiales</h2><span class="tarjeta__aparte">2 de 4 comprados</span></div>
-<div class="fila fila--compacta"><span style="display: flex; align-items: center; gap: 10px"><span class="casilla casilla--marcada">{% icono "visto" 14 %}</span><span class="tachado">Tela piqué blanca</span></span><span class="texto-2">22 m</span></div>
-<div class="fila fila--compacta"><span style="display: flex; align-items: center; gap: 10px"><span class="casilla casilla--marcada">{% icono "visto" 14 %}</span><span class="tachado">Dril para delantales</span></span><span class="texto-2">16 m</span></div>
-<div class="fila fila--compacta"><span style="display: flex; align-items: center; gap: 10px"><span class="casilla"></span><strong>Hilo para bordar</strong></span><span class="texto-2">6 conos</span></div>
-<div class="fila fila--compacta"><span style="display: flex; align-items: center; gap: 10px"><span class="casilla"></span><strong>Botones</strong></span><span class="texto-2">60</span></div>
+<section class="tarjeta" aria-labelledby="p-cronologia">
+<div class="tarjeta__cabeza"><h2 id="p-cronologia">Cronología</h2></div>
+<ol class="cronologia">
+<li class="cronologia__dia">Hoy</li>
+<li class="cronologia__evento"><span>2 personas enviaron su talla por el enlace.</span><span class="cronologia__quien">Enlace</span></li>
+<li class="cronologia__dia">7 de noviembre</li>
+<li class="cronologia__evento"><span>Se registró un abono de <span class="dinero">$ 1.260.000</span>.</span><span class="cronologia__quien">Dueña</span></li>
+</ol>
 </section>
 </div>
-<div class="columna columna-angosta">
-<section class="tarjeta tarjeta--lista" aria-labelledby="p-tallas">
-<div class="tarjeta__cabeza"><h2 id="p-tallas">Barras de progreso</h2></div>
+<div class="columna">
+<section class="tarjeta" aria-labelledby="p-tallas">
+<div class="tarjeta__cabeza"><h2 id="p-tallas">Tallas</h2></div>
 <div class="tarjeta__cuerpo">
-<div class="cifra-grande">14 de 18 <span class="cifra-grande__apoyo">recibidas</span></div>
-{% include "piezas/_progreso.html" with porcentaje=78 nombre="Tallas recibidas" %}
-<div class="fila-talla"><strong>S</strong>{% include "piezas/_progreso.html" with porcentaje=50 alta=True nombre="Talla S" %}<strong style="text-align: right">3</strong></div>
-<div class="fila-talla"><strong>M</strong>{% include "piezas/_progreso.html" with porcentaje=100 alta=True nombre="Talla M" %}<strong style="text-align: right">6</strong></div>
-<div class="fila-talla"><strong>L</strong>{% include "piezas/_progreso.html" with porcentaje=50 alta=True nombre="Talla L" %}<strong style="text-align: right">3</strong></div>
+<div><span class="cifra-grande">14 de 18</span> <span class="cifra-grande__apoyo">enviaron su talla</span></div>
+<div class="tallas-barras">
+<span>S</span>{% include "piezas/_progreso.html" with porcentaje=50 delgado=True nombre="Talla S" %}<span>3</span>
+<span>M</span>{% include "piezas/_progreso.html" with porcentaje=100 delgado=True nombre="Talla M" %}<span>6</span>
+</div>
 <p class="nota">Si está atrasado, el relleno va en rojo:</p>
 {% include "piezas/_progreso.html" with porcentaje=40 atrasado=True nombre="Ejemplo atrasado" %}
 </div>
 </section>
-<section class="tarjeta tarjeta--lista" aria-labelledby="p-renglones">
-<div class="tarjeta__cabeza"><h2 id="p-renglones">Renglones de datos</h2></div>
-<div class="tarjeta__cuerpo">
-<div>
-<div class="renglon"><span>Precio por unidad</span><strong>$ 54.500</strong></div>
-<div class="renglon"><span>Costo de hacer una</span><span>$ 41.600</span></div>
-<div class="renglon"><span>Tu ganancia en el pedido</span><strong class="texto-verde">$ 258.000</strong></div>
+<section class="tarjeta" aria-labelledby="p-materiales">
+<div class="tarjeta__cabeza"><h2 id="p-materiales">Materiales</h2><span class="tarjeta__aparte">1 de 2</span></div>
+<div class="tarjeta__cuerpo" style="gap: 0; padding-top: 0">
+<div class="renglon"><span class="casilla casilla--marcada">{% icono "visto" 11 "2.5" %}</span><span class="tachado" style="flex: 1">Tela piqué blanca</span><span class="texto-2">22 m</span></div>
+<div class="renglon"><span class="casilla"></span><span style="flex: 1">Hilo para bordar</span><span class="texto-2">6 conos</span></div>
 </div>
-</div>
+</section>
+<section class="tarjeta" aria-labelledby="p-foto">
+<div class="tarjeta__cabeza"><h2 id="p-foto">Foto</h2></div>
+<div class="subir"><span class="boton">{% icono "subir" 14 %}Subir foto</span>Sale en Hoy y en la lista de pedidos</div>
 </section>
 </div>
 </div>
-<p class="nota">Arriba, dos columnas con varias tarjetas: la última de cada columna crece para que las dos terminen a la misma altura.</p>
 
 <div class="dos-columnas">
-<section class="tarjeta columna-ancha" aria-labelledby="p-grafica" style="display: flex; flex-direction: column; gap: 8px">
-<div class="tarjeta__cabeza" style="padding: 0"><h2 id="p-grafica">Cobrado y gastado por mes</h2><div class="leyenda"><span class="leyenda__serie"><span class="leyenda__color leyenda__color--cobrado"></span>Cobrado</span><span class="leyenda__serie"><span class="leyenda__color leyenda__color--gastado"></span>Gastado</span></div></div>
-<div class="cifra-grande">$ 4.460.000 <span class="cifra-grande__apoyo">cobrado en noviembre</span></div>
-{% grafica_barras meses_grafica %}
-<p class="nota">Valores de ejemplo, en millones de pesos. Dibujada con la pieza grafica_barras de config/piezas.py.</p>
+<section class="tarjeta" aria-labelledby="p-grafica">
+<div class="tarjeta__cabeza"><h2 id="p-grafica">Cobrado y gastado por mes</h2><div class="leyenda"><span class="leyenda__serie"><span class="leyenda__color leyenda__color--cobrado"></span>Cobrado</span><span class="leyenda__serie"><span class="leyenda__color leyenda__color--gastado"></span>Gastado</span></div></div>
+<div class="tarjeta__cuerpo">{% grafica_barras meses_grafica %}<p class="nota">Valores de ejemplo. Dibujada con la pieza grafica_barras de config/piezas.py.</p></div>
 </section>
-<section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="p-iconos">
+<section class="tarjeta" aria-labelledby="p-iconos">
 <div class="tarjeta__cabeza"><h2 id="p-iconos">Íconos</h2><span class="tarjeta__aparte">18 px, trazo de 1.75</span></div>
 <div class="tarjeta__cuerpo">
 <div class="campos">
-{% for nombre in iconos %}<div style="display: flex; flex: 1 1 120px; align-items: center; gap: 10px">{% icono nombre %}<span>{{ nombre }}</span></div>
+{% for nombre in iconos %}<div style="display: flex; flex: 1 1 110px; align-items: center; gap: 8px">{% icono nombre %}<span>{{ nombre }}</span></div>
 {% endfor %}</div>
 <p class="nota">Fecha de hoy con el formato del diseño: {{ hoy|fecha_larga }}.</p>
 </div>
 </section>
 </div>
 
-<section class="tarjeta-oscura" aria-label="Tarjeta oscura de ejemplo">
-<div class="tarjeta-oscura__texto"><div class="tarjeta-oscura__titulo">Dotación del 20 de diciembre: faltan 39 días</div><div class="tarjeta-oscura__apoyo">Las empresas entregan dotación el 30 de abril, el 31 de agosto y el 20 de diciembre. Tienes 2 clientes empresa. (Texto de ejemplo de diseno/clientes.html.)</div></div>
-<button type="button" class="boton boton--claro">Escribirles a los 2</button>
+{% include "piezas/_vacio.html" with dibujo="telas" titulo="Aquí vas a ver tus telas" texto="Anota cuántos metros te quedan de cada tela. Te avisamos cuando alguna se esté acabando." boton_texto="Agregar tela" boton_url="#p-vacio" como="Cómo llevar las telas del taller" explicacion="Explicación corta de ejemplo: se abre aquí mismo." %}
+<section class="tarjeta" id="p-vacio" aria-label="Los otros dibujos de pantalla vacía">
+<div class="tarjeta__cuerpo"><div class="botones" style="justify-content: space-around; padding-top: 8px">{% include "piezas/dibujos/_pedidos.html" %}{% include "piezas/dibujos/_clientes.html" %}{% include "piezas/dibujos/_prendas.html" %}</div>
+<p class="nota" style="text-align: center">Dibujos de pantalla vacía de Pedidos, Clientes y las prendas del Cotizador.</p></div>
 </section>
 
 {% endblock %}

@@ -14,10 +14,11 @@ Reglas para todas las pantallas:
 
 ## Menú
 
-Referencia: `diseno/hoy.html`, `diseno/hoy-menu-contraido.html` y `diseno/hoy-celular.html`.
+Referencia: `diseno/hoy.html` y `diseno/hoy-menu-contraido.html` (en 390 px, el celular).
 
 Secciones: Hoy, Pedidos, Calendario, Clientes, Cotizador, Telas y Resumen. "Mi taller" va al
-fondo del menú.
+fondo del menú, con el logo (o las iniciales) y el nombre del taller y el botón para salir.
+Dentro de Pedidos, cuando es la sección actual, van "Atrasados" y "Con saldo".
 
 Lista cuando:
 - En computador el menú va a la izquierda, sobre el marco negro, y resalta la sección actual.
@@ -26,11 +27,12 @@ Lista cuando:
 - Pedidos muestra cuántos van atrasados y Telas cuántas se están acabando. Sin pendientes,
   no se muestra el contador.
 - El buscador del menú encuentra pedidos y clientes, sin importar tildes ni mayúsculas.
+  Ctrl K (o Cmd K en Mac) lo enfoca desde cualquier pantalla.
 - En celular el menú es una barra abajo con Hoy, Pedidos, Calendario, Clientes y Más.
 
 ## Inicio de sesión
 
-Sin página de referencia: una tarjeta centrada sobre el marco, con las piezas del diseño.
+Referencia: `diseno/entrar.html`. Una tarjeta blanca centrada sobre el marco.
 
 Usuario y contraseña. Bloqueo temporal después de varios intentos fallidos (`django-axes`).
 
@@ -42,33 +44,36 @@ Lista cuando:
 
 ## Hoy
 
-Referencia: `diseno/hoy.html` y `diseno/hoy-celular.html`. Es la pantalla de entrada.
+Referencia: `diseno/hoy.html` (en 390 px, el celular). Es la pantalla de entrada.
 
 Reemplaza la portada "Hoy en el taller" de la demo: ya no hay foto de portada ni frase del día.
 
-Bloques, en orden: cuatro cifras, "Qué hacer hoy" junto a "Trabajos del taller", "Cobrado y
-gastado por mes" junto a "Quién te debe", y "Pedidos por etapa".
+Bloques, en orden: arriba, "N pedidos atrasados" (si hay) y la fecha; el saludo ("¡Buenas
+tardes!") con el nombre del taller; una caja grande para buscar con atajos (Nuevo pedido,
+Registrar abono, Cotizar); las tarjetas de lo que hay que hacer hoy, con la foto de cada
+pedido; "Tu mes" (cobrado, gastado, por cobrar y en producción); "Cobrado y gastado por mes"
+junto a "Quién te debe"; y los pedidos por etapa.
 
 Lista cuando:
-- Las cuatro cifras (en producción, entregas en 7 días, atrasados y por cobrar) coinciden con
-  los cálculos de `docs/02-modelo-de-datos.md`. Atrasados va en rojo solo si hay alguno.
-- Tocar una cifra abre Pedidos con ese filtro.
-- "Qué hacer hoy" lista, en este orden: los pedidos atrasados, los que están listos sin
-  entregar, los que se entregan en 7 días y los cotizados sin confirmar. Dice cuántos son.
-- Cada fila ofrece la acción que sigue:
-  - atrasado: "Marcar como listo" y "Avisar al cliente";
-  - listo con saldo: "Cobrar el saldo" y "Marcar como entregado";
-  - cotizado: "Preguntar si confirma".
-- Las acciones cambian el pedido sin recargar la página y la fila se actualiza o desaparece.
+- El saludo cambia con la hora: "¡Buenos días!" hasta las 12, "¡Buenas tardes!" hasta las 6
+  y "¡Buenas noches!" después (hora de Bogotá).
+- Las cifras de "Tu mes" coinciden con los cálculos de `docs/02-modelo-de-datos.md` y cada
+  una abre la pantalla de donde sale (Resumen o Pedidos con su filtro).
+- Las tarjetas de lo que hay que hacer hoy van en este orden: los pedidos atrasados, los que
+  están listos sin entregar, los que se entregan en 7 días y los cotizados sin confirmar.
+  Cada una lleva la foto del pedido (o un dibujo de prenda), su insignia de urgencia y la
+  acción que sigue:
+  - atrasado: "Marcar como listo" y "Avisar";
+  - listo: "Marcar como entregado" y "Avisar";
+  - cotizado: "Confirmar pedido" y "Avisar" (el mensaje para preguntar si confirma);
+  - se entrega pronto y no le toca nada: "Ver el pedido".
+- Las acciones cambian el pedido sin recargar la página y la tarjeta se actualiza o desaparece.
 - Sin pendientes, dice que no hay nada por hacer hoy.
-- "Trabajos del taller" pasa las fotos de los pedidos como describe `docs/08-diseno.md`.
-  Sin fotos, invita a subir la primera.
-- La gráfica muestra lo cobrado y lo gastado de los últimos seis meses, y arriba la cifra
-  cobrada del mes actual.
+- La gráfica muestra lo cobrado y lo gastado de los últimos seis meses.
 - "Quién te debe" lista los clientes con saldo, del que más debe al que menos, con una barra
-  proporcional. El que tiene un pedido atrasado va en rojo.
-- "Pedidos por etapa" muestra cuántos pedidos hay en cada etapa y cuántos van atrasados.
-- "Descargar para Excel" baja el mismo archivo que el de Resumen.
+  proporcional. El que tiene un pedido atrasado lleva la insignia "Vencida" y su barra en rojo.
+- Los pedidos por etapa muestran cuántos hay en cada etapa y cuántos van atrasados.
+- La costurera no ve la plata: ni la gráfica, ni "Quién te debe", ni las cifras en pesos.
 
 ## Pedidos
 
@@ -77,20 +82,25 @@ Referencia: `diseno/pedidos.html`.
 Lista de pedidos con filtros y buscador.
 
 Lista cuando:
-- Los filtros Todos, En producción, Esta semana, Atrasados, Con saldo y Entregados
+- Arriba, una barra de cifras: activos, en producción, se entregan esta semana, atrasados y
+  por cobrar.
+- Las pestañas Todos, En producción, Esta semana, Atrasados, Con saldo y Entregados
   funcionan y muestran su conteo.
-- El buscador encuentra por cliente, prenda o encargada, sin importar tildes ni mayúsculas.
-- Cada fila muestra cliente, detalle, etapa, fecha de entrega con su etiqueta de urgencia,
-  encargada, tallas recibidas y saldo.
-- Las etiquetas usan los tonos de `docs/08-diseno.md`: rojo para atrasado, ámbar para
-  "faltan N días", azul para en corte y en confección, verde para entregado y pagado.
+- El buscador (la lupa) encuentra por cliente, prenda o encargada, sin importar tildes ni
+  mayúsculas.
+- Cada fila muestra la foto del pedido, cliente, prenda, entrega (con los días de atraso en
+  rojo), total, pago, etapa, tallas recibidas y encargada.
+- Las insignias de pago y de etapa usan los tonos y circulitos de `docs/08-diseno.md`:
+  "Vencido" en rojo, "Abonado N %" en naranja, "Pagado" y "Entregado" en gris, "Listo" en
+  verde, "En corte" y "En confección" en azul, "Confirmado" en ámbar.
 - La lista se ordena por fecha de entrega, con los entregados al final.
 - Tocar una fila abre el pedido.
-- En celular la tabla se desplaza dentro de su tarjeta.
+- En celular cada pedido es una fila con su foto, nombre, total, fecha, encargada y sus dos
+  insignias.
 
 ## Nuevo pedido
 
-Sin página de referencia: una ventana con campos, usando las piezas del diseño.
+Referencia: `diseno/nuevo-pedido.html`. Una ventana con campos.
 
 Cliente, tipo, qué pidió, para cuántas personas, tallas, fecha de entrega, valor total y
 WhatsApp.
@@ -107,9 +117,12 @@ El cuadro "pega el mensaje del cliente y la IA lo llena" es de la etapa 3.
 
 Referencia: `diseno/pedido.html`.
 
-Arriba: cliente, etiqueta de etapa, detalle y los botones "Avisar al cliente" y "Registrar
-abono". Columna izquierda: Etapa, Tallas y Materiales. Columna derecha: Pagos, Entrega y
-Cliente. Las dos columnas terminan a la misma altura.
+Arriba: la miga para volver a Pedidos, "Avisar al cliente", "Más acciones" (eliminar el
+pedido) y las flechas para pasar al pedido anterior o al siguiente (en el orden de la lista).
+Debajo, el nombre del cliente con las insignias de pago y de etapa, cuándo se creó y cuándo se
+entrega. Columna izquierda: la prenda con su etapa (y el botón del paso que sigue), el pago,
+las tallas y la cronología. Columna derecha: cliente, entrega, foto y materiales. Cada columna
+mide lo que mide su contenido.
 
 Lista cuando:
 - Tocar una etapa la guarda y se ve sin recargar la página.
@@ -117,7 +130,7 @@ Lista cuando:
 - Se puede cambiar la fecha de entrega y el WhatsApp del cliente. Dice en cuántos días se
   entrega, o cuántos lleva de atraso.
 - Registrar un abono baja el saldo y mueve la barra sin recargar la página.
-- Con saldo en 0 dice "Pedido pagado" en verde.
+- Con saldo en 0 la insignia dice "Pagado", en gris.
 - Cada abono tiene un botón "Recibo" que descarga un PDF.
 - Con WhatsApp guardado aparecen los botones para enviar el recordatorio de saldo y, si la
   etapa es `listo`, el aviso de pedido listo. Sin WhatsApp, botones para copiar el texto.
@@ -129,12 +142,13 @@ Estas partes no están dibujadas en la referencia. Se agregan con las mismas pie
 muestran a David:
 - La lista de tallas persona por persona y el formulario para agregar una a mano, con
   medidas si es "A la medida".
-- Subir, cambiar y quitar la foto del pedido (es la que sale en "Trabajos del taller").
+- Subir, cambiar y quitar la foto del pedido (es la que sale en Hoy y en la lista).
 - Eliminar el pedido, con confirmación.
 
 ## Formulario público de tallas
 
-Sin página de referencia: una tarjeta centrada, pensada para celular.
+Referencia: `diseno/tallas-publico.html` y `diseno/tallas-publico-listo.html`. Una tarjeta
+centrada, pensada para celular.
 
 Lo abre cada persona del grupo con un enlace. No requiere cuenta.
 
@@ -156,8 +170,8 @@ Mes con las entregas marcadas. Al lado, "Entregas del mes" y "Semana más cargad
 Lista cuando:
 - Se puede ir al mes anterior y al siguiente.
 - El día de hoy va marcado con un círculo negro.
-- Cada entrega se ve en su día: por entregar (ámbar), atrasada (rojo) o entregada (verde),
-  con la leyenda debajo.
+- Cada entrega se ve en su día: por entregar (ámbar), atrasada (rojo) o entregada (gris),
+  con la leyenda debajo. En celular cada entrega es una barrita de su color.
 - Tocar un día filtra la lista de entregas.
 - "Semana más cargada" dice cuál es la semana con más entregas, o que no se juntan.
 
@@ -171,7 +185,7 @@ Lista cuando:
 - El aviso dice cuántos días faltan para la próxima fecha de dotación y cuántos clientes
   empresa hay. Su botón prepara el mensaje para ellos.
 - La tabla muestra tipo, número de pedidos, cuánto ha comprado y cuánto debe. Sin deuda dice
-  "Al día".
+  "Al día", en gris. Una deuda de un pedido atrasado va en rojo, con la insignia "Vencida".
 - La lista se ordena por lo que más han comprado.
 - "Escribirle" abre WhatsApp si hay número; si no, copia el mensaje.
 - Se puede crear y editar un cliente.
@@ -196,12 +210,13 @@ Lista cuando:
 
 ## Telas
 
-Referencia: `diseno/telas.html`.
+Referencia: `diseno/telas.html` y, sin telas, `diseno/telas-vacia.html`.
 
 Lista cuando:
 - Las tres cifras dicen cuántas telas hay, cuántos metros suman y cuáles se están acabando.
 - La tabla muestra cada tela con los metros que quedan, el mínimo para avisar y su estado:
-  "Se está acabando" en ámbar o "Suficiente" en verde.
+  "Se está acabando" en ámbar o "Suficiente" en gris.
+- Sin telas, se ve la pantalla vacía con su dibujo y el botón para agregar la primera.
 - "Entró" suma metros y "Usé" resta, sin bajar de 0. Cada movimiento queda en el historial.
 - Se puede agregar y quitar una tela.
 
@@ -210,7 +225,7 @@ Lista cuando:
 Referencia: `diseno/resumen.html`.
 
 Lista cuando:
-- Muestra vendido, cobrado, gastado y "te quedó" del mes elegido. "Te quedó" va en verde.
+- Muestra vendido, cobrado, gastado y "te quedó" del mes elegido.
 - Se puede cambiar de mes.
 - La gráfica muestra lo cobrado y lo gastado de los últimos seis meses.
 - Se puede registrar y quitar un gasto, con concepto, tipo, valor y fecha.
@@ -219,7 +234,8 @@ Lista cuando:
 
 ## Mi taller
 
-Sin página de referencia: tarjetas con campos, usando las piezas del diseño.
+Referencia: `diseno/mi-taller.html`. Cada bloque con su explicación a la izquierda, como los
+ajustes de Shopify.
 
 Lista cuando:
 - La dueña cambia el nombre y el logo del taller.

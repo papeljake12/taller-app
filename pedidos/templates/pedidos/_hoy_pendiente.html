@@ -1,29 +1,23 @@
 {% load piezas %}{% comment %}
-Una fila de "Qué hacer hoy": cliente, etiqueta de la entrega, la frase del pedido y la acción
-que sigue. `fila` sale de pedidos/vistas/hoy.py (FilaPendiente).
-- listo: "Marcar como listo" y "Avisar al cliente" (WhatsApp con el aviso de atraso).
-- entregar: "Cobrar el saldo" (si debe; lleva al abono del pedido) y "Marcar como entregado".
+Una tarjeta de lo que hay que hacer hoy: foto del pedido (o el cuadrito con la prenda), la
+insignia de la entrega, el cliente, la frase y la acción que sigue. `fila` sale de
+pedidos/vistas/hoy.py (FilaPendiente).
+- listo: "Marcar como listo" y "Avisar" (WhatsApp con el aviso de atraso).
+- entregar: "Marcar como entregado" y "Avisar" (el aviso de pedido listo).
+- confirmar: "Confirmar pedido" y "Avisar" (preguntar si confirma).
 - ver: "Ver el pedido".
-- confirmar: "Preguntar si confirma" (WhatsApp).
-En celular, "Marcar como entregado" y "Preguntar si confirma" dicen "Entregado" y "Preguntar",
-y "Preguntar" queda al lado de la frase (fila--accion-al-lado), como en diseno/hoy-celular.html.
-"Ver el pedido" (la costurera, cuando no le toca nada) también va al lado, corto, como
-"Preguntar": un solo botón secundario no ocupa una línea entera.
-En "listo" y "entregar" los botones van debajo de la frase (fila--acciones-abajo), como en
-diseno/hoy.html, aunque sea uno solo (la costurera): así las filas de la tarjeta se ven iguales.
-En celular, la fila de "confirmar" dice solo "Cotizado en ..." (diseno/hoy-celular.html).
-Sin WhatsApp guardado, el botón del mensaje lo copia para pegarlo donde se quiera.
-Las acciones que cambian la etapa van en un formulario: con HTMX cambia la lista de la
-tarjeta sin recargar (#hoy-que-hacer-lista, ver _que_hacer.html); sin JavaScript, se envía
-normal y vuelve a Hoy. El id de la fila ("pendiente-N") no cambia entre respuestas: la fila
-que sigue no parpadea y la que se va se cierra suave (static/js/app.js, sección 11).
-La costurera no ve valores ni "Pagado" (T21): sin `puede_ver_plata`, la frase termina en la
-etapa. Sus acciones ya llegan decididas desde la vista (FilaPendiente.siguiente).
-{% endcomment %}{% with p=fila.pedido %}<div class="fila{% if fila.siguiente == "listo" or fila.siguiente == "entregar" %} fila--acciones-abajo{% else %} fila--accion-al-lado{% endif %}" id="pendiente-{{ p.pk }}">
-<div class="fila__texto"><div class="fila__titulo"><strong>{{ p.cliente.nombre }}</strong>{% if fila.etiqueta %}{% include "piezas/_etiqueta.html" with texto=fila.etiqueta.texto tono=fila.etiqueta.tono %}{% endif %}</div>
-<div class="fila__detalle">{% if fila.siguiente == "confirmar" and puede_ver_plata %}<span class="texto-computador">{{ fila.detalle }}.{% if fila.etapa %} {{ fila.etapa }}.{% endif %}</span>{% else %}{{ fila.detalle }}.{% if fila.etapa %} {{ fila.etapa }}.{% endif %}{% endif %}{% if not puede_ver_plata %}{% elif fila.siguiente == "confirmar" %} Cotizado en <span class="dinero">{{ p.total|pesos }}</span>.{% elif fila.saldo %} Debe <span class="dinero">{{ fila.saldo|pesos }}</span>.{% else %} Pagado.{% endif %}</div></div>
-{% if fila.siguiente == "listo" %}{% url "pedidos:hoy_accion" p.pk "listo" as accion %}<form class="fila__acciones" method="post" action="{{ accion }}" hx-post="{{ accion }}" hx-target="#hoy-que-hacer-lista" hx-swap="innerHTML">{% csrf_token %}<button type="submit" class="boton boton--principal">Marcar como listo</button>{% include "pedidos/_hoy_mensaje.html" with texto="Avisar al cliente" %}</form>
-{% elif fila.siguiente == "entregar" %}{% url "pedidos:hoy_accion" p.pk "entregado" as accion %}<form class="fila__acciones" method="post" action="{{ accion }}" hx-post="{{ accion }}" hx-target="#hoy-que-hacer-lista" hx-swap="innerHTML">{% csrf_token %}{% if fila.saldo and puede_ver_plata %}<a class="boton boton--principal" href="{% url "pedidos:detalle" p.pk %}#registrar-abono">Cobrar el saldo</a><button type="submit" class="boton">{% include "pedidos/_hoy_nombre_boton.html" with texto="Marcar como entregado" corto="Entregado" %}</button>{% else %}<button type="submit" class="boton boton--principal">Marcar como entregado</button>{% endif %}</form>
-{% elif fila.siguiente == "confirmar" %}<div class="fila__acciones">{% include "pedidos/_hoy_mensaje.html" with texto="Preguntar si confirma" corto="Preguntar" %}</div>
-{% else %}<div class="fila__acciones"><a class="boton" href="{% url "pedidos:detalle" p.pk %}">Ver el pedido</a></div>
-{% endif %}</div>{% endwith %}
+Sin WhatsApp guardado, "Avisar" copia el mensaje para pegarlo donde se quiera.
+Las acciones que cambian la etapa van en un formulario: con HTMX cambia las tarjetas sin
+recargar (#hoy-que-hacer, ver hoy.html); sin JavaScript, se envía normal y vuelve a Hoy. El id
+de la tarjeta ("pendiente-N") no cambia entre respuestas: la que sigue no parpadea y la que se
+va se cierra suave (static/js/app.js, sección 11).
+La costurera no ve valores (T21): sin `puede_ver_plata`, la frase termina en la etapa. Sus
+acciones ya llegan decididas desde la vista (FilaPendiente.siguiente).
+{% endcomment %}{% with p=fila.pedido %}<article class="carta" id="pendiente-{{ p.pk }}">
+<div class="carta__foto">{% if p.foto %}<img src="{{ p.foto.url }}" alt="Foto del pedido de {{ p.cliente.nombre }}" loading="lazy">{% else %}<span class="carta__sin-foto">{% icono "prenda" 34 %}</span>{% endif %}{% if fila.etiqueta %}{% include "piezas/_etiqueta.html" with insignia=fila.etiqueta %}{% endif %}</div>
+<div class="carta__texto"><h3><a href="{% url 'pedidos:detalle' p.pk %}">{{ p.cliente.nombre }}</a></h3><span class="texto-2">{{ fila.detalle }}.{% if fila.etapa %} {{ fila.etapa }}.{% endif %}{% if not puede_ver_plata %}{% elif fila.siguiente == "confirmar" %} Cotizado en <span class="dinero">{{ p.total|pesos }}</span>.{% elif fila.saldo %} Debe <span class="dinero">{{ fila.saldo|pesos }}</span>.{% else %} Pagado.{% endif %}</span></div>
+{% if fila.siguiente == "listo" %}{% url "pedidos:hoy_accion" p.pk "listo" as accion %}<form class="carta__acciones" method="post" action="{{ accion }}" hx-post="{{ accion }}" hx-target="#hoy-que-hacer" hx-swap="innerHTML">{% csrf_token %}<button type="submit" class="boton">Marcar como listo</button>{% include "pedidos/_hoy_mensaje.html" %}</form>
+{% elif fila.siguiente == "entregar" %}{% url "pedidos:hoy_accion" p.pk "entregado" as accion %}<form class="carta__acciones" method="post" action="{{ accion }}" hx-post="{{ accion }}" hx-target="#hoy-que-hacer" hx-swap="innerHTML">{% csrf_token %}<button type="submit" class="boton">Marcar como entregado</button>{% if fila.mensaje %}{% include "pedidos/_hoy_mensaje.html" %}{% endif %}</form>
+{% elif fila.siguiente == "confirmar" %}{% url "pedidos:hoy_accion" p.pk "confirmado" as accion %}<form class="carta__acciones" method="post" action="{{ accion }}" hx-post="{{ accion }}" hx-target="#hoy-que-hacer" hx-swap="innerHTML">{% csrf_token %}<button type="submit" class="boton">Confirmar pedido</button>{% include "pedidos/_hoy_mensaje.html" %}</form>
+{% else %}<div class="carta__acciones"><a class="boton" href="{% url 'pedidos:detalle' p.pk %}">Ver el pedido</a></div>
+{% endif %}</article>{% endwith %}

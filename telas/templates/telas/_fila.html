@@ -12,9 +12,9 @@ acabando y su etiqueta de estado.
   siendo la misma fila (no parpadea); una tela nueva aparece y una que se quita se va
   (static/js/app.js, sección 11).
 {% endcomment %}{% with t=fila.tela %}{% url 'telas:movimiento' t.pk as url_movimiento %}<tr class="tabla__fila" id="tela-{{ t.pk }}">
-<td><a class="tabla__enlace" href="{{ url_movimiento }}" hx-get="{{ url_movimiento }}" hx-target="#ventana" aria-label="{{ t.nombre }}: ver el historial"><strong>{{ t.nombre }}</strong></a><div class="solo-celular">{% include "piezas/_etiqueta.html" with texto=fila.estado tono=fila.tono %}</div></td>
-<td class="num"><strong{% if fila.baja %} class="texto-ambar"{% endif %}>{{ t.metros|metros }}</strong></td>
-<td class="num solo-computador">{% if t.minimo %}{{ t.minimo|metros }}{% else %}<span class="texto-2">Sin aviso</span>{% endif %}</td>
-<td class="solo-computador">{% include "piezas/_etiqueta.html" with texto=fila.estado tono=fila.tono %}</td>
-<td class="num"><span class="tabla__acciones">{% if es_duena %}<a class="boton" href="{{ url_movimiento }}?tipo=entro" hx-get="{{ url_movimiento }}?tipo=entro" hx-target="#ventana" aria-label="Entró {{ t.nombre }}"{% if fila.enfocar == "entro" %} autofocus{% endif %}>Entró</a> {% endif %}<a class="boton" href="{{ url_movimiento }}?tipo=uso" hx-get="{{ url_movimiento }}?tipo=uso" hx-target="#ventana" aria-label="Usé {{ t.nombre }}"{% if fila.enfocar == "uso" %} autofocus{% endif %}>Usé</a></span></td>
+<td><a class="tabla__enlace" href="{{ url_movimiento }}" hx-get="{{ url_movimiento }}" hx-target="#ventana" aria-label="{{ t.nombre }}: ver el historial">{{ t.nombre }}</a></td>
+<td class="num fuerte">{{ t.metros|metros }}</td>
+<td class="num texto-2">{% if t.minimo %}{{ t.minimo|metros }}{% else %}Sin aviso{% endif %}</td>
+<td>{% include "piezas/_etiqueta.html" with texto=fila.estado tono=fila.tono circulo=fila.circulo %}</td>
+<td><div class="tabla__acciones">{% if es_duena %}<a class="boton" href="{{ url_movimiento }}?tipo=entro" hx-get="{{ url_movimiento }}?tipo=entro" hx-target="#ventana" aria-label="Entró {{ t.nombre }}"{% if fila.enfocar == "entro" %} autofocus{% endif %}>Entró</a>{% endif %}<a class="boton" href="{{ url_movimiento }}?tipo=uso" hx-get="{{ url_movimiento }}?tipo=uso" hx-target="#ventana" aria-label="Usé {{ t.nombre }}"{% if fila.enfocar == "uso" %} autofocus{% endif %}>Usé</a></div></td>
 </tr>{% endwith %}

@@ -21,6 +21,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 
 from config.avisos import avisar
@@ -33,7 +34,7 @@ from cuentas.permisos import (
     puede_mover_etapa,
     puede_ver_plata,
 )
-from pedidos import calculos, mensajes
+from pedidos import calculos, cronologia, mensajes
 from pedidos.formularios.detalle import EncargadaForm, EntregaForm, EtapaForm, WhatsappForm
 from pedidos.models import Pedido
 from pedidos.vistas import abonos, materiales, tallas
@@ -45,6 +46,8 @@ Estado = Pedido.Estado
 # el saldo por WhatsApp", que depende del WhatsApp y de la fecha de entrega.
 CAMBIAN_CON_LA_ETAPA = ("pedido_apoyo", "detalle_avisar", "entrega", "cliente", "pagos")
 CAMBIAN_CON_EL_WHATSAPP = ("detalle_avisar", "pagos")
+# Lo que dice la tarjeta de la etapa ("Lo está haciendo ...") cambia con la encargada.
+CAMBIAN_CON_LA_ENCARGADA = ("etapa",)
 # Las partes con plata: la costurera no las recibe (T21).
 PARTES_CON_PLATA = ("pagos",)
 
@@ -89,6 +92,47 @@ def frase_de_entrega(pedido, hoy=None):
     return f"Se entrega en {dias} días.", False
 
 
+def cuando_se_entrega(pedido, hoy=None):
+    """(texto, atrasado): "en 33 días", "hoy", "mañana", "lleva 2 días de atraso"... en minúscula."""
+    if pedido.estado == Estado.ENTREGADO:
+        return "se entregó", False
+    dias = calculos.dias_para_entrega(pedido, hoy)
+    if calculos.esta_atrasado(pedido, hoy):
+        atraso = -dias
+        return f"lleva {atraso} {'día' if atraso == 1 else 'días'} de atraso", True
+    if dias < 0:
+        # Un cotizado con la fecha vencida no está atrasado: todavía no se ha confirmado.
+        return "la fecha ya pasó", False
+    if dias == 0:
+        return "hoy", False
+    if dias == 1:
+        return "mañana", False
+    return f"en {dias} días", False
+
+
+def entrega_bajo_el_nombre(pedido, hoy=None):
+    """"Se entrega el 16 de diciembre, en 33 días" (o el atraso, o "Se entregó ...")."""
+    fecha = cronologia.dia_y_mes(pedido.fecha_entrega)
+    cuando, atrasado = cuando_se_entrega(pedido, hoy)
+    if pedido.estado == Estado.ENTREGADO:
+        return f"Se entregó (estaba pactado para el {fecha})"
+    if atrasado:
+        return f"Debía entregarse el {fecha}, {cuando}"
+    if cuando == "la fecha ya pasó":
+        return f"Se entregaría el {fecha}, pero esa fecha ya pasó"
+    return f"Se entrega el {fecha}, {cuando}"
+
+
+def pedidos_vecinos(request, pedido):
+    """(anterior, siguiente): los ids de los pedidos de al lado, en el orden de la lista."""
+    consulta = del_taller(request, Pedido).only("pk", "estado", "fecha_entrega")
+    ids = [p.pk for p in calculos.ordenar_pedidos(consulta)]
+    if pedido.pk not in ids:
+        return None, None
+    i = ids.index(pedido.pk)
+    return (ids[i - 1] if i > 0 else None), (ids[i + 1] if i < len(ids) - 1 else None)
+
+
 def mensaje_para_el_cliente(pedido):
     """El mensaje de "Avisar al cliente": que el pedido está listo o, si debe plata, el saldo.
 
@@ -129,10 +173,35 @@ def contexto_de_la_ficha(request, pedido):
     pedidos_del_cliente = del_taller(request, Pedido).filter(cliente=pedido.cliente_id).count()
     con_plata = puede_ver_plata(request)
     duena = es_duena(request)
+    pasos = pasos_de_etapa(pedido)
+    siguiente_paso = next(
+        (
+            pasos[i + 1]
+            for i, paso in enumerate(pasos)
+            if paso["estado"] == "actual" and i + 1 < len(pasos)
+        ),
+        None,
+    )
+    cuando, _ = cuando_se_entrega(pedido)
+    anterior, siguiente = pedidos_vecinos(request, pedido)
     contexto = {
         "pedido": pedido,
         "etiqueta": calculos.etiqueta_etapa(pedido),
-        "pasos": pasos_de_etapa(pedido),
+        "etiqueta_pago": calculos.etiqueta_pago(pedido) if con_plata else None,
+        "tallaje_corto": "niño" if pedido.tallaje == Pedido.Tallaje.NINO else "adulto",
+        "pasos": pasos,
+        "etapa_siguiente": siguiente_paso,
+        "anterior": anterior,
+        "siguiente": siguiente,
+        "creado_el": cronologia.fecha_completa(timezone.localtime(pedido.creado).date()),
+        "cuando_se_entrega": entrega_bajo_el_nombre(pedido),
+        "fecha_entrega_larga": cronologia.fecha_completa(pedido.fecha_entrega),
+        "en_cuantos_dias": cuando[0].upper() + cuando[1:],
+        # Los campos de la fecha y del WhatsApp se muestran con "Cambiar" o "Agregar"; sin
+        # JavaScript esos enlaces traen ?cambiar=... y la página los deja a la vista.
+        "editar_fecha": duena and request.GET.get("cambiar") == "fecha",
+        "editar_whatsapp": duena and request.GET.get("cambiar") == "whatsapp",
+        "cronologia": cronologia.cronologia(pedido, con_plata),
         "puede_mover_etapa": puede_mover_etapa(request, pedido),
         "mensaje": mensaje_para_el_cliente(pedido) if con_plata else None,
         "aviso_listo": aviso_de_listo(pedido) if con_plata else None,
@@ -172,7 +241,9 @@ def contexto_del_pedido(request, pedido, **extra):
     contexto.update(materiales.contexto_de_materiales(pedido))  # T12
     if puede_ver_plata(request):
         contexto.update(abonos.contexto_pagos(request, pedido))  # T08
-    contexto["tarjeta_tallas"] = tallas.tarjeta(request, pedido)  # T10
+    contexto["tarjeta_tallas"] = tallas.tarjeta(  # T10
+        request, pedido, ver_personas="personas" in request.GET
+    )
     contexto.update(extra)
     return contexto
 
@@ -236,7 +307,7 @@ def entrega(request, pk):
         pedido.refresh_from_db(fields=["fecha_entrega"])
         return responder(request, pedido, "entrega", status=422, form_entrega=form)
     form.save(commit=False).save(update_fields=["fecha_entrega", "actualizado"])
-    return responder(request, pedido, "entrega", otras=("detalle_avisar", "pagos"))
+    return responder(request, pedido, "entrega", otras=("pedido_apoyo", "detalle_avisar", "pagos"))
 
 
 @require_POST
@@ -250,7 +321,7 @@ def encargada(request, pk):
         pedido.refresh_from_db(fields=["encargada"])
         return responder(request, pedido, "entrega", status=422, form_encargada=form)
     form.save(commit=False).save(update_fields=["encargada", "actualizado"])
-    return responder(request, pedido, "entrega")
+    return responder(request, pedido, "entrega", otras=CAMBIAN_CON_LA_ENCARGADA)
 
 
 @require_POST

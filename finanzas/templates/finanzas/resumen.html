@@ -9,35 +9,24 @@ Las ventas por tipo de cliente y quién tiene qué usan _barra.
 {% endcomment %}
 {% block pestana %}Resumen{% endblock %}
 {% block titulo %}Resumen{% endblock %}
-{% block apoyo %}<span class="encabezado__apoyo">{{ mes|mes_y_anio }}</span>{% endblock %}
-{% comment %}En Resumen, "Descargar para Excel" es el botón principal (negro), como en el diseño: por eso no usa la pieza _boton_excel, que es blanca.{% endcomment %}
-{% block acciones %}<a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a>{% include "piezas/_boton_excel.html" with principal=True %}{% endblock %}
+{% block acciones %}{% include "piezas/_boton_excel.html" %}{% endblock %}
 {% block contenido %}
-<nav class="navegacion-mes" aria-label="Cambiar de mes"><a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a></nav>
+<div class="botones" role="group" aria-label="Mes del resumen"><span class="grupo-botones"><a class="boton boton--icono" href="?mes={{ mes_anterior }}" aria-label="Mes anterior" title="Mes anterior">{% icono "atras" 16 %}</a><span class="boton" aria-current="date">{% icono "calendario" 14 %}{{ mes|mes_y_anio }}</span><a class="boton boton--icono" href="?mes={{ mes_siguiente }}" aria-label="Mes siguiente" title="Mes siguiente">{% icono "adelante" 16 %}</a></span></div>
 {% include "finanzas/_cifras.html" %}
-{% comment %}En computador (pantalla fija) esta fila toma el alto que queda (llenar), nunca menos que
-la gráfica, y la lista de gastos se desplaza por dentro de su tarjeta. Las cifras, la gráfica y
-la fila de abajo quedan quietas (static/css/app.css, apartado "Resumen").{% endcomment %}
-<div class="dos-columnas llenar resumen__fila-gastos">
+<div class="dos-columnas">
 {% include "finanzas/_grafica.html" %}
 {% include "finanzas/_gastos.html" %}
 </div>
-{# Dos tarjetas del mismo ancho: las dos crecen igual desde 300 px y terminan a la misma altura. #}
-<div class="dos-columnas resumen__fila-barras">
-<section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="t-ventas">
+<div class="dos-columnas dos-columnas--iguales">
+<section class="tarjeta" aria-labelledby="t-ventas">
 <div class="tarjeta__cabeza"><h2 id="t-ventas">Ventas por tipo de cliente</h2></div>
-<div class="tarjeta__cuerpo">
 {% for barra in ventas %}{% include "finanzas/_barra.html" with valor=barra.valor|pesos dinero=True %}
-{% empty %}<p class="texto-2">No hay ventas confirmadas en este mes.</p>
-{% endfor %}</div>
-</section>
-<section class="tarjeta tarjeta--lista columna-angosta" aria-labelledby="t-personas">
-<div class="tarjeta__cabeza"><h2 id="t-personas">Quién tiene qué</h2></div>
-<div class="tarjeta__cuerpo">
-{% if personas %}<p class="texto-2">Pedidos en producción hoy, por persona.</p>
+{% empty %}<p class="tarjeta__nota">No hay ventas confirmadas en este mes.</p>
+{% endfor %}</section>
+<section class="tarjeta" aria-labelledby="t-personas">
+<div class="tarjeta__cabeza"><h2 id="t-personas">Quién tiene qué</h2><span class="tarjeta__aparte">En producción hoy</span></div>
 {% for barra in personas %}{% include "finanzas/_barra.html" with valor=barra.valor %}
-{% endfor %}{% else %}<p class="texto-2">No hay pedidos en producción.</p>{% endif %}
-</div>
-</section>
+{% empty %}<p class="tarjeta__nota">No hay pedidos en producción.</p>
+{% endfor %}</section>
 </div>
 {% endblock %}

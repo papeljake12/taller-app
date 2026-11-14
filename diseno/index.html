@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseño del panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<style>
+body { background: #F1F1F1; padding: 32px 16px 64px; }
+.indice { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.celulares { display: flex; flex-wrap: wrap; gap: 24px; }
+.celulares figure { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.celulares iframe { width: 390px; height: 844px; border: 0; border-radius: 28px; box-shadow: 0 0 0 8px #0A0A0A; background: #FFFFFF; }
+</style></head>
+<body><div class="indice">
+<h1>Diseño del panel</h1>
+<p class="texto-2">Referencia visual aprobada el 13 de noviembre de 2026 (rediseño con el lenguaje del panel de Shopify). Reglas en docs/08-diseno.md.</p>
+<section class="tarjeta"><div class="tarjeta__cabeza"><h2>Pantallas</h2></div><div class="tarjeta__cuerpo"><ul class="columna" style="gap: 6px">
+<li><a href="hoy.html">Hoy</a></li>
+<li><a href="hoy-menu-contraido.html">Hoy con el menú contraído</a></li>
+<li><a href="pedidos.html">Pedidos</a></li>
+<li><a href="nuevo-pedido.html">Nuevo pedido (ventana)</a></li>
+<li><a href="pedido.html">Pedido por dentro</a></li>
+<li><a href="calendario.html">Calendario</a></li>
+<li><a href="clientes.html">Clientes</a></li>
+<li><a href="cotizador.html">Cotizador</a></li>
+<li><a href="telas.html">Telas</a></li>
+<li><a href="telas-vacia.html">Telas sin datos (pantalla vacía)</a></li>
+<li><a href="resumen.html">Resumen del mes</a></li>
+<li><a href="mi-taller.html">Mi taller</a></li>
+<li><a href="entrar.html">Entrar</a></li>
+<li><a href="tallas-publico.html">Formulario público de tallas</a></li>
+<li><a href="tallas-publico-listo.html">Formulario público de tallas: enviado</a></li>
+</ul></div></section>
+<h2>En celular (390 px)</h2>
+<div class="celulares">
+<figure><iframe src="hoy.html" title="Hoy en celular" loading="lazy"></iframe><figcaption class="texto-2">Hoy</figcaption></figure>
+<figure><iframe src="pedidos.html" title="Pedidos en celular" loading="lazy"></iframe><figcaption class="texto-2">Pedidos</figcaption></figure>
+<figure><iframe src="pedido.html" title="Pedido por dentro en celular" loading="lazy"></iframe><figcaption class="texto-2">Pedido por dentro</figcaption></figure>
+<figure><iframe src="calendario.html" title="Calendario en celular" loading="lazy"></iframe><figcaption class="texto-2">Calendario</figcaption></figure>
+<figure><iframe src="clientes.html" title="Clientes en celular" loading="lazy"></iframe><figcaption class="texto-2">Clientes</figcaption></figure>
+<figure><iframe src="cotizador.html" title="Cotizador en celular" loading="lazy"></iframe><figcaption class="texto-2">Cotizador</figcaption></figure>
+<figure><iframe src="telas.html" title="Telas en celular" loading="lazy"></iframe><figcaption class="texto-2">Telas</figcaption></figure>
+<figure><iframe src="telas-vacia.html" title="Telas sin datos (pantalla vacía) en celular" loading="lazy"></iframe><figcaption class="texto-2">Telas sin datos (pantalla vacía)</figcaption></figure>
+<figure><iframe src="resumen.html" title="Resumen del mes en celular" loading="lazy"></iframe><figcaption class="texto-2">Resumen del mes</figcaption></figure>
+<figure><iframe src="mi-taller.html" title="Mi taller en celular" loading="lazy"></iframe><figcaption class="texto-2">Mi taller</figcaption></figure>
+<figure><iframe src="nuevo-pedido.html" title="Nuevo pedido (ventana) en celular" loading="lazy"></iframe><figcaption class="texto-2">Nuevo pedido (ventana)</figcaption></figure>
+<figure><iframe src="entrar.html" title="Entrar en celular" loading="lazy"></iframe><figcaption class="texto-2">Entrar</figcaption></figure>
+<figure><iframe src="tallas-publico.html" title="Formulario público de tallas en celular" loading="lazy"></iframe><figcaption class="texto-2">Formulario público de tallas</figcaption></figure>
+</div>
+</div></body></html>

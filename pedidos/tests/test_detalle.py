@@ -57,15 +57,18 @@ def ajeno():
 def test_la_ficha_muestra_los_datos_del_pedido(sesion_duena, pedido):
     html = sesion_duena.get(url("detalle", pedido)).text
 
-    apoyo = html[html.index('id="pedido-apoyo"') :].split("</h1>")[0].split("</div>")[0]
-    assert '<span class="etiqueta etiqueta--azul">En corte</span>' in apoyo
-    assert "&nbsp;18 camisas polo de prueba" in apoyo
-    assert "Toca una etapa para mover el pedido." in html
-    assert "Se entrega en 33 días." in html
-    assert "¿Quién lo está haciendo?" in html
-    assert "Restaurante de prueba" in html
-    assert "Empresa, 1 pedido" in html
-    assert "WhatsApp del cliente" in html
+    titulo = html[html.index('id="pedido-apoyo"') :].split("</div>")[0]
+    assert "<h1>Restaurante de prueba" in titulo
+    assert '<span class="etiqueta etiqueta--azul etiqueta--medio">En corte</span>' in titulo
+    assert "Sin abonos</span>" in titulo
+    assert "Se entrega el " in titulo and ", en 33 días" in titulo
+    assert "Creado el " in titulo
+    assert "18 camisas polo de prueba" in html
+    assert "Pasar a En confección" in html
+    assert "En 33 días" in html
+    assert ">Encargada</label>" in html
+    assert "Empresa · 1 pedido" in html
+    assert "Sin WhatsApp." in html
     assert 'href="#registrar-abono"' in html
     assert "Número de ejemplo" not in html
 
@@ -83,7 +86,7 @@ def test_los_pasos_marcan_las_etapas_hechas_la_actual_y_las_que_faltan(sesion_du
 def test_el_cliente_dice_cuantos_pedidos_tiene(sesion_duena, taller, pedido):
     fabricas.crear_pedido(taller, cliente=pedido.cliente)
 
-    assert "Empresa, 2 pedidos" in sesion_duena.get(url("detalle", pedido)).text
+    assert "Empresa · 2 pedidos" in sesion_duena.get(url("detalle", pedido)).text
 
 
 def test_la_encargada_se_elige_entre_las_usuarias_activas_del_taller(sesion_duena, taller, pedido):
@@ -145,9 +148,10 @@ def test_el_atraso_va_en_rojo(sesion_duena, taller):
         taller, estado="confeccion", fecha_entrega=hoy() - timedelta(days=2)
     )
 
-    assert '<div class="texto-rojo">Lleva 2 días de atraso.</div>' in sesion_duena.get(
-        url("detalle", pedido)
-    ).text
+    html = sesion_duena.get(url("detalle", pedido)).text
+
+    assert '<span class="texto-rojo">Lleva 2 días de atraso</span>' in html
+    assert "lleva 2 días de atraso" in html
 
 
 # --- Etapa -----------------------------------------------------------------------------------
@@ -161,11 +165,11 @@ def test_tocar_una_etapa_la_guarda_y_devuelve_la_tarjeta_y_lo_que_depende(sesion
     assert pedido.estado == "listo"
     html = respuesta.text
     assert "<html" not in html
-    assert html.startswith('<section class="tarjeta tarjeta--lista" id="pedido-etapa"')
+    assert html.startswith('<section class="tarjeta" id="pedido-etapa"')
     assert 'class="paso paso--actual" name="estado" value="listo"' in html
     # La etiqueta de arriba, el botón "Avisar al cliente", la entrega y el cliente cambian.
     assert 'id="pedido-apoyo" hx-swap-oob="true"' in html
-    assert '<span class="etiqueta etiqueta--gris">Listo</span>' in html
+    assert '<span class="etiqueta etiqueta--verde etiqueta--lleno">Listo</span>' in html
     assert 'id="pedido-avisar"' in html
     assert 'id="pedido-entrega"' in html
     assert 'id="pedido-cliente"' in html
@@ -248,8 +252,9 @@ def test_cambiar_la_fecha_la_guarda_y_dice_los_dias(sesion_duena, pedido):
     pedido.refresh_from_db()
     assert respuesta.status_code == 200
     assert pedido.fecha_entrega == nueva
-    assert respuesta.text.startswith('<section class="tarjeta tarjeta--lista" id="pedido-entrega"')
-    assert "Se entrega mañana." in respuesta.text
+    assert respuesta.text.startswith('<section class="tarjeta tarjeta--lado" id="pedido-entrega"')
+    assert "Mañana" in respuesta.text
+    assert 'id="pedido-apoyo" hx-swap-oob="true"' in respuesta.text
     assert 'id="pedido-avisar" data-copiar' in respuesta.text
 
 
@@ -273,7 +278,9 @@ def test_una_fecha_que_no_sirve_se_rechaza(sesion_duena, pedido, valor, mensaje)
     assert respuesta.status_code == 422
     assert mensaje in respuesta.text
     assert pedido.fecha_entrega == antes
-    assert "Se entrega en 33 días." in respuesta.text
+    assert "En 33 días" in respuesta.text
+    # Con el error, el campo de la fecha queda a la vista.
+    assert '<div id="entrega-fecha">' in respuesta.text
 
 
 def test_sin_javascript_una_fecha_que_no_sirve_muestra_la_pagina_con_el_error(
@@ -356,7 +363,7 @@ def test_guardar_el_whatsapp_lo_deja_en_el_cliente(sesion_duena, pedido):
     pedido.cliente.refresh_from_db()
     assert respuesta.status_code == 200
     assert pedido.cliente.whatsapp == "300 000 0000"
-    assert respuesta.text.startswith('<section class="tarjeta tarjeta--lista" id="pedido-cliente"')
+    assert respuesta.text.startswith('<section class="tarjeta tarjeta--lado" id="pedido-cliente"')
     assert "Número guardado." in respuesta.text
     # Con número, "Avisar al cliente" abre WhatsApp.
     assert 'id="pedido-avisar" href="https://wa.me/573000000000' in respuesta.text
@@ -432,10 +439,61 @@ def test_eliminar_primero_pregunta(sesion_duena, pedido):
     assert Pedido.objects.filter(pk=pedido.pk).exists()
 
 
-def test_la_ficha_tiene_el_boton_de_eliminar(sesion_duena, pedido):
+def test_la_ficha_tiene_eliminar_en_mas_acciones(sesion_duena, pedido):
     html = sesion_duena.get(url("detalle", pedido)).text
 
-    assert f'hx-get="{url("eliminar", pedido)}" hx-target="#ventana"' in html
+    menu = html[html.index("Más acciones") :]
+    assert f'hx-get="{url("eliminar", pedido)}" hx-target="#ventana"' in menu
+    assert "Eliminar el pedido</a>" in menu
+
+
+def test_las_flechas_llevan_al_pedido_anterior_y_al_siguiente_de_la_lista(
+    sesion_duena, taller
+):
+    primero = fabricas.crear_pedido(taller, fecha_entrega=hoy() + timedelta(days=1))
+    medio = fabricas.crear_pedido(taller, fecha_entrega=hoy() + timedelta(days=2))
+    ultimo = fabricas.crear_pedido(taller, fecha_entrega=hoy() + timedelta(days=3))
+
+    html = sesion_duena.get(url("detalle", medio)).text
+    assert f'href="{url("detalle", primero)}" aria-label="Pedido anterior"' in html
+    assert f'href="{url("detalle", ultimo)}" aria-label="Pedido siguiente"' in html
+
+    # En los extremos la flecha va apagada y sin enlace.
+    html = sesion_duena.get(url("detalle", primero)).text
+    assert 'aria-disabled="true" aria-label="Pedido anterior"' in html
+    assert f'href="{url("detalle", medio)}" aria-label="Pedido siguiente"' in html
+    html = sesion_duena.get(url("detalle", ultimo)).text
+    assert 'aria-disabled="true" aria-label="Pedido siguiente"' in html
+
+
+def test_las_flechas_no_llevan_a_pedidos_de_otro_taller(sesion_duena, pedido, ajeno):
+    html = sesion_duena.get(url("detalle", pedido)).text
+
+    assert url("detalle", ajeno) not in html
+
+
+def test_el_boton_pasar_a_guarda_la_etapa_siguiente(sesion_duena, pedido):
+    respuesta = sesion_duena.post(url("etapa", pedido), {"estado": "confeccion"}, headers=HTMX)
+
+    pedido.refresh_from_db()
+    assert pedido.estado == "confeccion"
+    assert "Pasar a Listo" in respuesta.text
+
+
+def test_entregado_no_tiene_pasar_a(sesion_duena, pedido):
+    sesion_duena.post(url("etapa", pedido), {"estado": "entregado"}, headers=HTMX)
+
+    html = sesion_duena.get(url("detalle", pedido)).text
+    assert "Pasar a" not in html
+    assert "Cambiar etapa" in html
+
+
+def test_cambiar_la_fecha_sin_javascript_deja_el_campo_a_la_vista(sesion_duena, pedido):
+    normal = sesion_duena.get(url("detalle", pedido)).text
+    abierta = sesion_duena.get(url("detalle", pedido) + "?cambiar=fecha").text
+
+    assert '<div id="entrega-fecha" hidden>' in normal
+    assert '<div id="entrega-fecha">' in abierta
 
 
 def test_eliminar_borra_el_pedido_con_todo_lo_suyo(sesion_duena, pedido, settings, tmp_path):
@@ -518,13 +576,20 @@ def test_lo_que_se_ve_justo_donde_se_toca_no_avisa(sesion_duena, taller, pedido)
         assert "aviso" not in respuesta.headers.get("HX-Trigger", "")
 
 
-def test_las_columnas_toman_el_alto_que_queda(sesion_duena, pedido):
-    """Pantalla fija: las dos columnas llenan la hoja; Materiales y la foto, su columna."""
+def test_las_dos_columnas_miden_lo_que_mide_su_contenido(sesion_duena, pedido):
+    """Ya no hay pantalla fija: la hoja se desplaza y cada columna es una pila de tarjetas."""
     html = sesion_duena.get(url("detalle", pedido)).text
 
-    assert '<div class="dos-columnas llenar pedido-por-dentro">' in html
-    assert 'class="tarjeta tarjeta--lista llenar" id="pedido-materiales"' in html
-    assert 'class="tarjeta tarjeta--lista tarjeta--fotos llenar" id="pedido-foto"' in html
+    assert '<div class="columnas pedido-por-dentro">' in html
+    assert "llenar" not in html and "desplazable" not in html
+    izquierda, derecha = html.split('<div class="columnas pedido-por-dentro">')[1].split(
+        '</div>\n<div class="columna">'
+    )
+    for tarjeta in ("pedido-etapa", 'id="pagos"', "tarjeta-tallas", "pedido-cronologia"):
+        assert tarjeta in izquierda
+    for tarjeta in ("pedido-cliente", "pedido-entrega", "pedido-foto", "pedido-materiales"):
+        assert tarjeta in derecha
+    assert "pedido-eliminar" not in html
 
 
 def test_numero_guardado_lleva_id_para_aparecer_con_un_desvanecido(sesion_duena, pedido):

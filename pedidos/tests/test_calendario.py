@@ -1,6 +1,6 @@
 """Calendario (T14): el mes con las entregas marcadas, la lista de entregas (con el filtro
 por día) y la semana más cargada. Al final, la pantalla fija en computador y lo que necesitan
-las animaciones (ajuste "pantalla fija y animaciones")."""
+las animaciones. Diseño nuevo (rediseño estilo Shopify): diseno/calendario.html."""
 
 import re
 from datetime import date, timedelta
@@ -77,8 +77,8 @@ def celda(html, dia):
 def filas_de_la_lista(html):
     """(fecha, cliente, etiqueta) de cada entrega de la lista, en orden."""
     return re.findall(
-        r'<strong>([^<]+)</strong><br><span class="texto-2">([^<]+)</span></a>'
-        r'<span class="etiqueta etiqueta--\w+">([^<]+)</span>',
+        r'<strong>([^<]+)</strong></a><div class="texto-2">([^<]+)</div></div>'
+        r'<span class="etiqueta etiqueta--\w+(?: etiqueta--\w+)?">([^<]+)</span>',
         tarjeta(html, "t-entregas"),
     )
 
@@ -86,22 +86,30 @@ def filas_de_la_lista(html):
 # --- La página con los datos del diseño -------------------------------------------------------
 
 
-def test_el_encabezado_dice_el_mes_y_lleva_a_los_vecinos(sesion_duena, ejemplo):
+def test_el_encabezado_solo_trae_el_boton_de_nuevo_pedido(sesion_duena, ejemplo):
     html = sesion_duena.get(PAGINA).text
 
-    assert "<h1>Calendario</h1>" in html
-    assert '<span class="encabezado__apoyo">Noviembre de 2026</span>' in html
-    # En el encabezado y, para el celular, al comienzo del contenido.
-    assert html.count('href="?mes=2026-10">Mes anterior</a>') == 2
-    assert html.count('href="?mes=2026-12">Mes siguiente</a>') == 2
-    assert '<nav class="navegacion-mes" aria-label="Cambiar de mes">' in html
-    assert ">Nuevo pedido</a>" in html
+    assert re.search(r"<h1[^>]*>(?:<svg.*?</svg>)?Calendario</h1>", html, re.S)
+    assert ">Nuevo pedido</" in html
+    # Los botones de mes ya no están en el encabezado: viven en la tarjeta del mes.
+    assert "Mes anterior</a>" not in html and "navegacion-mes" not in html
+    assert "encabezado__apoyo" not in html
+
+
+def test_la_tarjeta_del_mes_trae_hoy_y_las_flechas(sesion_duena, ejemplo):
+    html = tarjeta(sesion_duena.get(PAGINA).text, "t-mes")
+
+    assert '<h2 id="t-mes">Noviembre de 2026</h2>' in html
+    assert f'<a class="boton" href="{PAGINA}">Hoy</a>' in html
+    assert '<span class="grupo-botones">' in html
+    assert 'href="?mes=2026-10" aria-label="Mes anterior" title="Mes anterior"' in html
+    assert 'href="?mes=2026-12" aria-label="Mes siguiente" title="Mes siguiente"' in html
 
 
 def test_la_cuadricula_va_de_lunes_a_domingo_con_los_dias_vecinos(sesion_duena, ejemplo):
     html = cuadricula(sesion_duena.get(PAGINA).text)
 
-    assert re.findall(r'<div class="calendario__semana">(\w+)</div>', html) == [
+    assert re.findall(r'<span class="calendario__semana">(\w+)</span>', html) == [
         "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"
     ]
     numeros = re.findall(r'<span class="calendario__numero">(\d+)</span>', html)
@@ -123,15 +131,15 @@ def test_hoy_va_con_el_circulo_negro(sesion_duena, ejemplo):
 def test_cada_entrega_va_en_su_dia_con_su_color(sesion_duena, ejemplo):
     html = sesion_duena.get(PAGINA).text
 
-    for dia, tono, cliente in (
-        (6, "verde", "Comparsa Brisa Caribe"),
-        (9, "rojo", "Ferretería La Esquina"),
-        (14, "ambar", "Grupo de danza Tambores del Río"),
+    for dia, tono, circulo, cliente in (
+        (6, "gris", "lleno", "Comparsa Brisa Caribe"),
+        (9, "rojo", "alerta", "Ferretería La Esquina"),
+        (14, "ambar", "vacio", "Grupo de danza Tambores del Río"),
     ):
         assert (
-            f'<span class="etiqueta etiqueta--{tono} etiqueta--bloque">{cliente}</span>'
-            in celda(html, dia)
-        )
+            f'<span class="etiqueta etiqueta--{tono} etiqueta--{circulo}" title="{cliente}">'
+            f'<span class="etiqueta__texto">{cliente}</span></span>'
+        ) in celda(html, dia)
     assert "etiqueta" not in celda(html, 10)
 
 
@@ -147,25 +155,27 @@ def test_la_leyenda_va_debajo(sesion_duena, ejemplo):
     html = tarjeta(sesion_duena.get(PAGINA).text, "t-mes")
 
     leyenda = html[html.index('<div class="calendario__leyenda">'):]
-    # Cada cuadrito va junto a su palabra, para que en el celular no queden en líneas distintas.
-    assert re.findall(
-        r'<span class="calendario__clave"><span class="etiqueta etiqueta--(\w+)" aria-hidden="true">&nbsp;</span>'
-        r' ?([\w ]+?)</span>', leyenda
-    ) == [("ambar", "Por entregar"), ("rojo", "Atrasado"), ("verde", "Entregado")]
+    assert re.findall(r'<span class="etiqueta etiqueta--(\w+) etiqueta--(\w+)">([\w ]+)</span>', leyenda) == [
+        ("ambar", "vacio", "Por entregar"),
+        ("rojo", "alerta", "Atrasado"),
+        ("gris", "lleno", "Entregado"),
+    ]
 
 
-def test_las_columnas_reparten_el_ancho_como_el_diseno(sesion_duena, ejemplo):
-    # El diseño le da al mes un poco más de ancho que en las demás pantallas de dos columnas.
-    html = sesion_duena.get(PAGINA).text
+def test_las_columnas_son_las_del_diseno(sesion_duena, ejemplo):
+    html = sesion_duena.get(PAGINA).text.split("<main", 1)[1].split("</main>")[0]  # sin lo compartido
 
-    assert 'class="tarjeta tarjeta--lista columna-ancha columna-ancha--calendario"' in html
-    assert '<div class="columna-angosta columna-angosta--calendario columna">' in html
+    assert '<div class="columnas">' in html
+    assert '<section class="tarjeta tarjeta--recortada" aria-labelledby="t-mes">' in html
+    assert '<div class="columna">' in html
+    for vieja in ("llenar", "desplazable", "dos-columnas", "columna-ancha", "columna-angosta", "tarjeta--lista"):
+        assert vieja not in html
 
 
 def test_la_lista_trae_las_entregas_del_mes(sesion_duena, ejemplo):
     html = sesion_duena.get(PAGINA).text
 
-    assert '<h2 id="t-entregas">Entregas de noviembre</h2>' in html
+    assert '<h2 id="t-entregas">Entregas de noviembre</h2><span class="tarjeta__aparte">3</span>' in html
     assert filas_de_la_lista(html) == [
         ("6 de nov", "Comparsa Brisa Caribe", "Entregado"),
         ("9 de nov", "Ferretería La Esquina", "Atrasado 2 días"),
@@ -180,7 +190,7 @@ def test_cada_entrega_de_la_lista_abre_su_pedido(sesion_duena, ejemplo):
     html = tarjeta(sesion_duena.get(PAGINA).text, "t-entregas")
 
     enlace = reverse("pedidos:detalle", args=[ferreteria.pk])
-    assert f'<a class="tabla__enlace" href="{enlace}"><strong>9 de nov</strong>' in html
+    assert f'<a class="tabla__enlace" href="{enlace}"><strong>9 de nov</strong></a>' in html
 
 
 def test_la_semana_mas_cargada_dice_que_no_se_juntan(sesion_duena, ejemplo):
@@ -198,9 +208,9 @@ def test_la_semana_mas_cargada_dice_que_no_se_juntan(sesion_duena, ejemplo):
 def test_otro_mes_por_la_direccion(sesion_duena, ejemplo):
     html = sesion_duena.get(url("2026-12")).text
 
-    assert '<span class="encabezado__apoyo">Diciembre de 2026</span>' in html
-    assert 'href="?mes=2026-11">Mes anterior</a>' in html
-    assert 'href="?mes=2027-01">Mes siguiente</a>' in html
+    assert '<h2 id="t-mes">Diciembre de 2026</h2>' in html
+    assert 'href="?mes=2026-11" aria-label="Mes anterior"' in html
+    assert 'href="?mes=2027-01" aria-label="Mes siguiente"' in html
     assert '<h2 id="t-entregas">Entregas de diciembre</h2>' in html
     assert [fila[1] for fila in filas_de_la_lista(html)] == [
         "Marcela P.", "Restaurante El Fogón Costeño"
@@ -212,8 +222,8 @@ def test_otro_mes_por_la_direccion(sesion_duena, ejemplo):
 def test_de_diciembre_a_enero_cambia_el_anio(sesion_duena):
     html = sesion_duena.get(url("2026-12")).text
 
-    assert 'href="?mes=2027-01">Mes siguiente</a>' in html
-    assert 'href="?mes=2026-11">Mes anterior</a>' in html
+    assert 'href="?mes=2027-01" aria-label="Mes siguiente"' in html
+    assert 'href="?mes=2026-11" aria-label="Mes anterior"' in html
 
 
 @pytest.mark.parametrize("mes", ["", "noviembre", "2026-13", "2026-00", "0001-01", "2026-1", "٢٠٢٦-١١"])
@@ -221,7 +231,7 @@ def test_un_mes_que_no_sirve_es_el_de_hoy(sesion_duena, mes):
     respuesta = sesion_duena.get(url(mes))
 
     assert respuesta.status_code == 200
-    assert '<span class="encabezado__apoyo">Noviembre de 2026</span>' in respuesta.text
+    assert '<h2 id="t-mes">Noviembre de 2026</h2>' in respuesta.text
 
 
 def test_un_cotizado_cuenta_como_entrega_por_confirmar(sesion_duena, taller):
@@ -229,7 +239,7 @@ def test_un_cotizado_cuenta_como_entrega_por_confirmar(sesion_duena, taller):
 
     html = sesion_duena.get(PAGINA).text
 
-    assert '<span class="etiqueta etiqueta--ambar etiqueta--bloque">Cliente cotizado</span>' in celda(html, 25)
+    assert 'etiqueta--ambar etiqueta--vacio" title="Cliente cotizado"' in celda(html, 25)
     assert filas_de_la_lista(html) == [("25 de nov", "Cliente cotizado", "Por confirmar")]
 
 
@@ -240,7 +250,7 @@ def test_una_entrega_lejana_dice_cuantos_dias_faltan(sesion_duena, taller):
 
     assert filas_de_la_lista(html) == [("30 de nov", "Cliente sin afán", "Faltan 19 días")]
     assert 'etiqueta--gris">Faltan 19 días</span>' in html
-    assert "etiqueta--ambar etiqueta--bloque\">Cliente sin afán" in celda(html, 30)
+    assert 'etiqueta--ambar etiqueta--vacio" title="Cliente sin afán"' in celda(html, 30)
 
 
 def test_dos_entregas_el_mismo_dia(sesion_duena, taller):
@@ -250,6 +260,7 @@ def test_dos_entregas_el_mismo_dia(sesion_duena, taller):
     dia = celda(sesion_duena.get(PAGINA).text, 20)
 
     assert dia.index(">Primera<") < dia.index(">Segunda<")
+    assert dia.count('class="etiqueta etiqueta--ambar etiqueta--vacio"') == 2
     assert 'aria-label="20 de nov, 2 entregas"' in dia
 
 
@@ -326,7 +337,7 @@ def test_con_htmx_responde_solo_la_lista_y_la_cuadricula(sesion_duena, ejemplo):
 
     assert respuesta.status_code == 200
     assert html.lstrip().startswith(
-        '<section class="tarjeta tarjeta--lista calendario-lista" id="calendario-entregas"'
+        '<section class="tarjeta calendario-lista" id="calendario-entregas"'
     )
     assert filas_de_la_lista(html) == [("14 de nov", "Grupo de danza Tambores del Río", "Faltan 3 días")]
     assert '<div class="calendario" id="calendario-dias" hx-swap-oob="true">' in html
@@ -349,7 +360,7 @@ def test_al_volver_atras_htmx_recibe_la_pagina_entera(sesion_duena, ejemplo):
         url("2026-11", "2026-11-09"), headers={**HTMX, "HX-History-Restore-Request": "true"}
     ).text
 
-    assert "<h1>Calendario</h1>" in html
+    assert re.search(r"<h1[^>]*>(?:<svg.*?</svg>)?Calendario</h1>", html, re.S)
     assert "Entregas del 9 de nov" in html
 
 
@@ -419,40 +430,50 @@ def test_el_tono_de_cada_entrega_en_su_dia(taller):
     cotizado_vencido = pedido_de(taller, estado=Estado.COTIZADO, fecha_entrega=HOY - timedelta(days=1))
     por_entregar = pedido_de(taller, estado=Estado.LISTO, fecha_entrega=HOY + timedelta(days=40))
 
-    assert vista.tono_en_el_dia(entregado, HOY) == "verde"
+    assert vista.tono_en_el_dia(entregado, HOY) == "gris"
     assert vista.tono_en_el_dia(atrasado, HOY) == "rojo"
     assert vista.tono_en_el_dia(cotizado_vencido, HOY) == "ambar"
     assert vista.tono_en_el_dia(por_entregar, HOY) == "ambar"
 
 
-# --- Pantalla fija y animaciones (ajuste "pantalla fija y animaciones") ----------------------
+# --- Lo que necesitan las animaciones y el foco --------------------------------------------------
 
 
-def test_en_computador_las_columnas_llenan_la_hoja(sesion_duena, ejemplo):
-    html = sesion_duena.get(PAGINA).text
-
-    # Las dos columnas toman el alto que queda (static/css/app.css, sección 6 y apartado
-    # "Calendario"); la lista de entregas es la que se encoge si no cabe.
-    assert '<div class="dos-columnas dos-columnas--calendario llenar">' in html
-    assert (
-        '<section class="tarjeta tarjeta--lista calendario-lista" id="calendario-entregas"'
-    ) in html
-
-
-def test_las_entregas_van_en_una_lista_que_se_desplaza_por_dentro(sesion_duena, ejemplo):
+def test_sin_entregas_la_cuenta_es_cero(sesion_duena):
     lista = tarjeta(sesion_duena.get(PAGINA).text, "t-entregas")
 
-    # El título queda afuera, quieto; las filas, dentro de la parte que se desplaza.
-    cabeza, filas = lista.split('<div class="desplazable">')
-    assert 'id="t-entregas"' in cabeza
-    assert filas.count('class="fila fila--compacta tabla__fila"') == 3
-
-
-def test_un_mes_sin_entregas_no_lleva_lista_que_se_desplace(sesion_duena):
-    lista = tarjeta(sesion_duena.get(PAGINA).text, "t-entregas")
-
-    assert "desplazable" not in lista
+    assert '<span class="tarjeta__aparte">0</span>' in lista
     assert "No hay entregas en este mes." in lista
+
+
+def test_la_lista_trae_las_filas_compactas_con_su_insignia(sesion_duena, ejemplo):
+    lista = tarjeta(sesion_duena.get(PAGINA).text, "t-entregas")
+
+    assert lista.count('class="fila fila--compacta tabla__fila"') == 3
+    assert '<span class="etiqueta etiqueta--gris etiqueta--lleno">Entregado</span>' in lista
+    assert '<span class="etiqueta etiqueta--rojo etiqueta--alerta">Atrasado 2 días</span>' in lista
+    assert '<span class="etiqueta etiqueta--ambar etiqueta--vacio">Faltan 3 días</span>' in lista
+
+
+def test_un_dia_elegido_no_muestra_la_cuenta_sino_ver_todo_el_mes(sesion_duena, ejemplo):
+    lista = tarjeta(sesion_duena.get(url("2026-11", "2026-11-09")).text, "t-entregas")
+
+    assert "tarjeta__aparte" not in lista
+    assert 'data-foco-despues="dia-2026-11-09"' in lista
+
+
+def test_la_costurera_ve_el_calendario_sin_nuevo_pedido(client, taller):
+    from cuentas.models import Usuario  # noqa: PLC0415
+
+    costurera = fabricas.crear_usuaria(taller, rol=Usuario.Rol.COSTURERA)
+    client.force_login(costurera)
+    pedido_de(taller, "Cliente propio", fecha_entrega=date(2026, 11, 20))
+
+    respuesta = client.get(PAGINA)
+
+    assert respuesta.status_code == 200
+    assert "Cliente propio" in respuesta.text
+    assert ">Nuevo pedido</" not in respuesta.text
 
 
 def test_cada_entrega_lleva_el_id_de_su_pedido(sesion_duena, ejemplo):
@@ -504,96 +525,3 @@ def test_el_calendario_no_manda_aviso(sesion_duena, ejemplo):
     respuesta = sesion_duena.get(url("2026-11", "2026-11-14"), headers=HTMX)
 
     assert "HX-Trigger" not in respuesta
-
-
-# Medidas de la pantalla en Chrome: la página, la hoja, las dos columnas, la cuadrícula del mes,
-# la lista de entregas y el día con más entregas de las que caben en su cuadro.
-MEDIR = """() => {
-  const caja = s => document.querySelector(s).getBoundingClientRect();
-  const hoja = document.querySelector('.hoja__contenido');
-  const lista = document.querySelector('#calendario-entregas .desplazable');
-  const dias = Array.from(document.querySelectorAll('#calendario-dias > .calendario__dia'));
-  const lleno = document.querySelector('#dia-2026-11-20 .calendario__entregas');
-  return {
-    pagina: document.scrollingElement.scrollHeight,
-    ventana: window.innerHeight,
-    contenido: hoja.scrollHeight,
-    cabe: hoja.clientHeight,
-    fondo_hoja: caja('.hoja__contenido').bottom,
-    fondo_mes: caja('.columna-ancha--calendario').bottom,
-    fondo_derecha: caja('.columna-angosta--calendario').bottom,
-    fondo_cuadricula: caja('#calendario-dias').bottom,
-    arriba_leyenda: caja('.calendario__leyenda').top,
-    fondo_leyenda: caja('.calendario__leyenda').bottom,
-    lista: [lista.clientHeight, lista.scrollHeight],
-    altos_de_los_dias: dias.map(d => d.getBoundingClientRect().height),
-    dia_lleno: [lleno.clientHeight, lleno.scrollHeight],
-    // Una parte que se desplaza dentro del botón del día sería una parada más del tabulador.
-    dia_lleno_se_desplaza: /auto|scroll/.test(getComputedStyle(lleno).overflowY),
-  };
-}"""
-
-
-def _abrir_chrome():
-    """Chrome sin ventana con Playwright (como tests/test_pantalla_fija.py), o salta."""
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        pytest.skip("Playwright no está instalado (uv sync con el grupo dev).")
-    manejador = sync_playwright().start()
-    try:
-        return manejador, manejador.chromium.launch(channel="chrome")
-    except Exception as error:  # noqa: BLE001 (sin Chrome no hay prueba)
-        manejador.stop()
-        pytest.skip(f"No se pudo abrir Chrome: {error}")
-
-
-@pytest.fixture
-def mes_lleno(taller, duena):
-    """Noviembre de 2026 (seis semanas) con 36 entregas, cinco el mismo día (el 20) con
-    nombres largos. Devuelve la sesión de la dueña, abierta antes de Chrome (Django no deja
-    usar la base mientras Playwright corre)."""
-    for numero in range(1, 6):
-        pedido_de(taller, f"Cliente con un nombre bastante largo {numero}",
-                  fecha_entrega=date(2026, 11, 20))
-    for numero in range(31):
-        pedido_de(taller, fecha_entrega=date(2026, 11, 1 + numero % 30))
-    cliente = Client()
-    cliente.force_login(duena)
-    return cliente.cookies["sessionid"].value
-
-
-def test_en_computador_un_mes_lleno_cabe_sin_desplazar_la_pagina(live_server, mes_lleno):
-    direccion = live_server.url + url("2026-11")
-    medidas = {}
-    manejador, navegador = _abrir_chrome()
-    try:
-        for ancho, alto in ((1366, 768), (1920, 1080)):
-            contexto = navegador.new_context(viewport={"width": ancho, "height": alto})
-            contexto.add_cookies([{"name": "sessionid", "value": mes_lleno, "url": direccion}])
-            pagina = contexto.new_page()
-            pagina.goto(direccion, wait_until="load")
-            pagina.evaluate("document.fonts.ready")
-            medidas[f"{ancho} x {alto}"] = pagina.evaluate(MEDIR)
-            contexto.close()
-    finally:
-        navegador.close()
-        manejador.stop()
-
-    for tamano, medida in medidas.items():
-        # Ni la página ni la hoja se desplazan: solo la lista de entregas, por dentro.
-        assert medida["pagina"] <= medida["ventana"], tamano
-        assert medida["contenido"] <= medida["cabe"] + 1, tamano
-        assert medida["lista"][1] > medida["lista"][0], tamano
-        # Las dos columnas terminan parejas y llegan hasta abajo (sin hueco).
-        assert abs(medida["fondo_mes"] - medida["fondo_derecha"]) <= 1, tamano
-        assert medida["fondo_hoja"] - medida["fondo_mes"] <= 6, tamano
-        # El mes se ve completo: sus seis semanas, del mismo alto, y la leyenda debajo.
-        altos = medida["altos_de_los_dias"]
-        assert len(altos) == 42 and max(altos) - min(altos) <= 1, tamano
-        assert medida["fondo_cuadricula"] <= medida["arriba_leyenda"] + 1, tamano
-        assert medida["fondo_leyenda"] <= medida["fondo_mes"], tamano
-        # Las cinco entregas del 20 no caben en su cuadro: se ven las primeras, sin estirar su
-        # semana (las cinco están en la lista y al tocar el día).
-        assert medida["dia_lleno"][1] > medida["dia_lleno"][0], tamano
-        assert medida["dia_lleno_se_desplaza"] is False, tamano

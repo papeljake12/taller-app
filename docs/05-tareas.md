@@ -77,6 +77,14 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
   Whitenoise, guía paso a paso para el VPS (NGINX y Gunicorn) y copia de seguridad diaria de
   la base de datos. La guía la ejecuta David; Claude Code no toca el servidor.
 
+## Ajustes de diseño después de la etapa 2
+
+- [x] **Pantalla fija y animaciones.** Rama `ajuste-pantalla-fija-y-animaciones`. Explicado en
+  `docs/bitacora/ajuste-pantalla-fija.md`.
+- [x] **Rediseño con el lenguaje del panel de Shopify.** Rama `rediseno-estilo-shopify`
+  (reemplaza la pantalla fija: ahora se desplaza la hoja). Explicado en
+  `docs/bitacora/rediseno.md`.
+
 ## Etapas siguientes (todavía sin partir en tareas)
 
 - **Etapa 3, ahorro de trabajo:** IA para crear pedidos desde un mensaje o dictado, avisos

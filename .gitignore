@@ -26,3 +26,6 @@ Thumbs.db
 
 # Copias de trabajo de los agentes de Claude Code
 .claude/worktrees/
+
+# Capturas y registros del navegador de Playwright (referencia local, no se sube)
+.playwright-mcp/

@@ -1,105 +1,100 @@
 /* ==========================================================================
    Hoja de estilos de la aplicación.
 
-   Reglas en docs/08-diseno.md; medidas copiadas de las páginas de diseno/.
-   Orden: 1. colores y fuente · 2. base · 3. marco, menú y hoja · 4. piezas ·
-   5. celular (menos de 768 px) · 6. pantalla fija (computador, desde 768 px) ·
-   7. animaciones · 8. ajustes de cada pantalla para la pantalla fija · 9. menos movimiento.
+   Rediseño con el lenguaje del panel de Shopify (aprobado por David el 2026-11-13). Las
+   reglas están en docs/08-diseno.md. Las secciones 1 a 6 son una copia de diseno/estilo.css
+   (la referencia): si cambia el diseño, se cambia allá y aquí.
 
-   Este archivo es compartido: después de la tanda 2 solo lo cambia el coordinador.
+   Orden: 1. colores, letra y medidas · 2. base · 3. marco, menú y hoja · 4. piezas ·
+   5. pantallas · 6. celular · 7. animaciones · 8. ajustes de cada pantalla ·
+   9. menos movimiento.
+
+   Este archivo es compartido: solo lo cambia el coordinador. Cada pantalla tiene su apartado
+   en la sección 8 para lo poco que no esté en las piezas.
    ========================================================================== */
 
 
-/* 1. Colores y fuente ------------------------------------------------------ */
+/* La letra: Inter variable (pesos de 400 a 700 en un solo archivo), guardada en el proyecto */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fuentes/inter-latin-wght-normal.woff2") format("woff2");
+}
+
+/* 1. Colores, letra y medidas ---------------------------------------------- */
 
 :root {
-  /* Colores de docs/08-diseno.md */
+  /* El marco negro y el menú */
+  --marco: #0A0A0A;
+  --brillo: radial-gradient(closest-side, rgba(37, 99, 201, 0.7), rgba(37, 99, 201, 0));
+  --menu-texto: #DCDCDC;
+  --menu-icono: #B5B5B5;
+  --menu-apagado: #A6A6A6;
+  --menu-encima: #1F1F1F;
+  --menu-actual: #2B2B2B;
+  --menu-campo: #262626;
+  --menu-campo-borde: #333333;
+
+  /* La hoja blanca y sus textos */
+  --hoja: #FFFFFF;
   --negro: #1A1A1A;
-  --texto-2: #555555;
+  --texto-2: #616161;
   --texto-3: #8A8A8A;
-  --hoja: #F1F1F1;
-  --tarjeta: #FFFFFF;
-  --suave: #F7F7F7;
-  --linea: #E1E1E1;
-  --borde-control: #C9C9C9;
+  --linea: #EBEBEB;
+  --borde: #E3E3E3;
+  --borde-abajo: #D4D4D4;
   --borde-campo: #8A8A8A;
+  --borde-punteado: #C9C9C9;
+  --suave: #F7F7F7;
+  --gris: #F1F1F1;
   --riel: #EDEDED;
+  --enlace: #005BD3;
+
+  /* Los colores que dicen algo */
   --azul: #2563C9;
-  --gris-grafica: #A6A6A6;
-  --rojo: #B3261E;
-  --verde: #1B6E3C;
+  --azul-oscuro: #1D4FA3;
+  --azul-claro: #DCE7F8;
+  --rojo: #C5280C;
+  --gris-grafica: #B5B5B5;
+  --ambar: #E5C700;         /* solo para las barritas del calendario en celular */
 
-  /* Etiquetas: fondo y texto de cada tono */
-  --rojo-fondo: #FBE9E7;
-  --rojo-texto: #8C1D18;
-  --verde-fondo: #E2F1E7;
-  --verde-texto: #14532D;
-  --ambar-fondo: #FFF0C2;
-  --ambar-texto: #5C4500;
-  --azul-fondo: #E3EEFC;
-  --azul-texto: #0B4A8F;
-  --gris-fondo: #F1F1F1;
-  --gris-texto: #1A1A1A;
+  /* Insignias: fondo y texto de cada tono */
+  --gris-fondo: #EBEBEB;
+  --gris-texto: #303030;
+  --azul-fondo: #E0F0FF;
+  --azul-texto: #00527C;
+  --verde-fondo: #CDFEE1;
+  --verde-texto: #0C5132;
+  --ambar-fondo: #FFEF9D;
+  --ambar-texto: #4F4700;
+  --naranja-fondo: #FFD6A4;
+  --naranja-texto: #5E4200;
+  --rojo-fondo: #FEDAD9;
+  --rojo-texto: #8E0B21;
 
-  /* Tomados de las páginas de diseno/ */
-  --menu-actual: rgba(255, 255, 255, 0.18);  /* sección actual del menú */
-  --menu-campo: rgba(255, 255, 255, 0.14);   /* buscador del menú */
-  --apoyo-oscuro: #D4D4D4;                   /* texto de apoyo sobre negro */
-  --marco: linear-gradient(180deg, #000000 0%, #000000 70%, #2563C9 100%);
-  --franja: linear-gradient(90deg, #000000 0%, #000000 55%, #2563C9 100%);
+  /* El circulito de cada insignia: vacío, a medias, lleno o con alerta */
+  --circulo-vacio: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4.4' fill='none' stroke='%23000' stroke-width='1.4' stroke-dasharray='2.2 1.6'/%3E%3C/svg%3E");
+  --circulo-medio: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4.4' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3Cpath d='M6 2.6a3.4 3.4 0 0 1 0 6.8z'/%3E%3C/svg%3E");
+  --circulo-lleno: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='5'/%3E%3C/svg%3E");
+  --circulo-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cmask id='m'%3E%3Crect width='12' height='12' fill='%23fff'/%3E%3Cpath d='M6 3.4v3.2' stroke='%23000' stroke-width='1.4' stroke-linecap='round'/%3E%3Ccircle cx='6' cy='8.5' r='.8'/%3E%3C/mask%3E%3Ccircle cx='6' cy='6' r='5' mask='url(%23m)'/%3E%3C/svg%3E");
+  --flecha-lista: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 
-  /* Alto de la barra de abajo en celular (6 + 48 + 8 de relleno, 1 de borde) */
-  --alto-barra: 63px;
+  /* Sombras suaves (no bordes): tarjetas, botones y lo que flota */
+  --sombra-tarjeta: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(0, 0, 0, 0.05), 0 2px 5px -3px rgba(0, 0, 0, 0.08);
+  --sombra-flotante: 0 0 0 1px #E3E3E3, 0 4px 18px -8px rgba(0, 0, 0, 0.14);
+  --sombra-menu: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 20px -6px rgba(0, 0, 0, 0.2);
+  --sombra-ventana: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 24px 48px -12px rgba(0, 0, 0, 0.35);
+  --sombra-boton: inset 0 0 0 1px #E3E3E3, inset 0 -1px 0 #D4D4D4, 0 1px 1px rgba(0, 0, 0, 0.04);
+  --sombra-principal: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 #000000, 0 1px 2px rgba(0, 0, 0, 0.25);
+  --principal: linear-gradient(180deg, #3A3A3A, #1A1A1A);
+  --principal-encima: linear-gradient(180deg, #4A4A4A, #262626);
 
-  /* Movimiento (docs/08-diseno.md, "Animaciones"). Todas las animaciones y transiciones de la
-     aplicación usan estas duraciones y curvas: se ajustan aquí, en un solo lugar. Si la
-     persona pidió menos movimiento en su equipo, valen 0 (sección 9). static/js/app.js
-     también las lee de aquí. */
-  --duracion-corta: 150ms;   /* pasar el mouse, presionar, lo que sale */
-  --duracion: 200ms;         /* lo que entra, ventanas, panel "Más", menú, cambio de sección */
-  --duracion-larga: 250ms;   /* barras de progreso y gráficas que crecen hasta su valor */
-  --curva: cubic-bezier(0.2, 0, 0, 1);         /* arranca rápido y frena suave */
-  --curva-salida: cubic-bezier(0.4, 0, 1, 1);  /* arranca suave y se va */
-
-  /* Tiempos que no son animaciones */
-  --espera-cargando: 300ms;  /* si una acción tarda más, el botón muestra "cargando" */
-  --vuelta-cargando: 700ms;  /* una vuelta del indicador "cargando" */
-  --tiempo-aviso: 2800ms;    /* cuánto se queda a la vista el aviso "Abono registrado." */
-
-  /* Pantalla fija (sección 6): una lista que se desplaza por dentro nunca mide menos */
-  --alto-minimo-lista: 140px;
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../fuentes/inter-latin-400-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("../fuentes/inter-latin-500-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("../fuentes/inter-latin-600-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("../fuentes/inter-latin-700-normal.woff2") format("woff2");
+  /* Letra y medidas */
+  --letra: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ancho-pagina: 1200px;   /* el contenido de la hoja no pasa de aquí en pantallas grandes */
+  --alto-barra: 66px;       /* la barra de abajo del celular, sin el borde seguro del equipo */
 }
 
 
@@ -112,43 +107,59 @@
 }
 
 html {
-  background: #000000;
+  background: var(--marco);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  font-family: "Inter", system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 1.45;
+  font-family: var(--letra);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 450;
   color: var(--negro);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--negro);
+  color: var(--enlace);
+  text-decoration: none;
 }
 
 a:hover {
-  color: #000000;
+  text-decoration: underline;
 }
 
 h1,
 h2,
 h3,
 p,
-figure {
+figure,
+ul,
+ol {
   margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
 }
 
 h1 {
   font-size: 20px;
-  font-weight: 700;
+  line-height: 28px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
-h2 {
-  font-size: 15px;
-  font-weight: 700;
+h2,
+h3 {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 650;
 }
 
 img {
@@ -164,8 +175,8 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--azul);
-  outline-offset: 2px;
+  outline: 2px solid var(--enlace);
+  outline-offset: 1px;
 }
 
 [hidden] {
@@ -190,38 +201,59 @@ textarea {
 }
 
 .texto-2 { color: var(--texto-2); }
-.texto-rojo { color: var(--rojo); }
-.texto-verde { color: var(--verde); }
-.nota { font-size: 13px; color: var(--texto-2); }
+.texto-3 { color: var(--texto-3); }
+.texto-rojo { color: var(--rojo-texto); }
+.texto-verde { color: var(--verde-texto); }
+.nota { font-size: 12px; line-height: 18px; color: var(--texto-2); }
 .dinero { white-space: nowrap; }
+.fuerte { font-weight: 650; }
 .tachado { text-decoration: line-through; color: var(--texto-2); }
+.enlace { color: var(--enlace); font-weight: 550; }
+.texto-celular { display: none; }
+
+/* Lo que solo se ve en celular (o solo en computador) */
+@media (min-width: 768px) {
+  .solo-celular { display: none !important; }
+}
 
 
 /* 3. Marco, menú y hoja ---------------------------------------------------- */
 
-/* El marco negro que termina en azul. Ocupa toda la pantalla. */
+/* El marco negro ocupa la ventana. El menú va a la izquierda y la hoja blanca a la derecha.
+   La página no se mueve: lo que se desplaza es el contenido de la hoja, debajo de su
+   encabezado (como en Shopify). Abajo a la izquierda asoma un brillo azul. */
 .marco {
+  position: relative;
   display: flex;
-  min-height: 100vh;
-  padding: 8px 8px 8px 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--marco);
 }
 
-/* Menú lateral, sobre el marco */
+.marco::before {
+  content: "";
+  position: absolute;
+  left: -140px;
+  bottom: -150px;
+  width: 560px;
+  height: 280px;
+  background: var(--brillo);
+  pointer-events: none;
+}
+
+/* Menú lateral */
 .menu {
-  flex: 1 1 220px;
-  min-width: 220px;
-  max-width: 236px;
-  position: sticky;
-  top: 8px;
-  align-self: flex-start;
-  height: calc(100vh - 16px);
-  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+  flex: none;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 8px 12px;
-  color: #FFFFFF;
+  width: 220px;
+  padding: 12px 10px 10px 12px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  color: var(--menu-texto);
 }
 
 .menu :focus-visible {
@@ -231,102 +263,110 @@ textarea {
 .menu__marca {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 4px 4px 4px 8px;
-  font-size: 16px;
-  font-weight: 700;
+  justify-content: space-between;
+  height: 32px;
+  margin-bottom: 8px;
+  padding: 0 2px 0 4px;
 }
 
-/* El nombre del taller se parte en dos líneas antes que cortarse ("Taller de ejemplo").
-   Si es más largo todavía, se corta en la segunda línea; el nombre completo va en title. */
-.menu__taller {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  min-width: 0;
+/* El logo: las tijeras en un cuadrito blanco (o el logo del taller, si lo subió) */
+.menu__logo {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  line-height: 1.1;  /* dos líneas caben en los 36 px del botón de al lado: el menú no baja */
+  border-radius: 7px;
+  background: #FFFFFF;
+  color: var(--marco);
+}
+
+.menu__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .menu__contraer,
 .menu__abrir,
-.menu__lupa {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.menu__lupa,
+.menu__salir {
+  display: grid;
+  place-items: center;
+  padding: 0;
   border: 0;
-  color: #FFFFFF;
+  background: transparent;
+  color: var(--menu-apagado);
   cursor: pointer;
 }
 
-.menu__contraer {
-  flex: 0 0 36px;
-  width: 36px;
-  height: 36px;
-  margin-left: auto;
+.menu__contraer,
+.menu__salir {
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
-  background: transparent;
 }
 
-.menu__contraer:hover {
-  background: var(--menu-campo);
+.menu__contraer:hover,
+.menu__salir:hover {
+  background: var(--menu-actual);
+  color: #FFFFFF;
 }
 
-.menu__abrir {
-  display: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: transparent;
-}
-
+.menu__abrir,
 .menu__lupa {
   display: none;
-  width: 44px;
-  height: 36px;
-  border-radius: 8px;
-  background: var(--menu-campo);
 }
 
 .menu__buscar {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 36px;
-  padding: 0 10px;
-  border-radius: 8px;
+  height: 28px;
+  margin-bottom: 12px;
+  padding: 0 8px;
+  border-radius: 10px;
   background: var(--menu-campo);
-  color: #FFFFFF;
+  box-shadow: inset 0 0 0 1px var(--menu-campo-borde);
+  color: var(--menu-apagado);
+}
+
+.menu__buscar:focus-within {
+  box-shadow: inset 0 0 0 1px #6B6B6B;
 }
 
 .menu__buscar input {
   flex: 1;
   min-width: 0;
+  padding: 0;
   border: 0;
+  outline: 0;
   background: transparent;
   color: #FFFFFF;
 }
 
 .menu__buscar input::placeholder {
-  color: #FFFFFF;
-  opacity: 0.85;
+  color: var(--menu-apagado);
+  opacity: 1;
 }
 
-.menu__buscar input:disabled {
-  cursor: not-allowed;
+.menu__atajo {
+  flex: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--menu-apagado);
 }
 
 .menu__lista,
 .menu__pie {
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
 .menu__pie {
+  gap: 2px;
   margin-top: auto;
+  padding-top: 12px;
 }
 
 .menu__pie form {
@@ -336,27 +376,31 @@ textarea {
 .menu__enlace {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  min-height: 36px;
-  padding: 0 10px;
+  height: 30px;
+  padding: 0 8px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
-  color: #FFFFFF;
-  font: inherit;
+  color: var(--menu-texto);
   font-weight: 500;
   text-align: left;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.menu__enlace:hover {
-  color: #FFFFFF;
-  background: var(--menu-campo);
+.menu__enlace .icono {
+  color: var(--menu-icono);
 }
 
-/* Secciones que todavía no existen: se ven, pero no llevan a ninguna parte */
+.menu__enlace:hover {
+  background: var(--menu-encima);
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
 .menu__enlace[aria-disabled="true"] {
   cursor: default;
 }
@@ -367,36 +411,118 @@ textarea {
 
 .menu__enlace.es-actual {
   background: var(--menu-actual);
-  font-weight: 600;
+  color: #FFFFFF;
+  font-weight: 650;
+}
+
+.menu__enlace.es-actual .icono {
+  color: #FFFFFF;
+}
+
+.menu__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu__contador {
   margin-left: auto;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: #FFFFFF;
-  color: var(--negro);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
+  color: var(--menu-apagado);
 }
 
-/* Menú contraído: una tira de 60 px con íconos */
-.marco--contraido .menu {
-  flex: 0 0 60px;
-  min-width: 60px;
-  max-width: 60px;
+/* Las subsecciones (Pedidos: Atrasados y Con saldo) se ven solo dentro de su sección */
+.menu__enlace--sub {
+  height: 28px;
+  padding-left: 34px;
+  color: var(--menu-apagado);
+}
+
+.menu__enlace--sub.es-actual {
+  background: transparent;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Abajo: el taller con su logo (o sus iniciales) y el botón para salir */
+.menu__taller {
+  display: flex;
   align-items: center;
-  padding: 8px 0;
+  gap: 8px;
+  height: 32px;
+  padding: 0 0 0 6px;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.menu__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--azul);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.menu__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.menu__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu__salir {
+  margin-left: auto;
+}
+
+/* Menú contraído: una tira de 60 px con íconos. Cada ícono dice su nombre al pasar el mouse. */
+.marco--contraido .menu {
+  width: 60px;
+  align-items: center;
+  padding: 12px 8px 10px;
 }
 
 .marco--contraido .menu__marca,
-.marco--contraido .menu__buscar {
+.marco--contraido .menu__buscar,
+.marco--contraido .menu__enlace--sub,
+.marco--contraido .menu__nombre {
   display: none;
 }
 
-.marco--contraido .menu__abrir,
+.marco--contraido .menu__abrir {
+  display: grid;
+  width: 44px;
+  height: 32px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.marco--contraido .menu__abrir:hover {
+  background: var(--menu-actual);
+}
+
 .marco--contraido .menu__lupa {
-  display: flex;
+  display: grid;
+  width: 44px;
+  height: 28px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: var(--menu-campo);
+  box-shadow: inset 0 0 0 1px var(--menu-campo-borde);
 }
 
 .marco--contraido .menu__lista,
@@ -408,10 +534,8 @@ textarea {
   position: relative;
   justify-content: center;
   width: 44px;
-  height: 40px;
-  min-height: 40px;
+  height: 32px;
   padding: 0;
-  gap: 0;
 }
 
 .marco--contraido .menu__texto {
@@ -426,65 +550,147 @@ textarea {
 .marco--contraido .menu__contador {
   position: absolute;
   top: 2px;
-  right: 0;
-  min-width: 16px;
+  right: 4px;
+  min-width: 14px;
+  height: 14px;
   margin: 0;
-  padding: 0 4px;
-  font-size: 11px;
-  line-height: 16px;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: #FFFFFF;
+  color: var(--marco);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
   text-align: center;
 }
 
-/* La hoja gris de contenido, encima del marco */
+.marco--contraido .menu__taller {
+  flex-direction: column;
+  gap: 6px;
+  height: auto;
+  padding: 0;
+}
+
+.marco--contraido .menu__salir {
+  margin: 0;
+}
+
+/* La hoja blanca, encima del marco */
 .hoja {
-  flex: 5 1 600px;
+  position: relative;
+  z-index: 1;
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 24px 28px;
-  border-radius: 14px;
+  margin: 4px 4px 4px 0;
+  overflow: hidden;
+  border-radius: 16px;
   background: var(--hoja);
 }
 
-.hoja__contenido {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
+/* Pantallas de lista ancha (Pedidos): el contenido usa todo el ancho */
+.hoja--completa {
+  --ancho-pagina: 100%;
 }
 
-/* Encabezado de la hoja: título y dato de apoyo a la izquierda, botones a la derecha */
+/* Encabezado de la hoja: 52 px, quieto arriba. A la izquierda, el nombre de la sección con su
+   ícono (o la miga para volver); a la derecha, los botones, el principal de último. */
 .encabezado {
+  flex: none;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px 20px;
-  /* El alto de un botón: sin botones (la costurera) el contenido empieza en el mismo lugar */
-  min-height: 36px;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 max(12px, calc((100% - var(--ancho-pagina)) / 2)) 0 max(16px, calc((100% - var(--ancho-pagina)) / 2));
+}
+
+.encabezado__logo,
+.encabezado__volver {
+  display: none;
 }
 
 .encabezado__titulo {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
+}
+
+.encabezado h1,
+.encabezado__nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 550;
+  letter-spacing: 0;
 }
 
 .encabezado__apoyo {
   color: var(--texto-2);
+  white-space: nowrap;
 }
 
 .encabezado__acciones {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
+  margin-left: auto;
 }
 
 .encabezado__acciones:empty {
   display: none;
+}
+
+/* Miga para volver (Pedido por dentro): flecha redonda y la sección */
+.miga {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--negro);
+  font-weight: 550;
+}
+
+.miga:hover {
+  text-decoration: none;
+}
+
+.miga__volver {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px #E3E3E3, inset 0 -1px 0 #D4D4D4;
+}
+
+.miga:hover .miga__volver {
+  background: var(--suave);
+}
+
+/* El contenido: se desplaza por dentro, con 16 px entre bloques */
+.hoja__contenido {
+  position: relative;  /* lo que va oculto para lectores de pantalla se queda adentro */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 16px 24px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.hoja__contenido > * {
+  flex: none;
+  width: 100%;
+  max-width: var(--ancho-pagina);
+  margin-inline: auto;
 }
 
 /* La barra de abajo y el panel "Más" solo existen en celular */
@@ -493,128 +699,15 @@ textarea {
   display: none;
 }
 
-/* Página de entrada: una tarjeta centrada sobre el marco */
-.marco-acceso {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 24px 16px;
-  background: var(--marco);
-}
-
-.acceso {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  max-width: 380px;
-}
-
-.acceso__marca {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-left: 8px;
-  color: #FFFFFF;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.acceso__tarjeta {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.acceso__tarjeta .boton {
-  width: 100%;
-}
-
 
 /* 4. Piezas ---------------------------------------------------------------- */
 
-/* Tarjeta: fondo blanco, borde de 1 px, esquinas de 12 px */
-.tarjeta {
-  min-width: 0;
-  padding: 14px 16px;
-  border: 1px solid var(--linea);
-  border-radius: 12px;
-  background: var(--tarjeta);
-}
-
-/* Tarjeta con cabeza y filas que llegan hasta el borde */
-.tarjeta--lista {
-  padding: 0;
-  overflow: hidden;
-}
-
-.tarjeta--con-buscador {
-  padding-top: 14px;
-}
-
-.tarjeta__cabeza {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-}
-
-.tarjeta__aparte {
-  color: var(--texto-2);
-}
-
-.tarjeta__cuerpo {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 16px 16px;
-}
-
-.tarjeta__nota {
-  padding: 10px 16px;
-  font-size: 13px;
-  color: var(--texto-2);
-}
-
-/* Justo debajo de la cabeza, la nota no suma su relleno al de la cabeza (Mi taller) */
-.tarjeta__cabeza + .tarjeta__nota {
-  padding-top: 0;
-}
-
-/* Tarjeta negra para avisos importantes (aviso de dotación) */
-.tarjeta-oscura {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px 24px;
-  padding: 16px;
-  border-radius: 12px;
-  background: var(--negro);
-  color: #FFFFFF;
-}
-
-.tarjeta-oscura__titulo {
-  font-size: 16px;
-  font-weight: 700;
-  text-wrap: balance;  /* sin una palabra sola en la segunda línea */
-}
-
-.tarjeta-oscura__apoyo {
-  color: var(--apoyo-oscuro);
-}
-
-.tarjeta-oscura :focus-visible {
-  outline-color: #FFFFFF;
-}
-
-/* Botones: principal negro (uno por zona) y secundario blanco */
+/* Botones: 28 px de alto, esquinas de 10 px. El principal es negro con un degradado suave
+   (uno por zona); el secundario es blanco con su sombra; el plano no tiene fondo. */
 .botones {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
@@ -622,186 +715,868 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--borde-control);
-  border-radius: 8px;
-  background: var(--tarjeta);
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-boton);
   color: var(--negro);
-  font: inherit;
+  font-size: 12.5px;
   font-weight: 600;
+  line-height: 20px;
   text-align: center;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .boton:hover {
   background: var(--suave);
   color: var(--negro);
+  text-decoration: none;
 }
 
 .boton--principal {
-  border-color: var(--negro);
-  background: var(--negro);
+  background: var(--principal);
+  box-shadow: var(--sombra-principal);
   color: #FFFFFF;
 }
 
 .boton--principal:hover {
-  border-color: #000000;
-  background: #000000;
+  background: var(--principal-encima);
   color: #FFFFFF;
 }
 
-/* Botón blanco sobre fondo negro */
-.boton--claro,
-.boton--claro:hover {
-  border-color: #FFFFFF;
-  background: #FFFFFF;
-  color: #000000;
+.boton--plano {
+  padding: 0 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--texto-2);
+}
+
+.boton--plano:hover {
+  background: var(--gris);
+}
+
+/* Solo ícono: un cuadrado de 28 px. Lleva aria-label. */
+.boton--icono {
+  width: 28px;
+  padding: 0;
+}
+
+/* Flechas grises (pedido anterior y siguiente, páginas de una lista) */
+.boton--flecha {
+  width: 28px;
+  padding: 0;
+  background: var(--gris);
+  box-shadow: none;
+  color: var(--texto-2);
+}
+
+.boton--flecha:hover {
+  background: var(--gris-fondo);
+}
+
+/* El ícono del botón redondo del celular (Nuevo pedido): en computador no se ve */
+.boton__icono-celular {
+  display: none;
 }
 
 .boton:disabled,
 .boton[aria-disabled="true"] {
-  opacity: 0.55;
+  background: var(--gris);
+  box-shadow: none;
+  color: var(--texto-3);
   cursor: not-allowed;
 }
 
-/* Filtro: botón con su conteo; el elegido va en negro */
-.filtros {
+.boton--ancho {
+  width: 100%;
+}
+
+/* Botones pegados (buscar y filtrar en una lista) */
+.grupo-botones {
+  display: inline-flex;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px #E3E3E3, inset 0 -1px 0 #D4D4D4;
+}
+
+.grupo-botones > .boton {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.grupo-botones > .boton:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.grupo-botones > .boton:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.grupo-botones > .boton + .boton {
+  border-left: 1px solid var(--borde);
+}
+
+/* Chip: un atajo gris y bajo ("Nuevo pedido", "Noviembre") */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--gris);
+  color: var(--negro);
+  font-size: 12.5px;
+  font-weight: 550;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+a.chip:hover,
+button.chip:hover {
+  background: var(--gris-fondo);
+  text-decoration: none;
+}
+
+/* Tarjeta: blanca, esquinas de 12 px y una sombra suave en vez de borde. No tiene relleno:
+   lo ponen su cabeza, su cuerpo y su pie. */
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 12px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.tarjeta--recortada {
+  overflow: hidden;
+}
+
+.tarjeta__cabeza {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 12px 16px 4px;
+}
+
+.tarjeta__aparte {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--texto-2);
+}
+
+.tarjeta__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 16px 16px;
+}
+
+.tarjeta__pie {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.tarjeta__nota {
+  padding: 4px 16px 16px;
+  color: var(--texto-2);
+}
+
+/* Insignia: 20 px de alto, esquinas de 8 px, seis tonos. Casi siempre lleva su circulito, que
+   dice cómo va: vacío (no ha empezado), a medias, lleno (completo) o alerta (atrasado). */
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--gris-fondo);
+  color: var(--gris-texto);
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.etiqueta__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.etiqueta--gris { background: var(--gris-fondo); color: var(--gris-texto); }
+.etiqueta--azul { background: var(--azul-fondo); color: var(--azul-texto); }
+.etiqueta--verde { background: var(--verde-fondo); color: var(--verde-texto); }
+.etiqueta--ambar { background: var(--ambar-fondo); color: var(--ambar-texto); }
+.etiqueta--naranja { background: var(--naranja-fondo); color: var(--naranja-texto); }
+.etiqueta--rojo { background: var(--rojo-fondo); color: var(--rojo-texto); }
+
+.etiqueta--vacio,
+.etiqueta--medio,
+.etiqueta--lleno,
+.etiqueta--alerta {
+  padding-left: 6px;
+}
+
+.etiqueta--vacio::before,
+.etiqueta--medio::before,
+.etiqueta--lleno::before,
+.etiqueta--alerta::before {
+  content: "";
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: var(--circulo) center / contain no-repeat;
+  mask: var(--circulo) center / contain no-repeat;
+}
+
+.etiqueta--vacio { --circulo: var(--circulo-vacio); }
+.etiqueta--medio { --circulo: var(--circulo-medio); }
+.etiqueta--lleno { --circulo: var(--circulo-lleno); }
+.etiqueta--alerta { --circulo: var(--circulo-alerta); }
+
+/* Miniatura: la foto del pedido (o un ícono de prenda) en un cuadrito gris */
+.mini {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--gris);
+  color: var(--texto-3);
+}
+
+.mini::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.mini img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini--grande {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+/* Iniciales en un círculo (costureras) */
+.iniciales {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gris);
+  color: var(--negro);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+/* Campos: etiqueta arriba, control de 32 px con borde gris de 1 px y esquinas de 8 px */
+.campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.campos > .campo {
+  flex: 1 1 180px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.campo__control {
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 12px;
+  border: 1px solid var(--borde-campo);
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--negro);
+  line-height: 20px;
+}
+
+.campo__control:hover {
+  border-color: var(--texto-2);
+}
+
+/* Al llegar a un campo con un enlace (#registrar-abono) queda aire arriba */
+.campo__control {
+  scroll-margin-top: 48px;
+}
+
+.campo__control::placeholder {
+  color: var(--texto-3);
+  opacity: 1;
+}
+
+select.campo__control {
+  padding-right: 32px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #FFFFFF var(--flecha-lista) no-repeat right 10px center / 16px;
+}
+
+textarea.campo__control {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.campo__control:disabled {
+  border-color: var(--borde);
+  background-color: var(--suave);
+  color: var(--texto-2);
+  cursor: not-allowed;
+}
+
+.campo__ayuda {
+  color: var(--texto-2);
+}
+
+.campo__error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--rojo-texto);
+}
+
+.campo__error::before {
+  content: "";
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: var(--circulo-alerta) center / contain no-repeat;
+  mask: var(--circulo-alerta) center / contain no-repeat;
+}
+
+.campo--error .campo__control {
+  border-color: var(--rojo);
+  background-color: #FFF8F7;
+}
+
+/* Elegir un archivo: el botón del archivo se ve como un botón secundario */
+input[type="file"].campo__control {
+  padding: 4px;
+}
+
+input[type="file"].campo__control::file-selector-button {
+  min-height: 24px;
+  margin-right: 10px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-boton);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Aviso de un formulario ("faltan datos", "usuario o contraseña"): en ámbar */
+.aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--ambar-fondo);
+  color: var(--ambar-texto);
+}
+
+/* Aviso grande dentro de la hoja (la dotación de Clientes): tarjeta azul clara */
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--azul-fondo);
+  color: var(--negro);
+}
+
+.banner > .icono {
+  color: var(--azul-texto);
+}
+
+.banner__texto {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.banner__titulo {
+  font-weight: 650;
+}
+
+/* Buscador: campo con lupa */
+.buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--borde-campo);
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--texto-2);
+}
+
+.buscador:focus-within {
+  outline: 2px solid var(--enlace);
+  outline-offset: 1px;
+}
+
+.buscador input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--negro);
+}
+
+.buscador input::placeholder {
+  color: var(--texto-3);
+  opacity: 1;
+}
+
+/* Pestañas de una lista (Todos, En producción...): dentro de la tarjeta, arriba de la tabla */
+.filtros {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.filtros__pestanas {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .filtro {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--borde-control);
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
   border-radius: 8px;
-  background: var(--tarjeta);
-  color: var(--negro);
-  font: inherit;
-  font-weight: 600;
+  background: transparent;
+  color: var(--texto-2);
+  font-weight: 550;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .filtro:hover {
-  background: var(--suave);
+  background: var(--gris);
   color: var(--negro);
+  text-decoration: none;
 }
 
 .filtro.es-elegido,
 .filtro[aria-pressed="true"] {
-  border-color: var(--negro);
-  background: var(--negro);
-  color: #FFFFFF;
+  background: var(--gris-fondo);
+  color: var(--negro);
+  font-weight: 650;
 }
 
-/* Etiqueta: píldora de 12 px con uno de los cinco tonos */
-.etiqueta {
-  display: inline-block;
-  padding: 2px 9px;
-  border-radius: 999px;
+.filtro__conteo {
+  color: var(--texto-2);
+  font-weight: 450;
+}
+
+.filtros__herramientas {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+/* Tabla compacta: encabezado gris claro, filas de una línea con su línea abajo */
+/* position: relative deja dentro de la caja lo que va oculto para lectores de pantalla */
+.tabla-contenedor {
+  position: relative;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla th {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linea);
+  background: var(--suave);
+  color: var(--texto-2);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 550;
+  text-align: left;
   white-space: nowrap;
 }
 
-.etiqueta--rojo { background: var(--rojo-fondo); color: var(--rojo-texto); }
-.etiqueta--verde { background: var(--verde-fondo); color: var(--verde-texto); }
-.etiqueta--ambar { background: var(--ambar-fondo); color: var(--ambar-texto); }
-.etiqueta--azul { background: var(--azul-fondo); color: var(--azul-texto); }
-.etiqueta--gris { background: var(--gris-fondo); color: var(--gris-texto); }
-
-/* Etiqueta que puede partirse en dos líneas (dentro de los días del calendario) */
-.etiqueta--bloque {
-  white-space: normal;
-  border-radius: 6px;
+.tabla td {
+  height: 44px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linea);
+  vertical-align: middle;
 }
 
-/* Cifra: nombre, número grande y una línea de apoyo */
+.tabla tr > :first-child {
+  padding-left: 16px;
+}
+
+.tabla tr > :last-child {
+  padding-right: 16px;
+}
+
+.tabla tbody tr:last-child > td {
+  border-bottom: 0;
+}
+
+.tabla .num {
+  text-align: right;
+}
+
+/* Fila que abre algo: el enlace de la primera celda cubre la fila entera */
+.tabla__fila {
+  position: relative;
+}
+
+.tabla__fila:hover > td {
+  background: var(--suave);
+}
+
+.tabla__enlace {
+  color: var(--negro);
+  font-weight: 650;
+}
+
+.tabla__enlace::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.tabla__enlace:hover {
+  text-decoration: none;
+}
+
+.tabla__enlace:focus-visible {
+  outline: 0;
+}
+
+.tabla__fila:has(.tabla__enlace:focus-visible) {
+  outline: 2px solid var(--enlace);
+  outline-offset: -2px;
+}
+
+.tabla__acciones {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Pie de una lista: cuántos se ven y las flechas */
+.paginas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-top: 1px solid var(--linea);
+  color: var(--texto-2);
+}
+
+/* Cifras: una tarjeta partida en casillas con una línea entre ellas. El nombre lleva un
+   subrayado punteado: al pasar el mouse, dice de dónde sale el número. */
 .cifras {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--linea);
+  box-shadow: var(--sombra-tarjeta);
 }
 
 .cifra {
-  display: block;
-  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 12px 16px 14px;
+  background: #FFFFFF;
+  color: var(--negro);
   text-decoration: none;
 }
 
 a.cifra:hover {
-  border-color: var(--borde-control);
-  color: inherit;
+  background: var(--suave);
+  text-decoration: none;
 }
 
 .cifra__nombre {
-  font-weight: 600;
+  align-self: flex-start;
   color: var(--texto-2);
 }
 
+/* Con su explicación (title), el nombre lleva un subrayado punteado */
+.cifra[title] .cifra__nombre {
+  text-decoration: underline dotted #B5B5B5;
+  text-underline-offset: 4px;
+}
+
 .cifra__valor {
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
   white-space: nowrap;
 }
 
 .cifra__apoyo {
+  font-size: 12px;
+  line-height: 18px;
   color: var(--texto-2);
 }
 
-.cifra--alerta {
-  border-color: var(--rojo);
-}
-
-.cifra--alerta .cifra__nombre,
 .cifra--alerta .cifra__valor {
-  color: var(--rojo);
+  color: var(--rojo-texto);
 }
 
-.cifra--buena .cifra__nombre,
-.cifra--buena .cifra__valor {
-  color: var(--verde);
+/* Barra de cifras de una lista (Pedidos, Telas): más baja, con un chip al comienzo */
+.cifras--barra {
+  display: flex;
 }
 
-/* Cifra grande dentro de una tarjeta, con su apoyo al lado */
-.cifra-grande {
-  font-size: 24px;
-  font-weight: 700;
+.cifras--barra .cifra {
+  flex: 1 1 0;
+  padding: 10px 16px;
 }
 
-.cifra-grande__apoyo {
-  font-size: 14px;
-  font-weight: 500;
+.cifras--barra .cifra__valor {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.cifras__primero {
+  display: flex;
+  align-items: center;
+  flex: none;
+  padding: 10px 12px;
+  background: #FFFFFF;
+}
+
+/* Riel de progreso: gris claro con relleno azul (rojo si está atrasado) */
+.progreso {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--riel);
+}
+
+.progreso__relleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--azul);
+}
+
+.progreso--delgado {
+  height: 5px;
+}
+
+.progreso--atrasado .progreso__relleno {
+  background: var(--rojo);
+}
+
+/* Barra sin riel, proporcional ("Quién te debe", "Ventas por tipo de cliente") */
+.proporcion {
+  display: block;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--azul);
+}
+
+.proporcion--atrasado {
+  background: var(--rojo);
+}
+
+.fila-proporcion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 9px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.fila-proporcion > .proporcion {
+  grid-column: 1 / -1;
+}
+
+.fila-proporcion__nombre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--negro);
+}
+
+/* Pasos de etapa: seis barritas con su nombre. Las cumplidas en negro, la actual en azul.
+   Cada una es un botón: tocarla mueve el pedido. */
+.pasos {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 0 2px;
+  border: 0;
+  background: none;
   color: var(--texto-2);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: left;
+  cursor: pointer;
 }
 
-/* Fila de lista: relleno de 10 a 14 px por 16 px y una línea arriba */
+.paso::before {
+  content: "";
+  height: 4px;
+  border-radius: 4px;
+  background: var(--borde);
+}
+
+.paso:hover:not(:disabled)::before {
+  background: var(--borde-punteado);
+}
+
+.paso--hecho::before,
+.paso--hecho:hover:not(:disabled)::before {
+  background: var(--negro);
+}
+
+.paso--actual {
+  color: var(--negro);
+  font-weight: 650;
+}
+
+.paso--actual::before,
+.paso--actual:hover:not(:disabled)::before {
+  background: var(--azul);
+}
+
+.paso:disabled {
+  cursor: default;
+}
+
+/* Cuentas (pagos de un pedido, cotización): nombre a la izquierda, valor a la derecha */
+.cuentas {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 16px;
+}
+
+.cuentas__fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.cuentas__fila--total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--linea);
+  font-weight: 650;
+}
+
+/* Renglón: nombre a la izquierda y valor (o un botón) a la derecha */
+.renglon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+/* Fila de lista: relleno de 12 por 16 px y una línea arriba */
 .fila {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px 16px;
-  padding: 14px 16px;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 12px 16px;
   border-top: 1px solid var(--linea);
 }
 
 .fila--compacta {
-  gap: 8px 12px;
-  padding: 10px 16px;
+  padding: 8px 16px;
 }
 
 .fila__texto {
-  flex: 1 1 240px;
+  flex: 1 1 160px;
   min-width: 0;
 }
 
@@ -809,11 +1584,11 @@ a.cifra:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px 8px;
 }
 
 .fila__titulo strong {
-  font-size: 15px;
+  font-weight: 650;
 }
 
 .fila__detalle {
@@ -823,285 +1598,335 @@ a.cifra:hover {
 .fila__acciones {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
-/* Fila con los botones debajo de la frase (Qué hacer hoy), aunque quepan al lado */
-.fila--acciones-abajo > .fila__texto {
-  flex-basis: 100%;
-}
-
-/* Renglón de datos: nombre a la izquierda, valor a la derecha */
-.renglon {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid var(--linea);
-}
-
-/* Un botón en un renglón de dos líneas (Escribirles por la dotación) no se estira: mide lo
-   mismo que los demás botones */
-.renglon > .boton {
-  align-self: center;
-}
-
-/* Casilla de marcar (materiales comprados) */
+/* Casilla de marcar (materiales comprados): 16 px, negra con visto bueno al marcarla */
 .casilla {
-  display: flex;
-  flex: 0 0 20px;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 1.5px solid var(--borde-campo);
-  border-radius: 5px;
-  background: var(--tarjeta);
-  color: #FFFFFF;
-}
-
-.casilla--marcada {
-  border-color: var(--verde);
-  background: var(--verde);
-}
-
-/* Tabla: encabezado gris suave y filas con línea; se desplaza dentro de su tarjeta */
-.tabla-contenedor {
-  overflow-x: auto;
-}
-
-.tabla {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.tabla th {
-  padding: 10px 16px;
-  border-top: 1px solid var(--linea);
-  background: var(--suave);
-  color: var(--texto-2);
-  font-weight: 600;
-  text-align: left;
-  white-space: nowrap;
-}
-
-.tabla td {
-  padding: 12px 16px;
-  border-top: 1px solid var(--linea);
-  text-align: left;
-  vertical-align: middle;
-}
-
-.tabla .num {
-  text-align: right;
-}
-
-/* Buscador dentro de una tarjeta */
-.buscador {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 38px;  /* diseno/pedidos.html: 36 px de contenido más el borde */
-  margin: 0 16px 14px;
-  padding: 0 10px;
-  border: 1px solid var(--borde-campo);
-  border-radius: 8px;
-}
-
-.buscador:focus-within {
-  outline: 2px solid var(--azul);
-  outline-offset: 2px;
-}
-
-.buscador input {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-}
-
-.buscador input:focus {
-  outline: none;
-}
-
-/* La X del navegador para borrar lo escrito: gris, con el trazo de los íconos del proyecto
-   (la de Chrome es azul, y el azul es solo para gráficas y "en proceso") */
-.buscador input::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  appearance: none;
+  display: grid;
+  place-items: center;
+  flex: none;
   width: 16px;
   height: 16px;
-  background: url("../iconos/borrar.svg") center / 16px no-repeat;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1.5px var(--texto-3);
+  color: #FFFFFF;
   cursor: pointer;
 }
 
-/* Vacío no hay nada que borrar: la X no aparta su lugar y el texto de ejemplo cabe entero */
-.buscador input:placeholder-shown::-webkit-search-cancel-button {
+.casilla--marcada {
+  background: var(--negro);
+  box-shadow: none;
+}
+
+/* Cronología del pedido: los días y lo que pasó, con un circulito y una línea */
+.cronologia {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 16px 16px;
+}
+
+.cronologia__dia {
+  padding: 12px 0 6px 26px;
+  color: var(--texto-2);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.cronologia__evento {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0 8px 26px;
+}
+
+.cronologia__evento::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 2px var(--texto-3);
+}
+
+.cronologia__evento::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 21px;
+  bottom: -6px;
+  width: 2px;
+  background: var(--borde);
+}
+
+.cronologia__evento:last-child::after {
   display: none;
 }
 
-/* Campo: etiqueta visible arriba y control con borde */
-.campos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+.cronologia__quien {
+  flex: none;
+  color: var(--texto-2);
 }
 
-.campo {
+/* Zona para subir una foto: borde punteado */
+.subir {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* Campos en fila: se reparten el ancho y bajan solos cuando no caben */
-.campos > .campo {
-  flex: 1 1 150px;
-}
-
-.campo__control {
-  width: 100%;
-  min-height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--borde-campo);
-  border-radius: 8px;
-  background: var(--tarjeta);
-  color: var(--negro);
-  font: inherit;
-  font-weight: 400;
-}
-
-/* Al llegar a un campo con un enlace (#registrar-abono) queda espacio arriba para su
-   etiqueta: no aparece una caja vacía pegada al borde de la pantalla */
-.campo__control {
-  scroll-margin-top: 48px;
-}
-
-/* Campo que no se puede cambiar (la costurera en la Entrega del pedido): apagado, como las
-   celdas apagadas, para que no parezca que se puede escribir */
-.campo__control:disabled {
-  border-color: var(--linea);
-  background: var(--suave);
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 104px;
+  margin: 4px 16px 16px;
+  padding: 12px;
+  border: 1.5px dashed #CFCFCF;
+  border-radius: 10px;
   color: var(--texto-2);
-  -webkit-text-fill-color: var(--texto-2);
-  opacity: 1;
-  cursor: not-allowed;
+  font-size: 12px;
+  text-align: center;
 }
 
-textarea.campo__control {
-  min-height: 80px;
-  padding: 8px 10px;
-  resize: vertical;
-}
-
-.campo__ayuda {
-  font-weight: 400;
-  color: var(--texto-2);
-}
-
-.campo__error {
-  color: var(--ambar-texto);
-}
-
-.campo--error .campo__control {
-  border-color: var(--ambar-texto);
-}
-
-/* Aviso: mensajes de un formulario ("faltan datos", "usuario o contraseña") */
-.aviso {
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--ambar-fondo);
-  color: var(--ambar-texto);
-  font-weight: 600;
-}
-
-/* Barra de progreso: riel gris y relleno azul (rojo si está atrasado) */
-.progreso {
-  display: block;
-  height: 8px;
+/* Foto dentro de una tarjeta (la del pedido) */
+.foto {
+  margin: 4px 16px 0;
   overflow: hidden;
-  border-radius: 3px;
-  background: var(--riel);
+  border-radius: 10px;
+  background: var(--gris);
+  aspect-ratio: 4 / 3;
 }
 
-.progreso--alta {
-  height: 10px;
-}
-
-.progreso__relleno {
+.foto img {
   display: block;
+  width: 100%;
   height: 100%;
-  background: var(--azul);
+  object-fit: cover;
 }
 
-.progreso--atrasado .progreso__relleno {
-  background: var(--rojo);
-}
-
-/* Barra proporcional sin riel ("Quién te debe") */
-.proporcion {
-  display: block;
-  grid-column: 1 / -1;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--azul);
-}
-
-.proporcion--atrasado {
-  background: var(--rojo);
-}
-
-/* Filas con barra */
-.fila-proporcion {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 12px;
-  padding: 10px 16px;
-  border-top: 1px solid var(--linea);
-}
-
-.fila-talla {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 20px;
+/* Pantalla vacía: dibujo, título, para qué sirve y el botón para empezar */
+.vacio {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding: 56px 24px 64px;
+  text-align: center;
 }
 
-.fila-medida {
-  display: grid;
-  /* El valor con un ancho mínimo y a la derecha: las barras de todas las filas terminan en el
-     mismo lugar aunque un valor sea más largo ("$ 4.650.000" y "$ 960.000") */
-  grid-template-columns: minmax(80px, auto) minmax(0, 1fr) minmax(7.5em, auto);
+.vacio__dibujo {
+  width: 168px;
+  height: 150px;
+}
+
+.vacio h2 {
+  margin-top: 18px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.vacio p {
+  max-width: 420px;
+}
+
+.vacio .botones {
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* Debajo de la pantalla vacía: "Cómo llevar ..." se abre ahí mismo */
+.mas-info {
+  text-align: center;
+}
+
+.mas-info > summary {
+  display: inline-block;
+  font-weight: 550;
+  cursor: pointer;
+  list-style: none;
+}
+
+.mas-info > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mas-info > summary:hover {
+  text-decoration: underline;
+}
+
+.mas-info__texto {
+  max-width: 520px;
+  margin: 8px auto 0;
+  color: var(--texto-2);
+  text-align: left;
+}
+
+/* Menú desplegable ("Más acciones", "Cambiar etapa", "Mis prendas guardadas"): un <details>
+   cuyo <summary> es el botón; las opciones salen en una tarjeta flotante */
+.desplegable {
+  position: relative;
+  display: inline-block;
+}
+
+.desplegable > summary {
+  list-style: none;
+}
+
+.desplegable > summary::-webkit-details-marker {
+  display: none;
+}
+
+.desplegable__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-menu);
+}
+
+.desplegable--izquierda .desplegable__menu {
+  right: auto;
+  left: 0;
+}
+
+.desplegable--arriba .desplegable__menu {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+.desplegable__opcion {
+  display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--negro);
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-.fila-medida > :last-child {
-  text-align: right;
+.desplegable__opcion:hover {
+  background: var(--gris);
+  text-decoration: none;
 }
 
-/* Gráfica de barras: azul y gris, esquinas de 4 px, con leyenda */
+.desplegable__opcion[aria-current="true"] {
+  font-weight: 650;
+}
+
+.desplegable__separador {
+  height: 1px;
+  margin: 6px -6px;
+  background: var(--linea);
+}
+
+/* Punto de estado (arriba en Hoy: "1 pedido atrasado") */
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--negro);
+}
+
+.estado:hover {
+  text-decoration: none;
+}
+
+.estado__punto {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rojo);
+  box-shadow: 0 0 0 3px var(--rojo-fondo);
+}
+
+/* Título dentro del contenido (Pedido por dentro): nombre grande con sus insignias al lado */
+.titulo-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+.titulo-pagina h1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.titulo-pagina__apoyo {
+  color: var(--texto-2);
+}
+
+/* Título de una sección dentro de la hoja ("Tu mes") */
+.seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.seccion-titulo h2 {
+  font-size: 15px;
+}
+
+/* Columnas: la principal y una de 300 px a la derecha (Pedido, Calendario, Cotizador).
+   Cada columna es una pila de tarjetas y mide lo que mide su contenido. */
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Dos tarjetas lado a lado: se reparten 1,6 a 1 y terminan a la misma altura */
+.dos-columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.dos-columnas--iguales {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Gráfica de barras: azul y gris, con leyenda arriba a la derecha */
 .grafica {
   display: block;
   width: 100%;
   height: auto;
-  font-family: inherit;
-}
-
-/* La gráfica puede venir en dos versiones (config/piezas.py, grafica_barras con
-   alto_computador): una más baja para la pantalla fija del computador y la de siempre para
-   el celular. Solo se ve una. */
-.grafica--celular {
-  display: none;
 }
 
 .leyenda {
   display: flex;
-  gap: 14px;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
   color: var(--texto-2);
 }
 
@@ -1112,683 +1937,432 @@ textarea.campo__control {
 }
 
 .leyenda__color {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 2px;
 }
 
 .leyenda__color--cobrado { background: var(--azul); }
 .leyenda__color--gastado { background: var(--gris-grafica); }
 
-/* Pasos de etapa: seis círculos; cumplidos en negro, el actual con punto */
-.pasos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.paso {
-  display: flex;
-  flex: 1 1 80px;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 2px;
-  border: 0;
-  background: none;
-  color: var(--negro);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.paso__circulo {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--tarjeta);
-}
-
-/* El visto bueno y el punto siempre están; se ven solo en su paso. Así, al cambiar de etapa,
-   se marcan con una transición (sección 7) en vez de aparecer de golpe. */
-.paso:not(.paso--hecho) .paso__circulo .icono {
-  opacity: 0;
-  transform: scale(0.5);
-}
-
-.paso__circulo::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
-  border-radius: 50%;
-  background: var(--negro);
-  transform: scale(0);
-}
-
-.paso--hecho .paso__circulo {
-  border: 2px solid var(--negro);  /* no se ve sobre el negro; evita un salto al marcarlo */
-  background: var(--negro);
-  color: #FFFFFF;
-}
-
-.paso--actual {
-  font-weight: 700;
-}
-
-.paso--actual .paso__circulo {
-  border: 2px solid var(--negro);
-}
-
-.paso--actual .paso__circulo::after {
-  transform: scale(1);
-}
-
-.paso--pendiente {
-  color: var(--texto-2);
-}
-
-.paso--pendiente .paso__circulo {
-  border: 1.5px solid var(--borde-control);
-}
-
-/* Fotos que pasan ("Trabajos del taller") */
-.tarjeta--fotos {
-  display: flex;
-  flex-direction: column;
-}
-
-.fotos {
-  flex: none;
-  position: relative;
-  height: 264px;
-  border-top: 1px solid var(--linea);
-  border-bottom: 1px solid var(--linea);
-  background: var(--riel);
-}
-
-.fotos__foto {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.64s linear;
-}
-
-.fotos__foto.es-visible {
-  opacity: 1;
-}
-
-.fotos__foto img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.fotos__nombre {
-  position: absolute;
-  left: 12px;
-  bottom: 12px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  background: #FFFFFF;
-  color: var(--negro);
-  font-weight: 600;
-}
-
-.fotos__puntos {
-  display: flex;
-  gap: 6px;
-}
-
-.fotos__punto {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--negro);
-  opacity: 0.3;
-  transition: opacity 0.64s linear;
-}
-
-.fotos__punto.es-visible {
-  opacity: 1;
-}
-
-/* Sin fotos: la tarjeta invita a subir la primera */
-.fotos-vacio {
-  display: flex;
-  flex: 1 0 auto;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 264px;
-  padding: 16px;
-  border-top: 1px solid var(--linea);
-  border-bottom: 1px solid var(--linea);
-  background: var(--suave);
-  color: var(--texto-2);
-  text-align: center;
-}
-
-/* Sin foto en el pedido por dentro: la invitación es más baja y no crece. Si la columna de
-   al lado es más alta, lo que sobra queda en blanco al final de la tarjeta, no en gris. */
-.fotos-vacio--compacto {
-  flex: none;
-  min-height: 120px;
-}
-
-/* Dos columnas de tarjetas que se reparten 3 a 2 y terminan a la misma altura */
-.dos-columnas {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 16px;
-}
-
-.columna-ancha {
-  flex: 3 1 440px;
-  min-width: 0;
-}
-
-.columna-angosta {
-  flex: 2 1 300px;
-  min-width: 0;
-}
-
-/* Una columna con varias tarjetas apiladas: la última crece para llenar */
-.columna {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.columna > :last-child {
-  flex-grow: 1;
-}
-
-
-/* Fila de tabla que abre algo (Pedidos, buscador): el enlace de la primera celda cubre
-   toda la fila. El nombre va en negrita, sin subrayado, como en el diseño. */
-.tabla__fila {
-  position: relative;
-}
-
-.tabla__fila:hover {
-  background: var(--suave);
-}
-
-.tabla__enlace,
-.fila__enlace {
-  color: inherit;
-  text-decoration: none;
-}
-
-.tabla__enlace::after,
-.fila__enlace::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-}
-
-.tabla__enlace:hover strong,
-.tabla__enlace:focus-visible strong,
-.fila__enlace:hover strong,
-.fila__enlace:focus-visible strong {
-  text-decoration: underline;
-}
-
-/* Fila con un formulario: el botón queda a la altura de los campos, no de las etiquetas */
-.fila--formulario {
-  align-items: flex-end;
-}
-
-/* Si el campo lleva ayuda debajo (Mi taller: cambiar el nombre), los botones van a la altura
-   del campo y no de la ayuda: arriba, bajados lo que mide la etiqueta (13 px) y su espacio */
-.fila--formulario:has(.campo__ayuda) {
-  align-items: flex-start;
-}
-
-.fila--formulario:has(.campo__ayuda) > .fila__acciones {
-  margin-top: calc(13px * 1.45 + 4px);
-}
-
-/* Botón de solo ícono, liviano, dentro de una fila (quitar un material). Lleva aria-label. */
-.boton--icono {
-  min-height: 28px;
-  min-width: 28px;
-  padding: 0;
-  border-color: transparent;
-  background: transparent;
-  color: var(--texto-2);
-}
-
-.boton--icono:hover {
-  background: var(--suave);
-  color: var(--negro);
-}
-
-/* La casilla también puede ser un botón (materiales comprados). Se ve de 20 px, pero se
-   puede tocar en un cuadro de 44 px alrededor. */
-button.casilla {
-  position: relative;
-  padding: 0;
-  cursor: pointer;
-}
-
-button.casilla::after {
-  content: "";
-  position: absolute;
-  inset: -12px;
-}
-
-/* Tallas: el número de cada talla va a la derecha, como en el diseño */
-.fila-talla > :last-child {
-  text-align: right;
-}
-
-/* Filas que se despliegan (<details>): se ven tocables, con una flecha */
-details > summary.fila {
-  cursor: pointer;
-  list-style: none;
-}
-
-details > summary.fila::-webkit-details-marker {
-  display: none;
-}
-
-details > summary.fila::after {
-  content: "";
-  flex: none;
-  width: 8px;
-  height: 8px;
-  margin-left: auto;
-  border-right: 1.75px solid currentColor;
-  border-bottom: 1.75px solid currentColor;
-  transform: rotate(45deg);
-}
-
-details[open] > summary.fila::after {
-  transform: rotate(-135deg);
-}
-
-/* Tarjeta Pagos del pedido por dentro (diseno/pedido.html) */
-.pagos__nombre {
-  font-weight: 600;
-}
-
-.pagos__saldo {
-  margin-top: -8px;
-  font-size: 26px;
-}
-
-.pagos__totales {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4px 12px;
-  color: var(--texto-2);
-}
-
-.pagos__abono {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 0 0;
-  border-top: 1px solid var(--linea);
-}
-
-.pagos__acciones {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: auto;
-}
-
-/* Botón de solo ícono para quitar un abono: cuadrado, para que la fila quepa en una línea */
-.pagos__quitar {
-  width: 36px;
-  padding: 0;
-}
-
-.pagos__confirmar,
-.pagos__form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--linea);
-}
-
-/* Textos largos y cortos de un botón: el corto solo se ve en celular (Hoy) */
-.texto-celular {
-  display: none;
-}
-
-/* Quién te debe: el nombre va en negrita y sin subrayar; en rojo si tiene un atraso */
-.fila-proporcion__nombre {
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.fila-proporcion__nombre:hover,
-.fila-proporcion__nombre:focus-visible {
-  text-decoration: underline;
-}
-
-/* La fila entera se puede tocar, no solo el nombre */
-.fila-proporcion:has(.fila-proporcion__nombre) {
-  position: relative;
-}
-
-.fila-proporcion__nombre::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-}
-
-.fila-proporcion__nombre.texto-rojo:hover {
-  color: var(--rojo);
-}
-
-/* Tarjeta de la gráfica: cabeza, cifra, gráfica y nota con 8 px entre ellas */
-.tarjeta--grafica {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.tarjeta--grafica .tarjeta__cabeza {
-  padding: 0;
-}
-
-/* Pedidos por etapa: seis casillas separadas por una línea de 1 px */
-.etapas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1px;
-  border-top: 1px solid var(--linea);
-  background: var(--linea);
-}
-
-.etapas__etapa {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 12px 16px;
-  background: var(--tarjeta);
-}
-
-.etapas__nombre {
-  font-weight: 600;
-  color: var(--texto-2);
-}
-
-.etapas__cantidad {
-  font-size: 20px;
-  line-height: 1.3;
-}
-
-/* Filas con barra de Resumen: el nombre con el peso del diseño (600) */
-.fila-medida > :first-child {
-  font-weight: 600;
-}
-
-/* Elegir una foto: el botón del archivo se ve como los demás botones */
-input[type="file"].campo__control {
-  padding: 6px;
-}
-
-input[type="file"].campo__control::file-selector-button {
-  min-height: 32px;
-  margin-right: 10px;
-  padding: 0 14px;
-  border: 1px solid var(--borde-control);
-  border-radius: 8px;
-  background: var(--tarjeta);
-  color: var(--negro);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-input[type="file"].campo__control::file-selector-button:hover {
-  background: var(--suave);
-}
-
-/* Mes anterior y siguiente en celular: arriba solo cabe el botón principal, así que van
-   en su propia fila al comienzo del contenido (Resumen, Calendario) */
-.navegacion-mes {
-  display: none;
-}
-
-/* Calendario: el mes se lleva más ancho que en las demás pantallas (diseno/calendario.html) */
-.columna-ancha--calendario {
-  flex-basis: 480px;
-}
-
-.columna-angosta--calendario {
-  flex-basis: 280px;
-}
-
-/* Botones de una fila de tabla (Telas: "Entró" y "Usé"): en una línea, con 8 px entre ellos */
-.tabla__acciones {
-  position: relative;
-  z-index: 1;  /* por encima del enlace que cubre la fila (.tabla__enlace) */
-  display: inline-flex;
-  gap: 8px;
-}
-
-/* Botones de una celda que no se parten (Clientes: "Editar" y "Escribirle") */
-.botones--en-linea {
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-}
-
-/* El texto de la tarjeta negra (aviso de dotación): crece y deja el botón a la derecha */
-.tarjeta-oscura__texto {
-  flex: 1 1 320px;
-  min-width: 0;
-}
-
-/* Resultado del cotizador (diseno/cotizador.html) */
-.cotizacion {
-  gap: 10px;
-  padding: 16px;
-}
-
-.cotizacion__total {
-  margin-top: -8px;
-  font-size: 30px;
-}
-
-/* Campos en fila con los controles alineados abajo, aunque una etiqueta se parta en dos */
-.campos--abajo {
-  align-items: flex-end;
-}
-
-/* Cifra en ámbar: hay que estar pendiente, sin ser atraso ni deuda (telas que se acaban) */
-.cifra--ambar {
-  border-color: var(--ambar-texto);
-}
-
-.cifra--ambar .cifra__nombre,
-.cifra--ambar .cifra__valor {
-  color: var(--ambar-texto);
-}
-
-.texto-ambar { color: var(--ambar-texto); }
-
-/* Tablero: filas de tarjetas de una pantalla (Hoy). En celular las filas se abren y
-   cada bloque toma su turno con .orden-celular-N (ver la sección 5). */
-.tablero {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Ventana para formularios cortos ("Nuevo pedido", "Nuevo cliente"...) */
+/* Ventana ("Nuevo pedido"): tarjeta flotante con cabeza gris, cuerpo y pie con los botones */
 .ventana {
-  width: min(560px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100dvh - 64px);
   padding: 0;
   border: 0;
-  border-radius: 12px;
-  background: var(--tarjeta);
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-ventana);
   color: var(--negro);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
 
 .ventana::backdrop {
   background: rgba(0, 0, 0, 0.5);
 }
 
-/* Una ventana larga ("Escribirles por la dotación" con muchas empresas): se desplaza solo su
-   cuerpo; el título con la X arriba y los botones abajo quedan siempre a la vista */
-.ventana[open] {
+.ventana__formulario {
   display: flex;
   flex-direction: column;
-}
-
-.ventana[open] > .ventana__formulario {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.ventana[open] .ventana__cabeza,
-.ventana[open] .ventana__pie {
-  flex: none;
-}
-
-.ventana[open] .ventana__cuerpo {
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-/* Abierta como página (sin JavaScript): una tarjeta normal */
-.ventana--pagina {
-  width: auto;
-  max-width: 560px;
-  max-height: none;
-  box-shadow: none;
+  max-height: calc(100dvh - 64px);
 }
 
 .ventana__cabeza {
+  flex: none;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 10px 8px 10px 16px;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 12px 0 16px;
   border-bottom: 1px solid var(--linea);
-}
-
-.ventana__cabeza h2 {
-  font-size: 15px;
-  font-weight: 700;
+  background: var(--suave);
 }
 
 .ventana__cerrar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
   border: 0;
   border-radius: 8px;
-  background: none;
-  color: var(--negro);
+  background: transparent;
+  color: var(--texto-2);
   cursor: pointer;
 }
 
 .ventana__cerrar:hover {
-  background: var(--suave);
+  background: var(--gris-fondo);
+  color: var(--negro);
 }
 
 .ventana__cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
+  overflow-y: auto;
 }
 
 .ventana__pie {
+  flex: none;
   display: flex;
-  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 16px;
   border-top: 1px solid var(--linea);
 }
 
-/* Calendario: la cuadrícula del mes, de lunes a domingo */
+/* Abierta como página (sin JavaScript): una tarjeta de 620 px */
+.ventana--pagina {
+  max-width: 620px;
+  border-radius: 12px;
+  box-shadow: var(--sombra-tarjeta);
+}
+
+/* Aviso corto de confirmación ("Abono registrado."): abajo, en el centro */
+.avisos {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.aviso-corto {
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--negro);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+  color: #FFFFFF;
+  font-weight: 550;
+  text-align: center;
+}
+
+
+/* 5. Pantallas ------------------------------------------------------------- */
+
+/* --- Hoy --- */
+
+/* Lo de Hoy va en una columna de 940 px, centrada */
+.angosto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 940px;
+}
+
+.bienvenida {
+  padding: 34px 0 6px;
+  text-align: center;
+}
+
+.bienvenida h1 {
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.bienvenida__taller {
+  text-decoration: underline dotted #B5B5B5;
+  text-underline-offset: 4px;
+}
+
+.bienvenida__apoyo {
+  display: none;
+  color: var(--texto-2);
+}
+
+/* La caja grande: buscar y atajos */
+.caja-grande {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 620px;
+  margin: 6px auto 0;
+  padding: 14px 16px 10px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: var(--sombra-flotante);
+}
+
+.caja-grande:focus-within {
+  box-shadow: 0 0 0 2px var(--enlace), 0 4px 18px -8px rgba(0, 0, 0, 0.14);
+}
+
+/* En computador el buscador de la caja no lleva borde ni lupa: la caja ya es el campo */
+.caja-grande .buscador {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.caja-grande .buscador > .icono {
+  display: none;
+}
+
+.caja-grande .buscador input {
+  padding: 0;
+}
+
+.caja-grande__atajos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Lo que hay que hacer hoy: tarjetas grandes con la foto del pedido, de a tres por fila */
+.cartas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.carta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 8px 14px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 1px var(--borde), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.carta__foto {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--gris);
+}
+
+.carta__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carta__foto .etiqueta {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.carta__sin-foto {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border: 1.5px dashed var(--borde-punteado);
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: var(--texto-3);
+}
+
+.carta__texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 6px;
+}
+
+.carta h3 {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.carta h3 a {
+  color: var(--negro);
+}
+
+.carta__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 6px 0;
+}
+
+/* Pedidos por etapa: seis casillas separadas por una línea */
+.etapas {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--linea);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.etapas__etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 16px 14px;
+  background: #FFFFFF;
+  color: var(--negro);
+}
+
+a.etapas__etapa:hover {
+  background: var(--suave);
+  text-decoration: none;
+}
+
+.etapas__nombre {
+  color: var(--texto-2);
+}
+
+.etapas__cantidad {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 650;
+}
+
+/* --- Pedidos --- */
+
+.tabla--pedidos td {
+  white-space: nowrap;
+}
+
+.tabla__cliente {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tabla__prenda {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--texto-2);
+}
+
+.texto-atraso {
+  color: var(--rojo-texto);
+  font-weight: 550;
+}
+
+/* --- Pedido por dentro --- */
+
+.articulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 16px 12px;
+}
+
+.articulo__que {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.articulo .pasos {
+  padding: 0;
+}
+
+.tarjeta > .pasos {
+  padding: 4px 16px 14px;
+}
+
+.tallas-barras {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 10px;
+  font-weight: 550;
+}
+
+.cifra-grande {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 650;
+}
+
+.cifra-grande__apoyo {
+  color: var(--texto-2);
+  font-size: 13px;
+  font-weight: 450;
+}
+
+.tarjeta--lado .tarjeta__cuerpo {
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.tarjeta__subtitulo {
+  margin-top: 10px;
+  font-weight: 650;
+}
+
+/* --- Calendario --- */
+
 .calendario {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .calendario__semana {
-  padding: 8px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--linea);
   background: var(--suave);
   color: var(--texto-2);
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
+  font-size: 12px;
+  font-weight: 550;
 }
 
 .calendario__dia {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   min-width: 0;
   min-height: 92px;
-  padding: 6px 8px;
+  padding: 6px 6px 8px;
   border: 0;
   border-right: 1px solid var(--linea);
   border-bottom: 1px solid var(--linea);
-  background: none;
-  color: inherit;
-  font: inherit;
+  background: #FFFFFF;
+  color: var(--negro);
   text-align: left;
+  cursor: pointer;
 }
 
 .calendario__dia:nth-child(7n) {
   border-right: 0;
 }
 
-/* Un día con entregas es un botón: tocarlo filtra la lista. Un botón centra su contenido
-   de arriba abajo; este lo pone arriba, para que su número quede a la altura de los demás. */
-button.calendario__dia {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  cursor: pointer;
-}
-
-/* El anillo del foco va por dentro del día: por fuera lo cortaría el borde de la tarjeta */
-button.calendario__dia:focus-visible {
-  outline-offset: -4px;  /* por dentro también del marco negro del día elegido (2 px) */
-}
-
-button.calendario__dia:hover {
+.calendario__dia:hover {
   background: var(--suave);
-}
-
-.calendario__dia[aria-pressed="true"] {
-  box-shadow: inset 0 0 0 2px var(--negro);
 }
 
 .calendario__dia--fuera {
@@ -1796,17 +2370,20 @@ button.calendario__dia:hover {
   color: var(--texto-3);
 }
 
-.calendario__numero {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  font-weight: 600;
+.calendario__dia[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 2px var(--enlace);
 }
 
-/* Hoy: círculo negro */
+.calendario__numero {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 550;
+}
+
 .calendario__dia--hoy .calendario__numero {
   background: var(--negro);
   color: #FFFFFF;
@@ -1815,434 +2392,492 @@ button.calendario__dia:hover {
 .calendario__entregas {
   display: flex;
   flex-direction: column;
-  align-self: stretch;  /* todo el ancho del día, también dentro del botón */
-  align-items: flex-start;
-  gap: 2px;
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.25;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
 }
 
-/* Un nombre muy largo ("Grupo de danza Tambores del Río") se corta en la tercera línea:
-   así una semana no queda más alta que las otras. El nombre entero va en la lista de al lado
-   y en lo que lee el lector de pantalla (aria-label del día). */
 .calendario__entregas .etiqueta {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  overflow: hidden;
+  display: flex;
+  max-width: 100%;
 }
 
 .calendario__leyenda {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 8px 16px;
   padding: 12px 16px;
+}
+
+/* --- Cotizador --- */
+
+.cotizacion {
+  position: sticky;
+  top: 0;
+}
+
+.cotizacion__total {
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.cotizacion .tarjeta__pie {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* --- Mi taller: cada bloque con su explicación a la izquierda, como los ajustes de Shopify --- */
+
+.ajustes {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1000px;
+}
+
+.ajuste {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 12px 24px;
+  align-items: start;
+}
+
+.ajuste + .ajuste {
+  padding-top: 24px;
+  border-top: 1px solid var(--linea);
+}
+
+.ajuste__explica {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.ajuste__explica p {
   color: var(--texto-2);
 }
 
-/* Cada cuadrito de la leyenda junto a su palabra, con el espacio del diseño */
-.calendario__clave {
-  display: inline-flex;
+.persona {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--linea);
 }
 
-/* Agregado en la revisión final (T23) ---------------------------------------- */
-
-/* La etiqueta gris (Cotizado, Confirmado, Listo) junto al título de la hoja: el gris de la
-   etiqueta es el mismo de la hoja, así que ahí va en blanco con una línea para que se vea.
-   En celular la franja es negra y vuelve a su gris (sección 5). */
-.encabezado .etiqueta--gris {
-  background: var(--tarjeta);
-  box-shadow: inset 0 0 0 1px var(--linea);
+/* El nombre toma lo que sobra; si no caben los botones al lado (celular), bajan de línea */
+.persona__texto {
+  flex: 1 1 160px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Un menú para elegir que se ve como botón secundario ("Mis prendas guardadas" en el
-   cotizador, que en diseno/cotizador.html es un botón), con una flechita que dice que abre */
-select.boton-select {
-  width: auto;
-  padding: 0 32px 0 14px;
-  border-color: var(--borde-control);
-  background: var(--tarjeta) url("../iconos/abrir-lista.svg") right 10px center / 16px no-repeat;
-  font-weight: 600;
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
-}
+/* --- Entrar, formulario público de tallas y avisos sin sesión --- */
 
-select.boton-select:hover {
-  background-color: var(--suave);
-}
-
-/* Chrome le suma unos 4 px por dentro a la lista: así su texto queda a 10 px del borde,
-   como el de los demás campos */
-select.campo__control:not(.boton-select) {
-  padding-left: 6px;
-}
-
-/* La tabla de Pedidos con columnas de ancho fijo (las de diseno/pedidos.html): no saltan
-   al cambiar de filtro ni al buscar. "Cliente y pedido" toma lo que sobra. */
-.tabla--pedidos {
-  table-layout: fixed;
-}
-
-.tabla--pedidos .col-etapa { width: 144px; }
-.tabla--pedidos .col-entrega { width: 152px; }
-.tabla--pedidos .col-encargada { width: 114px; }
-.tabla--pedidos .col-tallas { width: 93px; }
-.tabla--pedidos .col-saldo { width: 200px; }
-
-/* Filas de una lista que se abren con su enlace (clientes en Buscar): el enlace
-   (.fila__enlace) cubre toda la fila, como en las tablas */
-.fila--enlace {
+.marco-acceso {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 32px 16px;
+  overflow: hidden;
+  background: var(--marco);
 }
 
-.fila--enlace:hover {
+.marco-acceso::before {
+  content: "";
+  position: absolute;
+  left: -140px;
+  bottom: -150px;
+  width: 560px;
+  height: 280px;
+  background: var(--brillo);
+  pointer-events: none;
+}
+
+.acceso {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.acceso__marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 4px;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.acceso__tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 20px 20px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.5);
+}
+
+.acceso__tarjeta .campo__control {
+  min-height: 36px;
+}
+
+.acceso__tarjeta .boton {
+  min-height: 36px;
+}
+
+.acceso__pedido {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
   background: var(--suave);
 }
 
-/* Lo que solo se ve en celular (el estado de una tela debajo de su nombre). Su pareja,
-   .solo-computador, se esconde en la sección 5 (columnas de Telas que en celular no caben). */
-.solo-celular {
-  display: none;
+.acceso__nota {
+  color: var(--menu-apagado);
+  font-size: 12px;
+  text-align: center;
+}
+
+.acceso__listo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gris-fondo);
+  color: var(--negro);
 }
 
 
-/* 5. Celular (menos de 768 px) --------------------------------------------- */
+/* 6. Celular (menos de 768 px) --------------------------------------------- */
+
+@media (max-width: 1023.98px) {
+  .columnas,
+  .dos-columnas,
+  .dos-columnas--iguales {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cartas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ajuste {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cotizacion {
+    position: static;
+  }
+}
 
 @media (max-width: 767.98px) {
-  /* Al llegar con el teclado a algo de abajo, la página sube lo suficiente para que no
-     quede detrás de la barra fija */
+  /* Como la app de Shopify: hoja blanca, título grande arriba y barra de abajo. La página se
+     desliza normal. Lo que se toca mide al menos 40 px. */
   html {
-    background: var(--hoja);
+    background: #FFFFFF;
     scroll-padding-bottom: calc(var(--alto-barra) + 16px + env(safe-area-inset-bottom));
   }
 
-  .marco {
-    display: block;
-    padding: 0;
-    background: var(--hoja);
+  body {
+    font-size: 14px;
   }
 
+  .solo-computador { display: none !important; }
+  .texto-celular { display: inline; }
+  .texto-computador { display: none; }
+
+  .marco {
+    display: block;
+    height: auto;
+    overflow: visible;
+    background: #FFFFFF;
+  }
+
+  .marco::before,
   .menu {
     display: none;
   }
 
   .hoja {
     min-height: 100vh;
-    gap: 0;
-    padding: 0;
+    margin: 0;
+    overflow: visible;
     border-radius: 0;
   }
 
-  /* Arriba, una franja con el título y el botón principal */
+  /* Arriba: una fila de botones redondos y, debajo, el título grande */
   .encabezado {
-    flex-wrap: nowrap;
-    gap: 12px;
-    padding: 14px 16px;
-    background: var(--franja);
-    color: #FFFFFF;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "izquierda . acciones" "titulo titulo titulo";
+    align-items: center;
+    gap: 10px 4px;
+    min-height: 0;
+    padding: 14px 16px 6px;
   }
 
-  .encabezado :focus-visible {
-    outline-color: #FFFFFF;
+  .encabezado__logo,
+  .encabezado__volver {
+    grid-area: izquierda;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin: 0;
+    border-radius: 50%;
+    background: var(--gris);
+    box-shadow: none;
+    color: var(--negro);
   }
 
   .encabezado__titulo {
+    grid-area: titulo;
     display: block;
   }
 
-  .encabezado h1 {
-    font-size: 18px;
+  .encabezado h1,
+  .encabezado__nombre {
+    font-size: 28px;
+    line-height: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .encabezado__nombre > .icono {
+    display: none;
   }
 
   .encabezado__apoyo {
     display: block;
-    font-size: 13px;
-    color: var(--apoyo-oscuro);
+    white-space: normal;
   }
 
-  /* Los botones no se encogen: el que cede espacio es el título */
   .encabezado__acciones {
-    flex: none;
+    grid-area: acciones;
+    gap: 4px;
+    min-height: 36px;
   }
 
-  .encabezado__acciones .boton:not(.boton--principal) {
+  .encabezado__acciones:empty {
+    display: flex;
+  }
+
+  /* Arriba solo van botones redondos con ícono; los de solo texto se quedan en el contenido */
+  .encabezado__acciones > .boton:not(.boton--redondo-celular),
+  .encabezado__acciones > .desplegable:not(.desplegable--celular) {
     display: none;
   }
 
-  .encabezado__acciones .boton--principal {
-    flex: none;
-    padding: 0 16px;
-    border-color: #FFFFFF;
-    background: #FFFFFF;
-    color: #000000;
-  }
-
-  .hoja__contenido {
-    gap: 12px;
-    padding: 14px 14px calc(14px + var(--alto-barra) + env(safe-area-inset-bottom));
-  }
-
-  /* Botones de al menos 44 px de alto. Los campos y el buscador también: se tocan igual. */
-  .boton,
-  .filtro,
-  .buscador,
-  .campo__control {
-    min-height: 44px;
-  }
-
-  .ventana__cerrar {
-    width: 44px;
-    height: 44px;
-  }
-
-  /* Qué prenda (cotizador), con una prenda elegida: la lista y "Quitar de mi lista" van
-     juntas en una fila debajo del título, la lista estirada hasta el botón */
-  .tarjeta__cabeza > .botones:has(> .boton) {
-    flex: 1 1 100%;
-    flex-wrap: nowrap;
-  }
-
-  .tarjeta__cabeza > .botones:has(> .boton) > div {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .tarjeta__cabeza > .botones:has(> .boton) select {
-    width: 100%;
-  }
-
-  /* Un campo para nombres largos (Cliente y Prenda del cotizador) toma toda la fila */
-  .campos > .campo--ancho-celular {
-    flex-basis: 100%;
-  }
-
-  .texto-computador,
-  .solo-computador {
-    display: none;
-  }
-
-  .texto-celular {
-    display: inline;
-  }
-
-  .solo-celular {
-    display: block;
-  }
-
-  /* El texto que se escribe va en 16 px (ver abajo); el de ejemplo, en 14, para que quepa
-     entero ("Buscar por cliente, prenda o encargada") */
-  .buscador input::placeholder {
-    font-size: 14px;
-  }
-
-  /* La etiqueta gris vuelve a su gris sobre la franja negra */
-  .encabezado .etiqueta--gris {
-    background: var(--gris-fondo);
+  .boton--redondo-celular {
+    width: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--gris);
     box-shadow: none;
   }
 
-  /* Tablas: un poco menos de relleno a los lados, y la primera columna con ancho para que
-     los nombres no se partan palabra por palabra */
-  .tabla th,
-  .tabla td {
-    padding-left: 12px;
-    padding-right: 12px;
+  .boton--redondo-celular.boton--principal {
+    background: var(--negro);
   }
 
-  .tabla td:first-child {
-    min-width: 150px;
+  .boton--redondo-celular .boton__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
 
-  .tabla--pedidos {
-    table-layout: auto;
+  .boton--redondo-celular .boton__icono-celular {
+    display: block;
   }
 
-  .tabla--pedidos col {
-    width: auto !important;
+  .hoja__contenido {
+    overflow: visible;
+    gap: 14px;
+    padding: 4px 16px calc(var(--alto-barra) + 24px + env(safe-area-inset-bottom));
   }
 
-  .tabla--pedidos td:first-child {
-    min-width: 190px;
-  }
-
-  /* Telas: sin las columnas de computador, la primera toma lo que sobra */
-  .tabla--telas td:first-child {
-    min-width: 0;
-    width: 100%;
-  }
-
-  /* ... y un poco menos de relleno, para que "Entró" y "Usé" quepan sin correr la tabla */
-  .tabla--telas th,
-  .tabla--telas td {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-
-  .tabla--telas .tabla__acciones .boton {
-    padding: 0 10px;
-  }
-
-  /* Pagos: cada abono en una línea ("7 de nov", el valor, Recibo y la X), como en el
-     diseño. "Abono del" se esconde (texto-computador) y los botones van más juntos. */
-  .pagos__acciones {
-    gap: 8px;
-  }
-
-  /* Mi taller, cambiar el nombre: en celular los botones bajan solos a su propia línea */
-  .fila--formulario:has(.campo__ayuda) > .fila__acciones {
-    margin-top: 0;
-  }
-
-  /* Elegir una foto: el texto "Ningún archivo seleccionado" no cabe y el navegador lo corta
-     por la mitad. Se esconde hasta que se elige uno (static/js/app.js marca data-elegido). */
-  input[type="file"].campo__control:not([data-elegido]) {
-    color: transparent;
-  }
-
-  /* Su botón no toma los 16 px de los campos: mide como los demás botones */
-  input[type="file"].campo__control::file-selector-button {
+  .boton {
+    min-height: 40px;
+    padding: 0 16px;
     font-size: 14px;
   }
 
-  /* Una sola acción corta: el botón queda al lado de la frase ("Preguntar" en Hoy) */
-  .fila--accion-al-lado {
-    flex-wrap: nowrap;
-  }
-
-  .fila--accion-al-lado .fila__acciones {
-    flex: none;
-  }
-
-  .navegacion-mes {
-    display: flex;
-    gap: 8px;
-  }
-
-  .navegacion-mes .boton {
-    flex: 1;
-  }
-
-  /* Los de solo ícono, también de 44 px de ancho para tocarlos con el dedo */
   .boton--icono,
-  .pagos__quitar {
-    min-width: 44px;
-    width: 44px;
+  .boton--flecha {
+    width: 40px;
+    padding: 0;
   }
 
-  /* 16 px en los campos para que el celular no agrande la pantalla al escribir */
-  .campo__control,
+  .boton--plano {
+    padding: 0 10px;
+  }
+
+  .chip {
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .campo__control {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+
+  .buscador {
+    min-height: 44px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--gris);
+  }
+
   .buscador input {
     font-size: 16px;
   }
 
-  /* La gráfica se achica al ancho del celular; su letra se agranda para seguir en ~11 px */
+  .titulo-pagina h1 {
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  /* Pestañas: píldoras que se deslizan de lado */
+  .filtros {
+    gap: 6px;
+    padding: 0;
+    border: 0;
+  }
+
+  .filtros__pestanas {
+    gap: 6px;
+  }
+
+  .filtro {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--borde);
+  }
+
+  .filtro.es-elegido,
+  .filtro[aria-pressed="true"] {
+    background: var(--negro);
+    box-shadow: none;
+    color: #FFFFFF;
+  }
+
+  .filtro.es-elegido .filtro__conteo,
+  .filtro[aria-pressed="true"] .filtro__conteo {
+    color: #D4D4D4;
+  }
+
+  /* En celular la barra de cifras de una lista no va: las pestañas ya dicen cuántos hay */
+  .cifras--barra {
+    display: none;
+  }
+
+  .tarjeta--lista-celular .filtros {
+    padding: 0 16px 10px;
+  }
+
+  .tabla th,
+  .tabla td {
+    white-space: nowrap;
+  }
+
+  .pasos {
+    gap: 3px;
+  }
+
+  .paso {
+    font-size: 11px;
+    line-height: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  .desplegable__menu {
+    position: fixed;
+    top: auto;
+    right: 8px;
+    bottom: calc(var(--alto-barra) + 8px + env(safe-area-inset-bottom));
+    left: 8px;
+    min-width: 0;
+  }
+
+  .desplegable__opcion {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  /* La ventana sube desde abajo, como una hoja */
+  .ventana {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 24px);
+    margin: auto 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .ventana__formulario {
+    max-height: calc(100dvh - 24px);
+  }
+
+  .ventana__pie {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .ventana__pie .boton {
+    flex: 1;
+  }
+
+  .avisos {
+    bottom: calc(var(--alto-barra) + 12px + env(safe-area-inset-bottom));
+  }
+
+  .ventana__cerrar {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* La gráfica se dibuja a 600 de ancho y en celular se achica a unos 330 px: con la letra
+     de 11 quedaría en 6 px; con 20 queda en unos 11 px */
   .grafica text {
     font-size: 20px;
   }
 
-  /* En celular va la gráfica de siempre, no la baja del computador */
-  .grafica--computador {
-    display: none;
-  }
-
-  .grafica--celular {
-    display: block;
-  }
-
-  .cifras {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .cifra {
-    padding: 10px 12px;
-  }
-
-  .cifra__nombre {
-    font-size: 13px;
-  }
-
-  .cifra__valor {
-    font-size: 22px;
-  }
-
-  .cifra__apoyo {
-    display: none;
-  }
-
-  /* Si son tres (la costurera en Hoy, Telas), la última va a lo ancho: no queda un hueco */
-  .cifras > .cifra:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-
-  /* La línea de apoyo que sí dice algo necesario ("Piqué blanco y popelina blanca", "Gastaste
-     más de lo que cobraste") se queda también en celular */
-  .cifra--apoyo-celular .cifra__apoyo {
-    display: block;
-    font-size: 13px;
-  }
-
-  /* La plata, un poco más pequeña que los conteos (diseno/hoy-celular.html: "Por cobrar") */
-  .cifra--dinero .cifra__valor {
-    font-size: 20px;
-    line-height: 1.45;
-  }
-
-  /* Quién te debe, como en diseno/hoy-celular.html: una lista apretada, sin líneas */
-  #hoy-quien-debe .tarjeta__cabeza:has(+ .fila-proporcion) {
-    padding-bottom: 3px;
-  }
-
-  #hoy-quien-debe .fila-proporcion {
-    gap: 3px 12px;
-    padding: 3px 14px;
-    border-top: 0;
-    font-size: 13px;
-  }
-
-  #hoy-quien-debe .fila-proporcion:last-child {
-    padding-bottom: 12px;
-  }
-
-  .tarjeta__cabeza {
-    padding: 12px 14px;
-  }
-
-  .tarjeta__aparte,
-  .fila__detalle {
-    font-size: 13px;
-  }
-
-  .fila {
-    padding: 12px 14px;
-  }
-
-  .fila__acciones {
-    flex: 1 1 100%;
-  }
-
-  .fila__acciones .boton {
-    flex: 1;
-  }
-
-  /* Barra fija de abajo: Hoy, Pedidos, Calendario, Clientes y Más */
+  /* La barra de abajo: blanca, cinco botones con ícono; la sección actual en negro */
   .navegacion-celular {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
     position: fixed;
-    left: 0;
     right: 0;
     bottom: 0;
+    left: 0;
     z-index: 20;
-    padding: 6px 4px calc(8px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--borde-control);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
     background: #FFFFFF;
+    box-shadow: 0 -1px 0 var(--linea);
   }
 
   .navegacion-celular__enlace {
@@ -2251,53 +2886,47 @@ select.campo__control:not(.boton-select) {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    min-height: 48px;
+    min-height: 50px;
     padding: 0;
     border: 0;
     background: none;
     color: var(--texto-2);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 550;
+    line-height: 14px;
     text-decoration: none;
     cursor: pointer;
   }
 
   .navegacion-celular__enlace:hover {
+    text-decoration: none;
+  }
+
+  .navegacion-celular__enlace.es-actual,
+  .navegacion-celular__enlace[aria-expanded="true"] {
     color: var(--negro);
+    font-weight: 650;
   }
 
-  .navegacion-celular__enlace.es-actual {
-    color: var(--negro);
-    font-weight: 700;
-  }
-
-  .navegacion-celular__enlace.es-actual .icono {
-    stroke-width: 2;
-  }
-
-  .navegacion-celular__enlace[aria-disabled="true"] {
-    cursor: default;
-  }
-
-  /* Panel "Más": Cotizador, Telas, Resumen, Mi taller y Salir */
+  /* El panel "Más": una tarjeta encima de la barra */
   .panel-mas {
-    display: block;
     position: fixed;
-    left: 14px;
-    right: 14px;
+    right: 8px;
     bottom: calc(var(--alto-barra) + 8px + env(safe-area-inset-bottom));
-    z-index: 21;
+    left: 8px;
+    z-index: 19;
+    display: block;
   }
 
-  .panel-mas form {
-    margin: 0;
+  .panel-mas > .tarjeta {
+    overflow: hidden;
+    box-shadow: var(--sombra-menu);
   }
 
   .panel-mas__enlace {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
     min-height: 48px;
     padding: 0 16px;
@@ -2305,306 +2934,232 @@ select.campo__control:not(.boton-select) {
     border-top: 1px solid var(--linea);
     background: none;
     color: var(--negro);
-    font: inherit;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 550;
     text-align: left;
     text-decoration: none;
     cursor: pointer;
   }
 
-  .panel-mas__enlace:first-child {
+  .panel-mas .tarjeta > :first-child,
+  .panel-mas .tarjeta > :first-child .panel-mas__enlace {
     border-top: 0;
   }
 
-  .panel-mas form .panel-mas__enlace {
-    border-top: 1px solid var(--linea);
-  }
-
-  .panel-mas__enlace:hover {
-    background: var(--suave);
-    color: var(--negro);
-  }
-
   .panel-mas__enlace.es-actual {
-    background: var(--hoja);
+    font-weight: 650;
+  }
+
+  /* Hoy en celular: saludo grande a la izquierda y lo de hoy se desliza de lado */
+  .bienvenida {
+    padding: 0;
+    text-align: left;
+  }
+
+  .bienvenida h1 {
+    font-size: 28px;
+    line-height: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .bienvenida__resto {
+    display: none;
+  }
+
+  .bienvenida__apoyo {
+    display: block;
+    margin-top: 2px;
+  }
+
+  .caja-grande {
+    gap: 0;
+    padding: 0;
+    border-radius: 12px;
+    background: var(--gris);
+    box-shadow: none;
+  }
+
+  .caja-grande .buscador {
+    min-height: 44px;
+    padding: 0 14px;
+  }
+
+  .caja-grande .buscador > .icono {
+    display: block;
+  }
+
+  .caja-grande__atajos {
+    display: none;
+  }
+
+  .cartas {
+    display: flex;
+    gap: 12px;
+    margin: 0 -16px;
+    padding: 0 16px 4px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+  }
+
+  .carta {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+  }
+
+  .carta__foto {
+    height: 150px;
+  }
+
+  .seccion-titulo {
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+
+  .seccion-titulo h2 {
+    font-size: 17px;
     font-weight: 700;
   }
 
-  .panel-mas__enlace[aria-disabled="true"] {
-    color: var(--texto-2);
-    cursor: default;
+  .cifras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  /* Tablero: las filas se abren y cada tarjeta toma su turno (como diseno/hoy-celular.html) */
-  .tablero {
-    gap: 12px;
+  /* Una cifra sola al final va a lo ancho */
+  .cifras > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
-  .tablero > .dos-columnas {
-    display: contents;
+  .cifra__valor {
+    font-size: 19px;
   }
 
-  /* Abiertas las filas, el ancho mínimo de cada columna (flex-basis) se volvería alto */
-  .tablero > .dos-columnas > * {
-    flex: none;
+  .etapas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .orden-celular-1 { order: 1; }
-  .orden-celular-2 { order: 2; }
-  .orden-celular-3 { order: 3; }
-  .orden-celular-4 { order: 4; }
-  .orden-celular-5 { order: 5; }
-  .orden-celular-6 { order: 6; }
-
-  /* La ventana sube desde abajo y ocupa el ancho */
-  .ventana {
-    width: 100vw;
-    max-width: 100vw;
-    max-height: 92vh;
-    margin: auto 0 0;
-    border-radius: 12px 12px 0 0;
+  .etapas__etapa {
+    padding: 10px 12px 12px;
   }
 
-  .ventana--pagina {
-    width: auto;
-    margin: 0;
-    border-radius: 12px;
-  }
-
-  /* Calendario angosto: días más bajos y nombres que se parten */
-  .calendario__semana {
-    padding: 6px 2px;
-    font-size: 12px;
-  }
-
-  .calendario__dia {
-    min-height: 52px;
-    padding: 4px;
-  }
-
-  /* En celular cada día mide unos 50 px: cada entrega es una barrita de su color (el nombre
-     queda para los lectores de pantalla y en la lista "Entregas del mes", justo debajo) */
-  .calendario__entregas .etiqueta {
+  /* Pedidos en celular: cada pedido es una fila con su foto, nombre, total, fecha y encargada,
+     y sus dos insignias (la tabla se vuelve lista) */
+  .tabla--pedidos,
+  .tabla--pedidos tbody,
+  .tabla--pedidos td {
     display: block;
+  }
+
+  .tabla--pedidos thead,
+  .tabla--pedidos colgroup,
+  .tabla--pedidos .solo-tabla {
+    display: none;
+  }
+
+  .tabla--pedidos tr {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "mini cliente total"
+      "mini apoyo apoyo"
+      "mini insignias insignias";
+    column-gap: 12px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--linea);
+  }
+
+  .tabla--pedidos td {
+    height: auto;
+    padding: 0 !important;
+    border: 0;
+    white-space: normal;
+  }
+
+  .tabla--pedidos .celda-mini { grid-area: mini; }
+  .tabla--pedidos .celda-cliente { grid-area: cliente; font-weight: 650; min-width: 0; }
+  .tabla--pedidos .celda-total { grid-area: total; font-weight: 650; text-align: right; white-space: nowrap; }
+  .tabla--pedidos .celda-apoyo { grid-area: apoyo; color: var(--texto-2); }
+
+  /* En celular la celda de la etapa lleva también la insignia del pago (solo-celular) */
+  .tabla--pedidos .celda-etapa { grid-area: insignias; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+
+  .tabla--pedidos .celda-cliente .tabla__enlace {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tarjeta--lista-celular {
+    width: calc(100% + 32px);
+    max-width: none;
+    margin: 0 -16px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .paginas {
+    border-top: 1px solid var(--linea);
+  }
+
+  /* Calendario en celular: los días más bajos y cada entrega es una barrita de color */
+  .calendario__dia {
+    min-height: 56px;
+    padding: 4px 3px 6px;
+  }
+
+  .calendario__entregas .etiqueta {
     width: 100%;
     height: 6px;
     padding: 0;
-    overflow: hidden;
+    border-radius: 3px;
     font-size: 0;
-    color: transparent;
   }
 
-  /* La leyenda en una sola línea: los tres colores caben con menos espacio */
-  .calendario__leyenda {
-    gap: 8px 12px;
+  .calendario__entregas .etiqueta::before {
+    display: none;
   }
 
-  .calendario__clave {
-    gap: 8px;
+  .calendario__entregas .etiqueta--ambar { background: var(--ambar); }
+  .calendario__entregas .etiqueta--rojo { background: var(--rojo); }
+  .calendario__entregas .etiqueta--gris { background: var(--gris-grafica); }
+
+  .tarjeta__pie .boton {
+    flex: 1 1 auto;
   }
 }
 
 
-/* 6. Pantalla fija en computador (desde 768 px) ----------------------------- */
+/* --- Lo que solo existe en la aplicación ---------------------------------- */
 
-/* En computador el marco mide exactamente el alto de la ventana y la página nunca se
-   desplaza: el menú y el encabezado de la hoja (título y botones) quedan siempre a la vista.
-   Cada pantalla se arma para caber completa. Si una lista de verdad no cabe, se desplaza solo
-   esa lista, por dentro de su tarjeta:
+:root {
+  /* Movimiento (docs/08-diseno.md, "Animaciones"). Todas las animaciones y transiciones de la
+     aplicación usan estas duraciones y curvas: se ajustan aquí, en un solo lugar. Si la
+     persona pidió menos movimiento en su equipo, valen 0 (sección 9). static/js/app.js
+     también las lee de aquí. */
+  --duracion-corta: 150ms;   /* pasar el mouse, presionar, lo que sale */
+  --duracion: 200ms;         /* lo que entra, ventanas, menús, panel "Más", cambio de sección */
+  --duracion-larga: 250ms;   /* barras de progreso y gráficas que crecen hasta su valor */
+  --curva: cubic-bezier(0.2, 0, 0, 1);         /* arranca rápido y frena suave */
+  --curva-salida: cubic-bezier(0.4, 0, 1, 1);  /* arranca suave y se va */
 
-     <section class="tarjeta tarjeta--lista llenar">        la tarjeta llega hasta abajo
-       <div class="tarjeta__cabeza">...</div>               la cabeza queda quieta
-       <div class="tabla-contenedor desplazable">...</div>  esto se desplaza (encabezado fijo)
-     </section>
+  /* Tiempos que no son animaciones */
+  --espera-cargando: 300ms;  /* si una acción tarda más, el botón muestra "cargando" */
+  --vuelta-cargando: 700ms;  /* una vuelta del indicador "cargando" */
+  --tiempo-aviso: 2800ms;    /* cuánto se queda a la vista el aviso "Abono registrado." */
+}
 
-   .llenar sirve en la hoja, en una columna, en un tablero o en unas .dos-columnas.
-   Si aun así algo no cabe (una ventana muy baja), se desplaza el contenido de la hoja, nunca
-   la página. En celular (menos de 768 px) nada de esto aplica: se desliza como siempre. */
-
+/* En computador la página no se desplaza nunca: lo hace el contenido de la hoja. El aviso
+   para lectores de pantalla que va suelto en <body> queda fijo, fuera del flujo. */
 @media (min-width: 768px) {
-  /* La página misma no se desplaza nunca (si algo no cabe, lo hace .hoja__contenido) */
   html {
     overflow: hidden;
   }
 
-  .marco {
-    position: relative;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  /* Lo que solo oyen los lectores de pantalla (.oculto) queda dentro de su parte: no alarga
-     la página. El aviso para lectores que va suelto en <body> queda fijo, fuera del flujo. */
-  .hoja__contenido {
-    position: relative;
-  }
-
   body > .oculto {
     position: fixed;
-  }
-
-  /* El menú ocupa el alto del marco; si la ventana es muy baja, se desplaza él solo */
-  .menu {
-    position: static;
-    align-self: stretch;
-    height: auto;
-    min-height: 0;
-  }
-
-  .hoja {
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .encabezado {
-    flex: none;
-  }
-
-  /* El contenido toma el alto que deja el encabezado. Lleva 4 px de aire por dentro para que
-     el anillo del foco de una tarjeta no se corte en el borde. */
-  .hoja__contenido {
-    flex: 1 1 auto;
-    min-height: 0;
-    margin: -4px;
-    padding: 4px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-
-  /* Nada se encoge por debajo de lo que mide: lo que no cabe se desplaza (.desplazable) */
-  .hoja__contenido > *,
-  .tablero > *,
-  .columna > *,
-  .llenar > * {
-    flex-shrink: 0;
-  }
-
-  /* El último bloque de la hoja crece hasta abajo: no queda un hueco vacío al final */
-  .hoja__contenido > :last-child {
-    flex-grow: 1;
-  }
-
-  /* Abierta como página, la ventana ("Nuevo pedido" sin JavaScript) mide lo que su formulario */
-  .hoja__contenido > .ventana--pagina {
-    flex-grow: 0;
-  }
-
-  /* .llenar: el bloque toma exactamente el alto que queda donde está (la hoja, una columna,
-     un tablero o una tarjeta). Lo que no cabe dentro se desplaza en su .desplazable.
-     No va en las columnas de unas .dos-columnas (cambiaría su reparto 3 a 2): se pone en las
-     .dos-columnas, y sus columnas toman ese alto solas. */
-  .llenar {
-    flex: 1 1 0;
-    min-height: var(--alto-minimo-lista);
-  }
-
-  .tarjeta.llenar,
-  .tablero.llenar {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Unas .dos-columnas que llenan no se parten en dos filas: así cada columna mide el alto
-     de la fila y su tarjeta .llenar se desplaza por dentro en vez de estirar la fila */
-  .dos-columnas.llenar {
-    flex-wrap: nowrap;
-  }
-
-  .dos-columnas.llenar > *,
-  .columna.llenar > * {
-    min-height: 0;
-  }
-
-  /* ... pero sus columnas sí se angostan si la hoja es angosta (van en fila): así la de la
-     derecha no se sale por el borde (lo notó el carril de Resumen) */
-  .dos-columnas.llenar > * {
-    flex-shrink: 1;
-  }
-
-  /* La parte de una tarjeta que se desplaza por dentro (una tabla, una lista de filas) */
-  .desplazable {
-    flex: 1 1 0;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-
-  /* El encabezado de una tabla que se desplaza queda fijo arriba. Las líneas van pintadas
-     (box-shadow) porque el borde de una celda fija no se mueve con ella. */
-  .desplazable .tabla th {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    border-top: 0;
-    box-shadow: inset 0 1px 0 var(--linea), 0 1px 0 var(--linea);
-  }
-
-  /* Fotos que pasan dentro de una tarjeta que llena: la foto toma el alto que quede */
-  .tarjeta--fotos.llenar .fotos,
-  .tarjeta--fotos.llenar .fotos-vacio {
-    flex: 1 1 0;
-    height: auto;
-    min-height: 120px;
-  }
-}
-
-/* Pantallas de poca altura (1366 x 768, 1280 x 800, 1440 x 900): menos relleno y menos
-   espacio entre bloques, para que todo quepa. En pantallas más altas, las medidas de siempre. */
-@media (min-width: 768px) and (max-height: 900px) {
-  .hoja {
-    gap: 12px;
-    padding: 14px 24px 16px;
-  }
-
-  .hoja__contenido,
-  .tablero,
-  .columna,
-  .dos-columnas {
-    gap: 12px;
-  }
-
-  .tarjeta:not(.tarjeta--lista) {
-    padding: 12px 16px;
-  }
-
-  .tarjeta__cabeza {
-    padding: 11px 16px;
-  }
-
-  .tarjeta__cuerpo {
-    gap: 10px;
-    padding: 0 16px 14px;
-  }
-
-  .fila {
-    padding: 11px 16px;
-  }
-
-  .fila--compacta,
-  .fila-proporcion {
-    padding: 8px 16px;
-  }
-
-  .tabla th {
-    padding: 8px 16px;
-  }
-
-  .tabla td {
-    padding: 9px 16px;
-  }
-
-  .renglon {
-    padding: 8px 0;
-  }
-
-  .cifra__valor {
-    line-height: 1.2;
-  }
-
-  .etapas__etapa {
-    padding: 9px 16px;
   }
 }
 
@@ -2631,6 +3186,10 @@ select.campo__control:not(.boton-select) {
   to { opacity: 0; transform: translateY(8px); }
 }
 
+@keyframes asomar {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+
 @keyframes crecer-ancho {
   from { transform: scaleX(0); }
 }
@@ -2643,52 +3202,43 @@ select.campo__control:not(.boton-select) {
   to { transform: rotate(360deg); }
 }
 
-/* Botones y lo que se toca: responden al pasar el mouse y al presionar */
+/* Lo que se toca responde al pasar el mouse y al presionar */
 .boton,
+.chip,
 .filtro,
-.paso,
 .menu__enlace,
 .menu__contraer,
 .menu__abrir,
 .menu__lupa,
+.menu__salir,
 .ventana__cerrar,
+.desplegable__opcion,
 .navegacion-celular__enlace,
 .panel-mas__enlace,
-.tabla__fila,
-.fila--enlace,
+.tabla__fila > td,
 a.cifra,
-button.calendario__dia,
+a.etapas__etapa,
+.calendario__dia,
 button.casilla,
 input[type="file"].campo__control::file-selector-button {
   transition:
     background-color var(--duracion-corta) var(--curva),
-    border-color var(--duracion-corta) var(--curva),
+    box-shadow var(--duracion-corta) var(--curva),
     color var(--duracion-corta) var(--curva),
     opacity var(--duracion-corta) var(--curva),
     transform var(--duracion-corta) var(--curva);
 }
 
-/* Al pasar el mouse: el secundario oscurece su borde y los dos suben un poco */
-.boton:not(.boton--principal, .boton--claro, .boton--icono):hover:not(:disabled, [aria-disabled="true"]),
-.filtro:not(.es-elegido, [aria-pressed="true"]):hover {
-  border-color: var(--borde-campo);
-}
-
-@media (hover: hover) {
-  .boton:hover:not(:disabled, [aria-disabled="true"]),
-  .filtro:hover {
-    transform: translateY(-1px);
-  }
-}
-
-/* Al presionar: se hunde */
+/* Al presionar: se hunde un poco */
 .boton:active:not(:disabled, [aria-disabled="true"]),
+.chip:active,
 .filtro:active,
 .paso:active:not(:disabled),
 .menu__enlace:active:not([aria-disabled="true"]),
 .menu__contraer:active,
 .menu__abrir:active,
 .menu__lupa:active,
+.menu__salir:active,
 .ventana__cerrar:active,
 .navegacion-celular__enlace:active,
 .panel-mas__enlace:active,
@@ -2724,8 +3274,8 @@ button.casilla:active {
   content: "";
   position: absolute;
   inset: 0;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   margin: auto;
   border: 2px solid var(--negro);
   border-right-color: transparent;
@@ -2733,15 +3283,13 @@ button.casilla:active {
   animation: girar var(--vuelta-cargando) linear infinite;
 }
 
-.boton--principal.esta-cargando::after,
-.filtro.es-elegido.esta-cargando::after,
-.filtro[aria-pressed="true"].esta-cargando::after {
+.boton--principal.esta-cargando::after {
   border-color: #FFFFFF;
   border-right-color: transparent;
 }
 
-/* Barras de progreso, la barra de pagos, "Quién te debe" y las gráficas crecen hasta su
-   valor cuando aparecen (al abrir la pantalla o cuando HTMX trae la tarjeta otra vez) */
+/* Barras de progreso, "Quién te debe" y las gráficas crecen hasta su valor cuando aparecen
+   (al abrir la pantalla o cuando HTMX trae la tarjeta otra vez) */
 .progreso__relleno,
 .proporcion {
   transform-origin: left center;
@@ -2754,25 +3302,18 @@ button.casilla:active {
   animation: crecer-alto var(--duracion-larga) var(--curva) both;
 }
 
-/* Cambio de etapa: el paso se marca con una transición. Funciona porque cada paso tiene su
-   id (piezas/_pasos.html): HTMX cambia sus clases sin reemplazarlo de golpe. */
-.paso__circulo {
+/* Cambio de etapa: la barrita del paso cambia de color con una transición. Funciona porque
+   cada paso tiene su id (piezas/_pasos.html): HTMX cambia sus clases sin reemplazarlo. */
+.paso,
+.paso::before {
   transition:
     background-color var(--duracion) var(--curva),
-    border-color var(--duracion) var(--curva),
     color var(--duracion) var(--curva);
 }
 
-.paso__circulo .icono,
-.paso__circulo::after {
-  transition:
-    opacity var(--duracion) var(--curva),
-    transform var(--duracion) var(--curva);
-}
-
-/* Filas plegadas (<details>): la flecha gira */
-details > summary.fila::after {
-  transition: transform var(--duracion) var(--curva);
+/* Menú desplegable: la tarjeta asoma al abrir */
+.desplegable[open] > .desplegable__menu {
+  animation: asomar var(--duracion-corta) var(--curva);
 }
 
 /* Ventanas ("Nuevo pedido"...): abren y cierran con transición. Para cerrar, static/js/app.js
@@ -2807,10 +3348,7 @@ details > summary.fila::after {
 .marco.menu-cambia .menu {
   overflow: hidden;
   transition:
-    flex-basis var(--duracion) var(--curva),
-    flex-grow var(--duracion) var(--curva),
-    min-width var(--duracion) var(--curva),
-    max-width var(--duracion) var(--curva),
+    width var(--duracion) var(--curva),
     padding var(--duracion) var(--curva);
 }
 
@@ -2818,30 +3356,8 @@ details > summary.fila::after {
   animation: aparecer var(--duracion) var(--curva) both;
 }
 
-/* Aviso corto de confirmación ("Abono registrado."): una píldora negra abajo, en el centro.
-   La pone static/js/app.js; los lectores de pantalla lo oyen por su propia caja. */
-.avisos {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  z-index: 30;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: max-content;
-  max-width: calc(100vw - 32px);
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
+/* Aviso corto de confirmación ("Abono registrado."): sube al llegar y baja al irse */
 .aviso-corto {
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--negro);
-  color: #FFFFFF;
-  font-weight: 600;
-  text-align: center;
   animation: subir var(--duracion) var(--curva);
 }
 
@@ -2871,11 +3387,6 @@ details > summary.fila::after {
 }
 
 @media (max-width: 767.98px) {
-  /* En celular el aviso queda encima de la barra de abajo */
-  .avisos {
-    bottom: calc(var(--alto-barra) + 12px + env(safe-area-inset-bottom));
-  }
-
   /* La ventana sube desde abajo, como una hoja */
   .ventana[open] {
     animation-name: subir-desde-abajo;
@@ -2885,10 +3396,15 @@ details > summary.fila::after {
     animation-name: bajar-hasta-abajo;
   }
 
-  /* En la franja negra el botón principal es blanco: su círculo de "cargando" va en negro */
-  .encabezado__acciones .boton--principal.esta-cargando::after {
-    border-color: #000000;
-    border-right-color: transparent;
+  /* En celular el menú desplegable sale desde abajo */
+  .desplegable[open] > .desplegable__menu {
+    animation-name: subir;
+  }
+
+  /* El botón principal redondo es negro: su círculo de "cargando" va en blanco */
+  .boton--redondo-celular.esta-cargando::after {
+    width: 16px;
+    height: 16px;
   }
 }
 
@@ -2901,588 +3417,249 @@ details > summary.fila::after {
 }
 
 
-/* 8. Ajustes de cada pantalla para la pantalla fija ---------------------------- */
+/* 8. Ajustes de cada pantalla ------------------------------------------------ */
 
-/* Cada pantalla tiene su apartado. Solo lleva reglas de computador (desde 768 px): en
-   celular todo sigue como está. Lo escribe el agente de esa pantalla, solo dentro de su
-   apartado, y lo revisa el coordinador al unirlo. */
+/* Casi todo está en las piezas (secciones 4 y 5). Si a una pantalla le falta algo propio, va
+   en su apartado, y solo ahí. Lo escribe el agente de esa pantalla y lo revisa el coordinador
+   al unirlo. */
 
 /* --- Hoy (inicio) --- */
-
-/* Hoy en la pantalla fija (pedidos/templates/pedidos/hoy.html). El tablero toma el alto de la
-   hoja y se reparte así, de arriba abajo:
-     - las cifras, la fila de la plata y "Pedidos por etapa" miden lo que su contenido;
-     - la fila de "Qué hacer hoy" y "Trabajos del taller" toma lo que queda: la lista se
-       desplaza por dentro y la foto crece o se achica;
-     - en la fila de la plata manda la gráfica; "Quién te debe" se desplaza por dentro.
-   La costurera no tiene la fila de la plata: su primera fila toma ese alto también. */
-@media (min-width: 768px) {
-  /* Si la ventana es tan baja que ni así cabe, se desplaza la hoja (no se monta nada encima) */
-  .hoja__contenido > .tablero.llenar {
-    min-height: min-content;
-  }
-
-  /* La primera fila no baja de lo que necesita "Trabajos del taller" con su foto más pequeña */
-  .tablero > .dos-columnas.llenar {
-    min-height: 210px;
-  }
-
-  /* La gráfica baja (alto_computador en _grafica.html) crece con el ancho de su tarjeta, hasta
-     un tope: con el menú contraído en una pantalla grande, queda centrada en vez de crecer más */
-  #hoy-grafica .grafica--computador {
-    max-height: 190px;
-  }
-
-  /* Pedidos por etapa: el número y su etiqueta ("1 atrasado", "Pagado") en la misma línea */
-  #hoy-etapas .etapas__etapa {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 2px 8px;
-  }
-
-  #hoy-etapas .etapas__nombre {
-    flex-basis: 100%;
-  }
+/* Sin pendientes: la nota ocupa todo el ancho de las tarjetas (en celular, un ancho de tarjeta) */
+.cartas__vacio {
+  grid-column: 1 / -1;
+  flex: 1 0 auto;
+  padding: 18px 0;
+  text-align: center;
 }
-
-/* Pantallas bajas (1366 x 768): todo un poco más apretado para que quepa */
-@media (min-width: 768px) and (max-height: 900px) {
-  /* Cifras: menos relleno y renglones más juntos */
-  #hoy-cifras .cifra {
-    padding: 9px 16px;
-  }
-
-  #hoy-cifras .cifra__nombre,
-  #hoy-cifras .cifra__apoyo {
-    line-height: 1.35;
-  }
-
-  #hoy-cifras .cifra__valor {
-    line-height: 1.15;
-  }
-
-  /* Cabezas de tarjeta un poco más bajas */
-  #hoy-que-hacer .tarjeta__cabeza,
-  .tablero .tarjeta--fotos .tarjeta__cabeza,
-  #hoy-quien-debe .tarjeta__cabeza,
-  #hoy-etapas .tarjeta__cabeza {
-    padding-top: 9px;
-    padding-bottom: 9px;
-  }
-
-  /* La gráfica no pasa de 114 px de alto (su alto con el menú abierto en 1366 px de ancho): si
-     su tarjeta es más ancha, queda centrada */
-  #hoy-grafica {
-    gap: 6px;
-    padding: 10px 16px;
-  }
-
-  #hoy-grafica .cifra-grande {
-    line-height: 1.2;
-  }
-
-  #hoy-grafica .grafica--computador {
-    max-height: 114px;
-  }
-
-  /* Quién te debe: filas un poco más juntas (caben las de la altura de la gráfica) */
-  #hoy-quien-debe .fila-proporcion {
-    gap: 3px 12px;
-    padding-top: 7px;
-    padding-bottom: 7px;
-    line-height: 1.35;
-  }
-
-  /* La nota de "Trabajos del taller", más junta */
-  .tablero .tarjeta--fotos .tarjeta__nota {
-    padding-top: 8px;
-    padding-bottom: 8px;
-    line-height: 1.35;
-  }
-
-  #hoy-etapas .etapas__etapa {
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
-
-  #hoy-etapas .etapas__nombre {
-    line-height: 1.35;
-  }
-
-  #hoy-etapas .etapas__cantidad {
-    line-height: 1.2;
-  }
-}
-
-/* Si el tablero es angosto (una tableta, o el computador con la ventana a medio ancho) y las
-   tarjetas de una fila ya no caben de lado a lado (440 + 300 px y su separación), Hoy se
-   apila como antes: cada tarjeta mide lo que su contenido y lo que no cabe se desplaza en la
-   hoja. Se mide el ancho del tablero, no el de la ventana (@container), porque depende de si
-   el menú está contraído. */
-@media (min-width: 768px) {
-  .hoja__contenido > .tablero.llenar {
-    container-type: inline-size;
-  }
-}
-
-@container (max-width: 755.98px) {
-  .tablero > .dos-columnas.llenar {
-    flex: none;
-    flex-wrap: wrap;
-  }
-
-  .tablero > .dos-columnas.llenar > * {
-    min-height: auto;
-  }
-
-  #hoy-que-hacer.llenar,
-  #hoy-quien-debe.llenar,
-  .tablero .tarjeta--fotos.llenar {
-    flex: 1 0 auto;
-  }
-
-  #hoy-que-hacer .desplazable,
-  #hoy-quien-debe .desplazable {
-    flex: none;
-    overflow-y: visible;
-  }
-
-  .tablero .tarjeta--fotos.llenar .fotos {
-    flex: none;
-    height: 264px;
-  }
-
-  .tablero .tarjeta--fotos.llenar .fotos-vacio {
-    flex: 1 0 auto;
-    min-height: 264px;
-  }
-}
-
-/* En celular, Hoy queda como estaba. La lista de "Quién te debe" va ahora dentro de su parte
-   que se desplaza (en el computador): la cabeza conserva el relleno apretado de celular. */
-@media (max-width: 767.98px) {
-  #hoy-quien-debe .tarjeta__cabeza:has(+ .desplazable) {
-    padding-bottom: 3px;
-  }
-}
-
-/* La nota de "Qué hacer hoy" sin pendientes va dentro de su lista: sin relleno de más arriba,
-   como cuando iba justo debajo de la cabeza. */
-#hoy-que-hacer-lista > .tarjeta__nota:only-child {
-  padding-top: 0;
-}
-
 /* --- Hoy (fin) --- */
 
-
-/* --- Pedidos y Buscar (inicio) --- */
-
-@media (min-width: 768px) {
-  /* Pedidos: los filtros y el buscador quedan quietos arriba y la tarjeta de la tabla llega
-     hasta abajo (.llenar). La zona que cambia el buscador (.zona-tabla) le pasa ese alto a
-     la tabla, que con muchos pedidos se desplaza por dentro con su encabezado fijo. */
-  .llenar > .zona-tabla,
-  .tarjeta--resultados > .zona-tabla {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  /* Buscar: debajo del buscador, una o dos tarjetas de resultados (Pedidos y Clientes) se
-     reparten el alto que queda. Cada una mide lo que necesita mientras quepa; si no caben
-     las dos, la más corta se ve entera y la más larga toma el resto y se desplaza por
-     dentro; si las dos son largas, mitad y mitad. Lo que sobra lo toma la última, que llega
-     hasta abajo. Lo hace una rejilla en la hoja de esta pantalla (solo cuando hay
-     resultados): el buscador mide lo suyo; si hay dos tarjetas, la primera crece como mucho
-     hasta su contenido; la última se estira hasta abajo. */
-  .hoja__contenido:has(> .tarjeta--resultados) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: max-content auto;
-  }
-
-  .hoja__contenido:has(> .tarjeta--resultados + .tarjeta--resultados) {
-    grid-template-rows: max-content minmax(auto, max-content) auto;
-  }
-
-  .tarjeta--resultados {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  /* Miden por su contenido (no desde cero), para que la rejilla sepa cuánto necesita cada
-     tarjeta; si no cabe, se encogen y se desplazan por dentro. */
-  .tarjeta--resultados .desplazable {
-    flex: 1 1 auto;
-  }
+/* --- Pedidos, Buscar y Nuevo pedido (inicio) --- */
+/* La fila del buscador de Pedidos: va escondida detrás de la lupa y sale entre las pestañas y la
+   tabla. En Buscar va sola, arriba de la tarjeta. */
+.buscador-fila {
+  padding: 8px;
+  border-bottom: 1px solid var(--linea);
 }
 
-/* --- Pedidos y Buscar (fin) --- */
+.buscador-fila[hidden] {
+  display: none;
+}
 
+.buscador-fila--sola {
+  border-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+  .buscador-fila {
+    padding: 0 16px 10px;
+    border-bottom: 0;
+  }
+
+  .buscador-fila--sola {
+    padding: 16px;
+  }
+}
+/* --- Pedidos, Buscar y Nuevo pedido (fin) --- */
 
 /* --- Pedido por dentro (inicio) --- */
 
-/* Pedido por dentro (pedidos/pedido.html). Las dos columnas (.pedido-por-dentro) toman el alto
-   que deja "Eliminar el pedido"; la lista de Materiales se desplaza por dentro y la foto toma
-   el alto que quede. Las tarjetas son más compactas que en las demás pantallas, en todos los
-   altos: esta es la pantalla con más cosas. Si aun así no cabe (1366 x 768 con la tarjeta
-   Pagos), las columnas miden lo que necesitan y se desplaza la hoja, como en las demás. */
-@media (min-width: 768px) {
-  /* Las columnas nunca miden menos que su contenido más apretado: si no cabe, la hoja se
-     desplaza en vez de montar una tarjeta sobre "Eliminar el pedido" */
-  .pedido-por-dentro.llenar,
-  .pedido-por-dentro.llenar > .columna {
-    min-height: auto;
-  }
+/* Etapa: el formulario envuelve los pasos y el pie, y no cambia su aspecto */
+.etapa-formulario > .pasos {
+  padding: 4px 16px 14px;
+}
 
-  /* "Eliminar el pedido" mide lo suyo: lo que sobra es de las columnas */
-  .hoja__contenido > #pedido-eliminar {
-    flex-grow: 0;
-  }
+/* Pago: el pie va un poco separado de las cuentas, y el formulario de abono debajo */
+#pagos .tarjeta__pie {
+  margin-top: 8px;
+}
 
-  .pedido-por-dentro .columna {
-    gap: 12px;
-  }
 
-  .pedido-por-dentro .tarjeta__cabeza,
-  #pedido-eliminar .tarjeta__cabeza {
-    padding: 10px 16px;
-  }
+.pagos__registrar[open] {
+  border-top: 1px solid var(--linea);
+}
 
-  .pedido-por-dentro .tarjeta__cuerpo {
-    gap: 8px;
-    padding: 0 16px 12px;
-  }
+.pagos__confirmar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
 
-  .pedido-por-dentro .fila--compacta {
-    padding: 8px 16px;
-  }
+/* Tallas: lo que muestra "Ver las N personas" (la lista y el formulario para agregar a mano) */
+.tallas__resumen {
+  padding-top: 4px;
+  gap: 10px;
+}
 
-  .pedido-por-dentro .cifra-grande {
-    line-height: 1.2;
-  }
+#tarjeta-tallas .tarjeta__pie {
+  align-items: center;
+}
 
-  /* Etapa: los pasos con menos aire arriba y abajo */
-  .pedido-por-dentro .paso {
-    gap: 4px;
-    padding: 2px;
-  }
+#tallas-detalle {
+  border-top: 1px solid var(--linea);
+}
 
-  /* Materiales: la lista se desplaza; la cabeza y el formulario quedan quietos. La tarjeta
-     nunca mide menos que su cabeza, el formulario y un poco de lista (overflow: clip, y no
-     hidden, para que el navegador sepa cuánto es eso). */
-  #pedido-materiales {
-    min-height: auto;
-    overflow: clip;
-  }
+.tallas__personas {
+  display: flex;
+  flex-direction: column;
+}
 
-  /* La lista no crece más que sus materiales: si sobra alto, queda en blanco al final de la
-     tarjeta (como antes), no entre la lista y el formulario. Con uno o dos materiales mide lo
-     suyo; con tres o más, si falta alto, se achica hasta mostrar unos dos. */
-  .materiales__lista {
-    min-height: max-content;
-    max-height: max-content;
-  }
+.tallas__personas > .fila:first-child {
+  border-top: 0;
+}
 
-  .materiales__lista:has(> .fila:nth-child(3)) {
-    min-height: 90px;
-  }
+.tallas__personas--alta {
+  max-height: 320px;
+  overflow-y: auto;
+}
 
-  /* Tallas: abierta, la lista de personas se desplaza si son más de tres. Se asoma la mitad
-     de la cuarta, para que se note que hay más. */
-  details[open] > .tallas__personas {
-    max-height: 206px;
-  }
+/* Materiales: casilla y nombre a la izquierda; cantidad y quitar a la derecha */
+.materiales__lista {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+}
 
-  /* Foto: la tarjeta toma el alto que queda. La foto mide 264 px, como siempre, y si falta
-     alto se achica hasta 120 px; la invitación sin foto mide 120 px y se achica hasta lo que
-     mide su frase. Lo que sobra queda en blanco al final de la tarjeta, no en gris. */
-  #pedido-foto {
-    min-height: auto;
-    overflow: clip;
-  }
+.materiales__marcar {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
 
-  #pedido-foto .fotos {
-    flex: 1 1 0;
-    min-height: 120px;
-    max-height: 264px;
-  }
+.materiales__marcar label {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
 
-  #pedido-foto .fotos-vacio {
-    flex: 1 1 0;
-    min-height: auto;
-    max-height: 120px;
-    padding: 10px 16px;
-  }
+.materiales__resto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  #pedido-foto .tarjeta__nota {
-    padding: 8px 16px;
-  }
+.materiales__agregar {
+  flex-wrap: wrap;
+  justify-content: stretch;
+}
 
-  /* Elegir la foto: el campo mide 36 px, como los demás */
-  #pedido-foto input[type="file"].campo__control {
-    padding: 2px 3px;
-  }
+.materiales__agregar .materiales__nombre {
+  width: auto;
+  flex: 1 1 110px;
+  min-width: 0;
+}
 
-  #pedido-foto input[type="file"].campo__control::file-selector-button {
-    min-height: 30px;
-  }
+.materiales__agregar .materiales__cantidad {
+  width: auto;
+  flex: 0 1 80px;
+  min-width: 0;
+}
 
-  /* Pagos: cada abono con menos aire arriba */
-  .pedido-por-dentro .pagos__abono {
-    padding-top: 8px;
-  }
+.materiales__agregar .campo__error {
+  flex-basis: 100%;
 }
 
 /* --- Pedido por dentro (fin) --- */
 
-
-/* --- Nuevo pedido (inicio) --- */
-
-/* Sin reglas propias: la ventana cabe en 1366 x 768 aun con todos los errores (mide unos
-   680 px de alto) y, abierta como página, también. */
-
-/* --- Nuevo pedido (fin) --- */
-
-
 /* --- Calendario (inicio) --- */
-
-/* Las dos columnas llegan hasta abajo, sin hueco (las .dos-columnas llevan .llenar):
-   - el mes llena su tarjeta: sus semanas (4, 5 o 6) se reparten el alto que deja la
-     leyenda. Si un día tiene más entregas de las que caben en su cuadro, se ven las
-     primeras; la lista de la derecha las trae todas;
-   - a la derecha, "Entregas del mes" mide lo que sus filas; si son muchas, se encoge y solo
-     su lista se desplaza. "Semana más cargada" llega hasta abajo, como en el diseño. */
-@media (min-width: 768px) {
-  /* Una ventana muy baja no aplasta las semanas (cada una sigue midiendo al menos 56 px):
-     36 (días de la semana) + 6 x 56 + 46 (leyenda) + 2 (borde). Por debajo, se desplaza
-     la hoja. */
-  .dos-columnas--calendario {
-    min-height: 420px;
-  }
-
-  /* En una ventana angosta (de 768 a unos 1080 px con el menú abierto) las dos columnas se
-     angostan juntas: si no, la de la derecha se saldría de la hoja y no se vería. */
-  .dos-columnas--calendario > * {
-    flex-shrink: 1;
-  }
-
-  .columna-ancha--calendario {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .columna-ancha--calendario > .calendario {
-    flex: 1 1 0;
-    min-height: 0;
-    grid-template-rows: auto;          /* Lun, Mar... */
-    grid-auto-rows: minmax(0, 1fr);    /* las semanas, todas del mismo alto */
-  }
-
-  .columna-ancha--calendario > .calendario__leyenda {
-    flex: none;
-  }
-
-  .calendario__dia {
-    min-height: 0;
-  }
-
-  /* Al tocar un día, la cuadrícula llega nueva (con el día marcado) y el día tocado sigue
-     bajo el mouse: si su fondo gris se animara, ese día parpadearía. El fondo cambia
-     directo; "cargando" sigue igual. */
-  button.calendario__dia {
-    transition-property: opacity;
-  }
-
-  .calendario__numero {
-    flex: none;
-  }
-
-  /* Un día con más entregas de las que caben muestra las primeras; tocarlo las trae todas a
-     la lista. No se desplaza por dentro: Chrome haría de esa parte una parada más del
-     tabulador dentro del botón del día. */
-  .calendario__entregas {
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  /* Cada entrega mide lo que su nombre (hasta tres líneas): no se aplasta para caber */
-  .calendario__entregas > .etiqueta {
-    flex: none;
-  }
-
-  .columna > .calendario-lista {
-    display: flex;
-    flex: 0 1 auto;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  .calendario-lista > .desplazable {
-    flex: 0 1 auto;
-  }
-}
-
 /* --- Calendario (fin) --- */
 
-
 /* --- Clientes (inicio) --- */
-
-/* Sin reglas propias: la tarjeta de la lista lleva .llenar y la caja de la tabla
-   (#clientes-lista) es su .desplazable, así que el aviso de dotación y el buscador quedan
-   quietos y solo la tabla se desplaza, con el encabezado fijo. */
-
 /* --- Clientes (fin) --- */
-
 
 /* --- Cotizador (inicio) --- */
 
-/* Sin reglas propias: con el relleno menor de la sección 6 cabe en 1366 x 768 (también con
-   una prenda elegida y el resultado lleno; sobran 36 px) y las dos columnas terminan juntas
-   al final de la hoja. Lo comprueba cotizador/tests/test_pantalla_fija_cotizador.py. */
+/* La tarjeta del resultado: el total grande pegado a su título, como en diseno/cotizador.html */
+.cotizacion > .tarjeta__cuerpo {
+  gap: 2px;
+  padding-top: 14px;
+}
 
+.cotizacion > .tarjeta__cuerpo h2 {
+  font-weight: 450;
+}
+
+.cotizacion .cuentas {
+  padding-bottom: 8px;
+}
 /* --- Cotizador (fin) --- */
 
-
 /* --- Telas (inicio) --- */
-
-/* La tarjeta de la tabla llega hasta abajo (.llenar, en telas/_tabla.html) y solo la tabla se
-   desplaza por dentro (.desplazable), con su encabezado fijo; las cifras quedan quietas.
-   Con pocas telas la tabla mide lo suyo y la nota "Toca el nombre de una tela..." va justo
-   debajo, como antes (no al fondo de la tarjeta). Con muchas, la tabla se encoge hasta el
-   espacio que queda y la nota se queda quieta abajo. */
-@media (min-width: 768px) {
-  #telas > .desplazable {
-    flex: 0 1 auto;
-  }
-}
-
 /* --- Telas (fin) --- */
 
-
 /* --- Resumen (inicio) --- */
-
-/* Resumen (finanzas/resumen.html). En computador, la fila de la gráfica y los gastos toma el
-   alto que queda (.llenar) y la lista de gastos se desplaza por dentro de su tarjeta
-   (#gastos-lista, .desplazable); las cifras, la gráfica y la fila de abajo quedan quietas. */
-
-/* Sin gastos, la nota va pegada a la cabeza, como antes de que la lista tuviera su caja
-   (#gastos-lista): así queda igual también en celular. */
-#gastos-lista > .tarjeta__nota:first-child {
-  padding-top: 0;
-}
-
-@media (min-width: 768px) {
-  /* La fila nunca es más baja que la gráfica: en una ventana muy baja se desplaza la hoja,
-     como en las demás pantallas, en vez de cortar la gráfica. La lista de gastos no cuenta
-     para ese mínimo: ella se desplaza por dentro. */
-  .resumen__fila-gastos.llenar {
-    min-height: auto;
-  }
-
-  /* Las dos tarjetas de la fila se reparten el ancho (3 a 2) también cuando la hoja es
-     angosta: se encogen en vez de salirse por la derecha (.llenar > * no se encoge) */
-  .resumen__fila-gastos.llenar > * {
-    flex-shrink: 1;
-  }
-
-  /* Ventas por tipo y Quién tiene qué miden lo suyo: el alto que sobra es para los gastos */
-  .hoja__contenido > .resumen__fila-barras {
-    flex-grow: 0;
-  }
-
-  /* La tarjeta de gastos: la cabeza queda quieta y la lista se desplaza debajo de ella */
-  #gastos {
-    display: flex;
-    flex-direction: column;
-  }
-}
-
-/* La gráfica viene en dos versiones (finanzas/_grafica.html): la baja del computador (alto
-   160) y la de siempre (alto 200, la misma del celular y del diseño). La baja solo hace falta
-   en pantallas de poca altura (hasta 900 px), para que quede holgura aunque "Quién tiene qué"
-   tenga más personas. En pantallas más altas sobra espacio: va la de siempre. */
-@media (min-width: 768px) and (min-height: 901px) {
-  #resumen-grafica .grafica--computador {
-    display: none;
-  }
-
-  #resumen-grafica .grafica--celular {
-    display: block;
-  }
-}
-
 /* --- Resumen (fin) --- */
 
+/* --- Mi taller, Entrar y formulario público (inicio) --- */
 
-/* --- Mi taller (inicio) --- */
+/* El cuadrito del taller al lado del campo del logo: la vista previa de cómo se ve en el menú */
+.vista-logo {
+  flex-wrap: nowrap;
+  align-items: center;
+}
 
-/* Mi taller (cuentas/mi_taller.html): la fila de las dos tarjetas toma el alto que queda
-   (.dos-columnas.llenar) y cada tarjeta lo reparte de arriba abajo.
-   - Costureras: la cabeza y la nota quedan quietas. Debajo van la lista y el formulario para
-     agregar, uno detrás del otro, como siempre. Si son muchas, solo la lista se desplaza y el
-     formulario sigue a la vista. Si la ventana es tan baja que ni así cabe, se desplaza la
-     lista junto con el formulario (mi-taller__cuerpo): nada se corta.
-   - Tu taller: el formulario se desplaza por dentro solo si no cabe (una ventana muy baja).
-   En una ventana angosta (menos de 900 px, una tableta parada) las dos tarjetas no caben una
-   al lado de la otra: van una debajo de la otra, como antes, y se desplaza la hoja. */
-@media (min-width: 768px) and (max-width: 899.98px) {
-  .mi-taller.llenar {
-    flex: 1 0 auto;
+.vista-logo .menu__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* Un poco más de aire arriba de los campos, y las cabezas con lista debajo, más bajas */
+#tu-taller .tarjeta__cuerpo {
+  padding-top: 16px;
+}
+
+#costureras section .tarjeta__cabeza {
+  padding-bottom: 12px;
+}
+
+/* Cambiar el nombre de una costurera: el campo ocupa la fila y los botones quedan a la derecha */
+.persona--formulario {
+  align-items: flex-end;
+}
+
+.persona--formulario .persona__texto {
+  flex: 1 1 160px;
+}
+
+.persona--formulario .botones {
+  flex: none;
+}
+
+.persona__texto .etiqueta {
+  align-self: flex-start;
+}
+
+/* Los campos de la tarjeta blanca del formulario público van separados 14 px */
+.acceso__tarjeta .columna {
+  gap: 14px;
+}
+
+.acceso__tarjeta--centrada {
+  align-items: center;
+  text-align: center;
+}
+
+@media (max-width: 767.98px) {
+  .persona {
     flex-wrap: wrap;
   }
-}
 
-@media (min-width: 900px) {
-  /* Van una al lado de la otra: si la fila es más angosta que las dos (una ventana de menos
-     de unos 1050 px), se angostan las dos en vez de salirse por la derecha */
-  .mi-taller > .tarjeta {
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 1;
-  }
-
-  .mi-taller .tarjeta__cabeza,
-  .mi-taller .tarjeta__nota {
-    flex: none;
-  }
-
-  .mi-taller__cuerpo {
-    display: flex;
-    flex: 1 1 0;
-    flex-direction: column;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-
-  /* Con pocas costureras la lista mide lo que sus filas, sin encogerse. Desde tres, se encoge
-     para dejar el formulario a la vista, hasta un mínimo (por debajo, se desplaza el cuerpo). */
-  .mi-taller .mi-taller__lista {
-    flex: none;
-  }
-
-  .mi-taller .mi-taller__lista:has(> :nth-child(3)) {
-    flex: 0 1 auto;
-    min-height: var(--alto-minimo-lista);
-  }
-
-  .mi-taller__cuerpo > .pagos__form {
-    flex: none;
+  .persona .botones {
+    margin-left: auto;
   }
 }
-
-/* --- Mi taller (fin) --- */
+/* --- Mi taller, Entrar y formulario público (fin) --- */
 
 
 /* 9. Menos movimiento ------------------------------------------------------ */
 
 /* Si la persona pidió menos movimiento en su equipo, no ve animaciones: las duraciones valen
-   0 (todo llega directo a su lugar), nada sube ni se hunde y el cambio de sección no se
-   desvanece. static/js/app.js tampoco anima nada. */
+   0 (todo llega directo a su lugar), nada se hunde y el cambio de sección no se desvanece.
+   static/js/app.js tampoco anima nada. */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duracion-corta: 0ms;
@@ -3495,12 +3672,14 @@ details > summary.fila::after {
   }
 
   .boton,
+  .chip,
   .filtro,
   .paso,
   .menu__enlace,
   .menu__contraer,
   .menu__abrir,
   .menu__lupa,
+  .menu__salir,
   .ventana__cerrar,
   .navegacion-celular__enlace,
   .panel-mas__enlace,
@@ -3512,10 +3691,5 @@ details > summary.fila::after {
   .boton.esta-cargando::after,
   .filtro.esta-cargando::after {
     animation: none;
-  }
-
-  .fotos__foto,
-  .fotos__punto {
-    transition: none;
   }
 }

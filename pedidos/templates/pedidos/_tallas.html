@@ -2,19 +2,23 @@
 Tarjeta "Tallas" del pedido por dentro (T10, diseno/pedido.html). Recibe `pedido` y
 `tarjeta_tallas` (lo arma pedidos.vistas.tallas.tarjeta). Cada acción la vuelve a dibujar
 entera: HTMX cambia la sección con id "tarjeta-tallas" por la nueva.
-Arriba va lo del diseño (recibidas, barra por talla y los dos botones de copiar). Debajo, lo
-que pide docs/03-pantallas.md y no está dibujado: el enlace abierto o cerrado, la lista
-persona por persona y el formulario para agregar a mano.
-{% endcomment %}{% with t=tarjeta_tallas %}<section class="tarjeta tarjeta--lista" id="tarjeta-tallas" aria-labelledby="t-tallas">
-<div class="tarjeta__cabeza"><h2 id="t-tallas">Tallas</h2></div>
-<div class="tarjeta__cuerpo">
-<div class="cifra-grande">{{ t.recibidas }} de {{ t.esperadas }} <span class="cifra-grande__apoyo">recibidas</span></div>
-{% include "piezas/_progreso.html" with porcentaje=t.porcentaje nombre="Tallas recibidas" %}
-{% for fila in t.filas %}<div class="fila-talla"><strong>{{ fila.talla }}</strong>{% include "piezas/_progreso.html" with porcentaje=fila.porcentaje alta=True nombre="Talla "|add:fila.talla %}<strong>{{ fila.cantidad }}</strong></div>
-{% endfor %}{% if t.a_la_medida %}<div class="texto-2">A la medida: <strong>{{ t.a_la_medida }}</strong>{% if t.a_la_medida == 1 %} persona{% else %} personas{% endif %}, con sus medidas en la lista.</div>
-{% endif %}<div class="botones"><button type="button" class="boton boton--principal" data-copiar="{{ t.enlace }}">Copiar enlace para el cliente</button><button type="button" class="boton" data-copiar="{{ t.resumen }}">Copiar resumen</button></div>
-</div>
-{% include "pedidos/_talla_enlace.html" %}
+Lo del diseño: la insignia del enlace, "14 de 18 personas enviaron su talla", una barra por
+talla y el pie con "Ver las N personas", "Copiar resumen" y "Copiar enlace para el cliente".
+"Ver las N personas" muestra u oculta (data-mostrar) la lista persona por persona y el formulario
+para agregar a mano; sin JavaScript lleva a la misma página con la lista a la vista (?personas=1).
+Abrir o cerrar el enlace, que es de la dueña, va en el pie.
+{% endcomment %}{% with t=tarjeta_tallas %}<section class="tarjeta" id="tarjeta-tallas" aria-labelledby="t-tallas">
+<div class="tarjeta__cabeza"><h2 id="t-tallas">Tallas</h2><span class="tarjeta__aparte">{% if pedido.tallas_abiertas %}{% include "piezas/_etiqueta.html" with texto="Enlace abierto" tono="gris" %}{% else %}{% include "piezas/_etiqueta.html" with texto="Enlace cerrado" tono="gris" %}{% endif %}</span></div>
+<div class="tarjeta__cuerpo tallas__resumen">
+<div><span class="cifra-grande">{{ t.recibidas }} de {{ t.esperadas }}</span> <span class="cifra-grande__apoyo">persona{{ t.recibidas|pluralize:" envió,s enviaron" }} su talla</span></div>
+{% if t.filas %}<div class="tallas-barras">
+{% for fila in t.filas %}<span>{{ fila.talla }}</span>{% include "piezas/_progreso.html" with porcentaje=fila.porcentaje delgado=True nombre="Talla "|add:fila.talla %}<span>{{ fila.cantidad }}</span>
+{% endfor %}</div>{% endif %}
+{% if t.a_la_medida %}<div class="texto-2">A la medida: <strong>{{ t.a_la_medida }}</strong>{% if t.a_la_medida == 1 %} persona{% else %} personas{% endif %}, con sus medidas en la lista.</div>
+{% endif %}</div>
+<div class="tarjeta__pie"><a class="boton boton--plano" href="?personas=1#tarjeta-tallas" data-mostrar="tallas-detalle" aria-controls="tallas-detalle" aria-expanded="{% if t.ver_personas %}true{% else %}false{% endif %}">{% if t.personas|length > 1 %}Ver las {{ t.personas|length }} personas{% elif t.personas %}Ver la persona{% else %}Agregar a mano{% endif %}</a>{% include "pedidos/_talla_enlace.html" %}<button type="button" class="boton" data-copiar="{{ t.resumen }}">Copiar resumen</button><button type="button" class="boton" data-copiar="{{ t.enlace }}">Copiar enlace para el cliente</button></div>
+<div id="tallas-detalle"{% if not t.ver_personas %} hidden{% endif %}>
 {% include "pedidos/_talla_personas.html" %}
 {% include "pedidos/_talla_form.html" %}
+</div>
 </section>{% endwith %}

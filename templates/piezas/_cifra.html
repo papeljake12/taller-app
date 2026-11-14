@@ -1,13 +1,11 @@
 {% comment %}
-Pieza Cifra: nombre, número grande y una línea de apoyo.
-  {% include "piezas/_cifra.html" with nombre="Atrasados" valor=1 apoyo="Pasó la fecha de entrega" alerta=True url=... %}
-- alerta: borde y número en rojo (solo para atrasos y deudas).
-- buena: nombre y número en verde (solo para "Te quedó").
-- ambar: borde, nombre y número en ámbar (estar pendiente: telas que se acaban).
-- clase: clases de más (por ejemplo, orden-celular-2 para su turno en celular).
-- url: si se da, la cifra entera es un enlace (por ejemplo, a Pedidos con ese filtro).
-{% endcomment %}{% if url %}<a class="tarjeta cifra{% if alerta %} cifra--alerta{% endif %}{% if buena %} cifra--buena{% endif %}{% if ambar %} cifra--ambar{% endif %}{% if clase %} {{ clase }}{% endif %}" href="{{ url }}">{% else %}<div class="tarjeta cifra{% if alerta %} cifra--alerta{% endif %}{% if buena %} cifra--buena{% endif %}{% if ambar %} cifra--ambar{% endif %}{% if clase %} {{ clase }}{% endif %}">{% endif %}
-<div class="cifra__nombre">{{ nombre }}</div>
-<div class="cifra__valor">{{ valor }}</div>
-{% if apoyo %}<div class="cifra__apoyo">{{ apoyo }}</div>{% endif %}
-{% if url %}</a>{% else %}</div>{% endif %}
+Pieza Cifra: una casilla de una tarjeta de cifras (<section class="cifras">), con su nombre y
+su número. Si se toca, abre la pantalla de donde sale (url).
+  {% include "piezas/_cifra.html" with nombre="Atrasados" valor=1 alerta=True url=... explica="Pasó la fecha de entrega" %}
+- alerta: el número en rojo (solo para atrasos y deudas).
+- explica: de dónde sale el número; se ve al pasar el mouse y el nombre lleva un subrayado
+  punteado (como en Shopify).
+- apoyo: una línea pequeña debajo del número (Resumen, Telas).
+- clase: clases de más.
+Las cifras van juntas dentro de <section class="cifras"> (o "cifras cifras--barra" en una lista).
+{% endcomment %}{% if url %}<a class="cifra{% if alerta %} cifra--alerta{% endif %}{% if clase %} {{ clase }}{% endif %}" href="{{ url }}"{% if explica %} title="{{ explica }}"{% endif %}>{% else %}<div class="cifra{% if alerta %} cifra--alerta{% endif %}{% if clase %} {{ clase }}{% endif %}"{% if explica %} title="{{ explica }}"{% endif %}>{% endif %}<span class="cifra__nombre">{{ nombre }}</span><span class="cifra__valor">{{ valor }}</span>{% if apoyo %}<span class="cifra__apoyo">{{ apoyo }}</span>{% endif %}{% if url %}</a>{% else %}</div>{% endif %}

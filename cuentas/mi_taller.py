@@ -30,6 +30,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
 from config.avisos import avisar
+from config.menu import iniciales
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import del_taller, obtener_o_404
 from cuentas.formularios_mi_taller import (
@@ -105,8 +106,17 @@ def contexto_taller(taller, form=None, guardado=False):
         "taller": taller,
         "form_taller": form or FormularioTaller(instance=taller),
         "logo": logo_del_taller(taller),
+        "iniciales": iniciales(taller.nombre),
         "guardado": guardado,
     }
+
+
+def _iniciales_de(nombre):
+    """Las letras del cuadrito de una persona: "Ana María" -> "AM"; "Carmen" -> "CA"."""
+    palabras = nombre.split()
+    if len(palabras) >= 2:
+        return (palabras[0][0] + palabras[1][0]).upper()
+    return (nombre[:2] or "?").upper()
 
 
 def contexto_costureras(request, form_nueva=None, editando=None, form_nombre=None,
@@ -122,12 +132,16 @@ def contexto_costureras(request, form_nueva=None, editando=None, form_nombre=Non
     costureras = list(
         _costureras(request).order_by("-is_active", Lower("nombre_visible"), "username")
     )
+    for costurera in costureras:
+        costurera.iniciales = _iniciales_de(costurera.nombre)
     if editando is not None and form_nombre is None:
         form_nombre = FormularioNombre(instance=editando, taller=request.taller)
     if form_nombre is not None:
         enfocar(form_nombre, "nombre_visible")
     return {
         "costureras": costureras,
+        "lista_activas": [c for c in costureras if c.is_active],
+        "lista_inactivas": [c for c in costureras if not c.is_active],
         "activas": sum(1 for c in costureras if c.is_active),
         "form_nueva": form_nueva or FormularioCostureraNueva(taller=request.taller),
         "editando": editando,

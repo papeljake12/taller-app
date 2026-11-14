@@ -1,5 +1,6 @@
 {% comment %}
-Pieza Filtro: botón con su conteo; el elegido va en negro.
+Pieza Pestaña de una lista: su nombre y su conteo; la elegida va en gris (en celular, en negro).
   {% include "piezas/_filtro.html" with texto="Atrasados" conteo=1 elegido=False url="?filtro=atrasados" %}
-Los filtros de una lista van juntos dentro de <div class="filtros">.
-{% endcomment %}<a class="filtro{% if elegido %} es-elegido{% endif %}" href="{{ url }}"{% if elegido %} aria-current="true"{% endif %}>{{ texto }} {{ conteo }}</a>
+Las pestañas de una lista van juntas dentro de <div class="filtros__pestanas">, en la fila
+<div class="filtros"> de arriba de la tabla.
+{% endcomment %}<a class="filtro{% if elegido %} es-elegido{% endif %}" href="{{ url }}"{% if elegido %} aria-current="true"{% endif %}>{{ texto }}{% if conteo is not None %} <span class="filtro__conteo">{{ conteo }}</span>{% endif %}</a>

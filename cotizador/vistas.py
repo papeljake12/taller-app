@@ -70,6 +70,7 @@ def contexto_cotizador(request, form, **extra):
     lista = form.lista(cotizacion) and not errores_del_precio
     texto = ""
     enlace = ""
+    prendas = list(prendas_del_taller(request))
     if lista:
         texto = mensajes.texto_cotizacion(
             request.taller, cotizacion, form.dato("prenda"), form.dato("cliente"),
@@ -82,7 +83,8 @@ def contexto_cotizador(request, form, **extra):
         "lista": lista,
         "texto_cotizacion": texto,
         "enlace_whatsapp": enlace,
-        "hay_prendas": prendas_del_taller(request).exists(),
+        "prendas": prendas,
+        "hay_prendas": bool(prendas),
         # La prenda guardada que está elegida en "Mis prendas" (para "Quitar de mi lista").
         "elegida": form.dato("guardada") or None,
         "errores_del_precio": errores_del_precio,
@@ -136,6 +138,10 @@ def calcular(request):
     pasan a los campos y vuelve el formulario entero.
     """
     datos = _datos(request)
+    if datos.get("elegir"):
+        # Una opción del menú "Mis prendas guardadas": es la prenda que se eligió.
+        datos = datos.copy()
+        datos["guardada"] = datos["elegir"]
     if datos.get("guardada", "") == datos.get("aplicada", ""):
         return responder(request, contexto_cotizador(request, formulario(request, datos)),
                          solo_resultado=True)

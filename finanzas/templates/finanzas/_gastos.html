@@ -8,10 +8,8 @@ Tiene dos partes que cambian por su cuenta:
   abierto.
 La tarjeta (id="gastos") y la caja de la lista (id="gastos-lista") no se cambian nunca: las
 acciones de finanzas/vistas.py cambian solo lo de adentro de la lista (hx-swap="innerHTML")
-y traen la cabeza aparte (hx-swap-oob). Así, en computador, donde la lista se desplaza por
-dentro de la tarjeta (pantalla fija, docs/08-diseno.md), la lista no vuelve al principio
-cada vez que se toca algo.
-{% endcomment %}<section class="tarjeta tarjeta--lista columna-angosta" id="gastos" aria-labelledby="t-gastos">
+y traen la cabeza aparte (hx-swap-oob).
+{% endcomment %}<section class="tarjeta" id="gastos" aria-labelledby="t-gastos">
 {% include "finanzas/_gastos_cabeza.html" %}
-<div class="desplazable" id="gastos-lista">{% include "finanzas/_gastos_lista.html" %}</div>
+<div id="gastos-lista">{% include "finanzas/_gastos_lista.html" %}</div>
 </section>

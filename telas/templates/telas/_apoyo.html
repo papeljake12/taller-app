@@ -1,4 +1,0 @@
-{% load piezas %}{% comment %}
-El dato de apoyo del encabezado: "4 telas, 60 m en total" (calculos.resumen_de_telas).
-Al cambiar una tela vuelve con hx-swap-oob (id="telas-apoyo").
-{% endcomment %}<span class="encabezado__apoyo" id="telas-apoyo"{% if oob %} hx-swap-oob="true"{% endif %}>{{ resumen.cantidad }} tela{{ resumen.cantidad|pluralize }}, {{ resumen.metros|metros }} en total</span>

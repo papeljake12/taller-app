@@ -1,7 +1,7 @@
 {% comment %}
-Pieza Barra de progreso: riel gris y relleno azul (rojo si está atrasado).
+Pieza Riel de progreso: gris claro con relleno azul (rojo si está atrasado).
   {% include "piezas/_progreso.html" with porcentaje=78 nombre="Tallas recibidas" %}
 - porcentaje: de 0 a 100.
-- atrasado: relleno en rojo.  - alta: 10 px de alto en vez de 8.
+- atrasado: relleno en rojo.  - delgado: 5 px en vez de 6 (las barras por talla).
 - nombre: lo que mide, para lectores de pantalla.
-{% endcomment %}<span class="progreso{% if alta %} progreso--alta{% endif %}{% if atrasado %} progreso--atrasado{% endif %}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ porcentaje }}"{% if nombre %} aria-label="{{ nombre }}"{% endif %}><span class="progreso__relleno" style="width: {{ porcentaje }}%"></span></span>
+{% endcomment %}<span class="progreso{% if delgado %} progreso--delgado{% endif %}{% if atrasado %} progreso--atrasado{% endif %}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ porcentaje }}"{% if nombre %} aria-label="{{ nombre }}"{% endif %}><span class="progreso__relleno" style="width: {{ porcentaje }}%"></span></span>

@@ -90,9 +90,13 @@ def test_no_muestra_precios_ni_las_tallas_de_otros_ni_el_menu(client, pedido):
     assert "1.260.000" not in html and "1260000" not in html
     assert "500.000" not in html and "500000" not in html
     assert "$" not in html
-    assert 'class="menu' not in html
+    # Ni el menú del panel: solo la marca del taller (su logo o sus iniciales) y su nombre.
+    assert 'class="menu"' not in html and "menu__lista" not in html
     assert "navegacion-celular" not in html
     assert 'id="ventana"' not in html
+    assert '<span class="menu__avatar" aria-hidden="true">' in html
+    assert "Solo el taller ve tu talla." in html
+    assert 'class="acceso__pedido"' in html
 
 
 def test_sin_javascript_las_medidas_se_ven_con_la_nota(client, pedido):
@@ -107,7 +111,7 @@ def test_sin_javascript_las_medidas_se_ven_con_la_nota(client, pedido):
 def test_al_elegir_a_la_medida_htmx_trae_las_medidas(client, pedido):
     html = client.get(direccion(pedido), {"talla": "medida"}, headers=HTMX).text
 
-    assert html.startswith('<div class="acceso__tarjeta" id="publico-talla">')
+    assert html.startswith('<div class="columna" id="publico-talla">')
     assert "<noscript>" not in html
     assert '<option value="medida" selected>A la medida</option>' in html
     for campo in ("pecho", "cintura", "cadera", "largo"):
@@ -129,7 +133,7 @@ def test_el_selector_de_talla_pide_las_medidas_a_la_misma_pagina(client, pedido)
     assert f'hx-get="{direccion(pedido)}"' in html
     assert 'hx-target="#publico-talla"' in html
     # El envío es un formulario normal: así se ven las páginas de 403 y 429.
-    assert f'<form class="acceso__tarjeta" method="post" action="{direccion(pedido)}"' in html
+    assert f'<form class="columna" method="post" action="{direccion(pedido)}"' in html
     assert "hx-post" not in html
 
 
@@ -157,12 +161,13 @@ def test_muestra_la_confirmacion_y_el_boton_para_otra_persona(client, pedido):
 
     assert respuesta.status_code == 200
     pagina = texto(respuesta)
-    assert "¡Listo, Ana Gómez!" in pagina
-    assert "Tu talla M quedó registrada para el pedido de Colegio de prueba." in pagina
+    assert "¡Gracias, Ana Gómez!" in pagina
+    assert "Ya tenemos tu talla M para el pedido de Colegio de prueba." in pagina
     assert (
-        f'<a class="boton" href="{direccion(pedido)}">Registrar a otra persona</a>'
-        in respuesta.text
+        f'<a class="boton boton--ancho" href="{direccion(pedido)}">'
+        "Enviar la talla de otra persona</a>" in respuesta.text
     )
+    assert "acceso__listo" in respuesta.text and "Solo el taller ve tu talla." not in pagina
 
 
 def test_recargar_la_confirmacion_no_guarda_otra_vez_y_muestra_el_formulario(client, pedido):
@@ -213,7 +218,7 @@ def test_a_la_medida_guarda_las_medidas_con_coma_o_punto(client, pedido):
         Decimal("92.5"), Decimal("80.5"), Decimal("98"),
     )
     assert talla.largo is None
-    assert "Tu talla a la medida quedó registrada" in texto(client.get(listo(pedido)))
+    assert "Ya tenemos tu talla a la medida" in texto(client.get(listo(pedido)))
 
 
 def test_a_la_medida_sin_pecho_cintura_y_cadera_no_se_guarda(client, pedido):
@@ -292,7 +297,7 @@ def test_un_enlace_inventado_responde_404_con_una_pagina_clara(client):
     assert respuesta.status_code == 404
     pagina = texto(respuesta)
     assert "Este enlace no existe" in pagina
-    assert 'class="menu' not in respuesta.text
+    assert 'class="menu"' not in respuesta.text and "menu__lista" not in respuesta.text
 
 
 def test_enviar_a_un_enlace_inventado_responde_404_y_no_guarda(client, pedido):

@@ -1,5 +1,6 @@
-{% comment %}
+{% load piezas %}{% comment %}
 Botón "Nuevo pedido": abre la ventana desde cualquier pantalla (sin JavaScript, abre la página).
+En celular es el botón redondo negro con un "+" de arriba a la derecha.
   {% include "piezas/_boton_nuevo_pedido.html" %}
 Solo lo ve la dueña: la costurera no crea pedidos (T21, docs/04-permisos.md).
-{% endcomment %}{% if es_duena %}<a class="boton boton--principal" href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}" hx-target="#ventana">Nuevo pedido</a>{% endif %}
+{% endcomment %}{% if es_duena %}<a class="boton boton--principal boton--redondo-celular" href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}" hx-target="#ventana"><span class="boton__icono-celular">{% icono "sumar" 20 %}</span><span class="boton__texto">Nuevo pedido</span></a>{% endif %}

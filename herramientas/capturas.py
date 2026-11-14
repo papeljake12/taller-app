@@ -5,17 +5,17 @@ Levanta el servidor de desarrollo, entra con una usuaria, abre cada pantalla con
 docs/capturas/tanda-N/. Además avisa si algo se sale del ancho, si un archivo no cargó o
 si el navegador mostró un error.
 
-Con --formatos fijo toma cada pantalla en 1366 x 768, en 1920 x 1080 y en celular (390 px),
-y en computador comprueba la pantalla fija (docs/08-diseno.md): que la página no se desplace
-(eso es un problema) y si la pantalla cupo completa o si su hoja se desplaza por dentro
-("NO CABE"). También dice qué listas se desplazan por dentro de su tarjeta.
+Con --formatos completo toma cada pantalla en 1366 x 768, en 1920 x 1080 y en celular (390 px).
+En computador comprueba que la página misma no se desplace (docs/08-diseno.md,
+"Desplazamiento": lo que se desplaza es el contenido de la hoja) y guarda la hoja completa,
+con todo su contenido a la vista, para poder compararla con diseno/.
 
 Uso:
     uv run python herramientas/capturas.py --tanda 1
     uv run python herramientas/capturas.py --tanda 1 --usuario david
     uv run python herramientas/capturas.py --tanda 1 --referencias carpeta/   (también las de diseno/)
     uv run python herramientas/capturas.py --tanda 3 --solo pedidos pedido --salida carpeta/
-    uv run python herramientas/capturas.py --tanda 6 --formatos fijo --salida docs/capturas/ajuste-pantalla-fija/
+    uv run python herramientas/capturas.py --tanda 6 --formatos completo --salida docs/capturas/rediseno/
 
 Solo se usa en el computador de desarrollo. Necesita Google Chrome instalado.
 """
@@ -40,7 +40,7 @@ CELULAR = {"viewport": {"width": 390, "height": 844}, "is_mobile": True, "has_to
 # Los tamaños de cada juego de capturas: (nombre en el archivo, formato).
 FORMATOS = {
     "normal": [("computador", COMPUTADOR), ("celular", CELULAR)],
-    "fijo": [
+    "completo": [
         ("1366x768", {"viewport": {"width": 1366, "height": 768}}),
         ("1920x1080", {"viewport": {"width": 1920, "height": 1080}}),
         ("celular", CELULAR),
@@ -53,7 +53,7 @@ class Pantalla:
     nombre: str
     url: str
     referencia: str | None = None  # página de diseno/ en computador
-    referencia_celular: str | None = None  # página de diseno/ en celular, si existe
+    referencia_celular: str | None = None  # página de diseno/ en celular, si es otra
     menu: str | None = None  # "contraido" para el menú contraído
     sin_sesion: bool = False
     solo_computador: bool = False
@@ -62,8 +62,8 @@ class Pantalla:
 # Cada tanda agrega aquí sus pantallas.
 PANTALLAS = {
     1: [
-        Pantalla("entrar", "/entrar/", sin_sesion=True),
-        Pantalla("hoy", "/", "hoy.html", "hoy-celular.html"),
+        Pantalla("entrar", "/entrar/", "entrar.html", sin_sesion=True),
+        Pantalla("hoy", "/", "hoy.html"),
         Pantalla("hoy-menu-contraido", "/", "hoy-menu-contraido.html", menu="contraido",
                  solo_computador=True),
         Pantalla("piezas", "/piezas/"),
@@ -71,14 +71,14 @@ PANTALLAS = {
     2: [
         Pantalla("pedidos", "/pedidos/", "pedidos.html"),
         Pantalla("pedido", "/pedidos/{pedido}/", "pedido.html"),
-        Pantalla("nuevo-pedido", "/pedidos/nuevo/"),
+        Pantalla("nuevo-pedido", "/pedidos/nuevo/", "nuevo-pedido.html"),
         Pantalla("calendario", "/calendario/", "calendario.html"),
         Pantalla("clientes", "/clientes/", "clientes.html"),
         Pantalla("cotizador", "/cotizador/", "cotizador.html"),
         Pantalla("telas", "/telas/", "telas.html"),
         Pantalla("resumen", "/resumen/", "resumen.html"),
-        Pantalla("mi-taller", "/mi-taller/"),
-        Pantalla("tallas-publico", "/tallas/{token}/", sin_sesion=True),
+        Pantalla("mi-taller", "/mi-taller/", "mi-taller.html"),
+        Pantalla("tallas-publico", "/tallas/{token}/", "tallas-publico.html", sin_sesion=True),
     ],
     3: [
         Pantalla("pedidos-atrasados", "/pedidos/?filtro=atrasados"),
@@ -106,25 +106,18 @@ DESBORDE = """(ancho) => {
 }"""
 
 
-# Pantalla fija (solo computador): la página no se desplaza; la hoja cabe o se desplaza por
-# dentro; y qué listas se desplazan dentro de su tarjeta.
-PANTALLA_FIJA = """() => {
+# Computador: la página misma no se desplaza (lo hace el contenido de la hoja).
+PAGINA_QUIETA = """() => {
   const pagina = document.scrollingElement || document.documentElement;
-  const contenido = document.querySelector('.hoja__contenido');
-  const nombre = (e) => e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + [...e.classList].join('.');
-  const listas = [];
-  for (const e of document.querySelectorAll('.hoja__contenido *')) {
-    const s = getComputedStyle(e);
-    if (/(auto|scroll)/.test(s.overflowY) && e.scrollHeight > e.clientHeight + 1)
-      listas.push(nombre(e) + ' (' + e.clientHeight + ' de ' + e.scrollHeight + ' px)');
-  }
-  return {
-    pagina: pagina.scrollHeight, ventana: window.innerHeight,
-    contenido: contenido ? contenido.scrollHeight : 0,
-    cabe: contenido ? contenido.clientHeight : 0,
-    listas: listas,
-  };
+  return { pagina: pagina.scrollHeight, ventana: window.innerHeight };
 }"""
+
+# Para la captura de computador: el marco y la hoja crecen hasta mostrar todo el contenido.
+HOJA_COMPLETA = (
+    "html{overflow:visible!important}"
+    ".marco{height:auto!important;min-height:100vh;overflow:visible!important}"
+    ".hoja{overflow:visible!important}.hoja__contenido{overflow:visible!important}"
+)
 
 
 def puerto_libre():
@@ -194,7 +187,7 @@ def cerrar_sesion(clave):
     Session.objects.filter(session_key=clave).delete()
 
 
-def capturar(navegador, url, archivo, formato, cookies, ancho, avisos=None):
+def capturar(navegador, url, archivo, formato, cookies, ancho, avisos=None, completa=False):
     contexto = navegador.new_context(device_scale_factor=1, **formato)
     if cookies:
         contexto.add_cookies(cookies)
@@ -210,16 +203,14 @@ def capturar(navegador, url, archivo, formato, cookies, ancho, avisos=None):
     if medida["ancho"] > ancho:
         problemas.append(f"la página mide {medida['ancho']} px de ancho: {medida['fuera']}")
     if avisos is not None and not formato.get("is_mobile"):
-        fija = pagina.evaluate(PANTALLA_FIJA)
-        if fija["pagina"] > fija["ventana"] + 1:
-            problemas.append(f"la página se desplaza: mide {fija['pagina']} px de alto en una "
-                             f"ventana de {fija['ventana']} px")
-        if fija["cabe"] and fija["contenido"] > fija["cabe"] + 1:
-            avisos.append(f"NO CABE: la hoja se desplaza por dentro ({fija['contenido']} px "
-                          f"de contenido en {fija['cabe']} px)")
-        for lista in fija["listas"]:
-            if not lista.startswith("div.hoja__contenido"):
-                avisos.append(f"se desplaza por dentro: {lista}")
+        quieta = pagina.evaluate(PAGINA_QUIETA)
+        if quieta["pagina"] > quieta["ventana"] + 1:
+            problemas.append(f"la página se desplaza: mide {quieta['pagina']} px de alto en una "
+                             f"ventana de {quieta['ventana']} px")
+        completa = True
+    if completa and not formato.get("is_mobile"):
+        pagina.add_style_tag(content=HOJA_COMPLETA)
+        pagina.wait_for_timeout(100)
     archivo.parent.mkdir(parents=True, exist_ok=True)
     pagina.screenshot(path=str(archivo), full_page=True)
     contexto.close()
@@ -237,8 +228,8 @@ def main():
     argumentos.add_argument("--salida", type=Path,
                             help="carpeta de las capturas (por defecto, docs/capturas/tanda-N/)")
     argumentos.add_argument("--formatos", choices=sorted(FORMATOS), default="normal",
-                            help="normal: 1280 px y celular. fijo: 1366 x 768, 1920 x 1080 y "
-                                 "celular, comprobando la pantalla fija")
+                            help="normal: 1280 px y celular. completo: 1366 x 768, 1920 x 1080 "
+                                 "y celular, con la hoja completa a la vista")
     opciones = argumentos.parse_args()
 
     pantallas = [p for n in sorted(PANTALLAS) if n <= opciones.tanda for p in PANTALLAS[n]]
@@ -258,8 +249,7 @@ def main():
     base = f"http://127.0.0.1:{puerto}"
     print(f"Servidor en {base}, sesión de {usuario}. Capturas en {salida}")
     total = 0
-    no_caben = []
-    fijo = opciones.formatos == "fijo"
+    completo = opciones.formatos == "completo"
     try:
         with sync_playwright() as p:
             navegador = p.chromium.launch(channel="chrome")
@@ -273,12 +263,12 @@ def main():
                     celular = formato.get("is_mobile", False)
                     if celular and pantalla.solo_computador:
                         continue
-                    referencia = pantalla.referencia_celular if celular else pantalla.referencia
+                    referencia = (pantalla.referencia_celular or pantalla.referencia) if celular                         else pantalla.referencia
                     formatos.append((nombre_formato, formato, referencia))
                 for nombre_formato, formato, referencia in formatos:
                     ancho = formato["viewport"]["width"]
                     archivo = salida / f"{pantalla.nombre}-{nombre_formato}.png"
-                    avisos = [] if fijo else None
+                    avisos = [] if completo else None
                     problemas = capturar(navegador, base + pantalla.url.format(**datos), archivo,
                                          formato, cookies, ancho, avisos)
                     total += len(problemas)
@@ -286,21 +276,14 @@ def main():
                     print(f"  {pantalla.nombre} ({nombre_formato}): {estado}")
                     for problema in problemas:
                         print(f"      - {problema}")
-                    for aviso in avisos or []:
-                        print(f"      · {aviso}")
-                        if aviso.startswith("NO CABE"):
-                            no_caben.append(f"{pantalla.nombre} ({nombre_formato})")
                     if opciones.referencias and referencia:
                         destino = opciones.referencias / f"{pantalla.nombre}-{nombre_formato}-diseno.png"
                         capturar(navegador, (RAIZ / "diseno" / referencia).as_uri(), destino,
-                                 formato, [], ancho)
+                                 formato, [], ancho, completa=completo)
             navegador.close()
     finally:
         servidor.terminate()
         cerrar_sesion(clave)
-    if fijo:
-        print("Todas las pantallas caben completas." if not no_caben
-              else "No caben completas: " + ", ".join(no_caben))
     print("Sin problemas." if total == 0 else f"{total} problema(s) para revisar.")
     return 1 if total else 0
 

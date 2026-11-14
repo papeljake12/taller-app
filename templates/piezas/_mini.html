@@ -1,0 +1,5 @@
+{% load piezas %}{% comment %}
+Pieza Miniatura: la foto del pedido en un cuadrito de 32 px (40 px con grande=True), o el
+ícono de una prenda si no tiene foto.
+  {% include "piezas/_mini.html" with pedido=p grande=True %}
+{% endcomment %}<span class="mini{% if grande %} mini--grande{% endif %}">{% if pedido.foto %}<img src="{{ pedido.foto.url }}" alt="" loading="lazy">{% else %}{% icono "prenda" 16 %}{% endif %}</span>

@@ -1,16 +1,12 @@
 """T13. Fotos: la foto del pedido (subir, cambiar y quitar) y "Trabajos del taller" en Hoy."""
 
 import json
-from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.template.loader import render_to_string
-from django.test import RequestFactory
 from django.urls import reverse
-from django.utils import timezone
 from PIL import Image
 
 from pedidos import fotos
@@ -181,7 +177,7 @@ def test_sin_javascript_el_error_sale_en_la_pagina_del_pedido(sesion_duena, pedi
     assert respuesta.status_code == 422
     assert "<html" in respuesta.text
     assert "Ese archivo no es una foto." in respuesta.text
-    assert ">Pagos</h2>" in respuesta.text
+    assert 'aria-label="Pago"' in respuesta.text
 
 
 # --- Subir, cambiar y quitar -----------------------------------------------------------------
@@ -195,8 +191,12 @@ def test_con_htmx_subir_devuelve_solo_la_tarjeta_con_la_foto(sesion_duena, pedid
     assert "<html" not in respuesta.text
     assert f'src="{pedido.foto.url}"' in respuesta.text
     assert 'alt="Foto del trabajo: 12 vestidos de fantasía de prueba"' in respuesta.text
-    assert ">Cambiar la foto</label>" in respuesta.text
-    assert ">Quitar la foto</a>" in respuesta.text
+    assert "Cambiar foto<input" in respuesta.text
+    assert ">Quitar</a>" in respuesta.text
+    # La miniatura de la tarjeta de la etapa es la misma foto: llega para cambiarla.
+    assert 'id="pedido-etapa"' in respuesta.text and 'class="mini mini--grande"><img' in (
+        respuesta.text
+    )
 
 
 def test_cambiar_la_foto_borra_la_anterior(sesion_duena, pedido):
@@ -250,7 +250,7 @@ def test_cancelar_deja_la_tarjeta_como_estaba(sesion_duena, pedido):
     respuesta = sesion_duena.get(url_quitar(pedido) + "?cancelar=1", headers=HTMX)
 
     assert "¿Quitar la foto" not in respuesta.text
-    assert ">Quitar la foto</a>" in respuesta.text
+    assert ">Quitar</a>" in respuesta.text
 
 
 def test_sin_javascript_la_pregunta_es_una_pagina(sesion_duena, pedido):
@@ -272,8 +272,8 @@ def test_quitar_la_foto_borra_el_archivo(sesion_duena, pedido):
     assert not pedido.foto
     assert not _existe(archivo)
     assert respuesta.status_code == 200
-    assert "Este pedido todavía no tiene foto." in respuesta.text
-    assert ">Subir la foto</label>" in respuesta.text
+    assert "Sale en Hoy y en la lista de pedidos" in respuesta.text
+    assert "Subir foto<input" in respuesta.text
 
 
 def test_sin_javascript_quitar_vuelve_al_pedido(sesion_duena, pedido):
@@ -363,16 +363,15 @@ def test_la_foto_y_la_invitacion_llevan_su_id_y_la_pregunta_conserva_el_del_form
     sesion_duena, pedido
 ):
     """Al subir la primera foto la invitación se va y la foto llega; la pregunta "¿Quitar?"
-    toma el lugar del formulario sin cerrarse (static/js/app.js, sección 11). En computador
-    la tarjeta toma el alto que queda en la columna (.llenar)."""
+    toma el lugar del formulario sin cerrarse (static/js/app.js, sección 11)."""
     sin_foto = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
     con_foto = subir(sesion_duena, pedido, foto_de_prueba(), headers=HTMX).text
     pregunta = sesion_duena.get(url_quitar(pedido), headers=HTMX).text
 
-    assert 'class="tarjeta tarjeta--lista tarjeta--fotos llenar" id="pedido-foto"' in sin_foto
+    assert '<section class="tarjeta" id="pedido-foto"' in sin_foto
     assert 'id="pedido-foto-vacio"' in sin_foto and 'id="pedido-foto-imagen"' not in sin_foto
     assert 'id="pedido-foto-imagen"' in con_foto and 'id="pedido-foto-vacio"' not in con_foto
-    assert '<form class="tarjeta__cuerpo" id="pedido-foto-acciones"' in con_foto
+    assert '<form id="pedido-foto-acciones"' in con_foto
     assert '<div class="tarjeta__cuerpo" id="pedido-foto-acciones">' in pregunta
     assert pregunta.count('id="pedido-foto-acciones"') == 1
 
@@ -383,8 +382,10 @@ def test_la_foto_y_la_invitacion_llevan_su_id_y_la_pregunta_conserva_el_del_form
 def test_el_pedido_sin_foto_invita_a_subirla(sesion_duena, pedido):
     html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
 
-    assert ">Foto del pedido</h2>" in html
-    assert "Este pedido todavía no tiene foto." in html
+    assert ">Foto</h2>" in html
+    assert 'class="subir"' in html
+    assert "Sale en Hoy y en la lista de pedidos" in html
+    assert "Trabajos del taller" not in html.split('id="pedido-foto"')[1].split("</section>")[0]
     assert 'type="file" name="foto"' in html and 'accept="image/*"' in html
     assert 'enctype="multipart/form-data"' in html
     assert 'hx-encoding="multipart/form-data"' in html
@@ -397,7 +398,8 @@ def test_el_pedido_con_foto_la_muestra(sesion_duena, pedido):
     html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
 
     assert f'<img src="{pedido.foto.url}"' in html
-    assert "Este pedido todavía no tiene foto." not in html
+    assert 'class="foto"' in html and "Cambiar foto" in html
+    assert "Sale en Hoy y en la lista de pedidos" not in html
 
 
 # --- Otro taller -----------------------------------------------------------------------------
@@ -431,77 +433,7 @@ def test_no_se_puede_quitar_la_foto_de_otro_taller(sesion_duena, ajeno):
     assert ajeno.foto and _existe(archivo)
 
 
-# --- "Trabajos del taller" en Hoy ------------------------------------------------------------
-
-
-def peticion(usuaria):
-    request = RequestFactory().get("/")
-    request.user = usuaria
-    request.taller = usuaria.taller
-    return request
-
-
-def tarjeta_trabajos(usuaria):
-    """La tarjeta como la dibuja Hoy, con la lista que le manda la vista."""
-    request = peticion(usuaria)
-    return render_to_string(
-        "pedidos/_trabajos.html", {"trabajos": fotos.trabajos(request)}, request
-    )
-
-
-def test_trabajos_trae_solo_las_fotos_del_taller(duena, taller, ajeno):
-    ahora = timezone.now()
-    viejo = fabricas.crear_pedido(
-        taller, detalle="Overoles de prueba", creado=ahora - timedelta(days=3)
-    )
-    nuevo = fabricas.crear_pedido(taller, detalle="Polleras de prueba", creado=ahora)
-    fabricas.crear_pedido(taller, detalle="Sin foto de prueba")
-    poner_foto(viejo)
-    poner_foto(nuevo)
-
-    lista = fotos.trabajos(peticion(duena))
-
-    assert [trabajo.nombre for trabajo in lista] == ["Polleras de prueba", "Overoles de prueba"]
-    assert lista[0].url == nuevo.foto.url
-    assert lista[0].descripcion == "Foto del trabajo: Polleras de prueba"
-    assert ajeno.foto.url not in [trabajo.url for trabajo in lista]
-
-
-def test_trabajos_trae_maximo_ocho(duena, taller):
-    for numero in range(10):
-        poner_foto(fabricas.crear_pedido(taller, detalle=f"Trabajo {numero} de prueba"))
-
-    assert len(fotos.trabajos(peticion(duena))) == 8
-
-
-def test_la_tarjeta_pasa_las_fotos_con_su_nombre_y_sus_puntos(duena, taller, ajeno):
-    for detalle in ("Vestido de grado de prueba", "Polleras de prueba"):
-        poner_foto(fabricas.crear_pedido(taller, detalle=detalle))
-
-    html = tarjeta_trabajos(duena)
-
-    assert ">Trabajos del taller</h2>" in html
-    assert "data-fotos" in html
-    assert html.count("data-foto>") == 2 and html.count("data-punto") == 2
-    assert '<figcaption class="fotos__nombre">Polleras de prueba</figcaption>' in html
-    assert 'alt="Foto del trabajo: Vestido de grado de prueba"' in html
-    assert ajeno.foto.url not in html
-    assert "Subir la primera foto" not in html
-
-
-def test_sin_fotos_la_tarjeta_invita_a_subir_la_primera(duena, ajeno):
-    html = tarjeta_trabajos(duena)
-
-    assert "Todavía no hay fotos de trabajos." in html
-    assert f'<a class="boton" href="{reverse("pedidos:lista")}">Subir la primera foto</a>' in html
-    assert ajeno.foto.url not in html
-
-
-def test_hoy_muestra_la_tarjeta_trabajos(sesion_duena):
-    html = sesion_duena.get(reverse("pedidos:hoy")).text
-
-    assert ">Trabajos del taller</h2>" in html
-    assert "Subir la primera foto" in html
+# --- Archivos -------------------------------------------------------------------------------
 
 
 def test_borrar_archivo_no_falla_si_no_hay_archivo(pedido):
@@ -511,19 +443,3 @@ def test_borrar_archivo_no_falla_si_no_hay_archivo(pedido):
     fotos.borrar_archivo(almacen, "")
     fotos.borrar_archivo(almacen, "pedidos/fotos/no-existe.jpg")
 
-
-# --- Agregado al unir la tanda 4 (Hoy recibe sus fotos) -------------------------------------
-
-
-def test_hoy_muestra_solo_las_fotos_del_taller(sesion_duena, pedido, ajeno):
-    poner_foto(pedido)
-    poner_foto(ajeno)
-    pedido.refresh_from_db()
-    ajeno.refresh_from_db()
-
-    html = sesion_duena.get("/").text
-
-    assert pedido.foto.url in html
-    assert ajeno.foto.url not in html
-    assert "Subir la primera foto" not in html
-    assert 'aria-labelledby="t-trabajos"' in html and 'id="t-trabajos"' in html

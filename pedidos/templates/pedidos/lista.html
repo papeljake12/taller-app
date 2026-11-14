@@ -1,30 +1,39 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Pedidos (diseno/pedidos.html), T05: filtros con su conteo, buscador y la tabla.
-En computador (pantalla fija) los filtros y el buscador quedan quietos arriba; la tarjeta llega
-hasta abajo (.llenar) y, con muchos pedidos, solo la tabla se desplaza por dentro.{% endcomment %}
+{% comment %}Pedidos (diseno/pedidos.html), T05: barra de cifras, pestañas con su conteo, buscador
+(detrás de la lupa) y la tabla, que en celular se vuelve una lista. Sin ningún pedido, la
+pantalla vacía.{% endcomment %}
 {% block pestana %}Pedidos{% endblock %}
 {% block titulo %}Pedidos{% endblock %}
-{% block apoyo %}<span class="encabezado__apoyo">{{ total }} pedido{{ total|pluralize }}</span>{% endblock %}
-{% block acciones %}{% include "piezas/_boton_excel.html" %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
+{% block clase_hoja %} hoja--completa{% endblock %}
+{% block acciones %}{% include "piezas/_boton_excel.html" %}{% if total %}<a class="boton boton--redondo-celular solo-celular" href="{{ url_buscar }}" data-mostrar="buscador-pedidos" aria-controls="buscador-pedidos" aria-label="Buscar" title="Buscar"><span class="boton__icono-celular">{% icono "buscar" 20 %}</span></a>{% endif %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
 {% if total %}
-{% include "pedidos/_lista_filtros.html" %}
-<section class="tarjeta tarjeta--lista tarjeta--con-buscador llenar" aria-labelledby="t-lista">
+<section class="cifras cifras--barra" aria-label="Pedidos de un vistazo">
+<div class="cifras__primero"><span class="chip">{% icono "calendario" 14 %}Hoy</span></div>
+{% include "piezas/_cifra.html" with nombre="Activos" valor=cifras.activos explica="Pedidos que no se han entregado" %}
+{% include "piezas/_cifra.html" with nombre="En producción" valor=cifras.produccion url=cifras.url_produccion explica="Confirmados que no se han entregado" %}
+{% include "piezas/_cifra.html" with nombre="Se entregan esta semana" valor=cifras.semana url=cifras.url_semana explica="En producción y se entregan en los próximos 7 días" %}
+{% include "piezas/_cifra.html" with nombre="Atrasados" valor=cifras.atrasados url=cifras.url_atrasados alerta=cifras.atrasados explica="Pasó la fecha de entrega y no están listos" %}
+{% if puede_ver_plata %}{% include "piezas/_cifra.html" with nombre="Por cobrar" valor=cifras.por_cobrar|pesos url=cifras.url_saldo explica="Lo que falta por pagar de los pedidos confirmados" %}
+{% endif %}</section>
+<section class="tarjeta tarjeta--recortada tarjeta--lista-celular" aria-labelledby="t-lista">
 <h2 class="oculto" id="t-lista">Lista de pedidos</h2>
+<div class="filtros">
+{% include "pedidos/_lista_filtros.html" %}
+<div class="filtros__herramientas solo-computador"><a class="boton boton--icono" href="{{ url_buscar }}" data-mostrar="buscador-pedidos" aria-controls="buscador-pedidos" aria-label="Buscar en los pedidos" title="Buscar en los pedidos">{% icono "buscar" 16 %}</a></div>
+</div>
 {# Sin JavaScript, el buscador se envía con Enter. Con HTMX, la tabla cambia mientras se escribe. #}
+<div class="buscador-fila" id="buscador-pedidos"{% if not ver_buscador %} hidden{% endif %}>
 <form role="search" action="{% url 'pedidos:lista' %}" hx-get="{% url 'pedidos:lista' %}" hx-trigger="input delay:300ms, submit" hx-target="#lista-pedidos" hx-swap="outerHTML" hx-push-url="true">
 <input type="hidden" name="filtro" value="{{ filtro }}">
 <label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar pedido</span><input type="search" name="q" value="{{ q }}" placeholder="Buscar por cliente, prenda o encargada" autocomplete="off"></label>
 </form>
+</div>
 {% include "pedidos/_lista_tabla.html" %}
 </section>
 {% else %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-lista">
-<div class="tarjeta__cabeza"><h2 id="t-lista">Todavía no hay pedidos</h2></div>
-<div class="tarjeta__cuerpo">
-{% if es_duena %}<p>Crea el primero y aparecerá aquí, con su etapa, su fecha de entrega y lo que falta por pagar.</p>
-<div class="botones">{% include "piezas/_boton_nuevo_pedido.html" %}</div>{% else %}<p>Cuando la dueña del taller cree un pedido, aparecerá aquí con su etapa y su fecha de entrega.</p>{% endif %}
-</div>
-</section>
+{% if es_duena %}{% url 'pedidos:nuevo' as url_nuevo %}{% include "piezas/_vacio.html" with dibujo="pedidos" titulo="Aquí vas a ver tus pedidos" texto="Cada pedido muestra el cliente, la prenda, la fecha de entrega y lo que falta por pagar. Crea el primero y aparecerá aquí." boton_texto="Nuevo pedido" boton_url=url_nuevo ventana=True como="Cómo llevar los pedidos del taller" explicacion="Al crear un pedido queda como cotizado. Cuando el cliente lo confirma, pasa por corte, confección, listo y entregado, y aquí ves en qué etapa va, cuántas tallas faltan, cuánto ha abonado y si se le pasó la fecha de entrega. Toca el nombre del cliente para abrir el pedido." %}
+{% else %}{% include "piezas/_vacio.html" with dibujo="pedidos" titulo="Aquí vas a ver tus pedidos" texto="Cuando la dueña del taller cree un pedido, aparecerá aquí con su etapa y su fecha de entrega." como="Cómo llevar los pedidos del taller" explicacion="Cada pedido pasa por corte, confección, listo y entregado. Aquí ves en qué etapa va, cuántas tallas faltan y cuándo se entrega. Toca el nombre del cliente para abrirlo." %}
+{% endif %}
 {% endif %}
 {% endblock %}

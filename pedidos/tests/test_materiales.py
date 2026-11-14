@@ -38,9 +38,9 @@ def test_la_tarjeta_dice_cuantos_hay_comprados(sesion_duena, pedido):
     html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
 
     assert 'id="pedido-materiales"' in html
-    assert "1 de 3 comprados" in html
+    assert "1 de 3</span>" in html
     assert '<span class="tachado">Tela piqué de prueba</span>' in html
-    assert "<b>Hilo de prueba</b>" in html
+    assert ">Hilo de prueba</label>" in html
     assert '<span class="texto-2">6 conos</span>' in html
     assert 'class="casilla casilla--marcada"' in html
     assert 'aria-label="Quitar Botones de prueba"' in html
@@ -50,7 +50,7 @@ def test_sin_materiales_invita_a_anotarlos(sesion_duena, pedido):
     html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
 
     assert "Anota aquí la tela y los insumos de este pedido" in html
-    assert "comprados" not in html
+    assert " de 0</span>" not in html
 
 
 def test_no_muestra_los_materiales_de_otro_pedido(sesion_duena, taller, pedido):
@@ -76,10 +76,10 @@ def test_agregar_un_material_devuelve_solo_la_tarjeta(sesion_duena, pedido):
     assert respuesta.status_code == 200
     assert (material.nombre, material.cantidad, material.comprado) == ("Dril azul", "24 m", False)
     assert respuesta.text.startswith(
-        '<section class="tarjeta tarjeta--lista llenar" id="pedido-materiales"'
+        '<section class="tarjeta" id="pedido-materiales"'
     )
     assert "<html" not in respuesta.text
-    assert "0 de 1 comprados" in respuesta.text
+    assert "0 de 1</span>" in respuesta.text
 
 
 def test_la_cantidad_es_opcional(sesion_duena, pedido):
@@ -140,13 +140,13 @@ def test_marcar_y_desmarcar_como_comprado(sesion_duena, pedido):
     material.refresh_from_db()
     assert marcar.status_code == 200
     assert material.comprado is True
-    assert "1 de 1 comprados" in marcar.text
+    assert "1 de 1</span>" in marcar.text
     assert 'aria-pressed="true"' in marcar.text
 
     desmarcar = sesion_duena.post(url_de("comprado", material), {"comprado": "no"}, headers=HTMX)
     material.refresh_from_db()
     assert material.comprado is False
-    assert "0 de 1 comprados" in desmarcar.text
+    assert "0 de 1</span>" in desmarcar.text
 
 
 def test_marcar_dos_veces_no_lo_desmarca(sesion_duena, pedido):
@@ -169,7 +169,7 @@ def test_marcar_sin_decir_como_queda_se_rechaza_y_no_cambia(sesion_duena, pedido
     assert respuesta.status_code == 422
     assert "No se pudo marcar el material. Toca la casilla otra vez." in respuesta.text
     assert respuesta.text.startswith(
-        '<section class="tarjeta tarjeta--lista llenar" id="pedido-materiales"'
+        '<section class="tarjeta" id="pedido-materiales"'
     )
     assert material.comprado is True
 
@@ -206,7 +206,7 @@ def test_quitar_un_material(sesion_duena, pedido):
     assert respuesta.status_code == 200
     assert list(Material.objects.filter(pedido=pedido)) == [queda]
     assert "Se va" not in respuesta.text
-    assert "0 de 1 comprados" in respuesta.text
+    assert "0 de 1</span>" in respuesta.text
 
 
 # --- Aislamiento: el material tiene que ser de ese pedido y de ese taller --------------------
@@ -291,17 +291,16 @@ def test_marcar_como_comprado_no_avisa(sesion_duena, pedido):
     assert aviso(respuesta) is None
 
 
-def test_cada_material_lleva_su_id_dentro_de_una_lista_que_se_desplaza(sesion_duena, pedido):
-    """El id deja que al agregar o quitar solo esa fila entre o salga (static/js/app.js); en
-    computador la lista se desplaza por dentro de la tarjeta, que toma el alto que queda."""
+def test_cada_material_lleva_su_id_dentro_de_su_lista(sesion_duena, pedido):
+    """El id deja que al agregar o quitar solo esa fila entre o salga (static/js/app.js)."""
     material = fabricas.crear_material(pedido, nombre="Botones de prueba")
 
     html = sesion_duena.post(url_de("comprado", material), {"comprado": "si"}, headers=HTMX).text
 
-    assert '<section class="tarjeta tarjeta--lista llenar" id="pedido-materiales"' in html
-    assert '<div class="materiales__lista desplazable">' in html
-    assert f'<div class="fila fila--compacta" id="material-{material.pk}">' in html
-    # El formulario para agregar queda fuera de la lista: no se desplaza con ella.
+    assert '<section class="tarjeta" id="pedido-materiales"' in html
+    assert '<div class="materiales__lista">' in html
+    assert f'<div class="renglon" id="material-{material.pk}">' in html
+    # El formulario para agregar queda fuera de la lista, en el pie de la tarjeta.
     lista = html.index('class="materiales__lista')
     assert html.index(f'id="material-{material.pk}"') > lista
-    assert html.index("</div>\n<form class=\"fila fila--formulario\"") > lista
+    assert html.index('<form class="tarjeta__pie materiales__agregar"') > lista

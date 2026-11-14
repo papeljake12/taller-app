@@ -126,12 +126,14 @@ def test_ver_la_lista_de_pedidos(entrar, rol, pedido):
     for html in (respuesta.text, con_saldo.text, buscando.text):
         assert "Cliente de prueba" in html
     if rol == DUENA:
-        assert ">Saldo</th>" in respuesta.text
+        # Rediseño: la lista trae el total y la insignia del pago (ya no la columna Saldo)
+        assert '<th scope="col" class="num">Total</th>' in respuesta.text
+        assert '<th scope="col">Pago</th>' in respuesta.text
         assert "$ 1.000.000" in respuesta.text
         assert "Con saldo" in respuesta.text
     else:
         for html in (respuesta.text, con_saldo.text, buscando.text):
-            assert ">Saldo</th>" not in html
+            assert ">Total</th>" not in html and ">Pago</th>" not in html
             assert "Con saldo" not in html
             assert "Pagado" not in html
             assert sin_plata(html)
@@ -513,10 +515,10 @@ def test_telas_ver_y_registrar_use(entrar, rol, taller):
     assert MovimientoTela.objects.filter(tela=tela, metros=-2).exists()
     assert "Dril de prueba" in pantalla.text and "Usé" in pantalla.text
     if rol == DUENA:
-        assert "Nueva tela" in pantalla.text and ">Entró</a>" in pantalla.text
+        assert "Agregar tela" in pantalla.text and ">Entró</a>" in pantalla.text
         assert "Quitar tela" in historial.text
     else:
-        assert "Nueva tela" not in pantalla.text and ">Entró</a>" not in pantalla.text
+        assert "Agregar tela" not in pantalla.text and ">Entró</a>" not in pantalla.text
         assert "Quitar tela" not in historial.text
         assert ">Entró</a>" not in use.text
 
@@ -735,18 +737,17 @@ def test_hoy_de_la_costurera(client, ejemplo):
 
     html = client.get(reverse("pedidos:hoy")).text
 
-    for cifra in ("En producción", "Entregas en 7 días", "Atrasados"):
+    for cifra in ("En producción", "Se entregan esta semana", "Atrasados"):
         assert f">{cifra}<" in html
-    assert ">Por cobrar<" not in html
+    assert ">Por cobrar<" not in html and ">Cobrado<" not in html and "$ " not in html
     assert 'id="hoy-grafica"' not in html and 'id="hoy-quien-debe"' not in html
-    assert "Qué hacer hoy" in html and "Trabajos del taller" in html
-    assert 'id="hoy-etapas"' in html
+    assert 'id="hoy-que-hacer"' in html and 'id="hoy-etapas"' in html
     # El listo es de Marta: lo puede entregar. El atrasado es de Carmen: solo lo ve.
     listo = Pedido.objects.get(taller=taller, estado=Estado.LISTO)
     atrasado = Pedido.objects.get(taller=taller, estado=Estado.CONFECCION)
     assert reverse("pedidos:hoy_accion", args=[listo.pk, "entregado"]) in html
     assert reverse("pedidos:hoy_accion", args=[atrasado.pk, "listo"]) not in html
-    assert "Preguntar si confirma" not in html
+    assert "Confirmar pedido" not in html
     assert reverse("finanzas:excel") not in html and reverse("pedidos:nuevo") not in html
 
 
@@ -756,10 +757,12 @@ def test_hoy_de_la_duena_sigue_con_todo(client, ejemplo):
 
     html = client.get(reverse("pedidos:hoy")).text
 
-    assert ">Por cobrar<" in html
+    assert ">Por cobrar<" in html and ">Cobrado<" in html
     assert 'id="hoy-grafica"' in html and 'id="hoy-quien-debe"' in html
-    assert "Cobrar el saldo" in html or "Preguntar si confirma" in html
-    assert reverse("finanzas:excel") in html and reverse("pedidos:nuevo") in html
+    # El cotizado de los ejemplos se puede confirmar desde su tarjeta
+    assert "Confirmar pedido" in html
+    # "Descargar para Excel" ya no va en Hoy (diseno/hoy.html); está en Pedidos y Resumen
+    assert reverse("pedidos:nuevo") in html
 
 
 def test_la_costurera_no_ve_nuevo_pedido_ni_excel_en_ninguna_pantalla(entrar, pedido):
@@ -796,7 +799,7 @@ def test_lo_prohibido_responde_403_con_una_pagina_clara(entrar, htmx):
     respuesta = entrar(COSTURERA).get(reverse("finanzas:resumen"), headers=headers)
 
     assert respuesta.status_code == 403
-    assert "<h1>Sin permiso</h1>" in respuesta.text
+    assert re.search(r"<h1[^>]*>(?:<svg.*?</svg>)?Sin permiso</h1>", respuesta.text)
     assert SOLO_LA_DUENA in respuesta.text
     assert "Volver a Hoy" in respuesta.text
     assert 'class="menu"' in respuesta.text  # con el marco y el menú de siempre
@@ -846,16 +849,18 @@ def test_el_menu_de_cada_rol(entrar, rol):
     lateral = re.findall(r'class="menu__texto">([^<]+)<', html)
     barra = re.findall(r'class="navegacion-celular__enlace[^"]*"[^>]*>.*?</svg>([^<]+)<', html)
     mas = html.split('id="panel-mas"')[1]
+    # "Salir" va al fondo del menú lateral, como botón junto al nombre del taller
+    assert 'class="menu__salir" aria-label="Salir"' in html
 
     if rol == DUENA:
         assert lateral == ["Hoy", "Pedidos", "Calendario", "Clientes", "Cotizador", "Telas",
-                           "Resumen", "Mi taller", "Salir"]
+                           "Resumen", "Mi taller"]
         assert barra == ["Hoy", "Pedidos", "Calendario", "Clientes", "Más"]
         for nombre in SOLO_DE_LA_DUENA:
             assert f'href="{reverse(nombre)}"' in html
         assert mas.count("panel-mas__enlace") == 6
     else:
-        assert lateral == ["Hoy", "Pedidos", "Calendario", "Telas", "Salir"]
+        assert lateral == ["Hoy", "Pedidos", "Calendario", "Telas"]
         assert barra == ["Hoy", "Pedidos", "Calendario", "Telas", "Más"]
         for nombre in SOLO_DE_LA_DUENA:
             assert f'href="{reverse(nombre)}"' not in html
