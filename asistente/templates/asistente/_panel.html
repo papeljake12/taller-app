@@ -1,1 +1,39 @@
-{% comment %}Carril D (T33 y T34). Ver docs/11-plan-tanda-7.md, sección 1.5, y diseno/asistente.html.{% endcomment %}
+{% load piezas %}{% comment %}
+Lo de adentro del panel del asistente (diseno/asistente.html y diseno/asistente-limite.html):
+lo devuelve GET asistente/ con HTMX y va dentro del <aside id="asistente"> de base.html.
+También lo usa la página sin JavaScript (pagina.html, con `en_pagina`).
+
+Lo que espera static/js/app.js (sección 14; docs/11-plan-tanda-7.md, 1.7): la equis con
+data-asistente-cerrar, la conversación en #asistente-mensajes y el formulario con
+data-asistente-form, hx-target="#asistente-pendiente", hx-swap="outerHTML",
+hx-disabled-elt, el textarea "pregunta" y el campo oculto "pagina" (lo llena el JS).
+El formulario lleva action y method para funcionar también sin JavaScript.
+
+"Nueva conversación" envía el formulario #asistente-nueva (de abajo): así funciona con y sin
+JavaScript sin meter un formulario en la fila de botones.
+
+Recibe `turnos`, `aviso_larga`, `sugerencias` y `cupo` (asistente.uso.Cupo). Sin preguntas
+(`cupo.agotado`), la caja queda apagada y dice cuándo vuelve. Con `solo_caja` dibuja solo la
+caja, con hx-swap-oob: "preguntar" la manda así cuando se acaban las preguntas.
+{% endcomment %}{% if not solo_caja %}<header class="asistente__cabeza">
+<h2 class="asistente__titulo" id="asistente-titulo"><span class="avatar-asistente" aria-hidden="true">{% icono "asistente-cara" 18 "2" %}</span>Asistente</h2>
+<span class="etiqueta etiqueta--gris">Solo consulta</span>
+<div class="asistente__acciones">
+<button type="submit" form="asistente-nueva" class="boton boton--icono boton--plano asistente__boton" aria-label="Nueva conversación" title="Nueva conversación">{% icono "sumar" 16 %}</button>
+{% if en_pagina %}<a class="boton boton--icono boton--plano asistente__boton" href="{% url 'pedidos:hoy' %}" aria-label="Cerrar el asistente" title="Cerrar">{% icono "cerrar" 16 %}</a>{% else %}<button type="button" class="boton boton--icono boton--plano asistente__boton" data-asistente-cerrar aria-label="Cerrar el asistente" title="Cerrar (Esc)">{% icono "cerrar" 16 %}</button>{% endif %}
+</div>
+</header>
+<div class="asistente__mensajes" id="asistente-mensajes" aria-live="polite">
+{% include "asistente/_conversacion.html" %}
+</div>
+<form class="asistente__pie" id="asistente-form" action="{% url 'asistente:preguntar' %}" method="post" data-asistente-form hx-post="{% url 'asistente:preguntar' %}" hx-target="#asistente-pendiente" hx-swap="outerHTML" hx-disabled-elt="find textarea, find button">
+{% csrf_token %}<input type="hidden" name="pagina" value="">
+{% include "asistente/_uso_aviso.html" %}
+{% endif %}<div class="asistente__caja" id="asistente-caja"{% if solo_caja %} hx-swap-oob="true"{% endif %}>
+<label class="oculto" for="asistente-pregunta">Tu pregunta</label>
+<textarea id="asistente-pregunta" name="pregunta" rows="1" maxlength="500" placeholder="{% if cupo.agotado %}{{ cupo.vuelve }}{% else %}Pregunta algo de tu taller{% endif %}"{% if cupo.agotado %} disabled{% endif %}>{% if not cupo.agotado %}{{ pregunta_inicial }}{% endif %}</textarea>
+<button type="submit" class="boton boton--principal boton--icono asistente__enviar"{% if cupo.agotado %} disabled{% endif %} aria-label="Enviar" title="Enviar (Enter)">{% icono "enviar" 16 "2" %}</button>
+</div>{% if not solo_caja %}
+<p class="asistente__nota">{% icono "informacion" 14 %}Solo lee tus datos, no cambia nada. Puede equivocarse: revisa las cifras importantes.</p>
+</form>
+<form id="asistente-nueva" action="{% url 'asistente:nueva' %}" method="post" hx-post="{% url 'asistente:nueva' %}" hx-target="#asistente-mensajes" hidden>{% csrf_token %}</form>{% endif %}
