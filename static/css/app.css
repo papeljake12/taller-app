@@ -3992,6 +3992,16 @@ button.casilla:active {
 }
 /* --- Mi taller, Entrar y formulario público (fin) --- */
 
+/* --- Asistente (inicio) --- */
+/* Una pregunta con su respuesta (y la que está en camino, #asistente-pendiente): va envuelta
+   en un bloque, pero se separa igual que si estuviera suelta en la conversación. */
+.asistente__turno {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+/* --- Asistente (fin) --- */
+
 
 /* 10. Menos movimiento ----------------------------------------------------- */
 

@@ -5,7 +5,8 @@ pantalla vacía.{% endcomment %}
 {% block pestana %}Pedidos{% endblock %}
 {% block titulo %}Pedidos{% endblock %}
 {% block clase_hoja %} hoja--completa{% endblock %}
-{% block acciones %}{% include "piezas/_boton_excel.html" %}{% if total %}<a class="boton boton--redondo-celular solo-celular" href="{{ url_buscar }}" data-mostrar="buscador-pedidos" aria-controls="buscador-pedidos" aria-label="Buscar" title="Buscar"><span class="boton__icono-celular">{% icono "buscar" 20 %}</span></a>{% endif %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
+{% block acciones_antes %}{% include "piezas/_boton_excel.html" %}{% if total %}<a class="boton boton--redondo-celular solo-celular" href="{{ url_buscar }}" data-mostrar="buscador-pedidos" aria-controls="buscador-pedidos" aria-label="Buscar" title="Buscar"><span class="boton__icono-celular">{% icono "buscar" 20 %}</span></a>{% endif %}{% endblock %}
+{% block acciones %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
 {% if total %}
 <section class="cifras cifras--barra" aria-label="Pedidos de un vistazo">

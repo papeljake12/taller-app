@@ -6,6 +6,8 @@ explicación a la izquierda y sus tarjetas a la derecha. Dos bloques:
   "Costureras" (_mi_taller_costureras: las activas, las desactivadas y el formulario de la
   nueva). Cada acción devuelve su tarjeta o su columna sola (cuentas/mi_taller.py).
 El formulario de la costurera nueva ya está a la vista, así que no hay botón arriba.
+Con el asistente prendido (tanda 7), un tercer bloque, "Asistente": su tarjeta es
+asistente/_uso_mi_taller.html y recibe `uso_asistente` (asistente.uso.Cupo).
 {% endcomment %}
 {% block pestana %}Mi taller{% endblock %}
 {% block titulo %}Mi taller{% endblock %}
@@ -19,5 +21,9 @@ El formulario de la costurera nueva ya está a la vista, así que no hay botón 
 <div class="ajuste__explica"><h2>Costureras</h2><p>Las personas que cosen contigo. Cada una entra con su usuario y su contraseña, y así puedes anotar quién hace cada pedido.</p></div>
 {% include "cuentas/_mi_taller_costureras.html" %}
 </div>
+{% if uso_asistente %}<div class="ajuste">
+<div class="ajuste__explica"><h2>Asistente</h2><p>Le preguntas por tus pedidos, abonos, telas y gastos, y te contesta con tus cifras. Cada mes tienes un número de preguntas.</p></div>
+{% include "asistente/_uso_mi_taller.html" %}
+</div>{% endif %}
 </div>
 {% endblock %}

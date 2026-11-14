@@ -807,3 +807,127 @@ def test_un_enlace_a_un_campo_plegado_lo_abre_y_deja_aire_arriba():
     # plegada (static/js/app.js) y el campo no queda pegado arriba de la hoja.
     assert 'destino.closest("details")' in _js()
     assert re.search(r"\.campo__control \{\s*scroll-margin-top: 48px;", _css())
+
+
+# --- Tanda 7: el botón y el panel del asistente -------------------------------------------
+
+
+@pytest.fixture
+def asistente_prendido(settings, taller):
+    settings.ANTHROPIC_API_KEY = "clave-de-prueba"
+    taller.asistente_limite_mes = 600
+    taller.asistente_limite_dia = 40
+    taller.save()
+    return taller
+
+
+def _boton_asistente(html):
+    return [e for e in Elementos(html).elementos if "data-asistente-abrir" in e["atributos"]]
+
+
+def _panel_asistente(html):
+    return [e for e in Elementos(html).elementos if e["atributos"].get("id") == "asistente"]
+
+
+def test_el_asistente_no_sale_sin_clave_aunque_el_taller_lo_tenga(sesion_duena, settings, taller):
+    taller.asistente_limite_mes, taller.asistente_limite_dia = 600, 40
+    taller.save()
+    settings.ANTHROPIC_API_KEY = ""
+
+    html = sesion_duena.get("/").text
+
+    assert not _boton_asistente(html) and not _panel_asistente(html)
+
+
+def test_el_asistente_no_sale_si_el_taller_lo_tiene_apagado(sesion_duena, settings):
+    settings.ANTHROPIC_API_KEY = "clave-de-prueba"
+
+    html = sesion_duena.get("/").text
+
+    assert not _boton_asistente(html) and not _panel_asistente(html)
+
+
+def test_el_asistente_no_le_sale_a_la_costurera(client, costurera, asistente_prendido):
+    client.force_login(costurera)
+
+    html = client.get("/").text
+
+    assert not _boton_asistente(html) and not _panel_asistente(html)
+
+
+# Mi taller con el asistente prendido muestra el cupo (asistente.uso.cupo): la prueba el
+# carril D (T34) en asistente/tests/test_uso.py.
+@pytest.mark.parametrize(
+    "direccion", ["/", "/pedidos/", "/calendario/", "/clientes/", "/cotizador/", "/telas/",
+                  "/resumen/"],
+)
+def test_la_duena_ve_el_boton_en_cada_pantalla_y_el_panel_cerrado(
+    sesion_duena, asistente_prendido, direccion
+):
+    html = sesion_duena.get(direccion).text
+    boton, = _boton_asistente(html)
+    panel, = _panel_asistente(html)
+
+    assert boton["atributos"]["href"] == "/asistente/"
+    assert boton["atributos"]["aria-controls"] == "asistente"
+    assert boton["atributos"]["aria-expanded"] == "false"
+    assert "Asistente" in boton["texto"]
+    assert "hidden" in panel["atributos"]
+    assert panel["atributos"]["hx-get"] == "/asistente/"
+    assert panel["atributos"]["hx-trigger"] == "asistente-abrir once"
+
+
+def test_el_boton_del_asistente_va_a_la_izquierda_del_principal(sesion_duena, asistente_prendido):
+    for direccion in ("/", "/pedidos/"):
+        html = sesion_duena.get(direccion).text
+        acciones = html[html.index('class="encabezado__acciones"'):html.index("</header>")]
+
+        assert acciones.index("data-asistente-abrir") < acciones.index("boton--principal")
+    # Hoy: la fecha y la lupa del celular siguen antes; Resumen: "Excel" antes.
+    hoy = sesion_duena.get("/").text
+    assert hoy.index("encabezado__apoyo") < hoy.index("data-asistente-abrir")
+    resumen = sesion_duena.get("/resumen/").text
+    assert resumen.index("Descargar para Excel") < resumen.index("data-asistente-abrir")
+
+
+def test_con_la_cookie_el_panel_sale_abierto_y_se_llena_al_cargar(
+    sesion_duena, asistente_prendido
+):
+    sesion_duena.cookies["asistente"] = "abierto"
+
+    html = sesion_duena.get("/").text
+    boton, = _boton_asistente(html)
+    panel, = _panel_asistente(html)
+
+    assert "hidden" not in panel["atributos"]
+    assert panel["atributos"]["hx-trigger"] == "load"
+    assert boton["atributos"]["aria-expanded"] == "true"
+    assert "es-presionado" in boton["clases"]
+
+
+def test_el_panel_va_al_lado_de_la_hoja_dentro_del_marco(sesion_duena, asistente_prendido):
+    html = sesion_duena.get("/").text
+
+    assert html.index('<main class="hoja') < html.index('id="asistente"') < html.index(
+        "navegacion-celular"
+    )
+
+
+def test_el_javascript_del_asistente_tiene_su_atajo_y_sus_piezas():
+    js = (ESTATICOS / "js/app.js").read_text("utf-8")
+    seccion = js[js.index("/* 14. Asistente"):]
+
+    assert 'evento.key.toLowerCase() === "j"' in seccion
+    for pieza in ("[data-asistente-abrir]", "[data-asistente-cerrar]", "[data-asistente-form]",
+                  "[data-asistente-sugerencia]", "#asistente-pendiente", "Revisando tus datos…",
+                  "asistente=abierto"):
+        assert pieza in seccion
+    # La burbuja se escribe como texto, nunca como HTML.
+    assert "innerHTML" not in seccion
+    assert "texto.textContent = pregunta" in seccion
+
+
+def test_los_iconos_del_asistente_estan_guardados():
+    iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")
+
+    assert '<symbol id="asistente"' in iconos and '<symbol id="enviar"' in iconos

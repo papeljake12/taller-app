@@ -6,6 +6,22 @@ from cuentas.models import Usuario
 from tests import fabricas
 
 
+@pytest.fixture(autouse=True)
+def sin_internet_para_claude(monkeypatch):
+    """Ninguna prueba llega a la API de Claude (docs/06-pruebas.md, "Asistente").
+
+    Se corta dentro de la librería `anthropic`, justo antes de enviar: así falla cualquier
+    camino, aunque alguien arme el cliente a mano o ponga una clave. Las pruebas que necesitan
+    respuestas de Claude usan asistente.falso.instalar() con un guion.
+    """
+
+    def prohibido(*args, **kwargs):
+        raise AssertionError("Las pruebas no llaman a la API de Claude: usa asistente.falso.")
+
+    monkeypatch.setattr("anthropic._base_client.SyncAPIClient.request", prohibido)
+    monkeypatch.setattr("anthropic._base_client.AsyncAPIClient.request", prohibido)
+
+
 @pytest.fixture
 def taller(db):
     return fabricas.crear_taller()

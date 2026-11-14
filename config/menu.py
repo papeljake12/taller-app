@@ -186,14 +186,30 @@ def construir_menu(request, contadores=None):
     }
 
 
+def asistente(request):
+    """Si sale el botón del asistente y si su panel va abierto (tanda 7).
+
+    Abierto solo si la dueña lo dejó así en este navegador (cookie asistente=abierto, que pone
+    static/js/app.js en computador).
+    """
+    from asistente.disponibilidad import disponible
+
+    sale = disponible(request)
+    return {
+        "disponible": sale,
+        "abierto": sale and request.COOKIES.get("asistente") == "abierto",
+    }
+
+
 def menu(request):
     """Procesador de contexto: deja `menu` y `menu_contraido` en todas las plantillas, y
     también `es_duena` y `puede_ver_plata` (cuentas/permisos.py), para que cada plantilla
-    sepa qué mostrar según el rol."""
+    sepa qué mostrar según el rol, y `asistente` (disponible y abierto)."""
     if not request.user.is_authenticated:
         return {}
     return {
         "menu": construir_menu(request),
         "menu_contraido": request.COOKIES.get("menu") == "contraido",
+        "asistente": asistente(request),
         **permisos.contexto(request),
     }

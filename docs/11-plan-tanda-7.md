@@ -326,6 +326,62 @@ def costo_usd(uso) -> Decimal            # settings.ASISTENTE_PRECIOS_USD; no se
 Precios por millón (Opus 5.5): entrada 4.00, salida 20.00, escritura de caché 5.00, lectura de
 caché 0.20. `pocas` es True si quedan 5 o menos hoy, o 10 % o menos del mes.
 
+### 1.7 Cómo quedó la base (ajustes del coordinador en T25 y T26)
+
+Lo que cambió respecto a lo de arriba al construir la base. Manda esto si algo choca.
+
+- **`RespuestaClaude` vive en `asistente/contratos.py`** (congelado), no en `cliente.py`:
+  la necesita también `falso.py`. `cliente.py` la importa de ahí.
+- **Ya hechos por la base:** `cliente.obtener_cliente()` (None sin clave; si no, la clase de
+  `settings.ASISTENTE_CLIENTE`), `disponibilidad.disponible(request)` y `uso.costo_usd(uso)`.
+  Quien use el cliente lo llama siempre por el módulo: `cliente.obtener_cliente()`.
+- **`conversacion.Respuesta` tiene un campo más:** `reiniciar: bool = False`, True cuando el
+  historial ya no sirve (`BadRequestError`) y la vista debe borrar la conversación.
+- **`herramientas.ejecutar()` ya revisa** tipos, opciones, fechas (las convierte a `date`) y
+  los rangos de `RANGOS` (cantidad de 1 a 2000, mes de 1 a 12, texto del mensaje hasta 700
+  caracteres, ganancia de 0 a 300, abono de 0 a 100, ids desde 1). Un error de código dentro
+  de una herramienta llega a Claude como "No pude hacer esa consulta." y queda en el registro.
+  Cada herramienta revisa lo que el esquema no dice (fechas al revés, rangos de días).
+- **Cliente falso:** `falso.instalar(monkeypatch, settings, guion)` pone una clave de prueba y
+  hace que `obtener_cliente()` devuelva el falso. Piezas del guion: `falso.texto(t)`,
+  `falso.usa((nombre, entrada, id), ..., pensamiento_antes=True, texto_antes=None)`,
+  `falso.rechazo()`, `falso.cortada()` y cualquier excepción (se lanza en esa vuelta).
+- **Corte de internet en las pruebas:** `conftest.py` no parcha `ClienteAnthropic.enviar`;
+  corta el envío dentro de la librería (`SyncAPIClient.request`). Así el carril B puede probar
+  `enviar` reemplazando `anthropic.Anthropic` en `asistente.cliente`, y ninguna prueba llega
+  a internet por ningún camino.
+- **El botón es de la base:** `asistente/templates/asistente/_boton.html` lo incluye
+  `base.html` (no es del carril D). Sin JavaScript lleva a `asistente:panel`.
+- **El panel en `base.html`:** `<aside class="asistente" id="asistente" data-asistente>`,
+  `hidden` si está cerrado, con `hx-get` a `asistente:panel` y `hx-trigger` `load` (abierto
+  por la cookie) o `asistente-abrir once` (lo dispara `app.js` al abrirlo).
+- **`GET asistente/` con HTMX devuelve el interior del panel** (`_panel.html`): la cabeza
+  (título, "Solo consulta", "Nueva conversación" y la equis con `data-asistente-cerrar`),
+  la conversación `<div class="asistente__mensajes" id="asistente-mensajes" aria-live="polite">`
+  con `_conversacion.html` adentro, y el pie con el formulario. Sin HTMX, `pagina.html`.
+- **Lo que espera `app.js` (sección 14) dentro del panel:**
+  - el formulario lleva `data-asistente-form`, `hx-post`, `hx-target="#asistente-pendiente"`,
+    `hx-swap="outerHTML"`, `hx-disabled-elt="find textarea, find button"`, un `<textarea
+    name="pregunta" maxlength="500">` y un `<input type="hidden" name="pagina">` (el JS lo
+    llena). No hace falta `hx-sync`: el JS no deja enviar si ya hay una pregunta en camino;
+  - el saludo de la conversación vacía lleva `data-asistente-bienvenida` (el JS lo quita con
+    la primera pregunta) y cada sugerencia es un botón `class="chip"` con
+    `data-asistente-sugerencia`;
+  - cada turno (pregunta y respuesta) va en `<div class="asistente__turno">`, y
+    `POST asistente/preguntar/` devuelve ese bloque entero: reemplaza al
+    `#asistente-pendiente` que puso el JS;
+  - el aviso ámbar va en `<div id="asistente-uso">` dentro del pie, encima de la caja, y la
+    vista lo manda aparte con `hx-swap-oob`.
+- **Los tres puntos laten en `app.css`** (sección 8, con `--vuelta-latido`); en la maqueta
+  están quietos. `.asistente__turno` está en la sección 9.
+- **Mi taller:** `cuentas/mi_taller.py` pasa `uso_asistente` (el `Cupo`, o None si el
+  asistente no está disponible) y la plantilla incluye `asistente/_uso_mi_taller.html` dentro
+  de un bloque `ajuste`. Mientras `uso.cupo` sea un stub, Mi taller da error con el asistente
+  prendido: el carril D lo prueba en `test_uso.py`.
+- **La prueba corta** es `herramientas/humo_asistente.py` (fuera de pytest). Es el único
+  lugar fuera de `asistente/cliente.py` donde aparece `Anthropic(`.
+- **La maqueta del límite** está en su propia página: `diseno/asistente-limite.html`.
+
 ## 2. Base del coordinador (T25 y T26, en orden, sin carriles)
 
 **T25. Documentos, maqueta, librería y datos**

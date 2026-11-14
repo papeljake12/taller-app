@@ -95,9 +95,10 @@ La maqueta está en `diseno/asistente.html` (abrirla también en 390 px).
   En el panel no se ve nada mientras vaya bien; cuando quedan pocas, sale una línea en ámbar.
 - **Colores:** los de siempre. Rojo solo para lo vencido o atrasado.
 
-**Piezas que faltan en la maqueta** y que David aprueba antes de construir: la tarjeta del
-mensaje de WhatsApp, la tarjeta de cotización, el aviso ámbar de "quedan pocas", el estado de
-límite alcanzado y la tarjeta de uso en Mi taller.
+**Piezas nuevas de la maqueta** (T25), que David aprueba antes de construir: la tarjeta del
+mensaje de WhatsApp, la tarjeta de cotización y el aviso ámbar de "quedan pocas" (en
+`diseno/asistente.html`), el estado de límite alcanzado (`diseno/asistente-limite.html`) y la
+tarjeta de uso en Mi taller (`diseno/mi-taller.html`).
 
 ## Mensajes cuando algo sale mal
 

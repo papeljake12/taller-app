@@ -9,7 +9,7 @@ Las ventas por tipo de cliente y quién tiene qué usan _barra.
 {% endcomment %}
 {% block pestana %}Resumen{% endblock %}
 {% block titulo %}Resumen{% endblock %}
-{% block acciones %}{% include "piezas/_boton_excel.html" %}{% endblock %}
+{% block acciones_antes %}{% include "piezas/_boton_excel.html" %}{% endblock %}
 {% block contenido %}
 <div class="botones" role="group" aria-label="Mes del resumen"><span class="grupo-botones"><a class="boton boton--icono" href="?mes={{ mes_anterior }}" aria-label="Mes anterior" title="Mes anterior">{% icono "atras" 16 %}</a><span class="boton" aria-current="date">{% icono "calendario" 14 %}{{ mes|mes_y_anio }}</span><a class="boton boton--icono" href="?mes={{ mes_siguiente }}" aria-label="Mes siguiente" title="Mes siguiente">{% icono "adelante" 16 %}</a></span></div>
 {% include "finanzas/_cifras.html" %}

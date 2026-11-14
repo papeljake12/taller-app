@@ -14,6 +14,7 @@ urlpatterns = [
     path("cotizador/", include("cotizador.urls")),
     path("telas/", include("telas.urls")),
     path("resumen/", include("finanzas.urls")),
+    path("asistente/", include("asistente.urls")),
     # Página interna con todas las piezas del diseño. Solo responde en desarrollo.
     path("piezas/", piezas, name="piezas"),
     path("piezas/animaciones/filas/", piezas_filas, name="piezas_filas"),

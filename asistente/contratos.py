@@ -7,6 +7,8 @@ Archivo congelado (docs/11-plan-tanda-7.md, sección 1.1): solo lo cambia el coo
 - `Resultado`: lo que devuelve una herramienta. `datos` es lo ÚNICO que lee Claude; la
   tarjeta y el enlace los arma la aplicación y nunca salen del servidor.
 - `Uso`: los tokens de una o varias llamadas a Claude.
+- `RespuestaClaude`: una respuesta de Claude ya traducida a diccionarios. La arma el cliente
+  de verdad (asistente/cliente.py) y también el falso de las pruebas (asistente/falso.py).
 - `ErrorDeHerramienta`: algo que Claude pidió mal (un pedido que no existe, una cifra que no
   cuadra). Su texto le llega a Claude para que corrija.
 
@@ -78,6 +80,17 @@ class Uso:
     @property
     def total(self) -> int:
         return self.entrada + self.salida + self.cache_escritura + self.cache_lectura
+
+
+@dataclass(frozen=True)
+class RespuestaClaude:
+    # [b.to_dict(mode="json") for b in response.content], con los bloques thinking incluidos y
+    # sin tocar: vuelven tal cual en el historial.
+    contenido: list[dict]
+    stop_reason: str  # end_turn | tool_use | max_tokens | refusal | ...
+    uso: Uso
+    modelo: str  # response.model (puede ser el de respaldo)
+    id_peticion: str
 
 
 class ErrorDeHerramienta(Exception):

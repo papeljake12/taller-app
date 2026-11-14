@@ -1,0 +1,5 @@
+{% load piezas %}{% comment %}
+El botón "Asistente" del encabezado (base.html), a la izquierda del principal. Solo sale si
+`asistente.disponible` (config/menu.py). Con JavaScript abre y cierra el panel (Ctrl J);
+sin JavaScript lleva a la página del asistente. Archivo de la base: lo cambia el coordinador.
+{% endcomment %}<a class="boton boton--redondo-celular{% if asistente.abierto %} es-presionado{% endif %}" href="{% url 'asistente:panel' %}" role="button" data-asistente-abrir aria-expanded="{% if asistente.abierto %}true{% else %}false{% endif %}" aria-controls="asistente" aria-label="Asistente" title="Asistente (Ctrl J)"><span class="boton__icono-celular">{% icono "asistente" 20 %}</span><span class="boton__texto">{% icono "asistente" 16 %}Asistente</span></a>

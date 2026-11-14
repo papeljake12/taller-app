@@ -168,11 +168,20 @@ def _volver(request, ancla):
     return redirect(url)
 
 
+def _uso_asistente(request):
+    """El cupo de preguntas del asistente (asistente.uso.Cupo), o None si no lo tiene."""
+    from asistente import uso
+    from asistente.disponibilidad import disponible
+
+    return uso.cupo(request.taller) if disponible(request) else None
+
+
 def _pagina(request, status=200, **contexto):
     """La página completa de Mi taller. Las dos tarjetas toman lo que llegue en `contexto`
     o, si no, sus datos de siempre."""
     datos = contexto_taller(_taller(request))
     datos.update(contexto_costureras(request))
+    datos["uso_asistente"] = _uso_asistente(request)
     datos.update(contexto)
     return render(request, "cuentas/mi_taller.html", datos, status=status)
 
