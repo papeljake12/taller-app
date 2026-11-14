@@ -186,6 +186,18 @@ def test_la_costurera_no_ve_total_pago_ni_por_cobrar(client, costurera, ejemplo_
         assert visible in texto, visible
 
 
+def test_mientras_busca_la_costurera_tampoco_recibe_plata(client, costurera, ejemplo_de_costurera):
+    # Lo que llega con HTMX mientras se escribe en el buscador (pedido por el revisor)
+    client.force_login(costurera)
+    for filtro in ("todos", "saldo", "atrasados"):
+        html = client.get(LISTA, {"filtro": filtro, "q": "a"}, headers={"HX-Request": "true"}).text
+        texto = texto_de(html)
+        for prohibido in ("Por cobrar", "Total", "Pago", "Con saldo", "Abonado", "Sin abonos",
+                          "Vencido", "$ "):
+            assert prohibido not in texto, (filtro, prohibido)
+        assert "celda-total" not in html
+
+
 def test_la_costurera_no_puede_pedir_el_filtro_con_saldo(client, costurera, ejemplo_de_costurera):
     client.force_login(costurera)
 

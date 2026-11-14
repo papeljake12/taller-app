@@ -126,12 +126,14 @@ def test_ver_la_lista_de_pedidos(entrar, rol, pedido):
     for html in (respuesta.text, con_saldo.text, buscando.text):
         assert "Cliente de prueba" in html
     if rol == DUENA:
-        assert ">Saldo</th>" in respuesta.text
+        # Rediseño: la lista trae el total y la insignia del pago (ya no la columna Saldo)
+        assert '<th scope="col" class="num">Total</th>' in respuesta.text
+        assert '<th scope="col">Pago</th>' in respuesta.text
         assert "$ 1.000.000" in respuesta.text
         assert "Con saldo" in respuesta.text
     else:
         for html in (respuesta.text, con_saldo.text, buscando.text):
-            assert ">Saldo</th>" not in html
+            assert ">Total</th>" not in html and ">Pago</th>" not in html
             assert "Con saldo" not in html
             assert "Pagado" not in html
             assert sin_plata(html)
