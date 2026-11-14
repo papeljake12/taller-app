@@ -737,18 +737,17 @@ def test_hoy_de_la_costurera(client, ejemplo):
 
     html = client.get(reverse("pedidos:hoy")).text
 
-    for cifra in ("En producción", "Entregas en 7 días", "Atrasados"):
+    for cifra in ("En producción", "Se entregan esta semana", "Atrasados"):
         assert f">{cifra}<" in html
-    assert ">Por cobrar<" not in html
+    assert ">Por cobrar<" not in html and ">Cobrado<" not in html and "$ " not in html
     assert 'id="hoy-grafica"' not in html and 'id="hoy-quien-debe"' not in html
-    assert "Qué hacer hoy" in html and "Trabajos del taller" in html
-    assert 'id="hoy-etapas"' in html
+    assert 'id="hoy-que-hacer"' in html and 'id="hoy-etapas"' in html
     # El listo es de Marta: lo puede entregar. El atrasado es de Carmen: solo lo ve.
     listo = Pedido.objects.get(taller=taller, estado=Estado.LISTO)
     atrasado = Pedido.objects.get(taller=taller, estado=Estado.CONFECCION)
     assert reverse("pedidos:hoy_accion", args=[listo.pk, "entregado"]) in html
     assert reverse("pedidos:hoy_accion", args=[atrasado.pk, "listo"]) not in html
-    assert "Preguntar si confirma" not in html
+    assert "Confirmar pedido" not in html
     assert reverse("finanzas:excel") not in html and reverse("pedidos:nuevo") not in html
 
 
@@ -758,10 +757,12 @@ def test_hoy_de_la_duena_sigue_con_todo(client, ejemplo):
 
     html = client.get(reverse("pedidos:hoy")).text
 
-    assert ">Por cobrar<" in html
+    assert ">Por cobrar<" in html and ">Cobrado<" in html
     assert 'id="hoy-grafica"' in html and 'id="hoy-quien-debe"' in html
-    assert "Cobrar el saldo" in html or "Preguntar si confirma" in html
-    assert reverse("finanzas:excel") in html and reverse("pedidos:nuevo") in html
+    # El cotizado de los ejemplos se puede confirmar desde su tarjeta
+    assert "Confirmar pedido" in html
+    # "Descargar para Excel" ya no va en Hoy (diseno/hoy.html); está en Pedidos y Resumen
+    assert reverse("pedidos:nuevo") in html
 
 
 def test_la_costurera_no_ve_nuevo_pedido_ni_excel_en_ninguna_pantalla(entrar, pedido):

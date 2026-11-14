@@ -664,8 +664,11 @@ def test_la_costurera_no_confirma_pedidos(sesion_costurera, taller, costurera):
     assert sesion_costurera.post(accion(otro, "confirmado"), headers=HTMX).status_code == 403
     otro.refresh_from_db()
     assert otro.estado == Estado.COTIZADO
-    # Aunque sea la encargada, la tarjeta no le ofrece confirmar (el precio es de la dueña).
+    # Aunque sea la encargada, la tarjeta no le ofrece confirmar (el precio es de la dueña), y
+    # tampoco puede confirmarlo pidiéndolo directo (lo notó el revisor).
     assert "Confirmar pedido" not in sesion_costurera.get(PAGINA).text
+    assert sesion_costurera.post(accion(pedido, "confirmado"), headers=HTMX).status_code == 403
+    pedido.refresh_from_db()
     assert pedido.estado == Estado.COTIZADO
 
 

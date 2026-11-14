@@ -35,7 +35,7 @@ from config.menu import construir_menu
 from config.piezas import pesos
 from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
-from cuentas.permisos import exigir_mover_etapa, puede_mover_etapa, puede_ver_plata
+from cuentas.permisos import exigir_duena, exigir_mover_etapa, puede_mover_etapa, puede_ver_plata
 from pedidos import calculos, mensajes
 from pedidos.calculos import Etiqueta
 from pedidos.models import Pedido
@@ -327,11 +327,15 @@ def accion(request, pk, accion):
     """Marcar como listo, como entregado o confirmar un pedido desde las tarjetas de Hoy.
 
     Como cambiar la etapa en el pedido: la dueña siempre, la costurera solo si es la
-    encargada (si no, 403). Primero se busca el pedido en el taller: el de otro, 404.
+    encargada (si no, 403). Confirmar un pedido es solo de la dueña, aunque la costurera sea la
+    encargada: depende del precio, que ella no ve. Primero se busca el pedido en el taller: el
+    de otro, 404.
     """
     if accion not in ACCIONES:
         raise Http404("Esa acción no existe.")
     pedido = obtener_o_404(request, Pedido, pk=pk)
+    if accion == "confirmado":
+        exigir_duena(request)
     exigir_mover_etapa(request, pedido)
     nueva, desde = ACCIONES[accion]
     if pedido.estado in desde:

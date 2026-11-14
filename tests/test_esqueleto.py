@@ -54,16 +54,16 @@ def test_el_pedido_por_dentro_abre_con_sus_partes(sesion_duena, taller):
 
 
 def test_hoy_reune_sus_partes_en_el_orden_del_diseno(sesion_duena):
+    # Rediseño (diseno/hoy.html): el saludo, la caja para buscar, lo de hoy en tarjetas, "Tu
+    # mes" con sus cifras, la gráfica junto a "Quién te debe" y los pedidos por etapa.
     html = sesion_duena.get("/").text
-    titulos = ["Qué hacer hoy", "Trabajos del taller", "Cobrado y gastado por mes",
-               "Quién te debe", "Pedidos por etapa"]
+    partes = ['class="bienvenida"', 'class="caja-grande"', 'id="hoy-que-hacer"', ">Tu mes</h2>",
+              'id="hoy-cifras"', 'id="hoy-grafica"', 'id="hoy-quien-debe"', 'id="hoy-etapas"']
 
-    posiciones = [html.index(f">{t}</h2>") for t in titulos]
+    posiciones = [html.index(parte) for parte in partes]
 
     assert posiciones == sorted(posiciones)
-    # En celular: qué hacer hoy, quién te debe, trabajos, gráfica y etapas.
-    for orden in range(1, 6):
-        assert f"orden-celular-{orden}" in html
+    assert "Trabajos del taller" not in html
 
 
 def test_el_menu_lleva_a_cada_seccion(sesion_duena):
