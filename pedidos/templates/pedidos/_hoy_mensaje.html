@@ -1,5 +1,4 @@
 {% comment %}
-Botón de un mensaje para el cliente (`fila.mensaje`), con `texto` como nombre del botón:
-con WhatsApp guardado abre el chat con el mensaje escrito; sin WhatsApp, copia el mensaje.
-Con `corto`, en celular el botón dice esa versión corta (diseno/hoy-celular.html: "Preguntar").
-{% endcomment %}{% if fila.mensaje.enlace %}<a class="boton" href="{{ fila.mensaje.enlace }}" target="_blank" rel="noopener">{% include "pedidos/_hoy_nombre_boton.html" %}</a>{% else %}<button type="button" class="boton" data-copiar="{{ fila.mensaje.texto }}" title="Copia el mensaje para pegarlo en WhatsApp">{% include "pedidos/_hoy_nombre_boton.html" %}</button>{% endif %}
+"Avisar": el mensaje para el cliente (`fila.mensaje`). Con WhatsApp guardado abre el chat con
+el mensaje escrito; sin WhatsApp, copia el mensaje para pegarlo donde se quiera.
+{% endcomment %}{% if fila.mensaje.enlace %}<a class="boton boton--plano" href="{{ fila.mensaje.enlace }}" target="_blank" rel="noopener">Avisar</a>{% else %}<button type="button" class="boton boton--plano" data-copiar="{{ fila.mensaje.texto }}" title="Copia el mensaje para pegarlo en WhatsApp">Avisar</button>{% endif %}

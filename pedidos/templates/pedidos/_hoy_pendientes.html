@@ -1,7 +1,7 @@
 {% comment %}
-Lo de adentro de la lista de "Qué hacer hoy": una fila por pedido (_hoy_pendiente.html, cada
-una con su id "pendiente-N") o, si no hay nada, la nota. Es lo que responden las acciones de
-la tarjeta (pedidos/vistas/hoy.py), que lo ponen dentro de #hoy-que-hacer-lista.
+Lo de adentro de las tarjetas de lo que hay que hacer hoy: una tarjeta por pedido
+(_hoy_pendiente.html, cada una con su id "pendiente-N") o, si no hay nada, la nota. Es lo que
+responden las acciones (pedidos/vistas/hoy.py), que lo ponen dentro de #hoy-que-hacer.
 {% endcomment %}{% for fila in pendientes %}{% include "pedidos/_hoy_pendiente.html" %}
-{% empty %}<p class="tarjeta__nota">No hay nada por hacer hoy.</p>
+{% empty %}<p class="tarjeta__nota cartas__vacio">No hay nada por hacer hoy.</p>
 {% endfor %}

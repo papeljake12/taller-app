@@ -3424,6 +3424,13 @@ button.casilla:active {
    al unirlo. */
 
 /* --- Hoy (inicio) --- */
+/* Sin pendientes: la nota ocupa todo el ancho de las tarjetas (en celular, un ancho de tarjeta) */
+.cartas__vacio {
+  grid-column: 1 / -1;
+  flex: 1 0 auto;
+  padding: 18px 0;
+  text-align: center;
+}
 /* --- Hoy (fin) --- */
 
 /* --- Pedidos, Buscar y Nuevo pedido (inicio) --- */
