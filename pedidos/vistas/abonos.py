@@ -27,7 +27,7 @@ from config.avisos import avisar
 from config.ventanas import es_htmx, responder_ventana
 from cuentas.aislamiento import obtener_o_404
 from cuentas.permisos import exigir_duena
-from pedidos import calculos, mensajes
+from pedidos import calculos, cronologia, mensajes
 from pedidos.formularios.abonos import FormularioAbono
 from pedidos.models import Abono, Pedido
 from pedidos.recibo import nombre_del_recibo, recibo_en_pdf
@@ -35,9 +35,10 @@ from pedidos.recibo import nombre_del_recibo, recibo_en_pdf
 
 @dataclass
 class Pagos:
-    """Lo que dibuja la tarjeta Pagos."""
+    """Lo que dibuja la tarjeta de pago."""
 
     abonos: list
+    etiqueta: calculos.Etiqueta  # la insignia del pago ("Abonado 50 %", "Pagado"...)
     abonado: int
     saldo: int
     porcentaje: int
@@ -61,6 +62,7 @@ def contexto_pagos(request, pedido, form=None, por_quitar=None):
         "pedido": pedido,
         "pagos": Pagos(
             abonos=list(pedido.abonos.all()),
+            etiqueta=calculos.etiqueta_pago(pedido),
             abonado=calculos.abonado(pedido),
             saldo=calculos.saldo(pedido),
             porcentaje=calculos.porcentaje_pagado(pedido),
@@ -99,8 +101,9 @@ def _con_tarjeta(request):
 
 
 def _tarjeta(request, pedido, status=200, **extra):
-    """La tarjeta Pagos y, con hx-swap-oob, el botón "Avisar al cliente" de arriba, que
-    cambia con el saldo (recordatorio de cobro o aviso de listo)."""
+    """La tarjeta de pago y, con hx-swap-oob, lo que cambia con el saldo: el botón "Avisar
+    al cliente" (recordatorio de cobro o aviso de listo), el título con la insignia del pago y
+    la cronología."""
     from pedidos.vistas import detalle
 
     html = render_to_string(
@@ -111,6 +114,12 @@ def _tarjeta(request, pedido, status=200, **extra):
         {"pedido": pedido, "mensaje": detalle.mensaje_para_el_cliente(pedido), "oob": True},
         request=request,
     )
+    html += render_to_string(
+        "pedidos/_pedido_apoyo.html",
+        {**detalle.contexto_de_la_ficha(request, pedido), "oob": True},
+        request=request,
+    )
+    html += cronologia.html_oob(request, pedido)
     return HttpResponse(html, status=status)
 
 

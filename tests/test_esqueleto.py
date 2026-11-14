@@ -49,7 +49,10 @@ def test_el_pedido_por_dentro_abre_con_sus_partes(sesion_duena, taller):
     html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
 
     assert pedido.cliente.nombre in html
-    for titulo in ("Etapa", "Tallas", "Materiales", "Pagos", "Entrega", "Cliente"):
+    # Las tarjetas de la etapa y del pago no llevan título visible: se nombran con aria-label.
+    for nombre in ("Etapa", "Pago"):
+        assert f'aria-label="{nombre}"' in html, nombre
+    for titulo in ("Tallas", "Cronología", "Materiales", "Entrega", "Cliente", "Foto"):
         assert f">{titulo}</h2>" in html, titulo
 
 

@@ -1,0 +1,12 @@
+{% load piezas %}{% comment %}
+Tarjeta "Cronología" (diseno/pedido.html): lo que ha pasado en el pedido, por día, del más
+reciente al más antiguo. La arma pedidos/cronologia.py con lo que el pedido ya guarda (el pedido
+creado, los abonos y las tallas). Con `oob`, HTMX la cambia sola cuando se registra o se quita un
+abono o una talla. La costurera no ve plata: sin abonos y sin el valor del pedido.
+{% endcomment %}<section class="tarjeta" id="pedido-cronologia" aria-labelledby="t-cronologia"{% if oob %} hx-swap-oob="true"{% endif %}>
+<div class="tarjeta__cabeza"><h2 id="t-cronologia">Cronología</h2></div>
+<ol class="cronologia">
+{% for dia in cronologia %}<li class="cronologia__dia">{{ dia.nombre }}</li>
+{% for evento in dia.eventos %}<li class="cronologia__evento"><span>{{ evento.antes }}{% if evento.valor is not None %}<span class="dinero">{{ evento.valor|pesos }}</span>{{ evento.despues }}{% endif %}</span>{% if evento.quien %}<span class="cronologia__quien">{{ evento.quien }}</span>{% endif %}</li>
+{% endfor %}{% endfor %}</ol>
+</section>

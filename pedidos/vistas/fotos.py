@@ -13,6 +13,7 @@ guardada." al subirla o cambiarla y "Foto quitada." al quitarla.
 
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -40,7 +41,17 @@ def _responder(request, pedido, form=None, por_quitar=False, status=200):
     """
     contexto = {"pedido": pedido, "form_foto": form, "foto_por_quitar": por_quitar}
     if _con_tarjeta(request):
-        return render(request, "pedidos/_foto.html", contexto, status=status)
+        respuesta = render(request, "pedidos/_foto.html", contexto, status=status)
+        if status == 200 and not por_quitar:
+            # La miniatura de la tarjeta de la etapa es esta misma foto: cambia con ella.
+            from pedidos.vistas import detalle
+
+            pagina = detalle.contexto_del_pedido(
+                request, detalle.obtener_pedido(request, pedido.pk), oob=True
+            )
+            html = render_to_string("pedidos/_etapa.html", pagina, request=request)
+            respuesta.content += html.encode()
+        return respuesta
     if status == 200:
         url = reverse("pedidos:detalle", args=[pedido.pk]) + "#pedido-foto"
         if es_htmx(request):

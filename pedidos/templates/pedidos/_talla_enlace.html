@@ -1,11 +1,7 @@
 {% comment %}
-Parte de la tarjeta "Tallas": si el enlace público recibe tallas, y el botón para abrirlo o
-cerrarlo (pedidos:tallas_enlace). Cerrado, el formulario público ya no acepta envíos (T11).
-Abrir o cerrar el enlace es de la dueña (T21): la costurera ve si está abierto, sin el botón.
-{% endcomment %}{% if es_duena %}<form class="fila fila--compacta" method="post" action="{% url 'pedidos:tallas_enlace' pedido.pk %}" hx-post="{% url 'pedidos:tallas_enlace' pedido.pk %}" hx-target="#tarjeta-tallas" hx-swap="outerHTML">
-{% csrf_token %}{% else %}<div class="fila fila--compacta">{% endif %}
-{% if pedido.tallas_abiertas %}<div class="fila__texto">{% include "piezas/_etiqueta.html" with texto="Enlace abierto" tono="gris" %} <span class="texto-2">Cada persona puede enviar su talla.</span></div>
-{% if es_duena %}<button type="submit" class="boton" name="abiertas" value="no">Cerrar el enlace</button>{% endif %}
-{% else %}<div class="fila__texto">{% include "piezas/_etiqueta.html" with texto="Enlace cerrado" tono="ambar" %} <span class="texto-2">Nadie más puede enviar su talla.</span></div>
-{% if es_duena %}<button type="submit" class="boton" name="abiertas" value="si">Abrir el enlace</button>{% endif %}
-{% endif %}{% if es_duena %}</form>{% else %}</div>{% endif %}
+Parte de la tarjeta "Tallas": el botón para abrir o cerrar el enlace público
+(pedidos:tallas_enlace). Cerrado, el formulario público ya no acepta envíos (T11). Lo que dice
+si está abierto o cerrado es la insignia de la cabeza de la tarjeta.
+Abrir o cerrar el enlace es de la dueña (T21): la costurera ve la insignia, sin el botón.
+{% endcomment %}{% if es_duena %}<form method="post" action="{% url 'pedidos:tallas_enlace' pedido.pk %}" hx-post="{% url 'pedidos:tallas_enlace' pedido.pk %}" hx-target="#tarjeta-tallas" hx-swap="outerHTML">
+{% csrf_token %}{% if pedido.tallas_abiertas %}<button type="submit" class="boton boton--plano" name="abiertas" value="no" title="Nadie más podrá enviar su talla">Cerrar el enlace</button>{% else %}<button type="submit" class="boton boton--plano" name="abiertas" value="si" title="Cada persona podrá enviar su talla">Abrir el enlace</button>{% endif %}</form>{% endif %}
