@@ -198,8 +198,10 @@ def test_la_otra_duena_baja_solo_lo_suyo(client, datos):
     assert [f[1] for f in filas(libro["Gastos"])] == ["Gasto ajeno"]
 
 
-@pytest.mark.parametrize("nombre", ["pedidos:hoy", "pedidos:lista", "finanzas:resumen"])
-def test_el_boton_esta_en_hoy_pedidos_y_resumen(sesion_duena, nombre):
+@pytest.mark.parametrize("nombre", ["pedidos:lista", "finanzas:resumen"])
+def test_el_boton_esta_en_pedidos_y_resumen(sesion_duena, nombre):
+    # Rediseño (diseno/hoy.html): Hoy ya no lleva "Descargar para Excel"; sigue en Pedidos y
+    # en Resumen.
     html = sesion_duena.get(reverse(nombre)).text
 
     assert f'href="{reverse("finanzas:excel")}"' in html

@@ -152,9 +152,12 @@ def test_empieza_vacio_con_30_de_ganancia_50_de_abono_y_empresa(sesion_duena):
 def test_empezar_de_nuevo_abre_la_pantalla_vacia_tambien_en_celular(sesion_duena):
     html = sesion_duena.get(URL_INICIO).text
 
-    # Uno solo, en el encabezado: en celular se vuelve redondo, con el ícono de cerrar.
+    # Uno solo, en el encabezado: en celular se vuelve redondo, con el ícono de reiniciar (no
+    # la X, que parecería cerrar la pantalla).
     assert html.count("Empezar de nuevo</span>") == 1
-    assert f'<a class="boton boton--redondo-celular" href="{URL_INICIO}">' in html
+    assert (f'<a class="boton boton--redondo-celular" href="{URL_INICIO}" '
+            'title="Empezar de nuevo">') in html
+    assert "iconos.svg#reiniciar" in html
     assert "navegacion-mes" not in html
 
 
