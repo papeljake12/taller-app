@@ -1,1 +1,17 @@
-{% comment %}Carril D (T33 y T34). Ver docs/11-plan-tanda-7.md, sección 1.5, y diseno/asistente.html.{% endcomment %}
+{% comment %}
+La conversación del panel (va dentro de #asistente-mensajes). Vacía: el saludo y las tres
+sugerencias (diseno/asistente.html); static/js/app.js quita el saludo (data-asistente-bienvenida)
+con la primera pregunta, y cada sugerencia (data-asistente-sugerencia) se escribe y se envía.
+Sin JavaScript, la sugerencia es un botón del formulario de la pregunta.
+Con turnos: cada pregunta con su respuesta (_turno.html) y, si la conversación ya está muy
+larga (más de 25 turnos o 200 KB), el aviso que pide una nueva (`aviso_larga`).
+"Nueva conversación" (asistente/nueva/) devuelve esta plantilla vacía.
+{% endcomment %}{% if not turnos %}<div class="asistente__bienvenida" data-asistente-bienvenida>
+<p class="asistente__saludo">Pregúntame lo que quieras saber de tu taller.</p>
+<p class="texto-2">Miro tus pedidos, abonos, telas y gastos, y te contesto con las cifras.</p>
+<div class="asistente__sugerencias">
+{% for sugerencia in sugerencias %}<button type="submit" form="asistente-form" name="pregunta" value="{{ sugerencia }}" class="chip" data-asistente-sugerencia>{{ sugerencia }}</button>
+{% endfor %}</div>
+</div>{% else %}{% for turno in turnos %}
+{% include "asistente/_turno.html" %}{% endfor %}{% if aviso_larga %}
+{% include "asistente/_turno.html" with turno=aviso_larga %}{% endif %}{% endif %}

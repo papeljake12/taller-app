@@ -1,1 +1,17 @@
-{% comment %}Carril D (T33 y T34). Ver docs/11-plan-tanda-7.md, sección 1.5, y diseno/asistente.html.{% endcomment %}
+{% extends "base.html" %}{% load piezas %}
+{% comment %}
+El asistente en una página entera, para cuando no hay JavaScript (el botón "Asistente" y la
+caja de Hoy llevan aquí). Es el mismo panel (_panel.html), con la equis que vuelve a Hoy.
+Con JavaScript casi nunca se llega aquí: el botón abre el panel al lado de la hoja.
+La vista apaga el botón y el panel de base.html (`asistente.disponible`), porque esta página
+ya es el asistente. Va en una tarjeta y no con la clase "asistente": en celular esa clase lo
+pone encima de todo, y aquí la barra de abajo le taparía la caja.
+{% endcomment %}
+{% block pestana %}Asistente{% endblock %}
+{% block icono_titulo %}{% icono "asistente" %}{% endblock %}
+{% block titulo %}Asistente{% endblock %}
+{% block contenido %}
+<section class="tarjeta" aria-labelledby="asistente-titulo">
+{% include "asistente/_panel.html" with en_pagina=True %}
+</section>
+{% endblock %}

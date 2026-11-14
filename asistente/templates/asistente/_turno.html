@@ -1,1 +1,28 @@
-{% comment %}Carril D (T33 y T34). Ver docs/11-plan-tanda-7.md, sección 1.5, y diseno/asistente.html.{% endcomment %}
+{% load piezas %}{% comment %}
+Una pregunta con su respuesta (diseno/asistente.html). "preguntar" devuelve este bloque entero
+y reemplaza al #asistente-pendiente que puso static/js/app.js; el panel lo repite por cada
+turno guardado. Recibe `turno` (asistente/vistas.py: pregunta, estado, texto, revisado,
+tarjetas, enlaces, y el texto partido en `primero` y `resto`).
+
+Orden de la respuesta: una línea gris por cada consulta que hizo, el primer párrafo del texto,
+las tarjetas (asistente/tarjetas/<tipo>.html, las arma la aplicación con las cifras reales), el
+resto del texto y los enlaces. El texto de Claude sale siempre escapado (linebreaks), nunca
+como HTML.
+
+Estados: ok, error, rechazo y cortado (texto de Claude o mensaje amable); limite (sin
+preguntas: recuadro gris con un reloj, diseno/asistente-limite.html); larga (la conversación
+pide una nueva); aviso (pregunta vacía o muy larga, en ámbar).
+{% endcomment %}<div class="asistente__turno">
+{% if turno.pregunta %}<div class="mensaje mensaje--usuaria"><p>{{ turno.pregunta|linebreaksbr }}</p></div>
+{% endif %}<div class="mensaje mensaje--asistente">
+{% if turno.estado == "limite" %}<p class="mensaje__limite">{% icono "reloj" 16 %}<span>{{ turno.texto }}</span></p>
+{% elif turno.estado == "larga" %}<p class="mensaje__limite">{% icono "informacion" 16 %}<span>{{ turno.texto }}</span></p>
+<p><button type="submit" form="asistente-nueva" class="chip">{% icono "sumar" 14 %}Nueva conversación</button></p>
+{% elif turno.estado == "aviso" %}<p class="aviso">{{ turno.texto }}</p>
+{% else %}{% for consulta in turno.revisado %}<p class="mensaje__consulta">{% icono "visto" 14 %}{{ consulta }}</p>
+{% endfor %}{% if turno.primero %}{{ turno.primero|linebreaks }}
+{% endif %}{% for tarjeta in turno.tarjetas %}{% include "asistente/tarjetas/"|add:tarjeta.tipo|add:".html" with tarjeta=tarjeta %}
+{% endfor %}{% if turno.resto %}{{ turno.resto|linebreaks }}
+{% endif %}{% for enlace in turno.enlaces %}<p class="mensaje__enlaces"><a href="{{ enlace.url }}">{{ enlace.texto }}</a></p>
+{% endfor %}{% endif %}</div>
+</div>
