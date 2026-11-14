@@ -163,8 +163,8 @@ class FormularioTaller(forms.ModelForm):
         model = Taller
         fields = ("nombre", "telefono")
         labels = {"nombre": "Nombre del taller", "telefono": "Teléfono (opcional)"}
+        # Lo que dice del nombre ya está en la explicación de la izquierda (mi_taller.html).
         help_texts = {
-            "nombre": "Aparece en el menú, en los mensajes de WhatsApp y en los recibos.",
             "telefono": "Por ejemplo: 300 123 4567.",
         }
         error_messages = {

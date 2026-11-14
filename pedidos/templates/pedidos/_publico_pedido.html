@@ -1,3 +1,4 @@
 {% comment %}
-De qué pedido es el enlace: el cliente y lo que pidió. Nada de precios ni de otras personas.
-{% endcomment %}<p class="texto-2"><strong>{{ pedido.cliente.nombre }}</strong><br>{{ pedido.detalle }}</p>
+De qué pedido es el enlace: la miniatura de la foto (o la prenda), el cliente y lo que pidió.
+Nada de precios ni de otras personas.
+{% endcomment %}<div class="acceso__pedido">{% include "piezas/_mini.html" %}<div><strong>{{ pedido.cliente.nombre }}</strong><div class="texto-2">{{ pedido.detalle }}</div></div></div>

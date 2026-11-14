@@ -1,27 +1,23 @@
-{% comment %}
+{% load piezas %}{% comment %}
 Tarjeta "Tu taller" de Mi taller (T20): el nombre (sale en el menú, en los mensajes y en
-los recibos), el teléfono y el logo.
+los recibos), el teléfono y el logo, con la vista previa del cuadrito del menú.
 
 La dibuja mi_taller.html y la devuelve, sola, la vista cuentas:mi_taller con POST: con HTMX
 reemplaza a la tarjeta entera (id="tu-taller"). Al guardar llega también, aparte,
 _mi_taller_nombre_menu.html con el nombre nuevo para el menú.
-Necesita `taller`, `form_taller`, `logo` (o None) y `guardado` (mostrar "Listo").
+Necesita `taller`, `form_taller`, `logo` (o None), `iniciales` y `guardado` (mostrar "Listo").
 
-El "Listo", el logo y la casilla de quitarlo llevan id: así aparecen con un desvanecido y,
+El "Listo" y la casilla de quitar el logo llevan id: así aparecen con un desvanecido y,
 cuando se van, se cierran suave (static/js/app.js, sección 11).
-Pantalla fija (computador): si la ventana es tan baja que el formulario no cabe, se desplaza
-por dentro de la tarjeta (desplazable).
-{% endcomment %}{% url 'cuentas:mi_taller' as url_guardar %}<section class="tarjeta tarjeta--lista columna-angosta" id="tu-taller" aria-labelledby="t-taller">
-<div class="tarjeta__cabeza"><h2 id="t-taller">Tu taller</h2></div>
-<form class="tarjeta__cuerpo desplazable" method="post" action="{{ url_guardar }}" enctype="multipart/form-data" hx-post="{{ url_guardar }}" hx-encoding="multipart/form-data" hx-target="#tu-taller" hx-swap="outerHTML" hx-sync="this:drop" novalidate>
+{% endcomment %}{% url 'cuentas:mi_taller' as url_guardar %}<form class="tarjeta" id="tu-taller" method="post" action="{{ url_guardar }}" enctype="multipart/form-data" hx-post="{{ url_guardar }}" hx-encoding="multipart/form-data" hx-target="#tu-taller" hx-swap="outerHTML" hx-sync="this:drop" novalidate>
 {% csrf_token %}
+<div class="tarjeta__cuerpo">
 {% if guardado %}<p class="nota" id="tu-taller-listo" role="status">Listo: se guardaron los cambios.</p>
 {% endif %}{% include "piezas/_aviso.html" with mensajes=form_taller.non_field_errors %}
 {% include "piezas/_campo.html" with campo=form_taller.nombre %}
 {% include "piezas/_campo.html" with campo=form_taller.telefono %}
-{% if logo %}<div id="tu-taller-logo"><img src="{{ logo.url }}" alt="Logo de {{ taller.nombre }}" width="{{ logo.ancho }}" height="{{ logo.alto }}"></div>
-{% endif %}{% include "piezas/_campo.html" with campo=form_taller.logo %}
+<div class="campo{% if form_taller.logo.errors %} campo--error{% endif %}"><label for="{{ form_taller.logo.id_for_label }}">{{ form_taller.logo.label }}</label><div class="botones vista-logo"><span class="menu__avatar" id="tu-taller-logo" aria-hidden="true">{% if logo %}<img src="{{ logo.url }}" alt="">{% else %}{{ iniciales }}{% endif %}</span>{% control form_taller.logo %}</div>{% if form_taller.logo.help_text %}<span class="campo__ayuda" id="{{ form_taller.logo.auto_id }}_helptext">{{ form_taller.logo.help_text }}</span>{% endif %}{% if form_taller.logo.errors %}<span class="campo__error" id="{{ form_taller.logo.auto_id }}_error">{{ form_taller.logo.errors|join:" " }}</span>{% endif %}</div>
 {% if form_taller.quitar_logo %}<label class="fila__titulo" id="tu-taller-quitar-logo" for="{{ form_taller.quitar_logo.id_for_label }}">{{ form_taller.quitar_logo }}{{ form_taller.quitar_logo.label }}</label>
-{% endif %}<div class="botones"><button type="submit" class="boton boton--principal">Guardar</button></div>
+{% endif %}</div>
+<div class="tarjeta__pie"><button type="submit" class="boton boton--principal">Guardar</button></div>
 </form>
-</section>

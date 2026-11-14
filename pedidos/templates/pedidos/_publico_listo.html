@@ -1,6 +1,7 @@
-{% load piezas %}{% comment %}
-Parte del formulario público: la talla quedó guardada. El botón abre el formulario vacío
-para la siguiente persona.
-{% endcomment %}<h1 id="titulo-tallas">¡Listo, {{ talla.nombre }}!</h1>
-<p>Tu talla <strong>{{ nombre_talla }}</strong> quedó registrada para el pedido de {{ pedido.cliente.nombre }}.</p>
-<a class="boton" href="{% url 'pedidos:publico_tallas' pedido.token_tallas %}">Registrar a otra persona</a>
+{% comment %}
+Parte del formulario público (diseno/tallas-publico-listo.html): la talla quedó guardada. El
+botón abre el formulario vacío para la siguiente persona.
+{% endcomment %}<span class="acceso__listo">{% load piezas %}{% icono "visto" 22 %}</span>
+<h1 id="titulo-tallas">¡Gracias, {{ talla.nombre }}!</h1>
+<p class="texto-2">Ya tenemos tu talla <strong>{{ nombre_talla }}</strong> para el pedido de {{ pedido.cliente.nombre }}.</p>
+<a class="boton boton--ancho" href="{% url 'pedidos:publico_tallas' pedido.token_tallas %}">Enviar la talla de otra persona</a>

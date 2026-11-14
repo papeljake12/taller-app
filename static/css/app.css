@@ -3460,6 +3460,65 @@ button.casilla:active {
 /* --- Resumen (fin) --- */
 
 /* --- Mi taller, Entrar y formulario público (inicio) --- */
+
+/* El cuadrito del taller al lado del campo del logo: la vista previa de cómo se ve en el menú */
+.vista-logo {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.vista-logo .menu__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* Un poco más de aire arriba de los campos, y las cabezas con lista debajo, más bajas */
+#tu-taller .tarjeta__cuerpo {
+  padding-top: 16px;
+}
+
+#costureras section .tarjeta__cabeza {
+  padding-bottom: 12px;
+}
+
+/* Cambiar el nombre de una costurera: el campo ocupa la fila y los botones quedan a la derecha */
+.persona--formulario {
+  align-items: flex-end;
+}
+
+.persona--formulario .persona__texto {
+  flex: 1 1 160px;
+}
+
+.persona--formulario .botones {
+  flex: none;
+}
+
+.persona__texto .etiqueta {
+  align-self: flex-start;
+}
+
+/* Los campos de la tarjeta blanca del formulario público van separados 14 px */
+.acceso__tarjeta .columna {
+  gap: 14px;
+}
+
+.acceso__tarjeta--centrada {
+  align-items: center;
+  text-align: center;
+}
+
+@media (max-width: 767.98px) {
+  .persona {
+    flex-wrap: wrap;
+  }
+
+  .persona .botones {
+    margin-left: auto;
+  }
+}
 /* --- Mi taller, Entrar y formulario público (fin) --- */
 
 
