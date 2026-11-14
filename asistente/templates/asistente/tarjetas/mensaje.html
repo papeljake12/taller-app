@@ -1,1 +1,15 @@
-{% comment %}Carril C (T31 y T32). Tarjeta "mensaje" dentro de una respuesta. Recibe `tarjeta` (asistente.contratos.Tarjeta).{% endcomment %}
+{% load piezas %}{% comment %}
+Carril C (T31). Tarjeta "mensaje": el WhatsApp que dejó listo preparar_mensaje
+(asistente/herramientas/mensajes.py). Copia la de diseno/asistente.html.
+
+Recibe `tarjeta` (asistente.contratos.Tarjeta, o el diccionario guardado en la sesión):
+- tarjeta.titulo: "Para <cliente>".
+- tarjeta.datos.texto: el mensaje tal cual se enviará. Sale escapado; los saltos de línea los
+  respeta el CSS (.mensaje__borrador).
+- tarjeta.datos.enlace_whatsapp: el enlace wa.me con el número, o "" si el cliente no tiene un
+  número que sirva. Sin enlace solo queda "Copiar".
+{% endcomment %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+<div class="tarjeta__cabeza"><h3 class="mensaje__para">{% icono "whatsapp" 16 %}{{ tarjeta.titulo }}</h3></div>
+<div class="tarjeta__cuerpo"><p class="mensaje__borrador">{{ tarjeta.datos.texto }}</p></div>
+<div class="tarjeta__pie"><button type="button" class="boton" data-copiar="{{ tarjeta.datos.texto }}" title="Copia el mensaje para pegarlo en WhatsApp">{% icono "copiar" 16 %}Copiar</button>{% if tarjeta.datos.enlace_whatsapp %}<a class="boton boton--principal" href="{{ tarjeta.datos.enlace_whatsapp }}" target="_blank" rel="noopener">{% icono "whatsapp" 16 %}Abrir en WhatsApp</a>{% endif %}</div>
+</section>
