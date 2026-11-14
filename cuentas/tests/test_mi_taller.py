@@ -142,6 +142,9 @@ def test_cambiar_el_nombre_devuelve_la_tarjeta_y_el_nombre_para_el_menu(sesion_d
     assert "Listo: se guardaron los cambios." in html
     assert ('<span class="menu__nombre" id="menu-taller" title="Confecciones de prueba" '
             'hx-swap-oob="true">Confecciones de prueba</span>' in html)
+    # El cuadrito del menú también cambia: "Confecciones de prueba" -> "CP"
+    assert ('<span class="menu__avatar" id="menu-avatar" aria-hidden="true" hx-swap-oob="true">'
+            'CP</span>') in html
     assert "<title>Mi taller · Confecciones de prueba</title>" in html
 
 

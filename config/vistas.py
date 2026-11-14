@@ -63,7 +63,7 @@ ICONOS = [
     "tijeras", "contraer", "buscar", "hoy", "pedidos", "calendario", "clientes", "cotizador",
     "telas", "resumen", "mi-taller", "mas", "visto", "cerrar", "salir", "sumar", "atras",
     "adelante", "arriba", "abajo", "foto", "prenda", "descargar", "subir", "whatsapp",
-    "recibo", "reloj", "copiar", "enlace", "editar", "papelera", "informacion",
+    "recibo", "reloj", "copiar", "enlace", "editar", "papelera", "reiniciar", "informacion",
 ]
 
 # Los valores de ejemplo de la gráfica de diseno/hoy.html, de junio a noviembre.

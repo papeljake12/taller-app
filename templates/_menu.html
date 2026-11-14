@@ -16,6 +16,6 @@ iniciales), su nombre (id="menu-taller": Mi taller lo cambia sin recargar) y el 
 {% endfor %}{% endif %}{% endfor %}</div>
 <div class="menu__pie">
 {% if menu.mi_taller %}{% include "_menu_entrada.html" with entrada=menu.mi_taller %}{% endif %}
-<div class="menu__taller"><span class="menu__avatar" aria-hidden="true">{% if menu.taller.logo %}<img src="{{ menu.taller.logo }}" alt="">{% else %}{{ menu.taller.iniciales }}{% endif %}</span><span class="menu__nombre" id="menu-taller" title="{{ request.taller.nombre|default:"Taller" }}">{{ request.taller.nombre|default:"Taller" }}</span><form method="post" action="{% url 'cuentas:salir' %}">{% csrf_token %}<button type="submit" class="menu__salir" aria-label="Salir" title="Salir">{% icono "salir" 16 %}</button></form></div>
+<div class="menu__taller"><span class="menu__avatar" id="menu-avatar" aria-hidden="true">{% if menu.taller.logo %}<img src="{{ menu.taller.logo }}" alt="">{% else %}{{ menu.taller.iniciales }}{% endif %}</span><span class="menu__nombre" id="menu-taller" title="{{ request.taller.nombre|default:"Taller" }}">{{ request.taller.nombre|default:"Taller" }}</span><form method="post" action="{% url 'cuentas:salir' %}">{% csrf_token %}<button type="submit" class="menu__salir" aria-label="Salir" title="Salir">{% icono "salir" 16 %}</button></form></div>
 </div>
 </nav>

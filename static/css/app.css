@@ -2462,14 +2462,16 @@ a.etapas__etapa:hover {
 
 .persona {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
   border-top: 1px solid var(--linea);
 }
 
+/* El nombre toma lo que sobra; si no caben los botones al lado (celular), bajan de línea */
 .persona__texto {
-  flex: 1;
+  flex: 1 1 160px;
   min-width: 0;
   display: flex;
   flex-direction: column;

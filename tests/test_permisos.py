@@ -513,10 +513,10 @@ def test_telas_ver_y_registrar_use(entrar, rol, taller):
     assert MovimientoTela.objects.filter(tela=tela, metros=-2).exists()
     assert "Dril de prueba" in pantalla.text and "Usé" in pantalla.text
     if rol == DUENA:
-        assert "Nueva tela" in pantalla.text and ">Entró</a>" in pantalla.text
+        assert "Agregar tela" in pantalla.text and ">Entró</a>" in pantalla.text
         assert "Quitar tela" in historial.text
     else:
-        assert "Nueva tela" not in pantalla.text and ">Entró</a>" not in pantalla.text
+        assert "Agregar tela" not in pantalla.text and ">Entró</a>" not in pantalla.text
         assert "Quitar tela" not in historial.text
         assert ">Entró</a>" not in use.text
 
