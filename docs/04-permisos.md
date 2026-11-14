@@ -32,6 +32,7 @@ Hay cuatro tipos de persona.
 | Telas: "Entró", agregar y quitar | Sí | No | No |
 | Resumen, gastos y Excel | Sí | No | No |
 | Mi taller | Sí | No | No |
+| Asistente (tanda 7: solo consulta) | Sí, si David lo prendió | No (entra en la tanda 8) | No |
 
 "Sin valores" significa que la costurera no ve total, abonos, saldo ni "Por cobrar". En el
 tablero ve las cifras de producción, entregas y atrasados, pero no la de plata.
@@ -47,6 +48,11 @@ tablero ve las cifras de producción, entregas y atrasados, pero no la de plata.
    largo y aleatorio; no se usa el id del pedido. La dueña puede cerrar el enlace.
 4. **Sesiones.** Cierre de sesión por inactividad prolongada. Bloqueo por intentos fallidos.
 5. **Usuarias desactivadas.** No pueden entrar, pero sus pedidos y registros se conservan.
+6. **Asistente.** Sus herramientas consultan solo el taller de quien pregunta: un pedido o
+   cliente de otro taller responde "no encontrado", igual que una URL. En la tanda 7 no
+   escriben nada en la base. El límite de preguntas se revisa en el servidor antes de llamar a
+   Claude. A Anthropic no van teléfonos, notas de clientes, nombres ni medidas de tallas, ni
+   el token del enlace de tallas (`docs/10-asistente.md`).
 
 ## Pendiente por confirmar con la clienta
 

@@ -470,6 +470,34 @@ def gastado_en(taller, anio, mes):
     return gastos.aggregate(suma=Sum("valor"))["suma"] or 0
 
 
+def gastos_entre(taller, desde, hasta, categoria=None):
+    """Los gastos con fecha entre `desde` y `hasta` (los dos días cuentan), del más nuevo al
+    más viejo. Con `categoria`, solo los de ese tipo. Los usa el asistente (docs/10)."""
+    gastos = Gasto.objects.del_taller(taller).filter(fecha__gte=desde, fecha__lte=hasta)
+    if categoria:
+        gastos = gastos.filter(categoria=categoria)
+    return gastos
+
+
+def gastos_por_categoria(taller, desde, hasta):
+    """Lo gastado en cada tipo de gasto entre esas fechas, de mayor a menor.
+
+    Solo salen los tipos que tienen algún gasto: [{categoria, nombre, total}].
+    """
+    nombres = dict(Gasto.Categoria.choices)
+    filas = (
+        gastos_entre(taller, desde, hasta)
+        .order_by()
+        .values("categoria")
+        .annotate(total=Sum("valor"))
+        .order_by("-total", "categoria")
+    )
+    return [
+        {"categoria": f["categoria"], "nombre": nombres[f["categoria"]], "total": f["total"]}
+        for f in filas
+    ]
+
+
 def resumen_del_mes(taller, anio, mes):
     """Vendido, cobrado, gastado y "te quedó" (cobrado menos gastado; puede ser negativo)."""
     cobrado = cobrado_en(taller, anio, mes)

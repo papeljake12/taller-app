@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Diseño: Asistente (propuesta)</title>
 <!-- PROPUESTA SIN APROBAR (2026-11-14): el asistente del taller, abierto encima de Hoy.
-     Lo que dice y hace está en docs/10-asistente.md. Sus estilos van en la etiqueta <style>
-     de esta página hasta que David los apruebe; después pasan a estilo.css.
+     Lo que dice y hace está en docs/10-asistente.md. Sus estilos están en la sección 7 de
+     estilo.css.
      Referencia de diseño (rediseño con el lenguaje del panel de Shopify, aprobado el
      2026-11-13). No es código de la aplicación: de aquí se copian medidas, colores, textos y
      orden. Las reglas están en docs/08-diseno.md y los estilos en diseno/estilo.css.
@@ -17,274 +17,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="estilo.css">
-<style>
-/* --- Asistente (PROPUESTA, sin aprobar) ---------------------------------------------------
-   Un panel blanco a la derecha de la hoja, con las mismas esquinas y el mismo margen de 4 px.
-   Arriba su nombre; en el medio la conversación, que se desplaza por dentro; abajo la caja
-   para preguntar. Solo usa colores, sombras y medidas que ya existen. */
-
-/* El botón del encabezado queda gris mientras el panel está abierto */
-.boton.es-presionado {
-  background: var(--gris-fondo);
-  box-shadow: none;
-}
-
-.boton__texto {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.asistente {
-  position: relative;
-  z-index: 1;
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  width: 360px;
-  margin: 4px 4px 4px 0;
-  overflow: hidden;
-  border-radius: 16px;
-  background: var(--hoja);
-}
-
-.asistente__cabeza {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 52px;
-  padding: 0 12px 0 16px;
-  border-bottom: 1px solid var(--linea);
-}
-
-.asistente__titulo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  line-height: 20px;
-  font-weight: 550;
-}
-
-.asistente__acciones {
-  display: flex;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.asistente__mensajes {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-
-.asistente__bienvenida {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.asistente__saludo {
-  font-size: 15px;
-  font-weight: 650;
-}
-
-.asistente__sugerencias {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-/* Lo que pregunta la usuaria: una burbuja gris a la derecha */
-.mensaje {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mensaje--usuaria {
-  align-self: flex-end;
-  max-width: 85%;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: var(--gris);
-}
-
-/* Lo que contesta el asistente: texto suelto, sin burbuja, con sus tarjetas */
-.mensaje__consulta {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--texto-2);
-  font-size: 12px;
-}
-
-.mensaje__tarjeta > .fila-proporcion:first-child {
-  border-top: 0;
-}
-
-.mensaje__enlaces {
-  font-weight: 550;
-}
-
-/* Mientras busca: tres puntos que laten */
-.mensaje__pensando {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--texto-2);
-}
-
-.mensaje__puntos {
-  display: inline-flex;
-  gap: 3px;
-}
-
-.mensaje__puntos span {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--texto-2);
-  animation: latir 1.2s ease-in-out infinite;
-}
-
-.mensaje__puntos span:nth-child(2) { animation-delay: 0.15s; }
-.mensaje__puntos span:nth-child(3) { animation-delay: 0.3s; }
-
-@keyframes latir {
-  0%, 80%, 100% { opacity: 0.3; }
-  40% { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mensaje__puntos span { animation: none; opacity: 0.6; }
-}
-
-/* Abajo: la caja para preguntar, con el botón de enviar adentro */
-.asistente__pie {
-  flex: none;
-  padding: 12px 16px 12px;
-  border-top: 1px solid var(--linea);
-}
-
-.asistente__caja {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  padding: 6px 6px 6px 12px;
-  border: 1px solid var(--borde-campo);
-  border-radius: 12px;
-  background: #FFFFFF;
-}
-
-.asistente__caja:focus-within {
-  outline: 2px solid var(--enlace);
-  outline-offset: 1px;
-}
-
-.asistente__caja textarea {
-  flex: 1;
-  min-width: 0;
-  min-height: 28px;
-  max-height: 120px;
-  padding: 4px 0;
-  border: 0;
-  background: transparent;
-  line-height: 20px;
-  resize: none;
-}
-
-.asistente__caja textarea:focus-visible {
-  outline: none;
-}
-
-.asistente__caja textarea::placeholder {
-  color: var(--texto-3);
-}
-
-.asistente__nota {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-  margin-top: 8px;
-  color: var(--texto-2);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.asistente__nota .icono {
-  margin-top: 1px;
-}
-
-/* Pantallas medianas: el panel flota encima de la hoja, a la derecha */
-@media (max-width: 1023.98px) and (min-width: 768px) {
-  .asistente {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 20;
-    box-shadow: var(--sombra-ventana);
-  }
-}
-
-/* Celular: el asistente ocupa toda la pantalla, encima de la barra de abajo */
-@media (max-width: 767.98px) {
-  .asistente {
-    position: fixed;
-    inset: 0;
-    z-index: 30;
-    width: auto;
-    margin: 0;
-    border-radius: 0;
-  }
-
-  .asistente__cabeza {
-    min-height: 64px;
-    padding: 12px 12px 12px 16px;
-  }
-
-  .asistente__titulo {
-    font-size: 20px;
-    line-height: 28px;
-    font-weight: 700;
-  }
-
-  .asistente__boton {
-    width: 40px;
-    min-height: 40px;
-    border-radius: 50%;
-    background: var(--gris);
-  }
-
-  .asistente__sugerencias .chip {
-    height: 36px;
-    font-size: 14px;
-  }
-
-  .asistente__pie {
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-  }
-
-  .asistente__caja textarea {
-    min-height: 32px;
-    font-size: 16px;
-  }
-
-  .asistente__enviar {
-    width: 36px;
-    min-height: 36px;
-    border-radius: 50%;
-  }
-}
-</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -443,12 +175,41 @@
 <p>La de Ferretería La Esquina es la más urgente: su pedido de 8 overoles lleva 2 días atrasado y no ha abonado nada.</p>
 <p class="mensaje__enlaces"><a href="pedidos.html">Ver los pedidos con saldo</a></p>
 </div>
+<div class="mensaje mensaje--usuaria"><p>Escríbele a Tambores del Río que ya está listo</p></div>
+<div class="mensaje mensaje--asistente">
+<p class="mensaje__consulta"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#visto"></use></svg>Revisé el pedido de 15 polleras con blusa</p>
+<p>Te dejé el mensaje escrito. Revísalo antes de enviarlo:</p>
+<section class="tarjeta mensaje__tarjeta" aria-labelledby="m-para-1">
+<div class="tarjeta__cabeza"><h3 class="mensaje__para" id="m-para-1"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#whatsapp"></use></svg>Para Grupo de danza Tambores del Río</h3></div>
+<div class="tarjeta__cuerpo"><p class="mensaje__borrador">Hola, le escribimos de Taller de ejemplo. Su pedido (15 polleras con blusa) ya está listo para entregar. Saldo pendiente: $ 750.000. ¿Cuándo le queda bien recogerlo?</p></div>
+<div class="tarjeta__pie"><button type="button" class="boton"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#copiar"></use></svg>Copiar</button><a class="boton boton--principal" href="#" target="_blank" rel="noopener"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#whatsapp"></use></svg>Abrir en WhatsApp</a></div>
+</section>
+<p class="mensaje__enlaces"><a href="pedido.html">Ver el pedido</a></p>
+</div>
+<div class="mensaje mensaje--usuaria"><p>¿Cuánto cobro por 15 vestidos de comparsa?</p></div>
+<div class="mensaje mensaje--asistente">
+<p class="mensaje__consulta"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#visto"></use></svg>Usé tu prenda guardada «Vestido de comparsa»</p>
+<p>Con 30 % de ganancia y la mitad de abono te queda así:</p>
+<section class="tarjeta mensaje__tarjeta" aria-labelledby="m-total-1">
+<div class="tarjeta__cuerpo mensaje__total"><h3 class="texto-2" id="m-total-1">Total de 15 vestidos de comparsa</h3><p class="cotizacion__total dinero">$ 2.730.000</p></div>
+<div class="cuentas">
+<div class="cuentas__fila"><span>Precio por unidad</span><span class="dinero fuerte">$ 182.000</span></div>
+<div class="cuentas__fila"><span>Costo de hacer una</span><span class="dinero">$ 140.000</span></div>
+<div class="cuentas__fila"><span>Tu ganancia en el pedido</span><span class="dinero">$ 630.000</span></div>
+<div class="cuentas__fila"><span>Abono para empezar</span><span class="dinero">$ 1.365.000</span></div>
+</div>
+<div class="tarjeta__pie"><a class="boton" href="cotizador.html"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#cotizador"></use></svg>Abrir en el Cotizador</a></div>
+</section>
+<p>Si quieres otra ganancia u otra cantidad, dímelo y la vuelvo a sacar.</p>
+</div>
 <div class="mensaje mensaje--usuaria"><p>¿Y qué tengo que entregar esta semana?</p></div>
 <div class="mensaje mensaje--asistente">
 <p class="mensaje__pensando"><span class="mensaje__puntos" aria-hidden="true"><span></span><span></span><span></span></span>Revisando tus entregas…</p>
 </div>
 </div>
 <form class="asistente__pie" action="#">
+<!-- Solo sale cuando quedan pocas preguntas (5 o menos hoy, o el 10 % o menos del mes). -->
+<p class="aviso asistente__uso">Te quedan 4 preguntas por hoy. Mañana vuelves a tener 40.</p>
 <div class="asistente__caja">
 <label class="oculto" for="asistente-pregunta">Tu pregunta</label>
 <textarea id="asistente-pregunta" name="pregunta" rows="1" maxlength="500" placeholder="Pregunta algo de tu taller"></textarea>

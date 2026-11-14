@@ -122,3 +122,22 @@ def crear_prenda(taller, nombre=None, **campos):
     return PrendaGuardada.objects.create(
         taller=taller, nombre=nombre or f"Prenda {next(_numero)}", **campos
     )
+
+
+# --- Tanda 7: el asistente ------------------------------------------------------------------
+
+
+def crear_uso(taller, fecha=None, preguntas=1, **campos):
+    """Un día de uso del asistente. Sin fecha, hoy (hora de Bogotá); si hoy ya tiene registro,
+    el día de antes que esté libre (hay uno solo por taller y día)."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from asistente.models import UsoAsistente
+
+    if fecha is None:
+        fecha = timezone.localdate()
+        while UsoAsistente.objects.filter(taller=taller, fecha=fecha).exists():
+            fecha -= timedelta(days=1)
+    return UsoAsistente.objects.create(taller=taller, fecha=fecha, preguntas=preguntas, **campos)

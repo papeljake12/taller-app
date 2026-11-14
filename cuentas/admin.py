@@ -24,8 +24,42 @@ class SinAgregar:
 
 @admin.register(Taller)
 class TallerAdmin(admin.ModelAdmin):
-    list_display = ["nombre", "telefono", "creado"]
+    list_display = [
+        "nombre",
+        "telefono",
+        "asistente_limite_mes",
+        "asistente_limite_dia",
+        "preguntas_del_mes",
+        "creado",
+    ]
     search_fields = ["nombre"]
+    readonly_fields = ["preguntas_del_mes"]
+    fieldsets = (
+        (None, {"fields": ("nombre", "telefono", "logo")}),
+        (
+            "Asistente",
+            {
+                "fields": ("asistente_limite_mes", "asistente_limite_dia", "preguntas_del_mes"),
+                "description": (
+                    "El asistente viene apagado. Para prenderlo, pon 600 al mes y 40 al día. "
+                    "0 en cualquiera de los dos lo vuelve a apagar."
+                ),
+            },
+        ),
+    )
+
+    @admin.display(description="preguntas este mes")
+    def preguntas_del_mes(self, obj):
+        from django.db.models import Sum
+        from django.utils import timezone
+
+        from asistente.models import UsoAsistente
+
+        if not obj.pk:
+            return 0
+        inicio = timezone.localdate().replace(day=1)
+        usos = UsoAsistente.objects.del_taller(obj).filter(fecha__gte=inicio)
+        return usos.aggregate(suma=Sum("preguntas"))["suma"] or 0
 
 
 @admin.register(Usuario)

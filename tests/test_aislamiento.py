@@ -19,6 +19,7 @@ from django.http import Http404
 from django.test import RequestFactory
 from django.urls import URLPattern, URLResolver, get_resolver
 
+from asistente.models import UsoAsistente
 from cuentas.aislamiento import del_taller, obtener_o_404
 from cotizador.models import PrendaGuardada
 from cuentas.models import Usuario
@@ -50,6 +51,7 @@ MODELOS_DE_TALLER = [
     ),
     pytest.param(Gasto, lambda taller: fabricas.crear_gasto(taller), id="Gasto"),
     pytest.param(PrendaGuardada, lambda taller: fabricas.crear_prenda(taller), id="PrendaGuardada"),
+    pytest.param(UsoAsistente, lambda taller: fabricas.crear_uso(taller), id="UsoAsistente"),
 ]
 
 

@@ -35,6 +35,8 @@ de 390 px de ancho, o abre `diseno/index.html`, que las muestra todas en 390 px.
 | `diseno/entrar.html` | Inicio de sesión |
 | `diseno/tallas-publico.html` | Formulario público de tallas |
 | `diseno/tallas-publico-listo.html` | Formulario público de tallas, ya enviado |
+| `diseno/asistente.html` | Asistente abierto encima de Hoy (tanda 7) |
+| `diseno/asistente-limite.html` | Asistente sin preguntas por hoy (tanda 7) |
 
 Hoy, Pedidos, Pedido por dentro, la pantalla vacía y el celular de Hoy y de Pedidos salen
 tal cual de la maqueta aprobada. Las demás se adaptaron con el mismo lenguaje y se le muestran
@@ -336,6 +338,36 @@ emojis ni librerías de íconos, ni los íconos de Shopify.
 - El foco del teclado siempre se ve (anillo `--enlace`).
 - Cada insignia dice con palabras lo mismo que su color y su circulito.
 
+## Asistente
+
+Referencia: `diseno/asistente.html` y `diseno/asistente-limite.html`. Estilos en la sección 7
+de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
+
+- **Botón:** "Asistente" con su ícono, en el encabezado, a la izquierda del botón principal.
+  Mientras el panel está abierto queda gris (presionado). Atajo: Ctrl J (Cmd J en Mac).
+- **Computador (1024 px o más):** un panel blanco de 360 px a la derecha de la hoja, con el
+  mismo margen de 4 px y las mismas esquinas de 16 px. La hoja se angosta para dejarle sitio.
+- **Pantallas medianas (768 a 1023 px):** el panel flota encima de la hoja, a la derecha, con
+  la sombra de las ventanas.
+- **Celular:** un botón redondo con el ícono. El panel ocupa toda la pantalla, encima de la
+  barra de abajo, con el título grande y botones de 40 px.
+- **Conversación:** lo que pregunta la usuaria va en una burbuja gris a la derecha; lo que
+  contesta va suelto, sin burbuja. Arriba de cada respuesta, en gris y con un visto, qué
+  revisó. Al final, un enlace a la pantalla donde se ve completo.
+- **Tarjetas dentro de una respuesta:** las mismas tarjetas de la aplicación, con sombra
+  suave. "Quién te debe" usa filas como las de Hoy; la cotización usa el total grande y las
+  filas del Cotizador; el mensaje de WhatsApp muestra a quién va, el texto en un recuadro
+  gris claro y los botones "Copiar" y "Abrir en WhatsApp" (el principal, negro).
+- **Mientras busca:** tres puntos que laten y "Revisando tus datos…". Con "menos movimiento"
+  los puntos se quedan quietos.
+- **Quedan pocas preguntas:** una línea ámbar encima de la caja. Mientras vaya bien no se ve
+  nada.
+- **Sin preguntas:** el aviso va en la conversación en un recuadro gris con un reloj, y la
+  caja queda apagada ("Vuelvo a contestar mañana").
+- **Mi taller:** un bloque "Asistente" con "N de 600" y el riel azul de siempre.
+- **Colores:** los de siempre. Rojo solo para lo vencido o atrasado, igual que en las
+  pantallas.
+
 ## Lo que se tomó de Shopify y lo que no
 
 - **Se tomó:** la forma de cada pantalla (inicio con saludo y tarjetas, lista con barra de
@@ -344,8 +376,11 @@ emojis ni librerías de íconos, ni los íconos de Shopify.
   negro con subsecciones, el buscador con "Ctrl K" y, en celular, el título grande y la barra
   de abajo.
 - **No se tomó:** su logo, sus íconos, sus dibujos ni su letra (ShopifyInter). Aquí van
-  íconos propios, Inter y dibujos propios. Tampoco el asistente "Sidekick" ni las casillas
-  para elegir varios pedidos a la vez.
+  íconos propios, Inter y dibujos propios. Tampoco las casillas para elegir varios pedidos a
+  la vez.
+- **Se tomó después (tanda 7, 14 de noviembre de 2026):** el asistente, a la manera del
+  "Sidekick" de Shopify: un panel al lado de la hoja que contesta con las cifras del taller.
+  Ver "Asistente" arriba y `docs/10-asistente.md`.
 
 ## Lo que no se hace
 

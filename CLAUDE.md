@@ -16,6 +16,10 @@ Lee estos documentos antes de escribir código:
 - `docs/08-diseno.md`: colores, tipografía, piezas y reglas de alineación.
 - `docs/09-plan-de-construccion.md`: en qué orden se construye, cómo se agrupa en tandas y
   cómo se reparte entre varios agentes.
+- `docs/10-asistente.md`: el asistente del taller (con Claude): qué hace, qué no y cuánto
+  cuesta. Decisiones de David del 14 de noviembre de 2026.
+- `docs/11-plan-tanda-7.md`: cómo se construye el asistente (tanda 7): contratos, carriles y
+  pruebas de cada tarea.
 - `diseno/`: el diseño aprobado, una página por pantalla. Es la fuente de verdad visual.
 - `demo/index.html`: la primera demo. Sirve para el comportamiento y los textos de cada
   función. Su aspecto ya no vale: fue reemplazado por `diseno/`.
@@ -29,6 +33,8 @@ Lee estos documentos antes de escribir código:
 - Servidor: VPS con NGINX, Gunicorn y Whitenoise.
 - Seguridad de acceso: autenticación de Django y `django-axes`.
 - PDF con ReportLab. Excel con openpyxl.
+- Asistente (tanda 7): la librería oficial `anthropic` con Claude Opus 5.5. Las pruebas nunca
+  llaman a la API.
 - Pruebas con `pytest` y `pytest-django`.
 - Todos los archivos estáticos son locales: fuentes, HTMX e íconos. Nada desde un CDN.
 

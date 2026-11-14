@@ -241,3 +241,29 @@ Lista cuando:
 - La dueña cambia el nombre y el logo del taller.
 - La dueña crea, desactiva y cambia el nombre de las costureras.
 - El nombre del taller aparece en el menú, en los mensajes y en los recibos.
+- Con el asistente prendido, el bloque "Asistente" dice "N de 600 preguntas este mes" con el
+  riel azul, y cuántas lleva hoy (tanda 7).
+
+## Asistente
+
+Tanda 7. Referencia: `diseno/asistente.html` y, sin preguntas, `diseno/asistente-limite.html`.
+Qué es, qué contesta y qué no: `docs/10-asistente.md`.
+
+Lista cuando:
+- El botón "Asistente" sale en el encabezado de todas las pantallas, a la izquierda del
+  principal, solo para la dueña, solo con la clave puesta y solo si David prendió el asistente
+  de su taller. Ctrl J lo abre y lo cierra; Esc lo cierra.
+- Con la conversación vacía se ve el saludo y tres sugerencias que se pueden tocar.
+- Una pregunta muestra la burbuja enseguida, los tres puntos mientras busca y luego la
+  respuesta, con lo que revisó arriba, las tarjetas con cifras y un enlace a la pantalla.
+- Las cifras de las tarjetas son las mismas de las pantallas (Hoy, Pedidos, Resumen).
+- Sabe en qué pantalla está: "este pedido" dentro de un pedido es ese pedido.
+- "Escríbele…" deja un mensaje para revisar, con "Abrir en WhatsApp" (o "Copiar" si el
+  cliente no tiene número). No envía nada solo.
+- "¿Cuánto cobro por…?" da la cotización con los precios guardados y abre el Cotizador con
+  las mismas cifras.
+- No crea, no cambia y no borra nada.
+- "Nueva conversación" la borra. La conversación sigue al cambiar de pantalla.
+- Cuando quedan pocas preguntas sale la línea ámbar; sin preguntas, el aviso dice cuándo
+  vuelve y la caja queda apagada.
+- Funciona en 1280 px (panel al lado), 900 px (panel flotando) y 390 px (pantalla completa).

@@ -9,6 +9,7 @@ Los valores secretos (claves y contraseñas) no se escriben aquí: se leen del a
 """
 
 from datetime import timedelta
+from decimal import Decimal
 from pathlib import Path
 
 from config import entorno
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     "telas",
     "finanzas",
     "cotizador",
+    "asistente",
 ]
 
 MIDDLEWARE = [
@@ -156,3 +158,24 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+# Asistente del taller (docs/10-asistente.md)
+
+# La clave de la API de Claude. Vacía: el asistente no aparece. Va solo en el .env.
+ANTHROPIC_API_KEY = entorno.texto("ANTHROPIC_API_KEY", "")
+# El modelo de Claude que contesta. Cambiarlo empieza conversaciones nuevas.
+ASISTENTE_MODELO = "claude-opus-5-5"
+# Quién le habla a Claude. En las pruebas se cambia por uno que nunca sale a internet.
+ASISTENTE_CLIENTE = "asistente.cliente.ClienteAnthropic"
+# Si Claude rechaza una pregunta por sus reglas de seguridad, el servicio de Anthropic la
+# vuelve a intentar con otro modelo. Se apaga aquí si algún día da problemas.
+ASISTENTE_FALLBACKS = True
+# Dólares por millón de tokens (Opus 5.5). Solo para calcular el costo que ve David en
+# /admin; no se guarda. Decimal, nunca float.
+ASISTENTE_PRECIOS_USD = {
+    "entrada": Decimal("4.00"),
+    "salida": Decimal("20.00"),
+    "cache_escritura": Decimal("5.00"),
+    "cache_lectura": Decimal("0.20"),
+}

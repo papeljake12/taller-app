@@ -2,12 +2,13 @@
    Estilos del diseño aprobado (rediseño con el lenguaje del panel de Shopify, 2026-11-13).
 
    Es la referencia: las páginas de diseno/ los usan tal cual, y static/css/app.css copia
-   estas mismas reglas (secciones 1 a 6) y les suma lo que solo existe en la aplicación
+   estas mismas reglas (secciones 1 a 7) y les suma lo que solo existe en la aplicación
    (animaciones, estados de HTMX, menos movimiento). Las reglas en palabras están en
    docs/08-diseno.md.
 
    Orden: 1. colores, letra y medidas · 2. base · 3. marco, menú y hoja · 4. piezas ·
-   5. pantallas · 6. celular (menos de 768 px).
+   5. pantallas · 6. celular (menos de 768 px) · 7. asistente (con sus propios tamaños
+   de pantalla, porque es un panel aparte).
 
    Los nombres de las clases son los de la aplicación: así una plantilla puede copiar el HTML
    de su página de diseno/ sin traducir nada.
@@ -3119,5 +3120,329 @@ a.etapas__etapa:hover {
 
   .tarjeta__pie .boton {
     flex: 1 1 auto;
+  }
+}
+
+
+/* 7. Asistente ------------------------------------------------------------- */
+
+/* Un panel blanco a la derecha de la hoja, con las mismas esquinas y el mismo margen de 4 px.
+   Arriba su nombre; en el medio la conversación, que se desplaza por dentro; abajo la caja
+   para preguntar. Solo usa colores, sombras y medidas que ya existen. */
+
+/* El botón del encabezado queda gris mientras el panel está abierto */
+.boton.es-presionado {
+  background: var(--gris-fondo);
+  box-shadow: none;
+}
+
+.boton__texto {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.asistente {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  margin: 4px 4px 4px 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--hoja);
+}
+
+.asistente__cabeza {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.asistente__titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 550;
+}
+
+.asistente__acciones {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.asistente__mensajes {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.asistente__bienvenida {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.asistente__saludo {
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.asistente__sugerencias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Lo que pregunta la usuaria: una burbuja gris a la derecha */
+.mensaje {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mensaje--usuaria {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--gris);
+}
+
+/* Lo que contesta el asistente: texto suelto, sin burbuja, con sus tarjetas */
+.mensaje__consulta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--texto-2);
+  font-size: 12px;
+}
+
+.mensaje__tarjeta > .fila-proporcion:first-child {
+  border-top: 0;
+}
+
+.mensaje__enlaces {
+  font-weight: 550;
+}
+
+/* Mientras busca: tres puntos que laten */
+.mensaje__pensando {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--texto-2);
+}
+
+.mensaje__puntos {
+  display: inline-flex;
+  gap: 3px;
+}
+
+/* Quietos en la maqueta: el latido es una animación y vive en static/css/app.css. */
+.mensaje__puntos span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--texto-2);
+  opacity: 0.6;
+}
+
+/* Abajo: la caja para preguntar, con el botón de enviar adentro */
+.asistente__pie {
+  flex: none;
+  padding: 12px 16px 12px;
+  border-top: 1px solid var(--linea);
+}
+
+.asistente__caja {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--borde-campo);
+  border-radius: 12px;
+  background: #FFFFFF;
+}
+
+.asistente__caja:focus-within {
+  outline: 2px solid var(--enlace);
+  outline-offset: 1px;
+}
+
+.asistente__caja textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 28px;
+  max-height: 120px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  line-height: 20px;
+  resize: none;
+}
+
+.asistente__caja textarea:focus-visible {
+  outline: none;
+}
+
+.asistente__caja textarea::placeholder {
+  color: var(--texto-3);
+}
+
+.asistente__nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 8px;
+  color: var(--texto-2);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.asistente__nota .icono {
+  margin-top: 1px;
+}
+
+/* Tarjeta del mensaje de WhatsApp: a quién va, el texto tal cual se enviará y los botones */
+.mensaje__para {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 650;
+}
+
+.mensaje__borrador {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--suave);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Tarjeta de cotización: el total arriba, como en el Cotizador */
+.mensaje__total {
+  gap: 2px;
+  padding-top: 14px;
+}
+
+.mensaje__total .texto-2 {
+  font-weight: 450;
+}
+
+.mensaje__tarjeta .cuentas {
+  padding-bottom: 8px;
+}
+
+/* Quedan pocas preguntas: una línea ámbar encima de la caja */
+.asistente__uso {
+  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* Se acabaron las preguntas: el aviso va en la conversación y la caja queda apagada */
+.mensaje__limite {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--gris);
+}
+
+.mensaje__limite .icono {
+  flex: none;
+  margin-top: 2px;
+  color: var(--texto-2);
+}
+
+.asistente__caja:has(textarea:disabled) {
+  border-color: var(--borde);
+  background: var(--suave);
+}
+
+.asistente__caja textarea:disabled {
+  color: var(--texto-3);
+  cursor: not-allowed;
+}
+
+/* Pantallas medianas: el panel flota encima de la hoja, a la derecha */
+@media (max-width: 1023.98px) and (min-width: 768px) {
+  .asistente {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    box-shadow: var(--sombra-ventana);
+  }
+}
+
+/* Celular: el asistente ocupa toda la pantalla, encima de la barra de abajo */
+@media (max-width: 767.98px) {
+  .asistente {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    width: auto;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .asistente__cabeza {
+    min-height: 64px;
+    padding: 12px 12px 12px 16px;
+  }
+
+  .asistente__titulo {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 700;
+  }
+
+  .asistente__boton {
+    width: 40px;
+    min-height: 40px;
+    border-radius: 50%;
+    background: var(--gris);
+  }
+
+  .asistente__sugerencias .chip {
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .asistente__pie {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .asistente__caja textarea {
+    min-height: 32px;
+    font-size: 16px;
+  }
+
+  .asistente__enviar {
+    width: 36px;
+    min-height: 36px;
+    border-radius: 50%;
   }
 }

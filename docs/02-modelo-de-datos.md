@@ -22,7 +22,8 @@ Taller
  ├── Tela
  │    └── MovimientoTela
  ├── Gasto
- └── PrendaGuardada     (precios base del cotizador)
+ ├── PrendaGuardada     (precios base del cotizador)
+ └── UsoAsistente       (preguntas y tokens del asistente por día, tanda 7)
 ```
 
 ## Taller
@@ -34,6 +35,8 @@ El negocio. Todo lo demás cuelga de aquí.
 | nombre | texto, 50 | Sale arriba, en mensajes y en recibos |
 | telefono | texto, 40, opcional | |
 | logo | imagen, opcional | |
+| asistente_limite_mes | entero, 0 por defecto | Preguntas al asistente por mes. 0 lo apaga. Lo pone David en `/admin` (lo normal: 600). Tanda 7 |
+| asistente_limite_dia | entero, 0 por defecto | Preguntas al asistente por día. 0 lo apaga (lo normal: 40). Tanda 7 |
 
 ## Usuario
 
@@ -159,6 +162,20 @@ Precios base del cotizador.
 | metros | número con dos decimales | Metros de tela por prenda |
 | precio_metro, insumos, mano_obra, extra | enteros, pesos | |
 
+## UsoAsistente
+
+Tanda 7 (`docs/10-asistente.md`). Cuántas preguntas le hizo cada taller al asistente cada día
+y cuántos tokens gastaron. La conversación no se guarda aquí: vive en la sesión. El costo en
+dólares se calcula con los precios de los ajustes (`ASISTENTE_PRECIOS_USD`); no se guarda.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| taller | relación | |
+| fecha | fecha | Día en la hora de Bogotá. Uno solo por taller y día |
+| preguntas | entero, 0 por defecto | |
+| tokens_entrada, tokens_salida | enteros grandes, 0 por defecto | |
+| tokens_cache_escritura, tokens_cache_lectura | enteros grandes, 0 por defecto | |
+
 ## Cálculos (no se guardan)
 
 Estas reglas ya están probadas en la demo. Deben dar los mismos resultados.
@@ -172,6 +189,9 @@ Estas reglas ya están probadas en la demo. Deben dar los mismos resultados.
 - **Vendido en el mes:** suma del total de los pedidos no cotizados creados ese mes.
 - **Cobrado en el mes:** suma de los abonos con fecha en ese mes.
 - **Gastado en el mes:** suma de los gastos con fecha en ese mes.
+- **Gastos entre dos fechas** (tanda 7, para el asistente): los gastos con fecha entre las
+  dos, ambas incluidas, del más nuevo al más viejo; opcionalmente de un solo tipo. **Por
+  tipo:** la suma de cada tipo en esas fechas, de mayor a menor, sin los tipos vacíos.
 - **Te quedó:** cobrado menos gastado.
 - **Tela baja:** `minimo > 0` y `metros <= minimo`.
 - **Cobrado y gastado por mes (gráfica):** los dos cálculos anteriores para cada uno de los
