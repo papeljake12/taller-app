@@ -1,1 +1,11 @@
-{% comment %}Carril A (T27 y T28). Tarjeta "entregas" dentro de una respuesta. Recibe `tarjeta` (asistente.contratos.Tarjeta).{% endcomment %}
+{% comment %}
+Tarjeta "Entregas" dentro de una respuesta del asistente (carril A, T27): primero los pedidos
+atrasados (en rojo) y después los que se entregan en las fechas pedidas. Cada fila: el cliente
+con su insignia (atraso, "Faltan 3 días" o la etapa), enlace al pedido; a la derecha la fecha
+de entrega y, debajo en gris, qué pidió. Hasta 6 filas y "y N más".
+Recibe `tarjeta` (asistente.contratos.Tarjeta o el mismo diccionario guardado en la sesión):
+  tarjeta.datos = {filas: [{cliente, detalle, fecha, saldo, url, etiqueta}], mas}
+{% endcomment %}{% load piezas %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+{% for fila in tarjeta.datos.filas %}<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="{{ fila.url }}">{{ fila.cliente }}{% if fila.etiqueta %} {% include "piezas/_etiqueta.html" with insignia=fila.etiqueta only %}{% endif %}</a><span class="texto-2">{{ fila.fecha }}</span><span class="texto-2">{{ fila.detalle }}</span></div>
+{% endfor %}{% if tarjeta.datos.mas %}<div class="fila-proporcion"><span class="fila-proporcion__nombre texto-2">y {{ tarjeta.datos.mas }} más</span></div>
+{% endif %}</section>

@@ -1,1 +1,21 @@
-{% comment %}Carril A (T27 y T28). Tarjeta "pedido" dentro de una respuesta. Recibe `tarjeta` (asistente.contratos.Tarjeta).{% endcomment %}
+{% comment %}
+Tarjeta "Pedido" dentro de una respuesta del asistente (carril A, T27): un pedido por dentro.
+Arriba el cliente (enlace al pedido) y su etapa; abajo las filas de "Cuentas" como en la
+tarjeta de cotización (diseno/asistente.html): qué pidió, entrega, tallas, materiales, total,
+abonado y el saldo con su insignia de pago.
+Recibe `tarjeta` (asistente.contratos.Tarjeta o el mismo diccionario guardado en la sesión):
+  tarjeta.datos = {cliente, detalle, url, etapa, fecha, urgencia, total, abonado, saldo, pago,
+                   tallas ("14 de 18"), materiales ("2 de 4 comprados" o "")}
+  etapa, urgencia y pago = {texto, tono, circulo} o None.
+{% endcomment %}{% load piezas %}{% with d=tarjeta.datos %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+<div class="tarjeta__cabeza"><h3 class="mensaje__para"><a href="{{ d.url }}">{{ d.cliente }}</a></h3>{% if d.etapa %}<span class="tarjeta__aparte">{% include "piezas/_etiqueta.html" with insignia=d.etapa only %}</span>{% endif %}</div>
+<div class="cuentas">
+<div class="cuentas__fila"><span>Pedido</span><span>{{ d.detalle }}</span></div>
+<div class="cuentas__fila"><span>Entrega</span><span>{% if d.urgencia %}{% include "piezas/_etiqueta.html" with insignia=d.urgencia only %} {% endif %}{{ d.fecha }}</span></div>
+<div class="cuentas__fila"><span>Tallas recibidas</span><span>{{ d.tallas }}</span></div>
+{% if d.materiales %}<div class="cuentas__fila"><span>Materiales</span><span>{{ d.materiales }}</span></div>
+{% endif %}<div class="cuentas__fila"><span>Total</span><span class="dinero">{{ d.total|pesos }}</span></div>
+<div class="cuentas__fila"><span>Abonado</span><span class="dinero">{{ d.abonado|pesos }}</span></div>
+<div class="cuentas__fila cuentas__fila--total"><span>Saldo</span><span>{% if d.pago %}{% include "piezas/_etiqueta.html" with insignia=d.pago only %} {% endif %}<span class="dinero">{{ d.saldo|pesos }}</span></span></div>
+</div>
+</section>{% endwith %}
