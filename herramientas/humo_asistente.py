@@ -30,6 +30,8 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
+# La consola de Windows no sabe escribir algunos caracteres (emojis) de las respuestas.
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
 import django  # noqa: E402

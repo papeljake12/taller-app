@@ -381,6 +381,21 @@ Lo que cambió respecto a lo de arriba al construir la base. Manda esto si algo 
 - **La prueba corta** es `herramientas/humo_asistente.py` (fuera de pytest). Es el único
   lugar fuera de `asistente/cliente.py` donde aparece `Anthropic(`.
 - **La maqueta del límite** está en su propia página: `diseno/asistente-limite.html`.
+- **Lo que mostró la prueba corta con la clave (14 de noviembre de 2026)**, 3 llamadas con
+  los parámetros de la sección 1.3, sin ningún 400:
+  - la respuesta de Claude vuelve tal cual (`to_dict(mode="json")`, con los thinking) y se
+    acepta; los esquemas `strict`, el mensaje `role: "system"`, `fallbacks` y la caché
+    automática funcionan;
+  - forma real de los bloques: la de `asistente/falso.py`. El thinking (vacío, con firma) a
+    veces viene antes del `tool_use` y a veces no;
+  - la caché funciona desde la segunda llamada (unos 3.200 tokens leídos de caché): cada
+    llamada costó entre 0,1 y 1,6 centavos de dólar, menos de lo estimado;
+  - **Claude escribe en Markdown** (`**negrita**`, tablas con `|`) y con emojis, y trata de
+    "usted". Como el texto se muestra escapado, eso se vería tal cual: **las instrucciones
+    (carril B) deben pedir texto plano, sin Markdown, sin tablas y sin emojis, tuteando a la
+    dueña ("Te deben…"), y dejar las listas de cifras a las tarjetas**;
+  - con una segunda pregunta que se podía contestar con lo que ya tenía, volvió a pedir una
+    herramienta. Está bien (las cifras salen frescas), pero cuenta para el tiempo y el costo.
 - **Ícono propio y caja de Hoy** (decisión de David después de T26): el ícono `asistente` es
   un botón de costura con carita, y `.avatar-asistente` (símbolo `asistente-cara`, en círculo
   negro) va arriba del panel en vez del ícono de línea: `_panel.html` (carril D) copia la

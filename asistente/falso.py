@@ -19,7 +19,13 @@ este cliente. Cada llamada a `enviar` se guarda (copiada) en `llamadas` y devuel
 siguiente del guion; si lo siguiente es una excepción, la lanza.
 
 La forma de los bloques copia la de las respuestas reales de Claude Opus 5.5 (la prueba corta
-con la clave de T26): un bloque `thinking` vacío con su firma antes de pedir herramientas.
+con la clave de T26, 14 de noviembre de 2026):
+    {"type": "thinking", "thinking": "", "signature": "..."}      (a veces no viene)
+    {"type": "text", "text": "..."}
+    {"type": "tool_use", "id": "toolu_...", "name": "...", "input": {...},
+     "caller": {"type": "direct"}}
+El bloque thinking a veces viene antes de pedir herramientas y a veces no: usa(...,
+pensamiento_antes=False) para el segundo caso.
 """
 
 import copy
@@ -77,17 +83,23 @@ def pensamiento():
 
 def texto(t, **uso):
     """Claude contesta con texto y termina."""
-    return _respuesta([{"type": "text", "text": t, "citations": None}], "end_turn", **uso)
+    return _respuesta([{"type": "text", "text": t}], "end_turn", **uso)
 
 
 def usa(*llamadas, pensamiento_antes=True, texto_antes=None, **uso):
     """Claude pide una o varias herramientas: cada llamada es (nombre, entrada, id)."""
     contenido = [pensamiento()] if pensamiento_antes else []
     if texto_antes:
-        contenido.append({"type": "text", "text": texto_antes, "citations": None})
+        contenido.append({"type": "text", "text": texto_antes})
     for nombre, entrada, id_llamada in llamadas:
         contenido.append(
-            {"type": "tool_use", "id": id_llamada, "name": nombre, "input": entrada, "caller": None}
+            {
+                "type": "tool_use",
+                "id": id_llamada,
+                "name": nombre,
+                "input": entrada,
+                "caller": {"type": "direct"},
+            }
         )
     return _respuesta(contenido, "tool_use", **uso)
 
@@ -99,7 +111,7 @@ def rechazo(**uso):
 
 def cortada(t="Te deben", **uso):
     """La respuesta se cortó por largo (max_tokens)."""
-    return _respuesta([{"type": "text", "text": t, "citations": None}], "max_tokens", **uso)
+    return _respuesta([{"type": "text", "text": t}], "max_tokens", **uso)
 
 
 def instalar(monkeypatch, settings, guion):
