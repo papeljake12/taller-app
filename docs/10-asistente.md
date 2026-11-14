@@ -114,10 +114,14 @@ tarjeta de uso en Mi taller (`diseno/mi-taller.html`).
 
 - **Precio de Opus 5.5:** 4 USD por millón de tokens que entran y 20 por millón que salen.
   Las instrucciones y las herramientas se guardan en caché, y repetirlas cuesta mucho menos.
-- **Por pregunta**, con medio y alto: unos 6 a 12 centavos de dólar.
-- **Por mes:** unas 300 preguntas serían unos 20 a 35 USD. Con los 100 USD de crédito alcanza
-  para unas 700 a 1.300 preguntas, dejando unos 20 para desarrollo.
-- Son estimados. La prueba real (T36) mide el costo de verdad por pregunta.
+- **Por pregunta, medido en la prueba real (T36, 14 de noviembre de 2026):** 1,3 centavos de
+  dólar en promedio (1,8 el 90 % de las veces o menos), igual con esfuerzo medio que alto. Los
+  mensajes de WhatsApp cuestan más, unos 3 centavos, porque Claude busca el pedido antes de
+  escribir. El estimado anterior (6 a 12 centavos) era muy alto: la caché hace que las
+  instrucciones y las herramientas casi no cuesten.
+- **Por mes:** 300 preguntas serían unos 4 a 6 USD. Con los 100 USD de crédito alcanza de
+  sobra, también para varios talleres.
+- **Tiempo:** 6 segundos en promedio; la más larga, 15 segundos.
 - En la consola de Anthropic: dos espacios de trabajo (desarrollo y taller), cada uno con su
   clave y su tope de gasto.
 - Para el negocio, el crédito es un regalo: cada taller debería pagar su consumo dentro de la

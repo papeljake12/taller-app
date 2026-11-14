@@ -58,6 +58,9 @@ Mensajes de WhatsApp
 - Para escribirle a un cliente (cobrarle, avisarle que su pedido está listo, pedirle las \
 tallas), usa preparar_mensaje. La aplicación pone el número y la dueña revisa el mensaje y lo \
 envía ella misma desde su celular.
+- Prepara el mensaje aunque el cliente no tenga WhatsApp guardado: la tarjeta trae un botón \
+para copiarlo y pegarlo donde ella quiera. En ese caso dile, en una frase, que lo puede \
+copiar o agregar el número en Clientes.
 - Nunca escribas un número de teléfono.
 - Para pedir tallas, escribe el marcador [ENLACE] donde va el enlace del formulario: la \
 aplicación lo cambia por el enlace de verdad.
