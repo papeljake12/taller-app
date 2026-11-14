@@ -69,3 +69,76 @@ Su explicación va en `docs/bitacora/rediseno/<pantalla>.md`.
 - Las pantallas que no estaban en la maqueta (Calendario, Clientes, Cotizador, Telas con datos,
   Resumen, Mi taller, Entrar, Nuevo pedido y el formulario de tallas) se adaptaron con el mismo
   lenguaje y se le muestran a David antes de darlas por terminadas y de unir a `main`.
+
+## Cómo terminó
+
+Los nueve carriles terminaron, cada uno con su revisor (un agente que no escribió el código).
+Ningún revisor encontró algo grave. Lo que pidieron arreglar se arregló al unir:
+
+- **Hoy:** "Confirmar pedido" quedó solo para la dueña, aunque la costurera sea la encargada
+  (con una petición directa la costurera podía confirmarlo, y confirmar depende del precio,
+  que ella no ve). Con su prueba.
+- **Mi taller:** en celular, el nombre de cada costurera quedaba pisado por los botones. Era
+  un defecto de la pieza compartida `.persona` (también en `diseno/`): ahora los botones bajan
+  de línea si no caben. Y el cuadrito del taller en el menú cambia sin recargar al cambiar el
+  nombre o el logo.
+- **Cotizador:** en celular, "Empezar de nuevo" era un botón redondo con una X, que parece
+  "cerrar" y borra lo escrito. Se agregó un ícono propio de "reiniciar" (flecha en círculo).
+- **Pedidos:** una prueba más de que la costurera no recibe plata en lo que llega mientras
+  escribe en el buscador.
+- **Pedido por dentro:** la lista de personas de Tallas usaba la clase vieja `desplazable`;
+  ahora tiene la suya. Los botones para quitar materiales pasaron a ser planos (con borde se
+  veían pesados).
+- **"Trabajos del taller":** se borró lo que quedó sin uso (la pieza de fotos que pasan, su
+  parte del JavaScript, el cálculo y sus pruebas).
+- Las pruebas compartidas que revisaban el diseño viejo (Hoy, la lista de pedidos, Telas) se
+  actualizaron al nuevo.
+- `diseno/nuevo-pedido.html` mostraba tallas que no existen ("Niño (2 a 16)" y "A la medida");
+  ahora tiene las de verdad.
+
+### Qué se probó
+
+- `uv run pytest`: **todas pasan** (1403 al final; eran 1348 antes del rediseño).
+  - `tests/test_desplazamiento.py` abre cada pantalla en Chrome, en 1366 x 768 y 1920 x 1080
+    como dueña y como costurera: la página no se mueve y nada se sale de lo ancho, tampoco en
+    celular.
+  - Una prueba comprueba que `static/css/app.css` copie exacto a `diseno/estilo.css`.
+- **Capturas finales** en `docs/capturas/rediseno/` (1366 x 768, 1920 x 1080 y celular, con la
+  hoja completa a la vista) y las de la costurera en `costurera/`. La herramienta no marcó
+  ningún problema. Las revisé contra `diseno/`.
+- **El JavaScript nuevo en Chrome:** Ctrl K enfoca el buscador (y abre el menú contraído); la
+  lupa de Pedidos muestra el buscador y filtra al escribir; "Más acciones" y "Cambiar etapa"
+  abren, se cierran al tocar afuera y con Escape, y se abre uno a la vez. Sin errores de
+  JavaScript. Ahí encontré y corregí un error: la lupa dejaba el cursor en un campo escondido.
+
+### Qué no se pudo comprobar
+
+- Un celular, Firefox o Safari de verdad: todo se probó en Chrome.
+- Las pantallas vacías (sin pedidos, sin clientes, sin telas) solo se comprobaron con
+  pruebas: los datos de ejemplo traen de todo, así que no salen en las capturas.
+- Que "Avisar" abra WhatsApp de verdad.
+- El saludo de Hoy depende de la hora: las capturas dicen "¡Buenas noches!" porque se tomaron
+  de noche.
+
+### Para que tú decidas
+
+1. **Las pantallas que no estaban en la maqueta** (Calendario, Clientes, Cotizador, Telas con
+   datos, Resumen, Mi taller, Entrar, Nuevo pedido y el formulario de tallas): ¿te gustan así?
+   No se une a `main` hasta que digas.
+2. **"Trabajos del taller"** salió de Hoy porque la maqueta no la tiene. ¿La quieres de vuelta?
+3. **La cronología** muestra la creación, los abonos y las tallas. Para que muestre también los
+   cambios de etapa habría que empezar a guardarlos (cambia el modelo de datos).
+4. **Las tallas agregadas a mano** no guardan quién las agregó, así que en la cronología no
+   dicen quién. Guardarlo también cambia el modelo de datos.
+5. **Telas en celular:** "Entró" y "Usé" quedan a un deslizamiento lateral dentro de la
+   tarjeta (como en la referencia). ¿Los quieres siempre a la vista?
+6. **Textos nuevos** que no estaban en ningún lado: las frases de las pantallas vacías y sus
+   "Cómo llevar…", "El taller hoy" (lo que ve la costurera en Hoy) y la confirmación del
+   formulario de tallas ("¡Gracias, Laura! Ya tenemos tu talla M…").
+7. **El formulario público de tallas** ahora muestra la foto del pedido (como en la
+   referencia): quien tenga el enlace la ve.
+8. **Pequeñas diferencias con la maqueta, a propósito:** "Descargar para Excel" ya no está en
+   Hoy (sigue en Pedidos y Resumen); el buscador de Pedidos va detrás de la lupa; "Registrar
+   abono" está en la tarjeta del pago y no arriba; la ventana de agregar tela se sigue llamando
+   "Nueva tela"; y la costurera no ve "Avisar" en pedidos listos ni cotizados (esos mensajes
+   dicen plata).
