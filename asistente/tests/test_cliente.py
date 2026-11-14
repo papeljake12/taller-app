@@ -5,6 +5,7 @@ sale a internet (conftest.py además corta el envío dentro de la librería).
 """
 
 import json
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -245,7 +246,8 @@ def test_anthropic_se_arma_solo_en_cliente_py():
         # Las pruebas sí lo nombran (para reemplazarlo o para comprobar el corte de internet).
         if relativo.parts[0] in (".venv", ".claude") or archivo.name.startswith("test_"):
             continue
-        if "Anthropic(" in archivo.read_text(encoding="utf-8"):
+        # Como palabra suelta: `ClienteAnthropic(` es nuestro cliente y sí puede usarse.
+        if re.search(r"(?<![\w])Anthropic\(", archivo.read_text(encoding="utf-8")):
             encontrados.add(relativo.as_posix())
 
     assert encontrados <= {"asistente/cliente.py", "herramientas/humo_asistente.py"}
