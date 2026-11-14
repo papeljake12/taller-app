@@ -1,4 +1,9 @@
-{% comment %}
-Debajo del nombre del cliente: la etiqueta de la etapa y el detalle (T07).
-Cuando cambia la etapa, la vista la manda otra vez con oob=True (hx-swap-oob).
-{% endcomment %}<span class="encabezado__apoyo" id="pedido-apoyo"{% if oob %} hx-swap-oob="true"{% endif %}>{% include "piezas/_etiqueta.html" with texto=etiqueta.texto tono=etiqueta.tono %} &nbsp;{{ pedido.detalle }}</span>
+{% load piezas %}{% comment %}
+El título del pedido, dentro de la hoja (diseno/pedido.html): el nombre del cliente con la
+insignia del pago (solo la dueña) y la de la etapa, y debajo cuándo se creó y cuándo se entrega.
+Cuando cambian la etapa, la fecha o un abono, la vista la manda otra vez con oob=True
+(hx-swap-oob).
+{% endcomment %}<div class="titulo-pagina" id="pedido-apoyo"{% if oob %} hx-swap-oob="true"{% endif %}>
+<h1>{{ pedido.cliente.nombre }} {% if puede_ver_plata %}{% include "piezas/_etiqueta.html" with insignia=etiqueta_pago %}{% endif %}{% include "piezas/_etiqueta.html" with insignia=etiqueta %}</h1>
+<p class="titulo-pagina__apoyo">Creado el {{ creado_el }} · {{ cuando_se_entrega }}</p>
+</div>

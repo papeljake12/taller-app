@@ -1,14 +1,12 @@
 {% comment %}
 Parte de la tarjeta "Tallas": la lista persona por persona (nombre, talla, medidas, nota y
-de dónde llegó), cada una con su botón "Quitar" (pedidos:talla_quitar).
-Va plegada para que la tarjeta no crezca; se deja abierta después de agregar o quitar.
-Abierta en computador, si son muchas se desplaza solo la lista, por dentro de la tarjeta
-(.desplazable; su alto está en static/css/app.css, apartado "Pedido por dentro").
+de dónde llegó), cada una con su botón "Quitar" (pedidos:talla_quitar). Está dentro de lo que
+muestra "Ver las N personas"; se deja a la vista después de agregar o quitar.
+Si son muchas, solo la lista se desplaza dentro de la tarjeta (.desplazable; su alto está en
+static/css/app.css, apartado "Pedido por dentro").
 Cada persona lleva su id ("talla-12"): al agregar una, solo esa aparece; al quitarla, solo
 esa fila se cierra (static/js/app.js, sección 11).
-{% endcomment %}{% if t.personas %}<details{% if t.ver_personas %} open{% endif %}>
-<summary class="fila fila--compacta"><strong>Ver {% if t.personas|length == 1 %}la persona{% else %}las {{ t.personas|length }} personas{% endif %}</strong></summary>
-<div class="tallas__personas desplazable">
+{% endcomment %}{% if t.personas %}<div class="tallas__personas desplazable">
 {% for persona in t.personas %}<form class="fila fila--compacta" id="talla-{{ persona.talla.pk }}" method="post" action="{% url 'pedidos:talla_quitar' pedido.pk persona.talla.pk %}" hx-post="{% url 'pedidos:talla_quitar' pedido.pk persona.talla.pk %}" hx-target="#tarjeta-tallas" hx-swap="outerHTML" hx-confirm="¿Quitar la talla de {{ persona.talla.nombre }}?">
 {% csrf_token %}
 <div class="fila__texto"><div class="fila__titulo"><strong>{{ persona.talla.nombre }}</strong>{% include "piezas/_etiqueta.html" with texto=persona.nombre_talla tono="gris" %}</div>
@@ -16,6 +14,5 @@ esa fila se cierra (static/js/app.js, sección 11).
 {% if es_duena %}<button type="submit" class="boton" aria-label="Quitar a {{ persona.talla.nombre }}">Quitar</button>{% endif %}
 </form>
 {% endfor %}</div>
-</details>
 {% else %}<p class="fila fila--compacta texto-2">Nadie ha enviado su talla todavía. Copia el enlace y mándaselo al cliente, o agrégalas a mano.</p>
 {% endif %}

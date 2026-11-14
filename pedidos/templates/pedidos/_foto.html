@@ -1,35 +1,27 @@
-{% comment %}
-Tarjeta "Foto del pedido" (T13), la última de la columna derecha del pedido por dentro.
+{% load piezas %}{% comment %}
+Tarjeta "Foto" (T13, diseno/pedido.html), en la columna derecha del pedido por dentro.
 
-Muestra la foto (264 px de alto, recortada para llenar, como en "Trabajos del taller") o, sin
-foto, una invitación a subirla, más baja (fotos-vacio--compacto: 120 px, sin crecer); debajo, para qué sirve y cuánto puede pesar. Elegir un archivo lo sube solo (pedidos:foto); sin
-JavaScript, con el botón "Subir la foto". "Quitar la foto" primero pregunta
-(pedidos:foto_quitar con GET) y la pregunta sale aquí mismo (_foto_confirmar.html).
-Cada acción devuelve solo esta tarjeta (pedidos/vistas/fotos.py).
+Sin foto: la zona punteada (.subir) con "Subir foto" y para qué sirve. Con foto: la imagen
+(.foto) y, debajo, "Cambiar foto" y "Quitar" (la dueña; primero pregunta). Es la foto que sale en
+Hoy y en la lista de pedidos; puede pesar hasta 10 MB y se guarda más liviana.
+Elegir un archivo lo sube solo (pedidos:foto); sin JavaScript, con el botón "Subir la foto".
+"Quitar" pregunta primero (pedidos:foto_quitar con GET) y la pregunta sale aquí mismo
+(_foto_confirmar.html). Cada acción devuelve solo esta tarjeta (pedidos/vistas/fotos.py).
 
 Solo necesita `pedido`. Las acciones le agregan `form_foto` (el formulario con su mensaje
 de error) y `foto_por_quitar` (mostrar la pregunta antes de quitar).
-
-Pantalla fija (computador): es la última tarjeta de la columna y toma el alto que queda
-(.llenar). La foto mide 264 px y la invitación 120, como siempre; si falta alto, la foto se
-achica hasta 120 px y la invitación hasta lo que mide su frase.
-Animaciones: la foto y la invitación tienen cada una su id, así que al subir la primera foto
-la invitación se cierra y la foto aparece, y al quitarla pasa al revés. La pregunta "¿Quitar
-la foto?" conserva el id del formulario (pedido-foto-acciones): toma su lugar sin cerrarse.
-{% endcomment %}{% url 'pedidos:foto' pedido.pk as url_subir %}{% url 'pedidos:foto_quitar' pedido.pk as url_quitar %}<section class="tarjeta tarjeta--lista tarjeta--fotos llenar" id="pedido-foto" aria-labelledby="t-foto">
-<div class="tarjeta__cabeza"><h2 id="t-foto">Foto del pedido</h2></div>
-{% if pedido.foto %}<div class="fotos" id="pedido-foto-imagen"><figure class="fotos__foto es-visible"><img src="{{ pedido.foto.url }}" alt="Foto del trabajo: {{ pedido.detalle }}"></figure></div>
-{% else %}<div class="fotos-vacio fotos-vacio--compacto" id="pedido-foto-vacio"><p>Este pedido todavía no tiene foto. Sube la del diseño o la del trabajo terminado.</p></div>
-{% endif %}<p class="tarjeta__nota" id="pedido-foto-ayuda">Es la foto que pasa en "Trabajos del taller", en Hoy. Puede pesar hasta 10 MB: se guarda más liviana.</p>
-{% if foto_por_quitar and pedido.foto %}{% include "pedidos/_foto_confirmar.html" %}
-{% else %}<form class="tarjeta__cuerpo" id="pedido-foto-acciones" method="post" action="{{ url_subir }}" enctype="multipart/form-data" hx-post="{{ url_subir }}" hx-encoding="multipart/form-data" hx-trigger="change, submit" hx-sync="this:drop" hx-target="#pedido-foto" hx-swap="outerHTML" novalidate>
+Animaciones: la foto y la zona de subir tienen cada una su id, así que al subir la primera foto
+la zona se cierra y la foto aparece, y al quitarla pasa al revés. La pregunta "¿Quitar la foto?"
+conserva el id del formulario (pedido-foto-acciones): toma su lugar sin cerrarse.
+{% endcomment %}{% url 'pedidos:foto' pedido.pk as url_subir %}{% url 'pedidos:foto_quitar' pedido.pk as url_quitar %}<section class="tarjeta" id="pedido-foto" aria-labelledby="t-foto">
+<div class="tarjeta__cabeza"><h2 id="t-foto">Foto</h2></div>
+{% if pedido.foto %}<div class="foto" id="pedido-foto-imagen"><img src="{{ pedido.foto.url }}" alt="Foto del trabajo: {{ pedido.detalle }}"></div>
+{% endif %}{% if foto_por_quitar and pedido.foto %}{% include "pedidos/_foto_confirmar.html" %}
+{% else %}<form id="pedido-foto-acciones" method="post" action="{{ url_subir }}" enctype="multipart/form-data" hx-post="{{ url_subir }}" hx-encoding="multipart/form-data" hx-trigger="change, submit" hx-sync="this:drop" hx-target="#pedido-foto" hx-swap="outerHTML" novalidate>
 {% csrf_token %}
-<div class="campo{% if form_foto.foto.errors %} campo--error{% endif %}">
-<label for="pedido-foto-archivo">{% if pedido.foto %}Cambiar la foto{% else %}Subir la foto{% endif %}</label>
-<input class="campo__control" type="file" name="foto" id="pedido-foto-archivo" accept="image/*" aria-describedby="pedido-foto-ayuda{% if form_foto.foto.errors %} pedido-foto-error{% endif %}"{% if form_foto.foto.errors %} aria-invalid="true" autofocus{% endif %}>
-{% if form_foto.foto.errors %}<span class="campo__error" id="pedido-foto-error" role="alert">{{ form_foto.foto.errors|join:" " }}</span>{% endif %}
-</div>
-{% if pedido.foto %}<div class="botones"><noscript><button type="submit" class="boton">Cambiar la foto</button></noscript>{% if es_duena %}<a class="boton" href="{{ url_quitar }}" hx-get="{{ url_quitar }}" hx-target="#pedido-foto" hx-swap="outerHTML">Quitar la foto</a>{% endif %}</div>
-{% else %}<noscript><div class="botones"><button type="submit" class="boton">Subir la foto</button></div></noscript>
+{% if pedido.foto %}<div class="tarjeta__pie"><label class="boton">{% icono "subir" 14 %}Cambiar foto<input class="oculto" type="file" name="foto" id="pedido-foto-archivo" accept="image/*"{% if form_foto.foto.errors %} aria-invalid="true" aria-describedby="pedido-foto-error" autofocus{% endif %}></label><noscript><button type="submit" class="boton">Cambiar la foto</button></noscript>{% if es_duena %}<a class="boton" href="{{ url_quitar }}" hx-get="{{ url_quitar }}" hx-target="#pedido-foto" hx-swap="outerHTML">Quitar</a>{% endif %}</div>
+{% if form_foto.foto.errors %}<p class="campo__error tarjeta__nota" id="pedido-foto-error" role="alert">{{ form_foto.foto.errors|join:" " }}</p>{% endif %}
+{% else %}<div class="subir" id="pedido-foto-vacio"><label class="boton">{% icono "subir" 14 %}Subir foto<input class="oculto" type="file" name="foto" id="pedido-foto-archivo" accept="image/*"{% if form_foto.foto.errors %} aria-invalid="true" aria-describedby="pedido-foto-error" autofocus{% endif %}></label>Sale en Hoy y en la lista de pedidos
+{% if form_foto.foto.errors %}<span class="campo__error" id="pedido-foto-error" role="alert">{{ form_foto.foto.errors|join:" " }}</span>{% endif %}<noscript><button type="submit" class="boton">Subir la foto</button></noscript></div>
 {% endif %}</form>
 {% endif %}</section>

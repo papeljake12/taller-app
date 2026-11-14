@@ -24,7 +24,7 @@ from config.avisos import avisar
 from config.ventanas import es_htmx
 from cuentas.aislamiento import obtener_o_404
 from cuentas.permisos import exigir_duena
-from pedidos import calculos, mensajes
+from pedidos import calculos, cronologia, mensajes
 from pedidos.formularios.tallas import TallaForm, nombre_de_talla
 from pedidos.models import Pedido, Talla
 
@@ -101,7 +101,11 @@ def _responder(request, pedido, status=200, **opciones):
     """La tarjeta sola si la pidió HTMX; si no, de vuelta al pedido."""
     if es_htmx(request):
         contexto = {"pedido": pedido, "tarjeta_tallas": tarjeta(request, pedido, **opciones)}
-        return render(request, "pedidos/_tallas.html", contexto, status=status)
+        respuesta = render(request, "pedidos/_tallas.html", contexto, status=status)
+        if status == 200:
+            # La cronología cuenta las tallas: cambia al agregar o quitar una.
+            respuesta.content += cronologia.html_oob(request, pedido).encode()
+        return respuesta
     return redirect(reverse("pedidos:detalle", args=[pedido.pk]) + "#tarjeta-tallas")
 
 

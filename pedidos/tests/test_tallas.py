@@ -53,13 +53,16 @@ def test_muestra_recibidas_y_una_barra_por_talla_como_el_diseno(pedido, duena):
     html = dibujar(pedido, duena)
 
     assert 'id="tarjeta-tallas"' in html
-    assert "14 de 18 <span" in html
-    assert 'aria-valuenow="78"' in html  # 14 de 18
-    assert html.index("<strong>S</strong>") < html.index("<strong>M</strong>") < html.index(
-        "<strong>XL</strong>"
+    assert '<span class="cifra-grande">14 de 18</span>' in html
+    assert "personas enviaron su talla" in html
+    assert '<div class="tallas-barras">' in html
+    assert html.index("<span>S</span>") < html.index("<span>M</span>") < html.index(
+        "<span>XL</span>"
     )
     assert 'aria-label="Talla M"' in html
+    assert "progreso--delgado" in html
     assert "width: 100%" in html and "width: 50%" in html and "width: 33%" in html
+    assert "Ver las 14 personas" in html
     assert "Copiar enlace para el cliente" in html
     assert "Copiar resumen" in html
 
@@ -70,7 +73,8 @@ def test_la_ficha_del_pedido_muestra_la_tarjeta_completa(sesion_duena, pedido):
     html = sesion_duena.get(reverse("pedidos:detalle", args=[pedido.pk])).text
 
     assert 'id="tarjeta-tallas"' in html
-    assert "1 de 18 <span" in html
+    assert '<span class="cifra-grande">1 de 18</span>' in html
+    assert "persona envió su talla" in html
     assert "Copiar enlace para el cliente" in html
     assert "Copiar resumen" in html
     assert f'action="{reverse("pedidos:tallas_enlace", args=[pedido.pk])}"' in html
@@ -80,9 +84,10 @@ def test_la_ficha_del_pedido_muestra_la_tarjeta_completa(sesion_duena, pedido):
 def test_sin_tallas_invita_a_mandar_el_enlace(pedido, duena):
     html = dibujar(pedido, duena)
 
-    assert "0 de 18 <span" in html
+    assert '<span class="cifra-grande">0 de 18</span>' in html
     assert "Nadie ha enviado su talla todavía" in html
-    assert "fila-talla" not in html
+    assert "tallas-barras" not in html
+    assert "Agregar a mano</a>" in html
 
 
 def test_el_boton_copia_el_enlace_publico_completo(pedido, duena):
@@ -129,19 +134,33 @@ def test_mas_tallas_que_personas_no_pasa_la_barra_del_100(taller, duena):
 
     html = dibujar(pedido, duena)
 
-    assert "2 de 1 <span" in html
-    assert 'aria-valuenow="100"' in html
+    assert '<span class="cifra-grande">2 de 1</span>' in html
 
 
 def test_dice_si_el_enlace_recibe_tallas(pedido, duena):
-    assert "Enlace abierto" in dibujar(pedido, duena)
-    assert 'value="no">Cerrar el enlace' in dibujar(pedido, duena)
+    html = dibujar(pedido, duena)
+    assert '<span class="etiqueta etiqueta--gris">Enlace abierto</span>' in html
+    assert 'value="no"' in html and "Cerrar el enlace</button>" in html
 
     pedido.tallas_abiertas = False
     html = dibujar(pedido, duena)
 
-    assert "Enlace cerrado" in html
-    assert 'value="si">Abrir el enlace' in html
+    assert '<span class="etiqueta etiqueta--gris">Enlace cerrado</span>' in html
+    assert 'value="si"' in html and "Abrir el enlace</button>" in html
+
+
+def test_ver_las_personas_se_muestra_y_se_oculta_y_sin_javascript_tiene_enlace(
+    sesion_duena, pedido
+):
+    fabricas.crear_talla(pedido, nombre="Ana Ejemplo")
+    pagina = reverse("pedidos:detalle", args=[pedido.pk])
+
+    cerrada = sesion_duena.get(pagina).text
+    abierta = sesion_duena.get(pagina + "?personas=1").text
+
+    assert '<div id="tallas-detalle" hidden>' in cerrada
+    assert '<div id="tallas-detalle">' in abierta
+    assert 'href="?personas=1#tarjeta-tallas" data-mostrar="tallas-detalle"' in cerrada
 
 
 def test_las_opciones_de_talla_son_las_del_pedido(taller):
@@ -164,9 +183,11 @@ def test_agregar_una_talla_a_mano(sesion_duena, pedido):
     assert (talla.nombre, talla.talla, talla.nota) == ("Carla Ejemplo", "S", "Zurda")
     assert talla.origen == Talla.Origen.MANUAL
     # Vuelve solo la tarjeta, ya con la persona y lista para la siguiente.
-    assert respuesta.text.startswith('<section class="tarjeta tarjeta--lista" id="tarjeta-tallas"')
+    assert respuesta.text.startswith('<section class="tarjeta" id="tarjeta-tallas"')
     assert "<html" not in respuesta.text
-    assert "1 de 18 <span" in respuesta.text
+    assert '<span class="cifra-grande">1 de 18</span>' in respuesta.text
+    assert '<div id="tallas-detalle">' in respuesta.text  # la lista queda a la vista
+    assert 'id="pedido-cronologia"' in respuesta.text  # y la cronología se actualiza
     assert "<details open>" in respuesta.text
     assert "autofocus" in respuesta.text
 

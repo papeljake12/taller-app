@@ -1,11 +1,11 @@
 {% comment %}
-La pregunta antes de quitar la foto, dentro de la tarjeta "Foto del pedido" (en el lugar del
+La pregunta antes de quitar la foto, dentro de la tarjeta "Foto" (en el lugar del
 formulario). "Sí, quitar la foto" la borra; "Cancelar" deja la tarjeta como estaba. Los dos
 cambian la misma tarjeta y llevan hx-sync: si se tocan seguidos, el último toque cancela al
 anterior, para que una respuesta tardía de "Cancelar" no vuelva a pintar la foto ya borrada.
 Conserva el id del formulario (pedido-foto-acciones): la pregunta toma su lugar sin cerrarse
 y volverse a abrir (static/js/app.js, sección 11).
 {% endcomment %}{% url 'pedidos:foto_quitar' pedido.pk as url_quitar %}<div class="tarjeta__cuerpo" id="pedido-foto-acciones">
-<div class="aviso" role="alert"><p>¿Quitar la foto de este pedido? Deja de salir en "Trabajos del taller" y no se puede recuperar.</p></div>
+<div class="aviso" role="alert"><p>¿Quitar la foto de este pedido? Deja de salir en Hoy y en la lista de pedidos, y no se puede recuperar.</p></div>
 <form class="botones" method="post" action="{{ url_quitar }}" hx-post="{{ url_quitar }}" hx-sync="closest .tarjeta:replace" hx-target="#pedido-foto" hx-swap="outerHTML">{% csrf_token %}<button type="submit" class="boton boton--principal" autofocus>Sí, quitar la foto</button><a class="boton" href="{{ url_quitar }}?cancelar=1" hx-get="{{ url_quitar }}?cancelar=1" hx-sync="closest .tarjeta:replace" hx-target="#pedido-foto" hx-swap="outerHTML">Cancelar</a></form>
 </div>

@@ -1,6 +1,7 @@
-{% comment %}
+{% load piezas %}{% comment %}
 Botón "Avisar al cliente" de arriba (T07). Con el pedido listo, el aviso de pedido listo;
 si no, el recordatorio del saldo. Con WhatsApp guardado abre el chat con el texto escrito;
 sin WhatsApp, copia el texto. Sin nada que avisar queda vacío, pero conserva su id para
 que HTMX lo cambie (hx-swap-oob) cuando cambian la etapa, la fecha o el WhatsApp.
-{% endcomment %}{% if mensaje.enlace %}<a class="boton" id="pedido-avisar" href="{{ mensaje.enlace }}" target="_blank" rel="noopener"{% if oob %} hx-swap-oob="true"{% endif %}>Avisar al cliente</a>{% elif mensaje %}<button type="button" class="boton" id="pedido-avisar" data-copiar="{{ mensaje.texto }}" title="Copia el mensaje para pegarlo en WhatsApp"{% if oob %} hx-swap-oob="true"{% endif %}>Avisar al cliente</button>{% else %}<span id="pedido-avisar" hidden{% if oob %} hx-swap-oob="true"{% endif %}></span>{% endif %}
+En celular es el botón redondo con el ícono de WhatsApp (diseno/pedido.html).
+{% endcomment %}{% if mensaje.enlace %}<a class="boton boton--redondo-celular" id="pedido-avisar" href="{{ mensaje.enlace }}" target="_blank" rel="noopener"{% if oob %} hx-swap-oob="true"{% endif %}>{% icono "whatsapp" 16 %}<span class="boton__texto">Avisar al cliente</span></a>{% elif mensaje %}<button type="button" class="boton boton--redondo-celular" id="pedido-avisar" data-copiar="{{ mensaje.texto }}" title="Copia el mensaje para pegarlo en WhatsApp"{% if oob %} hx-swap-oob="true"{% endif %}>{% icono "whatsapp" 16 %}<span class="boton__texto">Avisar al cliente</span></button>{% else %}<span id="pedido-avisar" hidden{% if oob %} hx-swap-oob="true"{% endif %}></span>{% endif %}

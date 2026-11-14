@@ -1,10 +1,11 @@
 {% comment %}
-Formulario "Registrar abono" de la tarjeta Pagos: valor (con o sin puntos) y fecha (hoy, si
+Formulario "Registrar abono" de la tarjeta de pago: valor (con o sin puntos) y fecha (hoy, si
 no se cambia). Con HTMX devuelve la tarjeta con el saldo nuevo, o con los errores.
-Va plegado en la fila "Registrar un abono", como "Agregar una persona a mano" en Tallas. Queda
-abierto (`abierto`) después de registrar uno (para seguir con el siguiente) o si hubo errores.
+Va en un <details> sin título visible: "Registrar abono" (el botón del pie de la tarjeta) lo abre
+y lleva el cursor al valor. Queda abierto (`abierto`) después de registrar uno (para seguir con
+el siguiente) o si hubo errores.
 {% endcomment %}{% url 'pedidos:abono_nuevo' pedido.pk as url_nuevo %}<details class="pagos__registrar"{% if abierto %} open{% endif %}>
-<summary class="fila fila--compacta"><strong>Registrar un abono</strong></summary>
+<summary class="oculto">Registrar un abono</summary>
 <form class="tarjeta__cuerpo" method="post" action="{{ url_nuevo }}" hx-post="{{ url_nuevo }}" hx-target="#pagos" hx-swap="outerHTML" novalidate>
 {% csrf_token %}
 {% include "piezas/_aviso.html" with mensajes=form.non_field_errors %}

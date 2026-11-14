@@ -1,7 +1,0 @@
-{% comment %}
-Eliminar el pedido (T07), debajo de las dos columnas. El botón abre una ventana que pregunta
-si de verdad (pedidos:eliminar con GET); sin JavaScript abre la misma pregunta como página.
-Solo la ve la dueña (T21).
-{% endcomment %}{% if es_duena %}<section class="tarjeta tarjeta--lista" id="pedido-eliminar" aria-labelledby="t-eliminar">
-<div class="tarjeta__cabeza"><div><h2 id="t-eliminar">Eliminar el pedido</h2><p class="nota">Se borra con sus abonos, tallas y materiales. No se puede deshacer.</p></div><a class="boton" href="{% url 'pedidos:eliminar' pedido.pk %}" hx-get="{% url 'pedidos:eliminar' pedido.pk %}" hx-target="#ventana">Eliminar</a></div>
-</section>{% endif %}

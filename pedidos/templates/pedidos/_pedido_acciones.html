@@ -1,5 +1,7 @@
-{% comment %}
-Botones de arriba del pedido (T07): "Avisar al cliente" y "Registrar abono".
-"Registrar abono" lleva al campo del abono de la tarjeta Pagos (id="registrar-abono").
-La costurera no ve "Registrar abono" (T21); "Avisar al cliente" le llega vacío desde la vista.
-{% endcomment %}{% include "pedidos/_detalle_avisar.html" %}{% if puede_ver_plata %}<a class="boton boton--principal" href="#registrar-abono">Registrar abono</a>{% endif %}
+{% load piezas %}{% comment %}
+Botones de arriba del pedido (diseno/pedido.html): "Avisar al cliente" (con el ícono de
+WhatsApp, redondo en celular), "Más acciones" (eliminar el pedido, solo la dueña) y las
+flechas para pasar al pedido anterior o al siguiente, en el orden de la lista de Pedidos.
+En los extremos la flecha va apagada. "Registrar abono" ya no está arriba: va en la tarjeta de
+pago. La costurera no recibe "Avisar al cliente" (dice el saldo): le llega vacío desde la vista.
+{% endcomment %}{% include "pedidos/_detalle_avisar.html" %}{% if es_duena %}<details class="desplegable desplegable--celular"><summary class="boton boton--redondo-celular"><span class="boton__icono-celular">{% icono "mas" 20 %}</span><span class="boton__texto">Más acciones</span><span class="solo-computador">{% icono "abajo" 14 %}</span></summary><div class="desplegable__menu"><a class="desplegable__opcion" href="{% url 'pedidos:eliminar' pedido.pk %}" hx-get="{% url 'pedidos:eliminar' pedido.pk %}" hx-target="#ventana">{% icono "papelera" 16 %}Eliminar el pedido</a></div></details>{% endif %}{% if anterior %}<a class="boton boton--flecha solo-computador" href="{% url 'pedidos:detalle' anterior %}" aria-label="Pedido anterior" title="Pedido anterior">{% icono "arriba" 16 %}</a>{% else %}<span class="boton boton--flecha solo-computador" aria-disabled="true" aria-label="Pedido anterior" title="Es el primero de la lista">{% icono "arriba" 16 %}</span>{% endif %}{% if siguiente %}<a class="boton boton--flecha solo-computador" href="{% url 'pedidos:detalle' siguiente %}" aria-label="Pedido siguiente" title="Pedido siguiente">{% icono "abajo" 16 %}</a>{% else %}<span class="boton boton--flecha solo-computador" aria-disabled="true" aria-label="Pedido siguiente" title="Es el último de la lista">{% icono "abajo" 16 %}</span>{% endif %}

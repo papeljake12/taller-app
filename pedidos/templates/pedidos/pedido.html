@@ -1,35 +1,31 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% load piezas %}
 {% comment %}
-Pedido por dentro (diseno/pedido.html). Esta plantilla solo reúne las partes y queda
-congelada después de la tanda 2:
-  arriba: _pedido_apoyo (etiqueta y detalle) y _pedido_acciones (T07);
-  columna izquierda: _etapa (T07), _tallas (T10), _materiales (T12);
-  columna derecha: _pagos (T08), _entrega (T07), _cliente (T07), _foto (T13);
-  abajo: _eliminar (T07).
-Las dos columnas terminan a la misma altura: la última tarjeta de cada una crece.
-
-Pantalla fija (computador): las dos columnas toman el alto que deja "Eliminar el pedido"
-(.llenar). La lista de Materiales se desplaza por dentro de su tarjeta, la foto se achica
-si falta alto y, abierta, la lista de personas de Tallas se desplaza si son muchas. Las
-medidas están en static/css/app.css, apartado "Pedido por dentro".
+Pedido por dentro (diseno/pedido.html). Esta plantilla solo reúne las partes:
+  encabezado: la flecha para volver (celular), la miga (computador) y _pedido_acciones
+              (Avisar al cliente, Más acciones y las flechas al pedido anterior y siguiente);
+  título: _pedido_apoyo (el nombre con sus insignias y las fechas);
+  columna izquierda: _etapa, _pagos, _tallas y _cronologia;
+  columna derecha: _cliente, _entrega, _foto y _materiales.
+Cada columna mide lo que mide su contenido. Todo se desplaza con la hoja.
 {% endcomment %}
 {% block pestana %}{{ pedido.cliente.nombre }}{% endblock %}
-{% block titulo %}{{ pedido.cliente.nombre }}{% endblock %}
-{% block apoyo %}{% include "pedidos/_pedido_apoyo.html" %}{% endblock %}
+{% block encabezado_izquierda %}<a class="encabezado__volver" href="{% url 'pedidos:lista' %}" aria-label="Volver a Pedidos">{% icono "atras" %}</a>{% endblock %}
+{% block encabezado_titulo %}<a class="miga solo-computador" href="{% url 'pedidos:lista' %}"><span class="miga__volver" aria-hidden="true">{% icono "atras" 16 %}</span>{% icono "pedidos" 16 %}Pedidos</a>{% endblock %}
 {% block acciones %}{% include "pedidos/_pedido_acciones.html" %}{% endblock %}
 {% block contenido %}
-<div class="dos-columnas llenar pedido-por-dentro">
-<div class="columna-ancha columna">
+{% include "pedidos/_pedido_apoyo.html" %}
+<div class="columnas pedido-por-dentro">
+<div class="columna">
 {% include "pedidos/_etapa.html" %}
+{% include "pedidos/_pagos.html" %}
 {% include "pedidos/_tallas.html" %}
+{% include "pedidos/_cronologia.html" %}
+</div>
+<div class="columna">
+{% include "pedidos/_cliente.html" %}
+{% include "pedidos/_entrega.html" %}
+{% include "pedidos/_foto.html" %}
 {% include "pedidos/_materiales.html" %}
 </div>
-<div class="columna-angosta columna">
-{% include "pedidos/_pagos.html" %}
-{% include "pedidos/_entrega.html" %}
-{% include "pedidos/_cliente.html" %}
-{% include "pedidos/_foto.html" %}
 </div>
-</div>
-{% include "pedidos/_eliminar.html" %}
 {% endblock %}

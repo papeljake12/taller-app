@@ -3462,6 +3462,105 @@ button.casilla:active {
 /* --- Pedidos, Buscar y Nuevo pedido (fin) --- */
 
 /* --- Pedido por dentro (inicio) --- */
+
+/* Etapa: el formulario envuelve los pasos y el pie, y no cambia su aspecto */
+.etapa-formulario > .pasos {
+  padding: 4px 16px 14px;
+}
+
+/* Pago: el pie va un poco separado de las cuentas, y el formulario de abono debajo */
+#pagos .tarjeta__pie {
+  margin-top: 8px;
+}
+
+
+.pagos__registrar[open] {
+  border-top: 1px solid var(--linea);
+}
+
+.pagos__confirmar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+/* Tallas: lo que muestra "Ver las N personas" (la lista y el formulario para agregar a mano) */
+.tallas__resumen {
+  padding-top: 4px;
+  gap: 10px;
+}
+
+#tarjeta-tallas .tarjeta__pie {
+  align-items: center;
+}
+
+#tallas-detalle {
+  border-top: 1px solid var(--linea);
+}
+
+.tallas__personas {
+  display: flex;
+  flex-direction: column;
+}
+
+.tallas__personas > .fila:first-child {
+  border-top: 0;
+}
+
+.tallas__personas.desplazable {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Materiales: casilla y nombre a la izquierda; cantidad y quitar a la derecha */
+.materiales__lista {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+}
+
+.materiales__marcar {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.materiales__marcar label {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.materiales__resto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.materiales__agregar {
+  flex-wrap: wrap;
+  justify-content: stretch;
+}
+
+.materiales__agregar .materiales__nombre {
+  width: auto;
+  flex: 1 1 110px;
+  min-width: 0;
+}
+
+.materiales__agregar .materiales__cantidad {
+  width: auto;
+  flex: 0 1 80px;
+  min-width: 0;
+}
+
+.materiales__agregar .campo__error {
+  flex-basis: 100%;
+}
+
 /* --- Pedido por dentro (fin) --- */
 
 /* --- Calendario (inicio) --- */
