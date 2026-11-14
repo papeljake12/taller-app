@@ -774,3 +774,35 @@ def test_el_registro_del_limite_tampoco_tiene_el_texto(sesion_duena, prendido, m
         _preguntar(sesion_duena, "¿Cuánto le debe Colegio Nuevo Amanecer?")
 
     assert "sin cupo" in caplog.text and "Colegio" not in caplog.text
+
+
+# --- Sin preguntas: el aviso va en la conversación, como diseno/asistente-limite.html ---------
+
+
+def test_sin_preguntas_el_panel_muestra_el_aviso_en_vez_de_las_sugerencias(sesion_duena, prendido):
+    fabricas.crear_uso(prendido, preguntas=40)
+
+    html = sesion_duena.get("/asistente/", **HTMX).content.decode()
+
+    assert '<p class="mensaje__limite">' in html
+    assert "Por hoy ya usaste las 40 preguntas. Mañana vuelvo a contestar." in html
+    assert "data-asistente-bienvenida" not in html
+    assert "data-asistente-sugerencia" not in html
+
+
+def test_sin_preguntas_el_aviso_va_al_final_de_la_conversacion(sesion_duena, prendido):
+    _sembrar(sesion_duena, [_turno_guardado()])
+    fabricas.crear_uso(prendido, preguntas=40)
+
+    html = sesion_duena.get("/asistente/", **HTMX).content.decode()
+
+    assert html.index("Tienes 3 entregas.") < html.index('<p class="mensaje__limite">')
+
+
+def test_nueva_conversacion_sin_preguntas_muestra_el_aviso(sesion_duena, prendido):
+    fabricas.crear_uso(prendido, preguntas=40)
+
+    html = sesion_duena.post("/asistente/nueva/", **HTMX).content.decode()
+
+    assert '<p class="mensaje__limite">' in html
+    assert "data-asistente-sugerencia" not in html

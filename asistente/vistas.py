@@ -332,6 +332,8 @@ def nueva(request):
     _borrar(request)
     if es_htmx(request):
         return render(
-            request, "asistente/_conversacion.html", {"turnos": [], "sugerencias": SUGERENCIAS}
+            request,
+            "asistente/_conversacion.html",
+            {"turnos": [], "sugerencias": SUGERENCIAS, "cupo": uso.cupo(request.taller)},
         )
     return redirect("asistente:panel")

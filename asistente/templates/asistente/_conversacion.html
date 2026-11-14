@@ -6,7 +6,11 @@ Sin JavaScript, la sugerencia es un botón del formulario de la pregunta.
 Con turnos: cada pregunta con su respuesta (_turno.html) y, si la conversación ya está muy
 larga (más de 25 turnos o 200 KB), el aviso que pide una nueva (`aviso_larga`).
 "Nueva conversación" (asistente/nueva/) devuelve esta plantilla vacía.
-{% endcomment %}{% if not turnos %}<div class="asistente__bienvenida" data-asistente-bienvenida>
+Sin preguntas (cupo.agotado), como diseno/asistente-limite.html: en vez del saludo y las
+sugerencias, el aviso con el reloj; si ya hay conversación, el aviso va al final.
+{% endcomment %}{% load piezas %}{% if not turnos and cupo.agotado %}<div class="mensaje mensaje--asistente">
+<p class="mensaje__limite">{% icono "reloj" 16 %}<span>{{ cupo.mensaje_limite }}</span></p>
+</div>{% elif not turnos %}<div class="asistente__bienvenida" data-asistente-bienvenida>
 <p class="asistente__saludo">Pregúntame lo que quieras saber de tu taller.</p>
 <p class="texto-2">Miro tus pedidos, abonos, telas y gastos, y te contesto con las cifras.</p>
 <div class="asistente__sugerencias">
@@ -14,4 +18,5 @@ larga (más de 25 turnos o 200 KB), el aviso que pide una nueva (`aviso_larga`).
 {% endfor %}</div>
 </div>{% else %}{% for turno in turnos %}
 {% include "asistente/_turno.html" %}{% endfor %}{% if aviso_larga %}
-{% include "asistente/_turno.html" with turno=aviso_larga %}{% endif %}{% endif %}
+{% include "asistente/_turno.html" with turno=aviso_larga %}{% endif %}{% if cupo.agotado %}
+<div class="mensaje mensaje--asistente"><p class="mensaje__limite">{% icono "reloj" 16 %}<span>{{ cupo.mensaje_limite }}</span></p></div>{% endif %}{% endif %}
