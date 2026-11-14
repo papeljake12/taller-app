@@ -1,12 +1,11 @@
 {% load piezas %}{% comment %}
 Las tres cifras de Telas (calculos.resumen_de_telas): cuántas hay, cuántos metros suman y
-cuáles se están acabando. "Se están acabando" va con borde, nombre y número en ámbar
-(cifra--ambar) cuando hay alguna: el rojo es solo para atrasos y deudas (docs/08). Si no hay
-ninguna, queda en negro. En celular su línea de apoyo se sigue viendo (cifra--apoyo-celular),
-porque dice cuáles son.
+cuáles se están acabando. Sin borde ni número de color (diseno/telas.html). Sin telas no hay
+cifras (diseno/telas-vacia.html): queda un marcador escondido con el mismo id, para que al
+agregar la primera tela lleguen las cifras en su lugar (hx-swap-oob).
 Al cambiar una tela vuelve con hx-swap-oob (id="telas-cifras").
-{% endcomment %}<section class="cifras" id="telas-cifras" aria-label="Resumen"{% if oob %} hx-swap-oob="true"{% endif %}>
+{% endcomment %}{% if resumen.cantidad %}<section class="cifras" id="telas-cifras" aria-label="Telas de un vistazo"{% if oob %} hx-swap-oob="true"{% endif %}>
 {% include "piezas/_cifra.html" with nombre="Telas" valor=resumen.cantidad apoyo="En inventario" %}
 {% include "piezas/_cifra.html" with nombre="Metros en total" valor=resumen.metros|metros apoyo="Suma de todas" %}
-{% if resumen.bajas %}{% include "piezas/_cifra.html" with nombre="Se están acabando" valor=resumen.bajas|length apoyo=acabandose ambar=True clase="cifra--apoyo-celular" %}{% else %}{% include "piezas/_cifra.html" with nombre="Se están acabando" valor=0 apoyo="Ninguna por ahora" clase="cifra--apoyo-celular" %}{% endif %}
-</section>
+{% include "piezas/_cifra.html" with nombre="Se están acabando" valor=resumen.bajas|length apoyo=acabandose|default:"Ninguna por ahora" %}
+</section>{% else %}<div id="telas-cifras" hidden{% if oob %} hx-swap-oob="true"{% endif %}></div>{% endif %}

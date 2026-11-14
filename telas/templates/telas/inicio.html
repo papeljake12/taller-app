@@ -1,17 +1,16 @@
 {% extends "base.html" %}{% load piezas %}
 {% comment %}
-Telas (diseno/telas.html), T16. Lo que cambia con una tela vive en su propia parte, porque
-las acciones de telas/vistas.py lo devuelven solo, sin recargar:
-  _apoyo ("4 telas, 60 m en total"), _cifras (las tres cifras) y _tabla (cada tela con
-  "Entró" y "Usé").
-"Nueva tela", "Entró", "Usé", el historial y "Quitar tela" se abren en la ventana.
-La costurera solo ve "Usé" y el historial: "Nueva tela", "Entró" y "Quitar tela" son de la
+Telas (diseno/telas.html y, sin telas, diseno/telas-vacia.html), T16. Lo que cambia con una
+tela vive en su propia parte, porque las acciones de telas/vistas.py lo devuelven solo, sin
+recargar:
+  _cifras (las tres cifras) y _tabla (cada tela con "Entró" y "Usé", o la pantalla vacía).
+"Agregar tela", "Entró", "Usé", el historial y "Quitar tela" se abren en la ventana.
+La costurera solo ve "Usé" y el historial: "Agregar tela", "Entró" y "Quitar tela" son de la
 dueña (T21, docs/04-permisos.md).
 {% endcomment %}
 {% block pestana %}Telas{% endblock %}
 {% block titulo %}Telas{% endblock %}
-{% block apoyo %}{% include "telas/_apoyo.html" %}{% endblock %}
-{% block acciones %}{% if es_duena %}<a class="boton boton--principal" href="{% url 'telas:nueva' %}" hx-get="{% url 'telas:nueva' %}" hx-target="#ventana">Nueva tela</a>{% endif %}{% endblock %}
+{% block acciones %}{% if es_duena %}<a class="boton boton--principal boton--redondo-celular" href="{% url 'telas:nueva' %}" hx-get="{% url 'telas:nueva' %}" hx-target="#ventana"><span class="boton__icono-celular">{% icono "sumar" 20 %}</span><span class="boton__texto">Agregar tela</span></a>{% endif %}{% endblock %}
 {% block contenido %}
 {% include "telas/_cifras.html" %}
 {% include "telas/_tabla.html" %}
