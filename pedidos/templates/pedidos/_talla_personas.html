@@ -2,11 +2,11 @@
 Parte de la tarjeta "Tallas": la lista persona por persona (nombre, talla, medidas, nota y
 de dónde llegó), cada una con su botón "Quitar" (pedidos:talla_quitar). Está dentro de lo que
 muestra "Ver las N personas"; se deja a la vista después de agregar o quitar.
-Si son muchas, solo la lista se desplaza dentro de la tarjeta (.desplazable; su alto está en
+Si son muchas, solo la lista se desplaza dentro de la tarjeta (tallas__personas--alta; su alto está en
 static/css/app.css, apartado "Pedido por dentro").
 Cada persona lleva su id ("talla-12"): al agregar una, solo esa aparece; al quitarla, solo
 esa fila se cierra (static/js/app.js, sección 11).
-{% endcomment %}{% if t.personas %}<div class="tallas__personas desplazable">
+{% endcomment %}{% if t.personas %}<div class="tallas__personas tallas__personas--alta">
 {% for persona in t.personas %}<form class="fila fila--compacta" id="talla-{{ persona.talla.pk }}" method="post" action="{% url 'pedidos:talla_quitar' pedido.pk persona.talla.pk %}" hx-post="{% url 'pedidos:talla_quitar' pedido.pk persona.talla.pk %}" hx-target="#tarjeta-tallas" hx-swap="outerHTML" hx-confirm="¿Quitar la talla de {{ persona.talla.nombre }}?">
 {% csrf_token %}
 <div class="fila__texto"><div class="fila__titulo"><strong>{{ persona.talla.nombre }}</strong>{% include "piezas/_etiqueta.html" with texto=persona.nombre_talla tono="gris" %}</div>

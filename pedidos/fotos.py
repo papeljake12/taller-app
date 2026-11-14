@@ -17,14 +17,12 @@ Es lo mismo que hace reducir() en demo/index.html, pero en el servidor.
 """
 
 import secrets
-from dataclasses import dataclass
 from io import BytesIO
 
 from django import forms
 from django.core.files.base import ContentFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 
-from pedidos import calculos
 
 # Lo más que puede pesar el archivo que se sube.
 PESO_MAXIMO = 10 * 1024 * 1024  # 10 MB
@@ -141,28 +139,3 @@ def borrar_archivo(almacen, nombre):
     algo falla antes, la foto anterior sigue en su lugar."""
     if nombre and almacen.exists(nombre):
         almacen.delete(nombre)
-
-
-# --- "Trabajos del taller", en Hoy -----------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class Trabajo:
-    """Una foto de la tarjeta "Trabajos del taller" (la pieza piezas/_fotos.html)."""
-
-    url: str
-    nombre: str  # el trabajo: lo que pidió el cliente
-    descripcion: str  # el texto alternativo de la foto, para los lectores de pantalla
-
-
-def trabajos(request):
-    """Las fotos de "Trabajos del taller": las de los pedidos del taller de la usuaria, del
-    más reciente al más antiguo, máximo 8 (calculos.trabajos_del_taller)."""
-    return [
-        Trabajo(
-            url=pedido.foto.url,
-            nombre=pedido.detalle,
-            descripcion=f"Foto del trabajo: {pedido.detalle}",
-        )
-        for pedido in calculos.trabajos_del_taller(getattr(request, "taller", None))
-    ]

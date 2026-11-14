@@ -11,7 +11,6 @@ from django import forms
 from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
-from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 
@@ -91,16 +90,6 @@ def piezas(request):
          "estado": "hecho" if i < 2 else "actual" if i == 2 else "pendiente"}
         for i, nombre in enumerate(ETAPAS)
     ]
-    fotos = [
-        {"url": static("ejemplo/foto-comparsa.jpg"), "nombre": "Polleras de comparsa",
-         "descripcion": "Foto de ejemplo: pollera de comparsa de colores"},
-        {"url": static("ejemplo/foto-grado.jpg"), "nombre": "Vestido de grado",
-         "descripcion": "Foto de ejemplo: vestido largo de grado azul"},
-        {"url": static("ejemplo/foto-fiesta.jpg"), "nombre": "Vestido de fiesta",
-         "descripcion": "Foto de ejemplo: vestido corto de fiesta con lunares"},
-        {"url": static("ejemplo/foto-comunion.jpg"), "nombre": "Vestido de primera comunión",
-         "descripcion": "Foto de ejemplo: vestido blanco de primera comunión"},
-    ]
     contexto = {
         # El menú de esta página muestra contadores de ejemplo, para ver cómo quedan.
         "menu": construir_menu(request, contadores={"pedidos": 1, "telas": 2}),
@@ -108,7 +97,6 @@ def piezas(request):
         "vacio": vacio,
         "con_errores": con_errores,
         "pasos": pasos,
-        "fotos": fotos,
         "meses_grafica": MESES_GRAFICA,
         "filas": _filas_de_ejemplo(request),
         # Los colores de docs/08-diseno.md (rediseño del 2026-11-13)

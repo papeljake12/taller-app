@@ -581,7 +581,7 @@ def test_las_dos_columnas_miden_lo_que_mide_su_contenido(sesion_duena, pedido):
     html = sesion_duena.get(url("detalle", pedido)).text
 
     assert '<div class="columnas pedido-por-dentro">' in html
-    assert "llenar" not in html and "desplazable" not in html.replace("tallas__personas desplazable", "")
+    assert "llenar" not in html and "desplazable" not in html
     izquierda, derecha = html.split('<div class="columnas pedido-por-dentro">')[1].split(
         '</div>\n<div class="columna">'
     )

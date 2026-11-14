@@ -48,10 +48,6 @@ DIAS_PRONTO = 7
 # del Trabajo.
 FECHAS_DOTACION = ((4, 30), (8, 31), (12, 20))
 
-# Máximo de fotos en "Trabajos del taller".
-MAXIMO_FOTOS = 8
-
-
 def porcentaje(parte, todo):
     """De 0 a 100, redondeado al entero más cercano (como las barras del diseño)."""
     if todo <= 0:
@@ -372,11 +368,6 @@ def que_hacer_hoy(taller, hoy=None):
                 vistos.add(pedido.pk)
                 pendientes.append(Pendiente(pedido, motivo))
     return pendientes
-
-
-def trabajos_del_taller(taller):
-    """Los pedidos con foto, del más reciente al más antiguo, máximo 8."""
-    return _pedidos(taller).exclude(foto="").order_by("-creado", "-pk")[:MAXIMO_FOTOS]
 
 
 @dataclass(frozen=True)

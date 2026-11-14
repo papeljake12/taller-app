@@ -1,7 +1,7 @@
 /* JavaScript propio de la aplicación.
    1. Menú que se contrae (y se recuerda en este navegador).
    2. Panel "Más" de la barra de abajo en celular.
-   3. Fotos que pasan ("Trabajos del taller").
+   3. (Fotos que pasan: se quitó con "Trabajos del taller" en el rediseño del 2026-11-13.)
    4. HTMX envía la protección CSRF en cada petición, y dibuja los formularios con errores.
    5. Ventana (para "Nuevo pedido" y otros formularios cortos).
    6. Botones "Copiar".
@@ -155,42 +155,6 @@
       abrirMas(false);
       boton.focus();
     }
-  });
-
-  /* 3. Fotos que pasan ----------------------------------------------------- */
-
-  const CADA_FOTO_MS = 4000;
-
-  function iniciarFotos(contenedor) {
-    if (contenedor.dataset.iniciado) return;
-    contenedor.dataset.iniciado = "si";
-    const fotos = contenedor.querySelectorAll("[data-foto]");
-    const tarjeta = contenedor.closest(".tarjeta") || contenedor;
-    const puntos = tarjeta.querySelectorAll("[data-punto]");
-    const menosMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // Con una sola foto, o si la persona pidió menos movimiento, se queda en la primera.
-    if (fotos.length < 2 || menosMovimiento) return;
-    let actual = 0;
-    window.setInterval(function () {
-      fotos[actual].classList.remove("es-visible");
-      if (puntos[actual]) puntos[actual].classList.remove("es-visible");
-      actual = (actual + 1) % fotos.length;
-      fotos[actual].classList.add("es-visible");
-      if (puntos[actual]) puntos[actual].classList.add("es-visible");
-    }, CADA_FOTO_MS);
-  }
-
-  function iniciarTodasLasFotos(raiz) {
-    raiz.querySelectorAll("[data-fotos]").forEach(iniciarFotos);
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    iniciarTodasLasFotos(document);
-  });
-
-  // Si HTMX trae una parte nueva de la página con fotos, también pasan.
-  document.addEventListener("htmx:load", function (evento) {
-    iniciarTodasLasFotos(evento.target);
   });
 
   /* 4. HTMX y la protección CSRF ------------------------------------------- */

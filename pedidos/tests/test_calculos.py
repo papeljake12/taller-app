@@ -274,17 +274,6 @@ def test_cotizador_como_en_el_diseno():
     )
 
 
-def test_trabajos_del_taller_son_los_pedidos_con_foto_del_mas_reciente(db, settings, tmp_path):
-    settings.MEDIA_ROOT = tmp_path
-    taller = ejemplos.cargar(hoy=DIA_DEL_DISENO)
-
-    trabajos = calculos.trabajos_del_taller(taller)
-
-    assert [p.detalle for p in trabajos] == [
-        "Vestido de grado a la medida", "15 polleras con blusa", "12 vestidos de fantasía",
-    ]
-
-
 # --- 2. Casos de docs/06-pruebas.md: plata ---------------------------------------------------
 
 

@@ -455,6 +455,6 @@ def test_cada_persona_lleva_su_id_dentro_de_una_lista_que_se_desplaza(pedido, du
 
     html = dibujar(pedido, duena, ver_personas=True)
 
-    assert '<div class="tallas__personas desplazable">' in html
+    assert '<div class="tallas__personas tallas__personas--alta">' in html
     assert f'<form class="fila fila--compacta" id="talla-{ana.pk}"' in html
     assert html.index('class="tallas__personas') < html.index(f'id="talla-{ana.pk}"')

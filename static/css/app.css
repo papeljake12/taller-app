@@ -3508,7 +3508,7 @@ button.casilla:active {
   border-top: 0;
 }
 
-.tallas__personas.desplazable {
+.tallas__personas--alta {
   max-height: 320px;
   overflow-y: auto;
 }

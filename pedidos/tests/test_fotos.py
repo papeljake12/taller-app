@@ -1,16 +1,12 @@
 """T13. Fotos: la foto del pedido (subir, cambiar y quitar) y "Trabajos del taller" en Hoy."""
 
 import json
-from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.template.loader import render_to_string
-from django.test import RequestFactory
 from django.urls import reverse
-from django.utils import timezone
 from PIL import Image
 
 from pedidos import fotos
@@ -437,77 +433,7 @@ def test_no_se_puede_quitar_la_foto_de_otro_taller(sesion_duena, ajeno):
     assert ajeno.foto and _existe(archivo)
 
 
-# --- "Trabajos del taller" en Hoy ------------------------------------------------------------
-
-
-def peticion(usuaria):
-    request = RequestFactory().get("/")
-    request.user = usuaria
-    request.taller = usuaria.taller
-    return request
-
-
-def tarjeta_trabajos(usuaria):
-    """La tarjeta como la dibuja Hoy, con la lista que le manda la vista."""
-    request = peticion(usuaria)
-    return render_to_string(
-        "pedidos/_trabajos.html", {"trabajos": fotos.trabajos(request)}, request
-    )
-
-
-def test_trabajos_trae_solo_las_fotos_del_taller(duena, taller, ajeno):
-    ahora = timezone.now()
-    viejo = fabricas.crear_pedido(
-        taller, detalle="Overoles de prueba", creado=ahora - timedelta(days=3)
-    )
-    nuevo = fabricas.crear_pedido(taller, detalle="Polleras de prueba", creado=ahora)
-    fabricas.crear_pedido(taller, detalle="Sin foto de prueba")
-    poner_foto(viejo)
-    poner_foto(nuevo)
-
-    lista = fotos.trabajos(peticion(duena))
-
-    assert [trabajo.nombre for trabajo in lista] == ["Polleras de prueba", "Overoles de prueba"]
-    assert lista[0].url == nuevo.foto.url
-    assert lista[0].descripcion == "Foto del trabajo: Polleras de prueba"
-    assert ajeno.foto.url not in [trabajo.url for trabajo in lista]
-
-
-def test_trabajos_trae_maximo_ocho(duena, taller):
-    for numero in range(10):
-        poner_foto(fabricas.crear_pedido(taller, detalle=f"Trabajo {numero} de prueba"))
-
-    assert len(fotos.trabajos(peticion(duena))) == 8
-
-
-def test_la_tarjeta_pasa_las_fotos_con_su_nombre_y_sus_puntos(duena, taller, ajeno):
-    for detalle in ("Vestido de grado de prueba", "Polleras de prueba"):
-        poner_foto(fabricas.crear_pedido(taller, detalle=detalle))
-
-    html = tarjeta_trabajos(duena)
-
-    assert ">Trabajos del taller</h2>" in html
-    assert "data-fotos" in html
-    assert html.count("data-foto>") == 2 and html.count("data-punto") == 2
-    assert '<figcaption class="fotos__nombre">Polleras de prueba</figcaption>' in html
-    assert 'alt="Foto del trabajo: Vestido de grado de prueba"' in html
-    assert ajeno.foto.url not in html
-    assert "Subir la primera foto" not in html
-
-
-def test_sin_fotos_la_tarjeta_invita_a_subir_la_primera(duena, ajeno):
-    html = tarjeta_trabajos(duena)
-
-    assert "Todavía no hay fotos de trabajos." in html
-    assert f'<a class="boton" href="{reverse("pedidos:lista")}">Subir la primera foto</a>' in html
-    assert ajeno.foto.url not in html
-
-
-def test_hoy_muestra_la_tarjeta_trabajos(sesion_duena):
-    html = sesion_duena.get(reverse("pedidos:hoy")).text
-
-    assert ">Trabajos del taller</h2>" in html
-    assert "Subir la primera foto" in html
+# --- Archivos -------------------------------------------------------------------------------
 
 
 def test_borrar_archivo_no_falla_si_no_hay_archivo(pedido):
@@ -517,19 +443,3 @@ def test_borrar_archivo_no_falla_si_no_hay_archivo(pedido):
     fotos.borrar_archivo(almacen, "")
     fotos.borrar_archivo(almacen, "pedidos/fotos/no-existe.jpg")
 
-
-# --- Agregado al unir la tanda 4 (Hoy recibe sus fotos) -------------------------------------
-
-
-def test_hoy_muestra_solo_las_fotos_del_taller(sesion_duena, pedido, ajeno):
-    poner_foto(pedido)
-    poner_foto(ajeno)
-    pedido.refresh_from_db()
-    ajeno.refresh_from_db()
-
-    html = sesion_duena.get("/").text
-
-    assert pedido.foto.url in html
-    assert ajeno.foto.url not in html
-    assert "Subir la primera foto" not in html
-    assert 'aria-labelledby="t-trabajos"' in html and 'id="t-trabajos"' in html
