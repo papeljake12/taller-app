@@ -396,6 +396,12 @@ Lo que cambió respecto a lo de arriba al construir la base. Manda esto si algo 
     dueña ("Te deben…"), y dejar las listas de cifras a las tarjetas**;
   - con una segunda pregunta que se podía contestar con lo que ya tenía, volvió a pedir una
     herramienta. Está bien (las cifras salen frescas), pero cuenta para el tiempo y el costo.
+- **Ajustes de la integración (T35):** `ClienteClaude.enviar` recibe además `plazo` (segundos
+  que le quedan a la pregunta; el ciclo lo pasa en cada vuelta). `ClienteAnthropic` espera
+  como mucho `min(45, plazo)` y solo deja el reintento si cabe entero: una pregunta nunca pasa
+  de `PLAZO_SEGUNDOS` (50). La vista anota en el registro vueltas, esfuerzo, `stop_reason` y
+  modelos. Con el panel abierto al lado (de 1024 a 1439 px), las columnas de la hoja pasan a
+  una (`app.css`, sección 9).
 - **Ícono propio y caja de Hoy** (decisión de David después de T26): el ícono `asistente` es
   un botón de costura con carita, y `.avatar-asistente` (símbolo `asistente-cara`, en círculo
   negro) va arriba del panel en vez del ícono de línea: `_panel.html` (carril D) copia la

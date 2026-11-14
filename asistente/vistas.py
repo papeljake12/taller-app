@@ -245,11 +245,15 @@ def _preguntar_a_claude(request, conv, pregunta, hoy):
     if not respuesta.cobrada:
         uso.devolver(taller, hoy)
     registro.info(
-        "pregunta taller=%s estado=%s cobrada=%s herramientas=%s entrada=%s salida=%s "
-        "cache_escritura=%s cache_lectura=%s segundos=%.1f",
+        "pregunta taller=%s estado=%s cobrada=%s vueltas=%s esfuerzo=%s parada=%s modelos=%s "
+        "herramientas=%s entrada=%s salida=%s cache_escritura=%s cache_lectura=%s segundos=%.1f",
         taller.pk,
         respuesta.estado,
         respuesta.cobrada,
+        respuesta.vueltas,
+        respuesta.esfuerzo,
+        respuesta.stop_reason,
+        ",".join(respuesta.modelos),
         len(respuesta.resultados),
         respuesta.uso.entrada,
         respuesta.uso.salida,

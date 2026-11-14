@@ -45,6 +45,7 @@ class ClienteClaude(Protocol):
         mensajes: list[dict],
         esfuerzo: str,
         sin_herramientas: bool = False,
+        plazo: float | None = None,
     ) -> RespuestaClaude: ...
 
 
@@ -88,6 +89,7 @@ class ClienteAnthropic:
         mensajes: list[dict],
         esfuerzo: str,
         sin_herramientas: bool = False,
+        plazo: float | None = None,
     ) -> RespuestaClaude:
         datos = {
             "model": settings.ASISTENTE_MODELO,
@@ -99,15 +101,30 @@ class ClienteAnthropic:
             "output_config": {"effort": esfuerzo},
             "cache_control": {"type": "ephemeral"},
         }
+        api = self._con_plazo(plazo)
         if settings.ASISTENTE_FALLBACKS:
             # Si Claude Opus 5.5 no quiere contestar por sus reglas de seguridad, la API
             # prueba sola con otro modelo dentro de la misma llamada.
-            respuesta = self.api.beta.messages.create(
+            respuesta = api.beta.messages.create(
                 **datos, betas=[BETA_RESPALDO], fallbacks="default"
             )
         else:
-            respuesta = self.api.messages.create(**datos)
+            respuesta = api.messages.create(**datos)
         return traducir(respuesta)
+
+    def _con_plazo(self, plazo):
+        """La conexión que no espera más que lo que le queda a la pregunta (T35).
+
+        Cada llamada espera como mucho 45 segundos, o lo que quede si es menos. El reintento
+        de la librería solo se deja si cabe entero en ese tiempo; si no, un corte da de una vez
+        el mensaje amable. Así una pregunta nunca pasa del plazo de conversacion.py, que queda
+        muy por debajo de los 120 segundos del servidor.
+        """
+        if plazo is None:
+            return self.api
+        espera = max(1.0, min(ESPERA_SEGUNDOS, plazo))
+        reintentos = REINTENTOS if plazo >= espera * (REINTENTOS + 1) else 0
+        return self.api.with_options(timeout=espera, max_retries=reintentos)
 
 
 def obtener_cliente() -> ClienteClaude | None:

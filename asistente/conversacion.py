@@ -146,15 +146,18 @@ def preguntar(*, cliente, ctx, mensajes, pregunta, pagina, herramientas=None) ->
         )
 
     while True:
-        if time.monotonic() - inicio >= PLAZO_SEGUNDOS:
+        queda = PLAZO_SEGUNDOS - (time.monotonic() - inicio)
+        if queda <= 0:
             return fin("error", MENSAJE_SIN_SERVICIO)
         try:
+            # Cada llamada espera como mucho lo que le queda a la pregunta (T35).
             respuesta = cliente.enviar(
                 sistema=sistema(),
                 herramientas=lista_de_herramientas,
                 mensajes=historial,
                 esfuerzo=nivel,
                 sin_herramientas=sin_herramientas,
+                plazo=queda,
             )
         except anthropic.BadRequestError:
             # El historial ya no le sirve a la API (por ejemplo, bloques thinking de otra

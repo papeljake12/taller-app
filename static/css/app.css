@@ -4066,6 +4066,29 @@ button.casilla:active {
   flex-direction: column;
   gap: 16px;
 }
+
+/* Con el panel abierto al lado, la hoja se angosta (en 1280 px queda de unos 690 px): las
+   columnas pasan a una, como en las pantallas medianas, para que nada se apriete (por ejemplo
+   los nombres de las etapas del pedido). Desde 1440 px cabe todo en dos columnas. */
+@media (min-width: 1024px) and (max-width: 1439.98px) {
+  .marco:has(> .asistente:not([hidden])) :is(.columnas, .dos-columnas, .dos-columnas--iguales) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .marco:has(> .asistente:not([hidden])) .ajuste {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .marco:has(> .asistente:not([hidden])) .cotizacion {
+    position: static;
+  }
+}
+
+/* Al llegar al final de la conversación, la hoja de atrás no se mueve (sobre todo en celular,
+   donde el panel la tapa). */
+.asistente__mensajes {
+  overscroll-behavior: contain;
+}
 /* --- Asistente (fin) --- */
 
 

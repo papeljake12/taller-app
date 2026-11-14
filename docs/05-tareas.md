@@ -104,7 +104,7 @@ Qué es: `docs/10-asistente.md`. Cómo se construye y qué prueba cada tarea:
 - [x] **T32. Cotizar** (carril C).
 - [x] **T33. Panel** (carril D).
 - [x] **T34. Uso y límites** (carril D).
-- [ ] **T35. Integración** (coordinador): prueba de punta a punta y capturas de la tanda 7.
+- [x] **T35. Integración** (coordinador): prueba de punta a punta y capturas de la tanda 7.
 - [ ] **T36. Prueba real con 20 preguntas** (a mano, con la clave): costo y tiempo de verdad.
 
 ## Etapas siguientes (todavía sin partir en tareas)

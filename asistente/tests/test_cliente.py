@@ -31,7 +31,12 @@ class LibreriaFalsa:
         self.pedidos = []  # (camino, datos)
         self.beta = SimpleNamespace(messages=SimpleNamespace(create=self._crear("beta")))
         self.messages = SimpleNamespace(create=self._crear("normal"))
+        self.con_opciones = []  # lo que se pidió con with_options (el plazo, T35)
         LibreriaFalsa.creados.append(self)
+
+    def with_options(self, **opciones):
+        self.con_opciones.append(opciones)
+        return self
 
     def _crear(self, camino):
         def crear(**datos):
@@ -244,3 +249,29 @@ def test_anthropic_se_arma_solo_en_cliente_py():
             encontrados.add(relativo.as_posix())
 
     assert encontrados <= {"asistente/cliente.py", "herramientas/humo_asistente.py"}
+
+
+# --- El plazo de cada llamada (T35) -------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("plazo", "espera", "reintentos"),
+    [
+        (100.0, 45.0, 1),  # cabe la llamada y su reintento
+        (50.0, 45.0, 0),  # 45 + 45 no cabe en 50: sin reintento
+        (20.0, 20.0, 0),  # queda poco: espera solo eso
+        (0.2, 1.0, 0),  # nunca menos de un segundo
+    ],
+)
+def test_cada_llamada_espera_como_mucho_lo_que_le_queda_a_la_pregunta(
+    libreria, plazo, espera, reintentos
+):
+    enviar(plazo=plazo)
+
+    assert libreria.creados[-1].con_opciones == [{"timeout": espera, "max_retries": reintentos}]
+
+
+def test_sin_plazo_usa_la_conexion_de_siempre(libreria):
+    enviar()
+
+    assert libreria.creados[-1].con_opciones == []

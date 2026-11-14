@@ -357,6 +357,8 @@ de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
   pregunta. Con el asistente apagado es el buscador de `diseno/hoy.html`, como antes.
 - **Computador (1024 px o más):** un panel blanco de 360 px a la derecha de la hoja, con el
   mismo margen de 4 px y las mismas esquinas de 16 px. La hoja se angosta para dejarle sitio.
+  Con el panel abierto y una pantalla de menos de 1440 px, las columnas de la hoja pasan a
+  una, como en las pantallas medianas, para que nada se apriete.
 - **Pantallas medianas (768 a 1023 px):** el panel flota encima de la hoja, a la derecha, con
   la sombra de las ventanas.
 - **Celular:** un botón redondo con el ícono. El panel ocupa toda la pantalla, encima de la
