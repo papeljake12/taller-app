@@ -791,7 +791,8 @@
   //   [data-asistente-sugerencia]  una sugerencia: la escribe y la envía;
   //   #asistente-mensajes          la conversación, que se desplaza por dentro;
   //   [data-asistente-bienvenida]  el saludo de la conversación vacía (se va con la primera
-  //                                pregunta).
+  //                                pregunta);
+  //   [data-asistente-caja]        la caja grande de Hoy: abre el panel y pregunta desde allá.
   // Ctrl J (o Cmd J) abre y cierra. Esc cierra si no hay una ventana ni un menú abierto.
   // Enter envía y Shift+Enter hace un salto de línea.
 
@@ -800,6 +801,7 @@
   const PANEL_AL_LADO = "(min-width: 1024px)";
   const SIN_RESPUESTA = "No pude contestar ahora. Intenta de nuevo en un rato.";
   let asistenteQuiereFoco = false;
+  let preguntaEnEspera = "";
 
   function panelAsistente() {
     return document.getElementById("asistente");
@@ -906,15 +908,17 @@
 
   // Enter envía; Shift+Enter (o mientras se escribe una tilde) hace salto de línea. La caja
   // crece con el texto hasta 120 px (el máximo lo pone app.css).
+  const CAJAS_ASISTENTE = "[data-asistente-form] textarea, [data-asistente-caja] textarea";
+
   document.addEventListener("keydown", function (evento) {
-    const caja = evento.target.closest && evento.target.closest("[data-asistente-form] textarea");
+    const caja = evento.target.closest && evento.target.closest(CAJAS_ASISTENTE);
     if (!caja || evento.key !== "Enter" || evento.shiftKey || evento.isComposing) return;
     evento.preventDefault();
     caja.closest("form").requestSubmit();
   });
 
   document.addEventListener("input", function (evento) {
-    const caja = evento.target.closest && evento.target.closest("[data-asistente-form] textarea");
+    const caja = evento.target.closest && evento.target.closest(CAJAS_ASISTENTE);
     if (!caja) return;
     caja.style.height = "auto";
     caja.style.height = caja.scrollHeight + "px";
@@ -967,6 +971,35 @@
     asistenteQuiereFoco = true;
   }, true);
 
+  // La caja grande de Hoy: la pregunta se pasa al panel y se envía desde allá. Si el panel
+  // todavía no ha llegado, espera a que llegue (htmx:afterSettle, abajo).
+  function enviarPreguntaEnEspera() {
+    const panel = panelAsistente();
+    const formulario = panel && panel.querySelector("[data-asistente-form]");
+    const caja = formulario && formulario.querySelector("textarea");
+    if (!preguntaEnEspera || !caja) return;
+    const pregunta = preguntaEnEspera;
+    preguntaEnEspera = "";
+    if (caja.disabled) return;  // sin preguntas: el panel ya dice cuándo vuelve
+    caja.value = pregunta;
+    formulario.requestSubmit();
+  }
+
+  document.addEventListener("submit", function (evento) {
+    const formulario = evento.target.closest("[data-asistente-caja]");
+    // Sin el panel o sin HTMX, el formulario lleva a la página del asistente.
+    if (!formulario || !panelAsistente() || !window.htmx) return;
+    evento.preventDefault();
+    const campo = formulario.querySelector("textarea");
+    const pregunta = campo ? campo.value.trim() : "";
+    if (!pregunta) return;
+    campo.value = "";
+    campo.style.height = "";
+    preguntaEnEspera = pregunta;
+    abrirAsistente();
+    enviarPreguntaEnEspera();
+  }, true);
+
   // HTMX ya tomó la pregunta: se vacía la caja.
   document.addEventListener("htmx:beforeRequest", function (evento) {
     const formulario = evento.target.closest && evento.target.closest("[data-asistente-form]");
@@ -988,6 +1021,7 @@
       asistenteQuiereFoco = false;
       enfocarAsistente(panel);
     }
+    if (preguntaEnEspera && !panel.hidden) enviarPreguntaEnEspera();
   });
 
   // Si la pregunta no llegó (sin internet, servidor caído), los tres puntos cambian por el

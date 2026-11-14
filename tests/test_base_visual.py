@@ -931,3 +931,44 @@ def test_los_iconos_del_asistente_estan_guardados():
     iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")
 
     assert '<symbol id="asistente"' in iconos and '<symbol id="enviar"' in iconos
+
+
+def test_con_el_asistente_la_caja_de_hoy_le_pregunta(sesion_duena, asistente_prendido):
+    html = sesion_duena.get("/").text
+    elementos = Elementos(html).elementos
+    caja, = [e for e in elementos if "data-asistente-caja" in e["atributos"]]
+    texto, = [e for e in elementos if e["atributos"].get("id") == "hoy-pregunta"]
+
+    assert "caja-grande--asistente" in caja["clases"]
+    assert caja["atributos"]["action"] == "/asistente/"
+    assert texto["etiqueta"] == "textarea"
+    assert texto["atributos"]["placeholder"] == "Pregúntale algo a tu asistente"
+    assert texto["atributos"]["maxlength"] == "500"
+    assert any("avatar-asistente" in e["clases"] for e in elementos)
+    # Los atajos de siempre siguen, y el buscador de la caja ya no está.
+    for atajo in ("Nuevo pedido", "Registrar abono", "Cotizar"):
+        assert atajo in caja["texto"]
+    assert 'placeholder="Busca un pedido o un cliente"' not in html
+
+
+def test_sin_el_asistente_la_caja_de_hoy_sigue_buscando(sesion_duena):
+    html = sesion_duena.get("/").text
+
+    assert 'placeholder="Busca un pedido o un cliente"' in html
+    assert "data-asistente-caja" not in html
+
+
+def test_la_caja_de_hoy_abre_el_panel_y_pregunta_desde_alla():
+    js = (ESTATICOS / "js/app.js").read_text("utf-8")
+    seccion = js[js.index("/* 14. Asistente"):]
+
+    assert "[data-asistente-caja]" in seccion
+    assert "preguntaEnEspera" in seccion and "formulario.requestSubmit()" in seccion
+
+
+def test_el_icono_del_asistente_es_el_boton_con_carita():
+    iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")
+
+    assert '<symbol id="asistente-cara"' in iconos
+    boton = re.search(r'<symbol id="asistente" [^>]*>(.*?)</symbol>', iconos).group(1)
+    assert '<circle cx="12" cy="12" r="8.5"/>' in boton

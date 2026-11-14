@@ -35,7 +35,7 @@ de 390 px de ancho, o abre `diseno/index.html`, que las muestra todas en 390 px.
 | `diseno/entrar.html` | Inicio de sesión |
 | `diseno/tallas-publico.html` | Formulario público de tallas |
 | `diseno/tallas-publico-listo.html` | Formulario público de tallas, ya enviado |
-| `diseno/asistente.html` | Asistente abierto encima de Hoy (tanda 7) |
+| `diseno/asistente.html` | Asistente abierto encima de Hoy, y Hoy con su caja para preguntarle (tanda 7) |
 | `diseno/asistente-limite.html` | Asistente sin preguntas por hoy (tanda 7) |
 
 Hoy, Pedidos, Pedido por dentro, la pantalla vacía y el celular de Hoy y de Pedidos salen
@@ -343,8 +343,18 @@ emojis ni librerías de íconos, ni los íconos de Shopify.
 Referencia: `diseno/asistente.html` y `diseno/asistente-limite.html`. Estilos en la sección 7
 de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
 
+- **Ícono propio** (lo escogió David el 14 de noviembre de 2026): un botón de costura con
+  carita; sus agujeros son los ojos. Como ícono de línea (`asistente`) va en el botón del
+  encabezado. Como **avatar** (`.avatar-asistente`: círculo negro de 24 px con la carita en
+  blanco, símbolo `asistente-cara`) va en la caja de Hoy y arriba del panel. Negro y no azul:
+  el azul sigue siendo solo para gráficas y "en proceso".
 - **Botón:** "Asistente" con su ícono, en el encabezado, a la izquierda del botón principal.
   Mientras el panel está abierto queda gris (presionado). Atajo: Ctrl J (Cmd J en Mac).
+- **La caja grande de Hoy** (como en Shopify, pedido de David): con el asistente prendido le
+  pregunta al asistente. Arriba "Pregúntale algo a tu asistente"; abajo el avatar, los atajos
+  de siempre (Nuevo pedido, Registrar abono, Cotizar) y el botón negro de enviar. En celular
+  va en una sola fila: avatar, texto y enviar. Lo que se escribe abre el panel con esa
+  pregunta. Con el asistente apagado es el buscador de `diseno/hoy.html`, como antes.
 - **Computador (1024 px o más):** un panel blanco de 360 px a la derecha de la hoja, con el
   mismo margen de 4 px y las mismas esquinas de 16 px. La hoja se angosta para dejarle sitio.
 - **Pantallas medianas (768 a 1023 px):** el panel flota encima de la hoja, a la derecha, con

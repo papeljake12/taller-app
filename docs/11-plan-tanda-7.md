@@ -381,6 +381,12 @@ Lo que cambió respecto a lo de arriba al construir la base. Manda esto si algo 
 - **La prueba corta** es `herramientas/humo_asistente.py` (fuera de pytest). Es el único
   lugar fuera de `asistente/cliente.py` donde aparece `Anthropic(`.
 - **La maqueta del límite** está en su propia página: `diseno/asistente-limite.html`.
+- **Ícono propio y caja de Hoy** (decisión de David después de T26): el ícono `asistente` es
+  un botón de costura con carita, y `.avatar-asistente` (símbolo `asistente-cara`, en círculo
+  negro) va arriba del panel en vez del ícono de línea: `_panel.html` (carril D) copia la
+  cabeza de `diseno/asistente.html`. La caja grande de Hoy, con el asistente prendido, es
+  `asistente/_caja_hoy.html` (de la base): `app.js` abre el panel y manda la pregunta con el
+  formulario del panel (`requestSubmit`), así que ese formulario no necesita nada especial.
 
 ## 2. Base del coordinador (T25 y T26, en orden, sin carriles)
 

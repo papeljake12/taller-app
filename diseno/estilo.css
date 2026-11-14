@@ -3385,6 +3385,54 @@ a.etapas__etapa:hover {
   cursor: not-allowed;
 }
 
+/* El avatar del asistente: un botón de costura con carita, en un círculo negro (el negro del
+   botón principal). Va en la caja de Hoy y arriba del panel. */
+.avatar-asistente {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--negro);
+  color: #FFFFFF;
+}
+
+/* La caja grande de Hoy con el asistente prendido: lo que se escribe se le pregunta. Arriba el
+   texto; abajo el avatar, los atajos y el botón de enviar. */
+.caja-grande--asistente {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "texto texto texto"
+    "avatar atajos enviar";
+  align-items: center;
+  gap: 14px 10px;
+}
+
+.caja-grande--asistente textarea {
+  grid-area: texto;
+  min-height: 20px;
+  max-height: 120px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 20px;
+  resize: none;
+}
+
+.caja-grande--asistente textarea:focus-visible {
+  outline: none;
+}
+
+.caja-grande--asistente textarea::placeholder {
+  color: var(--texto-3);
+}
+
+.caja-grande--asistente .avatar-asistente { grid-area: avatar; }
+.caja-grande--asistente .caja-grande__atajos { grid-area: atajos; }
+.caja-grande__enviar { grid-area: enviar; }
+
 /* Pantallas medianas: el panel flota encima de la hoja, a la derecha */
 @media (max-width: 1023.98px) and (min-width: 768px) {
   .asistente {
@@ -3443,6 +3491,24 @@ a.etapas__etapa:hover {
   .asistente__enviar {
     width: 36px;
     min-height: 36px;
+    border-radius: 50%;
+  }
+  /* La caja de Hoy en una sola fila: avatar, texto y enviar (sin los atajos) */
+  .caja-grande--asistente {
+    grid-template-areas: "avatar texto enviar";
+    gap: 10px;
+    padding: 6px 6px 6px 10px;
+  }
+
+  .caja-grande--asistente textarea {
+    min-height: 24px;
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .caja-grande__enviar {
+    width: 32px;
+    min-height: 32px;
     border-radius: 50%;
   }
 }

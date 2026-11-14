@@ -253,6 +253,8 @@ Lista cuando:
 - El botón "Asistente" sale en el encabezado de todas las pantallas, a la izquierda del
   principal, solo para la dueña, solo con la clave puesta y solo si David prendió el asistente
   de su taller. Ctrl J lo abre y lo cierra; Esc lo cierra.
+- En Hoy, la caja grande le pregunta al asistente (con su avatar y los atajos de siempre):
+  lo que se escribe abre el panel con esa pregunta. Con el asistente apagado sigue buscando.
 - Con la conversación vacía se ve el saludo y tres sugerencias que se pueden tocar.
 - Una pregunta muestra la burbuja enseguida, los tres puntos mientras busca y luego la
   respuesta, con lo que revisó arriba, las tarjetas con cifras y un enlace a la pantalla.
