@@ -1,1 +1,12 @@
-{% comment %}Carril A (T27 y T28). Tarjeta "pedidos" dentro de una respuesta. Recibe `tarjeta` (asistente.contratos.Tarjeta).{% endcomment %}
+{% comment %}
+Tarjeta "Pedidos" dentro de una respuesta del asistente (carril A, T27): lo que encontró
+buscar_pedidos. Las mismas filas de "Quién te debe" (diseno/asistente.html): el cliente con su
+insignia (enlace al pedido) y, a la derecha, la fecha de entrega o, si se buscaron los que
+tienen saldo, el saldo. Debajo, en gris, qué pidió. Hasta 6 filas y "y N más".
+Recibe `tarjeta` (asistente.contratos.Tarjeta o el mismo diccionario guardado en la sesión):
+  tarjeta.datos = {filas: [{cliente, detalle, fecha, saldo, url, etiqueta}], con_saldo, mas}
+  etiqueta = {texto, tono, circulo} (una calculos.Etiqueta) o None.
+{% endcomment %}{% load piezas %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+{% for fila in tarjeta.datos.filas %}<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="{{ fila.url }}">{{ fila.cliente }}{% if fila.etiqueta %} {% include "piezas/_etiqueta.html" with insignia=fila.etiqueta only %}{% endif %}</a>{% if tarjeta.datos.con_saldo %}<strong class="dinero">{{ fila.saldo|pesos }}</strong>{% else %}<span class="texto-2">{{ fila.fecha }}</span>{% endif %}<span class="texto-2">{{ fila.detalle }}</span></div>
+{% endfor %}{% if tarjeta.datos.mas %}<div class="fila-proporcion"><span class="fila-proporcion__nombre texto-2">y {{ tarjeta.datos.mas }} más</span></div>
+{% endif %}</section>

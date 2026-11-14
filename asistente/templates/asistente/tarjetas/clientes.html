@@ -1,1 +1,13 @@
-{% comment %}Carril A (T27 y T28). Tarjeta "clientes" dentro de una respuesta. Recibe `tarjeta` (asistente.contratos.Tarjeta).{% endcomment %}
+{% comment %}
+Tarjeta "Clientes" dentro de una respuesta del asistente (carril A, T27): las mismas filas de
+"Quién te debe" (diseno/asistente.html) con el cliente (enlace a Clientes con su nombre
+buscado) y, a la derecha, lo que debe como en la pantalla Clientes: el monto ("Vencida" en
+rojo si un pedido suyo va atrasado), "Cotización abierta" o "Al día" en gris. Debajo, su tipo.
+Hasta 6 filas y "y N más".
+Recibe `tarjeta` (asistente.contratos.Tarjeta o el mismo diccionario guardado en la sesión):
+  tarjeta.datos = {filas: [{nombre, tipo, url, debe, vencida, cotizacion_abierta,
+                            ha_comprado}], mas}
+{% endcomment %}{% load piezas %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+{% for fila in tarjeta.datos.filas %}<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="{{ fila.url }}">{{ fila.nombre }}{% if fila.vencida %} {% include "piezas/_etiqueta.html" with texto="Vencida" tono="rojo" only %}{% endif %}</a>{% if fila.debe %}<strong class="dinero">{{ fila.debe|pesos }}</strong>{% elif not fila.ha_comprado and fila.cotizacion_abierta %}<span class="texto-2">Cotización abierta</span>{% else %}<span class="texto-2">Al día</span>{% endif %}<span class="texto-2">{{ fila.tipo }}</span></div>
+{% endfor %}{% if tarjeta.datos.mas %}<div class="fila-proporcion"><span class="fila-proporcion__nombre texto-2">y {{ tarjeta.datos.mas }} más</span></div>
+{% endif %}</section>
