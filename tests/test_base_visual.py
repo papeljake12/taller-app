@@ -128,6 +128,13 @@ def test_ctrl_k_lleva_al_buscador(sesion_duena):
     assert 'evento.key.toLowerCase() === "k"' in js and "evento.metaKey" in js
 
 
+def test_lo_que_se_muestra_con_un_boton_deja_el_cursor_en_un_campo_visible():
+    # La fila del buscador de Pedidos empieza con un campo escondido (el filtro): el cursor va
+    # al primer campo que se ve, no a ese (se encontró probando en Chrome).
+    js = (ESTATICOS / "js/app.js").read_text("utf-8")
+    assert 'parte.querySelector("input:not([type=hidden]), select, textarea")' in js
+
+
 def test_el_menu_resalta_la_seccion_actual(sesion_duena):
     html = Elementos(sesion_duena.get("/").text)
 

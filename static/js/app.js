@@ -772,7 +772,7 @@
     parte.hidden = !parte.hidden;
     boton.setAttribute("aria-expanded", String(!parte.hidden));
     if (!parte.hidden) {
-      const campo = parte.querySelector("input, select, textarea");
+      const campo = parte.querySelector("input:not([type=hidden]), select, textarea");
       if (campo) campo.focus();
     }
   });
