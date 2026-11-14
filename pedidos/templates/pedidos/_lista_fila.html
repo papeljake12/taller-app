@@ -1,13 +1,20 @@
 {% load piezas %}{% comment %}
-Una fila de la tabla de pedidos. El nombre del cliente es el enlace que abre el pedido.
-`fila` sale de pedidos/vistas/lista.py (FilaPedido). La columna Saldo solo la ve la dueña (T21).
+Una fila de la tabla de pedidos (diseno/pedidos.html). En computador es una fila de tabla; en
+celular se vuelve la lista de la referencia (foto, cliente, total, insignias y "fecha · encargada"):
+las celdas con solo-tabla se esconden y las de solo-celular aparecen.
+`fila` sale de pedidos/vistas/lista.py (FilaPedido). Total y Pago solo los ve quien puede ver la
+plata (`puede_ver_plata`, T21): la costurera no los ve.
 Su id (pedido-12) no cambia: mientras se escribe en el buscador, solo entran y salen las filas
 que cambian (static/js/app.js, "Lo que entra y sale"); las que siguen se quedan quietas.
 {% endcomment %}{% with p=fila.pedido %}<tr class="tabla__fila" id="pedido-{{ p.pk }}">
-<td><a class="tabla__enlace" href="{% url 'pedidos:detalle' p.pk %}"><strong>{{ p.cliente.nombre }}</strong></a><br><span class="texto-2">{{ p.detalle }}</span></td>
-<td>{% include "piezas/_etiqueta.html" with texto=fila.etapa.texto tono=fila.etapa.tono %}</td>
-<td>{{ p.fecha_entrega|fecha_corta }}{% if fila.urgencia %}<br>{% include "piezas/_etiqueta.html" with texto=fila.urgencia.texto tono=fila.urgencia.tono %}{% endif %}</td>
-<td>{% if p.encargada %}{{ p.encargada.nombre }}{% else %}<span class="texto-2">Sin asignar</span>{% endif %}</td>
-<td>{{ fila.tallas_recibidas }} de {{ fila.tallas_esperadas }}</td>
-{% if puede_ver_plata %}<td class="num">{% if fila.cotizado %}<span class="texto-2">Cotizado en <span class="dinero">{{ p.total|pesos }}</span></span>{% elif fila.saldo %}<strong class="texto-rojo dinero">{{ fila.saldo|pesos }}</strong>{% else %}<strong class="texto-verde">Pagado</strong>{% endif %}</td>{% endif %}
+<td class="celda-mini solo-celular">{% include "piezas/_mini.html" with pedido=p grande=True %}</td>
+<td class="celda-cliente"><div class="tabla__cliente"><span class="solo-tabla">{% include "piezas/_mini.html" with pedido=p %}</span><a class="tabla__enlace" href="{% url 'pedidos:detalle' p.pk %}">{{ p.cliente.nombre }}</a></div></td>
+<td class="solo-tabla tabla__prenda">{{ p.detalle }}</td>
+<td class="solo-tabla">{% if fila.atrasado %}<span class="texto-atraso">{{ fila.fecha }} · {{ fila.entrega_nota }}</span>{% elif fila.entrega_nota %}{{ fila.fecha }} · <span class="texto-2">{{ fila.entrega_nota }}</span>{% else %}{{ fila.fecha }}{% endif %}</td>
+{% if puede_ver_plata %}<td class="num dinero celda-total">{{ p.total|pesos }}</td>
+<td class="solo-tabla">{% include "piezas/_etiqueta.html" with insignia=fila.pago %}</td>
+{% endif %}<td class="celda-etapa">{% if puede_ver_plata %}<span class="solo-celular">{% include "piezas/_etiqueta.html" with insignia=fila.pago %}</span>{% endif %}{% include "piezas/_etiqueta.html" with insignia=fila.etapa %}</td>
+<td class="solo-tabla">{{ fila.tallas_recibidas }} de {{ fila.tallas_esperadas }}</td>
+<td class="solo-tabla">{% if p.encargada %}{{ p.encargada.nombre }}{% else %}<span class="texto-2">Sin asignar</span>{% endif %}</td>
+<td class="celda-apoyo solo-celular">{{ fila.fecha }}{% if p.encargada %} · {{ p.encargada.nombre }}{% elif p.estado != "entregado" %} · Sin asignar{% endif %}</td>
 </tr>{% endwith %}

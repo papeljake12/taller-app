@@ -3427,6 +3427,31 @@ button.casilla:active {
 /* --- Hoy (fin) --- */
 
 /* --- Pedidos, Buscar y Nuevo pedido (inicio) --- */
+/* La fila del buscador de Pedidos: va escondida detrás de la lupa y sale entre las pestañas y la
+   tabla. En Buscar va sola, arriba de la tarjeta. */
+.buscador-fila {
+  padding: 8px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.buscador-fila[hidden] {
+  display: none;
+}
+
+.buscador-fila--sola {
+  border-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+  .buscador-fila {
+    padding: 0 16px 10px;
+    border-bottom: 0;
+  }
+
+  .buscador-fila--sola {
+    padding: 16px;
+  }
+}
 /* --- Pedidos, Buscar y Nuevo pedido (fin) --- */
 
 /* --- Pedido por dentro (inicio) --- */

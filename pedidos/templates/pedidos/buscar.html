@@ -1,35 +1,43 @@
 {% extends "base.html" %}{% load piezas %}
-{% comment %}Resultados del buscador del menú (T05): pedidos y clientes del taller, sin importar tildes ni mayúsculas.
-Cada cliente es una fila que se toca entera (fila--enlace con fila__enlace), como las de pedidos.
-En computador (pantalla fija) el buscador queda quieto arriba y las tarjetas de resultados
-(tarjeta--resultados) se reparten el alto que queda: si una lista es larga, se desplaza por
-dentro de su tarjeta (.desplazable). Cómo se reparten está en app.css, "Pedidos y Buscar".{% endcomment %}
+{% comment %}Resultados del buscador del menú (T05): pedidos y clientes del taller, sin importar tildes
+ni mayúsculas. Mismo lenguaje que Pedidos: una tarjeta con el buscador y, debajo, una tarjeta de
+pedidos (la misma tabla) y otra de clientes (solo la dueña). Cada cliente es una fila que se toca
+entera y lleva a Clientes.{% endcomment %}
 {% block pestana %}Buscar{% endblock %}
 {% block titulo %}Buscar{% endblock %}
+{% block icono_titulo %}{% icono "buscar" %}{% endblock %}
+{% block clase_hoja %} hoja--completa{% endblock %}
 {% block apoyo %}{% if q %}<span class="encabezado__apoyo">«{{ q }}»</span>{% endif %}{% endblock %}
 {% block acciones %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
-<section class="tarjeta tarjeta--lista tarjeta--con-buscador" aria-labelledby="t-buscar">
+<section class="tarjeta" aria-labelledby="t-buscar">
 <h2 class="oculto" id="t-buscar">{% if es_duena %}Buscar pedidos y clientes{% else %}Buscar pedidos{% endif %}</h2>
+<div class="buscador-fila buscador-fila--sola">
 <form role="search" action="{% url 'pedidos:buscar' %}">
 <label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">{% if es_duena %}Buscar pedidos y clientes{% else %}Buscar pedidos{% endif %}</span><input type="search" name="q" value="{{ q }}" placeholder="Buscar por cliente, prenda o encargada" autocomplete="off"></label>
 </form>
+</div>
 {% if not q %}<p class="tarjeta__nota">Escribe el nombre de un cliente, una prenda o una encargada. No importan las tildes ni las mayúsculas.</p>
 {% elif not filas and not clientes %}<p class="tarjeta__nota">No hay {% if es_duena %}pedidos ni clientes{% else %}pedidos{% endif %} que coincidan con «{{ q }}». Revisa cómo lo escribiste o busca con menos letras.</p>
 {% endif %}
 </section>
 {% if filas %}
-<section class="tarjeta tarjeta--lista tarjeta--resultados" aria-labelledby="t-pedidos">
+<section class="tarjeta tarjeta--recortada tarjeta--lista-celular" aria-labelledby="t-pedidos">
 <div class="tarjeta__cabeza"><h2 id="t-pedidos">Pedidos</h2><span class="tarjeta__aparte">{{ filas|length }} pedido{{ filas|length|pluralize }}</span></div>
-{% include "pedidos/_lista_tabla.html" with id_tabla="resultados-pedidos" %}
+{% include "pedidos/_lista_tabla.html" with id_tabla="resultados-pedidos" sin_pie=True %}
 </section>
 {% endif %}
 {% if clientes %}
-<section class="tarjeta tarjeta--lista tarjeta--resultados" aria-labelledby="t-clientes">
+<section class="tarjeta tarjeta--recortada tarjeta--lista-celular" aria-labelledby="t-clientes">
 <div class="tarjeta__cabeza"><h2 id="t-clientes">Clientes</h2><span class="tarjeta__aparte">{{ clientes|length }} cliente{{ clientes|length|pluralize }}</span></div>
-<div class="desplazable">
-{% for cliente in clientes %}<div class="fila fila--compacta fila--enlace"><div class="fila__texto"><a class="fila__enlace" href="{% url 'pedidos:clientes' %}?q={{ cliente.nombre|urlencode }}"><strong>{{ cliente.nombre }}</strong></a> <span class="texto-2">· {{ cliente.get_tipo_display }}</span></div></div>
-{% endfor %}</div>
+<div class="tabla-contenedor">
+<table class="tabla">
+<thead><tr><th scope="col">Cliente</th><th scope="col">Tipo</th></tr></thead>
+<tbody>
+{% for cliente in clientes %}<tr class="tabla__fila"><td><a class="tabla__enlace" href="{% url 'pedidos:clientes' %}?q={{ cliente.nombre|urlencode }}"><strong>{{ cliente.nombre }}</strong></a></td><td class="texto-2">{{ cliente.get_tipo_display }}</td></tr>
+{% endfor %}</tbody>
+</table>
+</div>
 </section>
 {% endif %}
 {% endblock %}
