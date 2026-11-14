@@ -806,3 +806,10 @@ def test_nueva_conversacion_sin_preguntas_muestra_el_aviso(sesion_duena, prendid
 
     assert '<p class="mensaje__limite">' in html
     assert "data-asistente-sugerencia" not in html
+
+
+def test_el_navegador_nunca_guarda_el_panel(sesion_duena, prendido):
+    # El panel cambia con cada pregunta y trae datos del taller: siempre se pide de nuevo.
+    respuesta = sesion_duena.get("/asistente/", **HTMX)
+
+    assert "no-store" in respuesta["Cache-Control"]

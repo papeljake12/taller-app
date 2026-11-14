@@ -34,6 +34,7 @@ from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.template.loader import get_template, render_to_string
 from django.utils import timezone
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_POST
 
 from asistente import cliente, conversacion, esquemas, instrucciones, pagina, uso
@@ -195,6 +196,7 @@ def _pagina(request, conv, cupo, extra=None):
     return render(request, "asistente/pagina.html", _contexto_panel(request, conv, cupo, extra))
 
 
+@never_cache
 @require_GET
 @solo_duena
 def panel(request):
@@ -274,6 +276,7 @@ def _preguntar_a_claude(request, conv, pregunta, hoy):
     return turno, True
 
 
+@never_cache
 @require_POST
 @solo_duena
 def preguntar(request):
@@ -324,6 +327,7 @@ def preguntar(request):
     return HttpResponse("".join(partes))
 
 
+@never_cache
 @require_POST
 @solo_duena
 def nueva(request):
