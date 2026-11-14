@@ -3437,6 +3437,20 @@ button.casilla:active {
 /* --- Clientes (fin) --- */
 
 /* --- Cotizador (inicio) --- */
+
+/* La tarjeta del resultado: el total grande pegado a su título, como en diseno/cotizador.html */
+.cotizacion > .tarjeta__cuerpo {
+  gap: 2px;
+  padding-top: 14px;
+}
+
+.cotizacion > .tarjeta__cuerpo h2 {
+  font-weight: 450;
+}
+
+.cotizacion .cuentas {
+  padding-bottom: 8px;
+}
 /* --- Cotizador (fin) --- */
 
 /* --- Telas (inicio) --- */

@@ -105,6 +105,8 @@ class FormularioCotizacion(forms.Form):
         queryset=PrendaGuardada.objects.none(),
         required=False,
         empty_label="Mis prendas guardadas",
+        # Escondido: la elección se hace con los botones del menú "Mis prendas guardadas".
+        widget=forms.HiddenInput,
         error_messages={"invalid_choice": "Elige una de tus prendas guardadas."},
     )
     # La prenda guardada que ya se pasó a los campos. Si `guardada` cambia, hay que pasarla.

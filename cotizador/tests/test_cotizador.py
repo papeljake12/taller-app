@@ -87,7 +87,7 @@ def valor_de(html, nombre):
 
 def boton(html, texto):
     """La etiqueta de apertura del botón (o enlace) que dice `texto`."""
-    return re.search(rf'<(?:button|a)\b[^>]*>(?=[^<]*{texto})', html).group(0)
+    return re.search(rf'<(?:button|a)\b[^>]*>(?=(?:<svg[^>]*>(?:(?!</svg>).)*</svg>)?[^<]*{texto})', html, re.S).group(0)
 
 
 def aviso_corto(respuesta):
@@ -114,7 +114,7 @@ def camisa(taller):
 def test_la_pantalla_abre_con_las_tarjetas_y_los_textos_del_diseno(sesion_duena):
     html = sesion_duena.get(URL_INICIO).text
 
-    assert "<h1>Cotizador</h1>" in html
+    assert "Cotizador</h1>" in html
     assert "El precio se actualiza mientras escribes" in html
     for titulo in ("Para quién", "Qué prenda", "Cuánto cuesta hacer una", "Tu ganancia"):
         assert f">{titulo}</h2>" in html
@@ -152,9 +152,10 @@ def test_empieza_vacio_con_30_de_ganancia_50_de_abono_y_empresa(sesion_duena):
 def test_empezar_de_nuevo_abre_la_pantalla_vacia_tambien_en_celular(sesion_duena):
     html = sesion_duena.get(URL_INICIO).text
 
-    # Uno en el encabezado (computador) y otro al comienzo del contenido (celular).
-    assert html.count(f'<a class="boton" href="{URL_INICIO}">Empezar de nuevo</a>') == 2
-    assert '<div class="navegacion-mes"><a class="boton"' in html
+    # Uno solo, en el encabezado: en celular se vuelve redondo, con el ícono de cerrar.
+    assert html.count("Empezar de nuevo</span>") == 1
+    assert f'<a class="boton boton--redondo-celular" href="{URL_INICIO}">' in html
+    assert "navegacion-mes" not in html
 
 
 def test_el_formulario_se_calcula_mientras_se_escribe(sesion_duena):
@@ -184,8 +185,9 @@ def test_la_camisa_polo_da_las_cifras_del_diseno(sesion_duena):
     assert total(html) == "$ 1.090.000"
     for nombre, valor in CIFRAS_DEL_DISENO.items():
         assert renglon(html, nombre) == valor
-    ganancia = re.search(r"Tu ganancia en el pedido</span><strong[^>]*>", html).group(0)
-    assert "texto-verde" in ganancia
+    # La ganancia ya no va en verde y solo el precio por unidad va en negrita.
+    assert "texto-verde" not in html
+    assert 'class="dinero fuerte">$ 54.500' in html and html.count("fuerte") == 1
     assert "disabled" not in boton(html, "Crear pedido con esta cotización")
     assert "Escribe la prenda, la cantidad" not in html
 
@@ -193,7 +195,7 @@ def test_la_camisa_polo_da_las_cifras_del_diseno(sesion_duena):
 def test_sin_javascript_calcular_devuelve_la_pagina_entera(sesion_duena):
     html = sesion_duena.post(URL_CALCULAR, CAMISA_POLO).text
 
-    assert "<h1>Cotizador</h1>" in html
+    assert "Cotizador</h1>" in html
     assert total(html) == "$ 1.090.000"
     assert valor_de(html, "metros") == "1,2" and valor_de(html, "cliente") == "Panadería El Trigal"
 
@@ -315,13 +317,32 @@ def test_mis_prendas_muestra_solo_las_del_taller(sesion_duena, taller, camisa):
 
     html = sesion_duena.get(URL_INICIO).text
 
-    assert '<label class="oculto" for="cot-guardada">Mis prendas guardadas</label>' in html
-    assert f'<option value="{camisa.pk}">Camisa polo bordada</option>' in html
+    assert '<details class="desplegable desplegable--izquierda"><summary class="boton boton--plano"' in html
+    assert re.search(
+        rf'<button type="submit" class="desplegable__opcion" name="elegir" value="{camisa.pk}">'
+        r"Camisa polo bordada</button>", html)
     assert "Prenda de otro taller" not in html
 
 
-def test_sin_prendas_guardadas_no_sale_la_lista(sesion_duena):
-    assert 'name="guardada"' not in sesion_duena.get(URL_INICIO).text
+def test_sin_prendas_guardadas_el_menu_dice_como_guardar_la_primera(sesion_duena):
+    html = sesion_duena.get(URL_INICIO).text
+
+    assert 'name="guardada"' not in html and "desplegable__opcion" not in html
+    assert "Todavía no tienes prendas guardadas." in html
+    assert "Guardar esta prenda en mi lista" in html
+
+
+def test_elegir_una_opcion_del_menu_pasa_sus_costos_a_los_campos(sesion_duena, camisa):
+    """Cada opción del menú es un botón `elegir` que manda el formulario entero."""
+    datos = {"elegir": camisa.pk, "aplicada": "", "cantidad": "20", "ganancia": "30",
+             "abono": "50", "tipo": "empresa"}
+
+    html = sesion_duena.post(URL_CALCULAR, datos, headers=HTMX).text
+
+    assert valor_de(html, "prenda") == "Camisa polo bordada"
+    assert valor_de(html, "guardada") == str(camisa.pk)
+    assert 'value="%s" aria-current="true"' % camisa.pk in html
+    assert total(html) == "$ 1.090.000"
 
 
 def test_elegir_una_prenda_pasa_sus_costos_a_los_campos(sesion_duena, camisa):
@@ -334,7 +355,7 @@ def test_elegir_una_prenda_pasa_sus_costos_a_los_campos(sesion_duena, camisa):
     assert respuesta.headers["HX-Retarget"] == "#cotizador"
     assert respuesta.headers["HX-Reswap"] == "outerHTML"
     html = respuesta.text
-    assert html.lstrip().startswith('<form class="dos-columnas" id="cotizador"')
+    assert html.lstrip().startswith('<form class="columnas" id="cotizador"')
     assert valor_de(html, "prenda") == "Camisa polo bordada"
     assert valor_de(html, "metros") == "1,2"
     assert valor_de(html, "precio_metro") == "18000"
@@ -345,7 +366,7 @@ def test_elegir_una_prenda_pasa_sus_costos_a_los_campos(sesion_duena, camisa):
     # Lo que ya estaba escrito se queda.
     assert valor_de(html, "cliente") == "Panadería El Trigal"
     assert valor_de(html, "cantidad") == "20"
-    assert f'<option value="{camisa.pk}" selected>' in html
+    assert f'value="{camisa.pk}" aria-current="true"' in html
     assert total(html) == "$ 1.090.000"
     for nombre, valor in CIFRAS_DEL_DISENO.items():
         assert renglon(html, nombre) == valor
@@ -355,7 +376,7 @@ def test_elegir_una_prenda_pasa_sus_costos_a_los_campos(sesion_duena, camisa):
 def test_sin_javascript_la_prenda_elegida_se_pasa_al_tocar_calcular(sesion_duena, camisa):
     html = sesion_duena.post(URL_CALCULAR, {"guardada": camisa.pk, "cantidad": "20"}).text
 
-    assert "<h1>Cotizador</h1>" in html
+    assert "Cotizador</h1>" in html
     assert valor_de(html, "metros") == "1,2" and valor_de(html, "aplicada") == str(camisa.pk)
 
 
@@ -415,7 +436,7 @@ def test_guardar_esta_prenda_la_agrega_a_mis_prendas(sesion_duena, taller):
     assert "HX-Retarget" not in respuesta.headers
     # Con JavaScript, "Prenda guardada en tu lista." sale en el aviso corto (ver abajo).
     assert aviso_corto(respuesta) == "Prenda guardada en tu lista."
-    assert f'<option value="{prenda.pk}" selected>' in html
+    assert f'value="{prenda.pk}" aria-current="true"' in html
     assert valor_de(html, "cliente") == "Panadería El Trigal"
 
 
@@ -478,7 +499,7 @@ def test_guardar_sin_javascript_devuelve_la_pagina_entera(sesion_duena):
     html = respuesta.text
 
     # Sin JavaScript no hay aviso corto: el texto sale como nota en "Qué prenda".
-    assert "<h1>Cotizador</h1>" in html
+    assert "Cotizador</h1>" in html
     assert '<p class="nota" role="status">Prenda guardada en tu lista.</p>' in html
     assert "HX-Trigger" not in respuesta.headers
 
@@ -646,7 +667,7 @@ def test_crear_pedido_sin_lo_necesario_lo_pide(sesion_duena, taller, cambios, me
     respuesta = sesion_duena.post(URL_CREAR, con(**cambios), headers=BOTON)
 
     assert respuesta.status_code == 422
-    assert respuesta.text.lstrip().startswith('<form class="dos-columnas" id="cotizador"')
+    assert respuesta.text.lstrip().startswith('<form class="columnas" id="cotizador"')
     assert mensaje in respuesta.text
     assert "Revisa los campos marcados." in respuesta.text
     assert not Pedido.objects.filter(taller=taller).exists()
@@ -686,7 +707,7 @@ def test_crear_pedido_sin_lo_necesario_y_sin_javascript_muestra_la_pagina(sesion
     respuesta = sesion_duena.post(URL_CREAR, con(cliente=""))
 
     assert respuesta.status_code == 422
-    assert "<h1>Cotizador</h1>" in respuesta.text
+    assert "Cotizador</h1>" in respuesta.text
     assert "Escribe el nombre del cliente para crear el pedido." in respuesta.text
 
 
@@ -756,7 +777,8 @@ def test_quitar_de_mi_lista_y_su_pregunta_llevan_id(sesion_duena, camisa):
     assert "quitar-de-mi-lista" not in ids(pregunta)
     # Al irse el botón que se tocó, el cursor queda en algo que sigue en la pantalla.
     assert 'data-foco-despues="quitar-de-mi-lista"' in boton(pregunta, "Cancelar")
-    assert 'data-foco-despues="cot-guardada"' in boton(pregunta, "Sí, quitar la prenda")
+    assert 'data-foco-despues="mis-prendas"' in boton(pregunta, "Sí, quitar la prenda")
+    assert 'id="mis-prendas"' in pregunta
 
 
 def test_guardar_la_prenda_con_javascript_avisa_sin_repetir_la_nota(sesion_duena):
@@ -799,7 +821,7 @@ def test_quitar_la_prenda_sin_javascript_lo_dice_en_la_tarjeta(sesion_duena, cam
 
     respuesta = sesion_duena.post(url_quitar(camisa), datos)
 
-    assert "<h1>Cotizador</h1>" in respuesta.text
+    assert "Cotizador</h1>" in respuesta.text
     assert '<p class="nota" role="status">Prenda quitada de tu lista.</p>' in respuesta.text
     assert "HX-Trigger" not in respuesta.headers
 
