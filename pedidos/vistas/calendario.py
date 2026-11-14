@@ -60,19 +60,27 @@ def texto_del_dia(dia):
 
 
 def tono_en_el_dia(pedido, hoy):
-    """El color de la entrega en su día, como la leyenda: entregado (verde), atrasado (rojo)
+    """El tono de la entrega en su día, como la leyenda: entregado (gris), atrasado (rojo)
     o por entregar (ámbar, también los cotizados)."""
     if pedido.estado == Estado.ENTREGADO:
-        return "verde"
+        return "gris"
     if calculos.esta_atrasado(pedido, hoy):
         return "rojo"
     return "ambar"
+
+
+# El circulito de cada tono: entregado lleno, atrasado con alerta, por entregar vacío.
+CIRCULO_DEL_TONO = {"gris": "lleno", "rojo": "alerta", "ambar": "vacio"}
 
 
 @dataclass(frozen=True)
 class EntregaDelDia:
     pedido: Pedido
     tono: str
+
+    @property
+    def circulo(self):
+        return CIRCULO_DEL_TONO[self.tono]
 
 
 @dataclass(frozen=True)

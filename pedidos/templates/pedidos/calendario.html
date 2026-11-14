@@ -5,30 +5,25 @@ sirve, el de hoy) y, con ?dia=AAAA-MM-DD, solo las entregas de ese día en la li
 Las partes que cambian al tocar un día viven aparte, porque la vista las devuelve solas
 (pedidos/vistas/calendario.py):
   _calendario_dias (la cuadrícula del mes) y _calendario_entregas (la lista de entregas).
-En computador la pantalla es fija (.llenar, docs/08-diseno.md): las dos columnas llegan
-hasta abajo, las semanas del mes se reparten el alto de su tarjeta y, si las entregas no
-caben, se desplaza solo su lista (apartado "Calendario" de static/css/app.css).
+"Hoy" y las flechas del mes van en la cabeza de la tarjeta del mes.
 {% endcomment %}
 {% block pestana %}Calendario{% endblock %}
 {% block titulo %}Calendario{% endblock %}
-{% block apoyo %}<span class="encabezado__apoyo">{{ mes|mes_y_anio }}</span>{% endblock %}
-{% block acciones %}<a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a>{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
+{% block acciones %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
-<nav class="navegacion-mes" aria-label="Cambiar de mes"><a class="boton" href="?mes={{ mes_anterior }}">Mes anterior</a><a class="boton" href="?mes={{ mes_siguiente }}">Mes siguiente</a></nav>
-<div class="dos-columnas dos-columnas--calendario llenar">
-<section class="tarjeta tarjeta--lista columna-ancha columna-ancha--calendario" aria-labelledby="t-mes">
-<h2 class="oculto" id="t-mes">{{ mes|mes_y_anio }}</h2>
+<div class="columnas">
+<section class="tarjeta tarjeta--recortada" aria-labelledby="t-mes">
+<div class="tarjeta__cabeza" style="padding-bottom: 12px"><h2 id="t-mes">{{ mes|mes_y_anio }}</h2><div class="tarjeta__aparte"><a class="boton" href="{% url 'pedidos:calendario' %}">Hoy</a><span class="grupo-botones"><a class="boton boton--icono" href="?mes={{ mes_anterior }}" aria-label="Mes anterior" title="Mes anterior">{% icono "atras" 16 %}</a><a class="boton boton--icono" href="?mes={{ mes_siguiente }}" aria-label="Mes siguiente" title="Mes siguiente">{% icono "adelante" 16 %}</a></span></div></div>
 {# Sin JavaScript, cada día con entregas envía este formulario con su ?dia=. #}
 <form id="calendario-elegir-dia" action="{% url 'pedidos:calendario' %}" method="get"><input type="hidden" name="mes" value="{{ texto_mes }}"></form>
 {% include "pedidos/_calendario_dias.html" %}
-{# Cada cuadrito va con su palabra en un mismo .calendario__clave, para que no se separen al partirse la línea. #}
-<div class="calendario__leyenda"><span class="calendario__clave"><span class="etiqueta etiqueta--ambar" aria-hidden="true">&nbsp;</span> Por entregar</span><span class="calendario__clave"><span class="etiqueta etiqueta--rojo" aria-hidden="true">&nbsp;</span> Atrasado</span><span class="calendario__clave"><span class="etiqueta etiqueta--verde" aria-hidden="true">&nbsp;</span> Entregado</span></div>
+<div class="calendario__leyenda"><span class="etiqueta etiqueta--ambar etiqueta--vacio">Por entregar</span><span class="etiqueta etiqueta--rojo etiqueta--alerta">Atrasado</span><span class="etiqueta etiqueta--gris etiqueta--lleno">Entregado</span></div>
 </section>
-<div class="columna-angosta columna-angosta--calendario columna">
+<div class="columna">
 {% include "pedidos/_calendario_entregas.html" %}
-<section class="tarjeta tarjeta--lista" aria-labelledby="t-semana">
+<section class="tarjeta" aria-labelledby="t-semana">
 <div class="tarjeta__cabeza"><h2 id="t-semana">Semana más cargada</h2></div>
-<div class="tarjeta__cuerpo"><p class="texto-2">{{ frase_semana }}</p></div>
+<p class="tarjeta__nota">{{ frase_semana }}</p>
 </section>
 </div>
 </div>
