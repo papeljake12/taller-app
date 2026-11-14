@@ -1,1 +1,11 @@
-{% comment %}Carril A (T27 y T28). Tarjeta "quien_debe" dentro de una respuesta. Recibe `tarjeta` (asistente.contratos.Tarjeta).{% endcomment %}
+{% comment %}
+Tarjeta "Quién te debe" dentro de una respuesta del asistente (carril A, T28). Copia la de
+diseno/asistente.html: una fila por cliente con su nombre (enlace a sus pedidos con saldo) y lo
+que debe; "Vencida" en rojo si tiene un pedido atrasado. Hasta 6 filas y "y N más".
+Recibe `tarjeta` (asistente.contratos.Tarjeta o el mismo diccionario guardado en la sesión):
+  tarjeta.datos = {por_cobrar, filas: [{cliente, saldo, vencida, url}], mas}
+Lo arma asistente/herramientas/plata.py (quien_debe). Las cifras vienen de pedidos/calculos.py.
+{% endcomment %}{% load piezas %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+{% for fila in tarjeta.datos.filas %}<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="{{ fila.url }}">{{ fila.cliente }}{% if fila.vencida %} {% include "piezas/_etiqueta.html" with texto="Vencida" tono="rojo" only %}{% endif %}</a><strong class="dinero">{{ fila.saldo|pesos }}</strong></div>
+{% endfor %}{% if tarjeta.datos.mas %}<div class="fila-proporcion"><span class="fila-proporcion__nombre texto-2">y {{ tarjeta.datos.mas }} más</span></div>
+{% endif %}</section>
