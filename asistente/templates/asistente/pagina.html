@@ -8,7 +8,7 @@ ya es el asistente. Va en una tarjeta y no con la clase "asistente": en celular 
 pone encima de todo, y aquí la barra de abajo le taparía la caja.
 {% endcomment %}
 {% block pestana %}Asistente{% endblock %}
-{% block icono_titulo %}{% icono "asistente" %}{% endblock %}
+{% block icono_titulo %}{% include "piezas/esfera.html" with tamano="chica" only %}{% endblock %}
 {% block titulo %}Asistente{% endblock %}
 {% block contenido %}
 <section class="tarjeta" aria-labelledby="asistente-titulo">

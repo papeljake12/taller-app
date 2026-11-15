@@ -16,7 +16,7 @@ Recibe `turnos`, `aviso_larga`, `sugerencias` y `cupo` (asistente.uso.Cupo). Sin
 (`cupo.agotado`), la caja queda apagada y dice cuándo vuelve. Con `solo_caja` dibuja solo la
 caja, con hx-swap-oob: "preguntar" la manda así cuando se acaban las preguntas.
 {% endcomment %}{% if not solo_caja %}<header class="asistente__cabeza">
-<h2 class="asistente__titulo" id="asistente-titulo"><span class="avatar-asistente" aria-hidden="true">{% icono "asistente-cara" 18 "2" %}</span>Asistente</h2>
+<h2 class="asistente__titulo" id="asistente-titulo">{% include "piezas/esfera.html" with clase="avatar-asistente" viva=True only %}Asistente</h2>
 <span class="etiqueta etiqueta--gris">Solo consulta</span>
 <div class="asistente__acciones">
 <button type="submit" form="asistente-nueva" class="boton boton--icono boton--plano asistente__boton" aria-label="Nueva conversación" title="Nueva conversación">{% icono "sumar" 16 %}</button>

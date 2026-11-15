@@ -404,7 +404,8 @@ Lo que cambió respecto a lo de arriba al construir la base. Manda esto si algo 
   una (`app.css`, sección 9).
 - **Ícono propio y caja de Hoy** (decisión de David después de T26): el ícono `asistente` es
   un botón de costura con carita, y `.avatar-asistente` (símbolo `asistente-cara`, en círculo
-  negro) va arriba del panel en vez del ícono de línea: `_panel.html` (carril D) copia la
+  negro) va arriba del panel en vez del ícono de línea (el 2026-11-15 los dos se cambiaron por
+  la esfera de Lucy, T37; ver `docs/08-diseno.md`): `_panel.html` (carril D) copia la
   cabeza de `diseno/asistente.html`. La caja grande de Hoy, con el asistente prendido, es
   `asistente/_caja_hoy.html` (de la base): `app.js` abre el panel y manda la pregunta con el
   formulario del panel (`requestSubmit`), así que ese formulario no necesita nada especial.

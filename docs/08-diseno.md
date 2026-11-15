@@ -343,11 +343,16 @@ emojis ni librerías de íconos, ni los íconos de Shopify.
 Referencia: `diseno/asistente.html` y `diseno/asistente-limite.html`. Estilos en la sección 7
 de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
 
-- **Ícono propio** (lo escogió David el 14 de noviembre de 2026): un botón de costura con
-  carita; sus agujeros son los ojos. Como ícono de línea (`asistente`) va en el botón del
-  encabezado. Como **avatar** (`.avatar-asistente`: círculo negro de 24 px con la carita en
-  blanco, símbolo `asistente-cara`) va en la caja de Hoy y arriba del panel. Negro y no azul:
-  el azul sigue siendo solo para gráficas y "en proceso".
+- **Ícono: la esfera de Lucy** (pedido de David del 15 de noviembre de 2026; reemplaza al
+  botón de costura con carita del día 14). Es el mismo circulito azul de Lucy, el producto de
+  David: tinta azul que se mueve en agua, mate, con un filo claro alrededor. Pieza
+  `templates/piezas/esfera.html`, la dibuja `static/js/esfera.js` y sus estilos están en la
+  sección 7 ("La esfera"). Sin JavaScript se ve el azul de fondo (`#1463FF`). Mide 24 px como
+  **avatar** (`.avatar-asistente`: la caja de Hoy y arriba del panel), 20 px en el botón
+  redondo del celular y 16 px en el botón "Asistente" del encabezado y en el título de su
+  página. Solo la de arriba del panel se mueve; mientras el asistente revisa los datos late
+  despacio y la tinta corre más rápido. Con "menos movimiento" queda quieta. Es la única
+  excepción al azul de "gráficas y en proceso": es la marca del asistente, no un estado.
 - **Botón:** "Asistente" con su ícono, en el encabezado, a la izquierda del botón principal.
   Mientras el panel está abierto queda gris (presionado). Atajo: Ctrl J (Cmd J en Mac).
 - **La caja grande de Hoy** (como en Shopify, pedido de David): con el asistente prendido le

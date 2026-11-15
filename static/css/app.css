@@ -2661,7 +2661,8 @@ a.etapas__etapa:hover {
     letter-spacing: -0.02em;
   }
 
-  .encabezado__nombre > .icono {
+  .encabezado__nombre > .icono,
+  .encabezado__nombre > .esfera {
     display: none;
   }
 
@@ -3393,18 +3394,48 @@ a.etapas__etapa:hover {
   cursor: not-allowed;
 }
 
-/* El avatar del asistente: un botón de costura con carita, en un círculo negro (el negro del
-   botón principal). Va en la caja de Hoy y arriba del panel. */
-.avatar-asistente {
-  display: inline-grid;
-  place-items: center;
+/* La esfera: el ícono del asistente, la misma de Lucy (el producto de David, que lo pidió el
+   2026-11-15). Tinta azul que se mueve en agua: la dibuja static/js/esfera.js en el lienzo de
+   adentro, que se recorta en círculo; mientras no ha dibujado, o sin JavaScript, se ve el azul
+   del fondo. Mate: por fuera un filo claro y por dentro un filo de luz muy tenue. Mide 24 px
+   como avatar (.avatar-asistente: la caja de Hoy y arriba del panel), 20 px en el botón
+   redondo del celular y 16 px en el botón "Asistente" del encabezado y en el título de su
+   página. Solo la de arriba del panel se mueve; mientras el asistente revisa los datos late
+   despacio y la tinta corre más rápido. */
+.esfera {
+  --lado-esfera: 24px;
+  --esfera-tonos: #0B2A9A #0E48DE #1463FF #2283FF #4DB3FF #BDE5FF;
+  position: relative;
+  display: inline-block;
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: var(--lado-esfera);
+  height: var(--lado-esfera);
   border-radius: 50%;
-  background: var(--negro);
-  color: #FFFFFF;
+  background: #1463FF;
+  box-shadow: 0 0 0 max(1px, calc(var(--lado-esfera) * 0.014)) #E6EAF0;
 }
+
+.esfera__lienzo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+/* El filo de luz por dentro: sin brillo de vidrio */
+.esfera::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 max(0.5px, calc(var(--lado-esfera) * 0.006)) rgba(255, 255, 255, 0.35);
+  content: "";
+  pointer-events: none;
+}
+
+.esfera--boton { --lado-esfera: 20px; }
+.esfera--chica { --lado-esfera: 16px; }
 
 /* La caja grande de Hoy con el asistente prendido: lo que se escribe se le pregunta. Arriba el
    texto; abajo el avatar, los atajos y el botón de enviar. */
@@ -3538,6 +3569,7 @@ a.etapas__etapa:hover {
   --espera-cargando: 300ms;  /* si una acción tarda más, el botón muestra "cargando" */
   --vuelta-cargando: 700ms;  /* una vuelta del indicador "cargando" */
   --vuelta-latido: 1200ms;   /* un latido de los tres puntos del asistente */
+  --vuelta-esfera: 1800ms;   /* un latido de la esfera del asistente mientras revisa */
   --tiempo-aviso: 2800ms;    /* cuánto se queda a la vista el aviso "Abono registrado." */
 }
 
@@ -3818,6 +3850,16 @@ button.casilla:active {
 @keyframes latir {
   0%, 80%, 100% { opacity: 0.3; }
   40% { opacity: 1; }
+}
+
+/* --- Asistente: la esfera de arriba del panel late despacio mientras revisa los datos ---
+   static/js/esfera.js le pone esfera--atendiendo y hace correr la tinta más rápido. */
+.esfera--atendiendo {
+  animation: esfera-late var(--vuelta-esfera) ease-in-out infinite;
+}
+
+@keyframes esfera-late {
+  50% { transform: scale(1.04); }
 }
 
 
@@ -4108,6 +4150,11 @@ button.casilla:active {
   .mensaje__puntos span {
     animation: none;
     opacity: 0.6;
+  }
+
+  /* La esfera del asistente no late (static/js/esfera.js tampoco mueve la tinta) */
+  .esfera--atendiendo {
+    animation: none;
   }
 
   @view-transition {

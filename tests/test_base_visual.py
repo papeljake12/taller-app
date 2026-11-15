@@ -930,7 +930,7 @@ def test_el_javascript_del_asistente_tiene_su_atajo_y_sus_piezas():
 def test_los_iconos_del_asistente_estan_guardados():
     iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")
 
-    assert '<symbol id="asistente"' in iconos and '<symbol id="enviar"' in iconos
+    assert '<symbol id="enviar"' in iconos
 
 
 def test_con_el_asistente_la_caja_de_hoy_le_pregunta(sesion_duena, asistente_prendido):
@@ -966,9 +966,34 @@ def test_la_caja_de_hoy_abre_el_panel_y_pregunta_desde_alla():
     assert "preguntaEnEspera" in seccion and "formulario.requestSubmit()" in seccion
 
 
-def test_el_icono_del_asistente_es_el_boton_con_carita():
-    iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")
+def test_el_icono_del_asistente_es_la_esfera_de_lucy(sesion_duena, asistente_prendido):
+    # Pedido de David (2026-11-15): la esfera azul de Lucy reemplaza al botón con carita.
+    html = sesion_duena.get("/").text
+    elementos = Elementos(html).elementos
+    esferas = [e for e in elementos if "data-esfera" in e["atributos"]]
+    boton = html[html.index("data-asistente-abrir"):]
+    boton = boton[:boton.index("</a>")]
 
-    assert '<symbol id="asistente-cara"' in iconos
-    boton = re.search(r'<symbol id="asistente" [^>]*>(.*?)</symbol>', iconos).group(1)
-    assert '<circle cx="12" cy="12" r="8.5"/>' in boton
+    # En el botón del encabezado (20 px en celular, 16 px en computador) y en la caja de Hoy.
+    assert 'class="esfera esfera--boton"' in boton and 'class="esfera esfera--chica"' in boton
+    assert any("avatar-asistente" in e["clases"] for e in esferas)
+    assert all(e["atributos"]["aria-hidden"] == "true" for e in esferas)
+    # Ninguna de estas se mueve: solo la de arriba del panel (test_panel).
+    assert not any("data-esfera-viva" in e["atributos"] for e in esferas)
+    assert '<script src="/static/js/esfera.js" defer></script>' in html
+    # El botón con carita ya no está en el juego de íconos.
+    iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")
+    assert 'id="asistente"' not in iconos and 'id="asistente-cara"' not in iconos
+
+
+def test_la_esfera_se_dibuja_aqui_sin_nada_de_afuera():
+    js = (ESTATICOS / "js/esfera.js").read_text("utf-8")
+    css = (ESTATICOS / "css/app.css").read_text("utf-8")
+
+    assert "http" not in js and "fetch(" not in js
+    # Se detiene si no se ve o si la persona pidió menos movimiento.
+    assert "prefers-reduced-motion: reduce" in js and "document.hidden" in js
+    # Late mientras app.js muestra los tres puntos (#asistente-pendiente).
+    assert 'getElementById("asistente-pendiente")' in js and "esfera--atendiendo" in js
+    esfera = re.search(r"\n\.esfera \{(.*?)\}", css, re.DOTALL).group(1)
+    assert "background: #1463FF;" in esfera and "border-radius: 50%;" in esfera

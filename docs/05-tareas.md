@@ -106,6 +106,8 @@ Qué es: `docs/10-asistente.md`. Cómo se construye y qué prueba cada tarea:
 - [x] **T34. Uso y límites** (carril D).
 - [x] **T35. Integración** (coordinador): prueba de punta a punta y capturas de la tanda 7.
 - [x] **T36. Prueba real con 20 preguntas** (a mano, con la clave): costo y tiempo de verdad.
+- [x] **T37. La esfera de Lucy como ícono del asistente** (coordinador, pedido de David del
+  2026-11-15): reemplaza al botón con carita en el encabezado, la caja de Hoy y el panel.
 
 ## Etapas siguientes (todavía sin partir en tareas)
 

@@ -5,7 +5,7 @@ la pregunta desde allá. Sin JavaScript lleva a la página del asistente. Apagad
 buscador de siempre. Archivo de la base: lo cambia el coordinador.
 {% endcomment %}<form class="caja-grande caja-grande--asistente" action="{% url 'asistente:panel' %}" method="get" data-asistente-caja>
 <label class="oculto" for="hoy-pregunta">Pregúntale algo a tu asistente</label><textarea id="hoy-pregunta" name="pregunta" rows="1" maxlength="500" placeholder="Pregúntale algo a tu asistente"></textarea>
-<span class="avatar-asistente" aria-hidden="true">{% icono "asistente-cara" 18 "2" %}</span>
+{% include "piezas/esfera.html" with clase="avatar-asistente" only %}
 <div class="caja-grande__atajos"><a class="chip" href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}" hx-target="#ventana">{% icono "sumar" 14 %}Nuevo pedido</a><a class="chip" href="{% url 'pedidos:lista' %}?filtro=saldo">{% icono "recibo" 14 %}Registrar abono</a><a class="chip" href="{% url 'cotizador:inicio' %}">{% icono "cotizador" 14 %}Cotizar</a></div>
 <button type="submit" class="boton boton--principal boton--icono caja-grande__enviar" aria-label="Preguntar" title="Preguntar (Enter)">{% icono "enviar" 16 "2" %}</button>
 </form>

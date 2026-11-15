@@ -1,0 +1,14 @@
+{% comment %}
+Pieza: la esfera del asistente, la misma de Lucy (el producto de David). Tinta azul que se
+mueve en agua: la dibuja static/js/esfera.js en el lienzo de adentro; sin JavaScript se ve el
+azul de fondo. Estilos en static/css/app.css, sección 7, "La esfera". Es decorativa
+(aria-hidden): el texto de al lado dice qué es.
+
+  {% include "piezas/esfera.html" with clase="avatar-asistente" viva=True %}
+  {% include "piezas/esfera.html" with tamano="chica" %}
+
+- tamano: "chica" (16 px, en el botón "Asistente" del encabezado) o "boton" (20 px, el botón
+  redondo del celular). Sin tamaño mide 24 px (el avatar). Opcional.
+- viva: True para que se mueva. Solo la de arriba del panel: una sola a la vista. Opcional.
+- clase: otra clase para ubicarla (avatar-asistente). Opcional.
+{% endcomment %}<span class="esfera{% if tamano %} esfera--{{ tamano }}{% endif %}{% if clase %} {{ clase }}{% endif %}" data-esfera{% if viva %} data-esfera-viva{% endif %} aria-hidden="true"><canvas class="esfera__lienzo"></canvas></span>
