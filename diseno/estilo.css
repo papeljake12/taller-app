@@ -3464,13 +3464,16 @@ a.etapas__etapa:hover {
 .caja-grande--asistente .caja-grande__atajos { grid-area: atajos; }
 .caja-grande__enviar { grid-area: enviar; }
 
-/* Pantallas medianas: el panel flota encima de la hoja, a la derecha */
-@media (max-width: 1023.98px) and (min-width: 768px) {
+/* Computador y pantallas medianas: el panel flota encima de la hoja, a la derecha, con la sombra
+   de las ventanas. La hoja no cambia de ancho ni se reacomoda (pedido de David, 2026-11-15).
+   Empieza debajo del encabezado (52 px, más los 4 px de margen de la hoja), para no tapar el
+   botón "Asistente" ni el principal, y queda 4 px adentro de las orillas de la hoja. */
+@media (min-width: 768px) {
   .asistente {
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
+    top: 56px;
+    right: 4px;
+    bottom: 4px;
     z-index: 20;
     box-shadow: var(--sombra-ventana);
   }

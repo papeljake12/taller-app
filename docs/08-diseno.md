@@ -361,20 +361,17 @@ de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
   de siempre (Nuevo pedido, Registrar abono, Cotizar) y el botón negro de enviar. En celular
   va en una sola fila: avatar, texto y enviar. Lo que se escribe abre el panel con esa
   pregunta. Con el asistente apagado es el buscador de `diseno/hoy.html`, como antes.
-- **Computador (1024 px o más):** un panel blanco de 360 px a la derecha de la hoja, con el
-  mismo margen de 4 px y las mismas esquinas de 16 px. La hoja se angosta para dejarle sitio.
-  Con el panel abierto y una pantalla de menos de 1440 px, las columnas de la hoja pasan a
-  una, como en las pantallas medianas, para que nada se apriete.
-- **Abrir y cerrar con movimiento** (pedido de David del 15 de noviembre de 2026): en
-  computador el navegador pasa de una foto de la pantalla a otra (View Transitions): el panel
-  entra desde la derecha y la orilla de la hoja se corre con él (`--duracion-larga`); la hoja
-  se acomoda a su nuevo ancho una sola vez. Nunca se anima el ancho de la hoja: la
-  reacomodaría en cada cuadro y se vería temblar. En un navegador sin fotos, cambia de una
-  vez. Al cerrar hace el camino de vuelta. En pantallas
-  medianas y en celular se desliza desde la derecha encima de la hoja. Si ya venía abierto de
-  otra pantalla no se anima, y con "menos movimiento" abre y cierra de una vez.
-- **Pantallas medianas (768 a 1023 px):** el panel flota encima de la hoja, a la derecha, con
-  la sombra de las ventanas.
+- **Computador y pantallas medianas (768 px o más):** un panel blanco de 360 px que flota
+  encima de la hoja, a la derecha, con la sombra de las ventanas y esquinas de 16 px. Empieza
+  debajo del encabezado (no tapa el botón "Asistente" ni el principal) y queda 4 px adentro
+  de las orillas de la hoja. **La hoja no cambia**: ni de ancho ni de columnas (pedido de
+  David del 15 de noviembre de 2026; antes el panel iba al lado y la hoja se angostaba, y se
+  veía mal). Lo que queda debajo del panel no se ve hasta cerrarlo. En computador se recuerda
+  abierto al cambiar de pantalla; en pantallas medianas, no.
+- **Abrir y cerrar con movimiento** (pedido de David del mismo día): el panel se desliza
+  desde la derecha (`--duracion-larga`) y al cerrar sale por ahí mismo (`--duracion`). Si ya
+  venía abierto de otra pantalla no se anima, y con "menos movimiento" abre y cierra de una
+  vez.
 - **Celular:** un botón redondo con el ícono. El panel ocupa toda la pantalla, encima de la
   barra de abajo, con el título grande y botones de 40 px.
 - **Conversación:** lo que pregunta la usuaria va en una burbuja gris a la derecha; lo que

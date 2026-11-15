@@ -7,7 +7,7 @@ la maqueta (ver "Lo que ve la usuaria"). El plan de construcción de la tanda 7 
 ## Qué es
 
 Un asistente dentro de la aplicación, como el "Sidekick" del panel de Shopify, adaptado a un
-taller de confección. Va en un panel al lado de la hoja. La dueña le habla con sus palabras y
+taller de confección. Va en un panel a la derecha, encima de la hoja. La dueña le habla con sus palabras y
 él contesta con las cifras reales del taller, sabe en qué pantalla está, redacta mensajes y
 cotiza:
 

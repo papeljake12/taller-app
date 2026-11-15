@@ -3472,13 +3472,16 @@ a.etapas__etapa:hover {
 .caja-grande--asistente .caja-grande__atajos { grid-area: atajos; }
 .caja-grande__enviar { grid-area: enviar; }
 
-/* Pantallas medianas: el panel flota encima de la hoja, a la derecha */
-@media (max-width: 1023.98px) and (min-width: 768px) {
+/* Computador y pantallas medianas: el panel flota encima de la hoja, a la derecha, con la sombra
+   de las ventanas. La hoja no cambia de ancho ni se reacomoda (pedido de David, 2026-11-15).
+   Empieza debajo del encabezado (52 px, más los 4 px de margen de la hoja), para no tapar el
+   botón "Asistente" ni el principal, y queda 4 px adentro de las orillas de la hoja. */
+@media (min-width: 768px) {
   .asistente {
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
+    top: 56px;
+    right: 4px;
+    bottom: 4px;
     z-index: 20;
     box-shadow: var(--sombra-ventana);
   }
@@ -3765,51 +3768,15 @@ button.casilla:active {
   animation: bajar var(--duracion-corta) var(--curva-salida) forwards;
 }
 
-/* El panel del asistente entra y sale (static/js/app.js, sección 14).
-   Computador: el navegador pasa de una foto de la pantalla a otra (View Transitions). Solo
-   mientras cambia (.asistente-cambia) la hoja y el panel llevan nombre: la hoja se acomoda a
-   su nuevo ancho una sola vez y en la foto solo se corre su orilla; el panel entra desde la
-   derecha y sale por ahí mismo.
-   Pantallas medianas y celular: va encima de la hoja; solo se desliza (.entra y .se-cierra). */
-.marco.asistente-cambia > .hoja {
-  view-transition-name: hoja;
+/* El panel del asistente entra y sale (static/js/app.js, sección 14, le pone .entra al
+   abrirlo y .se-cierra al cerrarlo, y lo esconde al terminar). Va encima de la hoja: solo se
+   desliza desde la derecha y la hoja no se mueve. */
+.asistente.entra {
+  animation: asistente-llega var(--duracion-larga) var(--curva);
 }
 
-.marco.asistente-cambia > .asistente {
-  view-transition-name: asistente;
-}
-
-::view-transition-group(hoja),
-::view-transition-group(asistente) {
-  animation-duration: var(--duracion-larga);
-  animation-timing-function: var(--curva);
-}
-
-/* El blanco va en el grupo y no en el par de fotos: ahí las fotos se suman (plus-lighter) y
-   sobre blanco no se vería nada. Así, donde una foto no alcanza, se ve la hoja y no el marco. */
-::view-transition-group(hoja) {
-  overflow: hidden;
-  border-radius: 16px;
-  background: var(--hoja);
-}
-
-/* Las fotos de la hoja no se estiran: se recortan desde arriba a la izquierda. El paso de una
-   a otra es corto (la orilla sigue moviéndose): así casi no se alcanzan a ver las dos. */
-::view-transition-old(hoja),
-::view-transition-new(hoja) {
-  height: 100%;
-  object-fit: none;
-  object-position: left top;
-  animation-duration: var(--duracion-corta);
-  animation-timing-function: var(--curva);
-}
-
-::view-transition-new(asistente):only-child {
-  animation: asistente-llega var(--duracion-larga) var(--curva) both;
-}
-
-::view-transition-old(asistente):only-child {
-  animation: asistente-se-va var(--duracion-larga) var(--curva) both;
+.asistente.se-cierra {
+  animation: asistente-se-va var(--duracion) var(--curva-salida) forwards;
 }
 
 @keyframes asistente-llega {
@@ -3818,16 +3785,6 @@ button.casilla:active {
 
 @keyframes asistente-se-va {
   to { transform: translateX(calc(100% + 8px)); }
-}
-
-@media (max-width: 1023.98px) {
-  .asistente.entra {
-    animation: asistente-llega var(--duracion-larga) var(--curva);
-  }
-
-  .asistente.se-cierra {
-    animation: asistente-se-va var(--duracion) var(--curva-salida) forwards;
-  }
 }
 
 /* Menú: al contraerlo o abrirlo, cambia de ancho con transición y lo de adentro aparece
@@ -4172,23 +4129,6 @@ button.casilla:active {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-/* Con el panel abierto al lado, la hoja se angosta (en 1280 px queda de unos 690 px): las
-   columnas pasan a una, como en las pantallas medianas, para que nada se apriete (por ejemplo
-   los nombres de las etapas del pedido). Desde 1440 px cabe todo en dos columnas. */
-@media (min-width: 1024px) and (max-width: 1439.98px) {
-  .marco:has(> .asistente:not([hidden])) :is(.columnas, .dos-columnas, .dos-columnas--iguales) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .marco:has(> .asistente:not([hidden])) .ajuste {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .marco:has(> .asistente:not([hidden])) .cotizacion {
-    position: static;
-  }
 }
 
 /* Al llegar al final de la conversación, la hoja de atrás no se mueve (sobre todo en celular,

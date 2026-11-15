@@ -796,9 +796,9 @@
   // Ctrl J (o Cmd J) abre y cierra. Esc cierra si no hay una ventana ni un menú abierto.
   // Enter envía y Shift+Enter hace un salto de línea.
 
-  // En computador el panel va al lado de la hoja y se recuerda abierto al cambiar de
-  // pantalla. En celular y en pantallas medianas tapa la hoja: no se recuerda.
-  const PANEL_AL_LADO = "(min-width: 1024px)";
+  // El panel flota encima de la hoja. En computador se recuerda abierto al cambiar de
+  // pantalla; en celular y en pantallas medianas, donde tapa más, no se recuerda.
+  const PANEL_SE_RECUERDA = "(min-width: 1024px)";
   const SIN_RESPUESTA = "No pude contestar ahora. Intenta de nuevo en un rato.";
   let asistenteQuiereFoco = false;
   let preguntaEnEspera = "";
@@ -830,16 +830,11 @@
   }
 
   // Entrar y salir con movimiento (app.css, sección 8, "El panel del asistente entra y
-  // sale"). Solo cuando la persona lo abre o lo cierra: si ya viene abierto de otra pantalla,
-  // no se anima; con menos movimiento pedido, abre y cierra de una vez.
-  //   Computador: el navegador toma una foto antes y otra después (View Transitions) y pasa
-  //   de una a otra: el panel entra desde la derecha y la orilla de la hoja se corre con él.
-  //   La hoja se acomoda a su nuevo ancho una sola vez; si se animara su ancho, lo de adentro
-  //   (textos, tarjetas, el saludo) se reacomodaría en cada cuadro y se vería temblar.
-  //   Pantallas medianas y celular: el panel va encima de la hoja; solo se desliza (.entra y
-  //   .se-cierra) y la hoja no cambia.
-  // Mientras se mueve, `asistenteVaAbierto` dice cómo va a quedar, y cada movimiento lleva
-  // su número: si se toca otra vez a mitad de camino, cambia de dirección sin trabarse.
+  // sale"): el panel se desliza desde la derecha encima de la hoja, que no se mueve. Solo
+  // cuando la persona lo abre o lo cierra: si ya viene abierto de otra pantalla, no se anima;
+  // con menos movimiento pedido, abre y cierra de una vez. Mientras se mueve,
+  // `asistenteVaAbierto` dice cómo va a quedar, y cada movimiento lleva su número: si se toca
+  // otra vez a mitad de camino, cambia de dirección sin trabarse.
   let movimientoAsistente = 0;
   let asistenteVaAbierto = null;
 
@@ -849,50 +844,30 @@
 
   function mostrarAsistente(panel, abrir, despues) {
     const numero = ++movimientoAsistente;
-    const marco = panel.closest("[data-marco]") || panel.parentElement;
     asistenteVaAbierto = abrir;
     panel.classList.remove("entra", "se-cierra");
+    if (abrir) panel.hidden = false;
+    if (abrir && despues) despues();
     function terminar() {
       if (numero !== movimientoAsistente) return;
       asistenteVaAbierto = null;
       panel.classList.remove("entra", "se-cierra");
-      marco.classList.remove("asistente-cambia");
+      if (!abrir) panel.hidden = true;
     }
-    function cambiar() {
-      panel.hidden = !abrir;
-      if (despues) despues();
-    }
-
     if (!hayMovimiento()) {
-      cambiar();
       terminar();
-    } else if (window.matchMedia(PANEL_AL_LADO).matches) {
-      if (!document.startViewTransition) {
-        cambiar();  // un navegador sin fotos: cambia de una vez, sin temblar
-        terminar();
-        return;
-      }
-      // .asistente-cambia les da nombre a la hoja y al panel solo durante el cambio.
-      marco.classList.add("asistente-cambia");
-      document.startViewTransition(cambiar).finished.finally(terminar);
-    } else {
-      if (abrir) panel.hidden = false;
-      void panel.offsetWidth;  // así la clase, puesta otra vez, anima desde el principio
-      panel.classList.add(abrir ? "entra" : "se-cierra");
-      alTerminar(panel, milisegundos(abrir ? "--duracion-larga" : "--duracion"), function () {
-        if (numero !== movimientoAsistente) return;
-        if (!abrir) panel.hidden = true;
-        terminar();
-      });
-      if (abrir && despues) despues();
+      return;
     }
+    void panel.offsetWidth;  // así la clase, puesta otra vez, anima desde el principio
+    panel.classList.add(abrir ? "entra" : "se-cierra");
+    alTerminar(panel, milisegundos(abrir ? "--duracion-larga" : "--duracion"), terminar);
   }
 
   function abrirAsistente() {
     const panel = panelAsistente();
     if (!panel) return false;
     marcarBotonesAsistente(true);
-    if (window.matchMedia(PANEL_AL_LADO).matches) {
+    if (window.matchMedia(PANEL_SE_RECUERDA).matches) {
       document.cookie = "asistente=abierto; path=/; max-age=" + UN_ANO + "; SameSite=Lax";
     }
     function listo() {
