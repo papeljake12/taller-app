@@ -35,6 +35,8 @@ de 390 px de ancho, o abre `diseno/index.html`, que las muestra todas en 390 px.
 | `diseno/entrar.html` | Inicio de sesión |
 | `diseno/tallas-publico.html` | Formulario público de tallas |
 | `diseno/tallas-publico-listo.html` | Formulario público de tallas, ya enviado |
+| `diseno/asistente.html` | Asistente abierto encima de Hoy, y Hoy con su caja para preguntarle (tanda 7) |
+| `diseno/asistente-limite.html` | Asistente sin preguntas por hoy (tanda 7) |
 
 Hoy, Pedidos, Pedido por dentro, la pantalla vacía y el celular de Hoy y de Pedidos salen
 tal cual de la maqueta aprobada. Las demás se adaptaron con el mismo lenguaje y se le muestran
@@ -165,9 +167,11 @@ dos líneas (`.dinero`).
 - **Encabezado de la hoja (52 px, quieto):** a la izquierda, el ícono y el nombre de la sección
   (o la miga para volver, en el pedido); a la derecha, los botones, el principal de último.
 - **Contenido:** relleno de 4 px arriba, 16 px a los lados y 24 px abajo, 16 px entre bloques.
-  Se desplaza por dentro. No pasa de 1200 px de ancho (en pantallas grandes queda centrado, y
-  el encabezado se alinea con él). Hoy usa una columna de 940 px; Pedidos usa todo el ancho
-  (`hoja--completa`).
+  Se desplaza por dentro. No pasa de 1200 px de ancho (en pantallas grandes queda centrado).
+  **El encabezado se alinea con el contenido de cada pantalla**: Hoy usa una columna de 940 px
+  (`hoja--angosta`), Mi taller una de 1000 px (`hoja--ajustes`) y Pedidos todo el ancho
+  (`hoja--completa`); en las tres, el encabezado usa ese mismo ancho. Antes el encabezado de
+  Hoy y de Mi taller usaba 1200 px y sobresalía de lo de abajo (lo vio David el 2026-11-15).
 
 Secciones del menú, en orden: Hoy, Pedidos, Calendario, Clientes, Cotizador, Telas, Resumen.
 
@@ -336,6 +340,59 @@ emojis ni librerías de íconos, ni los íconos de Shopify.
 - El foco del teclado siempre se ve (anillo `--enlace`).
 - Cada insignia dice con palabras lo mismo que su color y su circulito.
 
+## Asistente
+
+Referencia: `diseno/asistente.html` y `diseno/asistente-limite.html`. Estilos en la sección 7
+de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
+
+- **Ícono: la esfera de Lucy** (pedido de David del 15 de noviembre de 2026; reemplaza al
+  botón de costura con carita del día 14). Es el mismo circulito azul de Lucy, el producto de
+  David: tinta azul que se mueve en agua, mate, con un filo claro alrededor. Pieza
+  `templates/piezas/esfera.html`, la dibuja `static/js/esfera.js` y sus estilos están en la
+  sección 7 ("La esfera"). Sin JavaScript se ve el azul de fondo (`#1463FF`). Mide 24 px como
+  **avatar** (`.avatar-asistente`: la caja de Hoy y arriba del panel), 20 px en el botón
+  redondo del celular y 16 px en el botón "Asistente" del encabezado y en el título de su
+  página. Se mueven la de arriba del panel y la de la caja de Hoy (pedido de David, el mismo
+  día); las del botón quedan quietas. Mientras el asistente revisa los datos, la del panel late
+  despacio y la tinta corre más rápido. Con "menos movimiento" queda quieta. Es la única
+  excepción al azul de "gráficas y en proceso": es la marca del asistente, no un estado.
+- **Botón:** "Asistente" con su ícono, en el encabezado, a la izquierda del botón principal.
+  Mientras el panel está abierto queda gris (presionado). Atajo: Ctrl J (Cmd J en Mac).
+- **La caja grande de Hoy** (como en Shopify, pedido de David): con el asistente prendido le
+  pregunta al asistente. Arriba "Pregúntale algo a tu asistente"; abajo el avatar, los atajos
+  de siempre (Nuevo pedido, Registrar abono, Cotizar) y el botón negro de enviar. En celular
+  va en una sola fila: avatar, texto y enviar. Lo que se escribe abre el panel con esa
+  pregunta. Con el asistente apagado es el buscador de `diseno/hoy.html`, como antes.
+- **Computador y pantallas medianas (768 px o más):** un panel blanco de 360 px que flota
+  encima de la hoja, a la derecha, con la sombra de las ventanas y esquinas de 16 px. Empieza
+  debajo del encabezado (no tapa el botón "Asistente" ni el principal) y queda 4 px adentro
+  de las orillas de la hoja. **La hoja no cambia**: ni de ancho ni de columnas (pedido de
+  David del 15 de noviembre de 2026; antes el panel iba al lado y la hoja se angostaba, y se
+  veía mal). Lo que queda debajo del panel no se ve hasta cerrarlo. En computador se recuerda
+  abierto al cambiar de pantalla; en pantallas medianas, no.
+- **Abrir y cerrar con movimiento** (pedido de David del mismo día): el panel se desliza
+  desde la derecha (`--duracion-larga`) y al cerrar sale por ahí mismo (`--duracion`). Si ya
+  venía abierto de otra pantalla no se anima, y con "menos movimiento" abre y cierra de una
+  vez.
+- **Celular:** un botón redondo con el ícono. El panel ocupa toda la pantalla, encima de la
+  barra de abajo, con el título grande y botones de 40 px.
+- **Conversación:** lo que pregunta la usuaria va en una burbuja gris a la derecha; lo que
+  contesta va suelto, sin burbuja. Arriba de cada respuesta, en gris y con un visto, qué
+  revisó. Al final, un enlace a la pantalla donde se ve completo.
+- **Tarjetas dentro de una respuesta:** las mismas tarjetas de la aplicación, con sombra
+  suave. "Quién te debe" usa filas como las de Hoy; la cotización usa el total grande y las
+  filas del Cotizador; el mensaje de WhatsApp muestra a quién va, el texto en un recuadro
+  gris claro y los botones "Copiar" y "Abrir en WhatsApp" (el principal, negro).
+- **Mientras busca:** tres puntos que laten y "Revisando tus datos…". Con "menos movimiento"
+  los puntos se quedan quietos.
+- **Quedan pocas preguntas:** una línea ámbar encima de la caja. Mientras vaya bien no se ve
+  nada.
+- **Sin preguntas:** el aviso va en la conversación en un recuadro gris con un reloj, y la
+  caja queda apagada ("Vuelvo a contestar mañana").
+- **Mi taller:** un bloque "Asistente" con "N de 600" y el riel azul de siempre.
+- **Colores:** los de siempre. Rojo solo para lo vencido o atrasado, igual que en las
+  pantallas.
+
 ## Lo que se tomó de Shopify y lo que no
 
 - **Se tomó:** la forma de cada pantalla (inicio con saludo y tarjetas, lista con barra de
@@ -344,8 +401,11 @@ emojis ni librerías de íconos, ni los íconos de Shopify.
   negro con subsecciones, el buscador con "Ctrl K" y, en celular, el título grande y la barra
   de abajo.
 - **No se tomó:** su logo, sus íconos, sus dibujos ni su letra (ShopifyInter). Aquí van
-  íconos propios, Inter y dibujos propios. Tampoco el asistente "Sidekick" ni las casillas
-  para elegir varios pedidos a la vez.
+  íconos propios, Inter y dibujos propios. Tampoco las casillas para elegir varios pedidos a
+  la vez.
+- **Se tomó después (tanda 7, 14 de noviembre de 2026):** el asistente, a la manera del
+  "Sidekick" de Shopify: un panel al lado de la hoja que contesta con las cifras del taller.
+  Ver "Asistente" arriba y `docs/10-asistente.md`.
 
 ## Lo que no se hace
 

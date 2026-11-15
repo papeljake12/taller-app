@@ -85,6 +85,30 @@ Para marcar el avance, cambia `[ ]` por `[x]`.
   (reemplaza la pantalla fija: ahora se desplaza la hoja). Explicado en
   `docs/bitacora/rediseno.md`.
 
+## Tanda 7: asistente del taller (solo consulta)
+
+Qué es: `docs/10-asistente.md`. Cómo se construye y qué prueba cada tarea:
+`docs/11-plan-tanda-7.md`.
+
+- [x] **T25. Base: documentos, maqueta, librería y datos.** Documentos al día, piezas nuevas
+  de la maqueta (las aprueba David), librería `anthropic`, ajustes, `UsoAsistente` y límites
+  del taller con sus migraciones y su admin, gastos por fechas y por tipo en `calculos.py`.
+- [x] **T26. Base: esqueleto y piezas.** App `asistente/` con contratos, esquemas, cliente
+  falso y stubs; URL; botón y panel en `base.html`; íconos; estilos y atajos; bloque de Mi
+  taller; prueba corta con la clave real.
+- [x] **T27. Consultas de pedidos, telas y clientes** (carril A).
+- [x] **T28. Consultas de plata** (carril A).
+- [x] **T29. Cliente de Claude y ciclo de herramientas** (carril B).
+- [x] **T30. Pantalla actual y esfuerzo** (carril B).
+- [x] **T31. Mensajes de WhatsApp** (carril C).
+- [x] **T32. Cotizar** (carril C).
+- [x] **T33. Panel** (carril D).
+- [x] **T34. Uso y límites** (carril D).
+- [x] **T35. Integración** (coordinador): prueba de punta a punta y capturas de la tanda 7.
+- [x] **T36. Prueba real con 20 preguntas** (a mano, con la clave): costo y tiempo de verdad.
+- [x] **T37. La esfera de Lucy como ícono del asistente** (coordinador, pedido de David del
+  2026-11-15): reemplaza al botón con carita en el encabezado, la caja de Hoy y el panel.
+
 ## Etapas siguientes (todavía sin partir en tareas)
 
 - **Etapa 3, ahorro de trabajo:** IA para crear pedidos desde un mensaje o dictado, avisos

@@ -1,0 +1,15 @@
+{% comment %}
+Tarjeta "Cuentas del mes" dentro de una respuesta del asistente (carril A, T28): las cuatro
+cifras de Resumen con las filas de "Cuentas" de la tarjeta de cotización (diseno/asistente.html).
+"Te quedó" va como total y puede ser negativa ("-$ 200.000").
+Recibe `tarjeta` (asistente.contratos.Tarjeta o el mismo diccionario guardado en la sesión):
+  tarjeta.datos = {mes ("Noviembre de 2026"), vendido, cobrado, gastado, te_quedo}
+{% endcomment %}{% load piezas %}{% with d=tarjeta.datos %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+<div class="tarjeta__cabeza"><h3 class="mensaje__para">{{ d.mes }}</h3></div>
+<div class="cuentas">
+<div class="cuentas__fila"><span>Vendido</span><span class="dinero">{{ d.vendido|pesos }}</span></div>
+<div class="cuentas__fila"><span>Cobrado</span><span class="dinero">{{ d.cobrado|pesos }}</span></div>
+<div class="cuentas__fila"><span>Gastado</span><span class="dinero">{{ d.gastado|pesos }}</span></div>
+<div class="cuentas__fila cuentas__fila--total"><span>Te quedó</span><span class="dinero">{{ d.te_quedo|pesos }}</span></div>
+</div>
+</section>{% endwith %}

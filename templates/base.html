@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/app.css' %}">
 <script src="{% static 'js/htmx.min.js' %}" defer></script>
 <script src="{% static 'js/app.js' %}" defer></script>
+<script src="{% static 'js/esfera.js' %}" defer></script>
 </head>
 <body data-csrf="{{ csrf_token }}">
 {% comment %}
@@ -18,10 +19,13 @@ su encabezado quieto arriba y el contenido, que se desplaza por dentro. Cada pan
   titulo        el nombre de la sección, junto a su ícono (el de la sección actual del menú;
                 icono_titulo lo cambia);
   apoyo         un dato al lado del título ("6 clientes · 4 te deben");
+  acciones_antes lo que va antes del botón "Asistente" (la fecha, la lupa, "Excel");
   acciones      los botones de la derecha, el principal de último;
   contenido     lo de la hoja;
 y, si hace falta:
-  clase_hoja            " hoja--completa" para usar todo el ancho (Pedidos);
+  clase_hoja            " hoja--completa" para usar todo el ancho (Pedidos), " hoja--angosta"
+                        para la columna de 940 px (Hoy) o " hoja--ajustes" para la de 1000 px
+                        (Mi taller): el encabezado se alinea con el contenido;
   encabezado_izquierda  lo que va antes del título (el logo de Hoy, la flecha del pedido);
   encabezado_titulo     todo el lado izquierdo del encabezado (la miga del pedido).
 {% endcomment %}
@@ -31,13 +35,15 @@ y, si hace falta:
 <main class="hoja{% block clase_hoja %}{% endblock %}" id="contenido">
 <header class="encabezado">{% block encabezado_izquierda %}{% endblock %}
 <div class="encabezado__titulo">{% block encabezado_titulo %}<h1 class="encabezado__nombre">{% block icono_titulo %}{% if menu.icono_actual %}{% icono menu.icono_actual %}{% endif %}{% endblock %}{% block titulo %}{% endblock %}</h1>{% block apoyo %}{% endblock %}{% endblock %}</div>
-<div class="encabezado__acciones">{% block acciones %}{% endblock %}</div>
+<div class="encabezado__acciones">{% block acciones_antes %}{% endblock %}{% if asistente.disponible %}{% include "asistente/_boton.html" %}{% endif %}{% block acciones %}{% endblock %}</div>
 </header>
 <div class="hoja__contenido">
 {% block contenido %}{% endblock %}
 </div>
 </main>
-{% include "_menu_celular.html" %}
+{% if asistente.disponible %}{# El asistente (docs/10-asistente.md): un panel al lado de la hoja. Se llena con HTMX la primera vez que se abre; con la cookie asistente=abierto, el servidor lo dibuja abierto y lo llena al cargar. Ver static/js/app.js, sección 14. #}
+<aside class="asistente" id="asistente" aria-label="Asistente" data-asistente hx-get="{% url 'asistente:panel' %}" hx-trigger="{% if asistente.abierto %}load{% else %}asistente-abrir once{% endif %}"{% if not asistente.abierto %} hidden{% endif %}></aside>
+{% endif %}{% include "_menu_celular.html" %}
 </div>
 {# Ventana para formularios cortos ("Nuevo pedido"...). La llena HTMX: ver static/js/app.js. #}
 <dialog class="ventana" id="ventana" aria-label="Ventana"></dialog>

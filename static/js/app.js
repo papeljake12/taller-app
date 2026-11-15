@@ -12,6 +12,8 @@
    11. Lo que entra y sale sin recargar (HTMX): se desvanece, y una fila que se va se cierra.
    12. Aviso corto de confirmación ("Abono registrado.").
    13. Atajo Ctrl K, menús desplegables y lo que se muestra con un botón (rediseño).
+   14. Asistente: abrir y cerrar el panel (Ctrl J), enviar con Enter y los tres puntos
+       mientras llega la respuesta (tanda 7).
 
    Las duraciones de las animaciones se leen de static/css/app.css (:root), donde se definen
    una sola vez. Si la persona pidió menos movimiento en su equipo, valen 0 y nada se anima.
@@ -776,4 +778,309 @@
       if (campo) campo.focus();
     }
   });
+
+  /* 14. Asistente ------------------------------------------------------------ */
+
+  // El panel del asistente (docs/10-asistente.md, docs/11-plan-tanda-7.md, sección 1.5).
+  // base.html deja <aside id="asistente"> solo si la dueña lo tiene; HTMX lo llena la primera
+  // vez que se abre (evento "asistente-abrir"). Lo que hay adentro lo dibuja el servidor:
+  //   [data-asistente-abrir]       el botón del encabezado: abre y cierra;
+  //   [data-asistente-cerrar]      la equis del panel;
+  //   [data-asistente-form]        el formulario de la pregunta (hx-post, con hx-target
+  //                                "#asistente-pendiente" y hx-swap "outerHTML");
+  //   [data-asistente-sugerencia]  una sugerencia: la escribe y la envía;
+  //   #asistente-mensajes          la conversación, que se desplaza por dentro;
+  //   [data-asistente-bienvenida]  el saludo de la conversación vacía (se va con la primera
+  //                                pregunta);
+  //   [data-asistente-caja]        la caja grande de Hoy: abre el panel y pregunta desde allá.
+  // Ctrl J (o Cmd J) abre y cierra. Esc cierra si no hay una ventana ni un menú abierto.
+  // Enter envía y Shift+Enter hace un salto de línea.
+
+  // El panel flota encima de la hoja. En computador se recuerda abierto al cambiar de
+  // pantalla; en celular y en pantallas medianas, donde tapa más, no se recuerda.
+  const PANEL_SE_RECUERDA = "(min-width: 1024px)";
+  const SIN_RESPUESTA = "No pude contestar ahora. Intenta de nuevo en un rato.";
+  let asistenteQuiereFoco = false;
+  let preguntaEnEspera = "";
+
+  function panelAsistente() {
+    return document.getElementById("asistente");
+  }
+
+  function marcarBotonesAsistente(abierto) {
+    document.querySelectorAll("[data-asistente-abrir]").forEach(function (boton) {
+      boton.classList.toggle("es-presionado", abierto);
+      boton.setAttribute("aria-expanded", String(abierto));
+    });
+  }
+
+  function listaAsistente(panel) {
+    return panel.querySelector("#asistente-mensajes");
+  }
+
+  function bajarAlFinal(panel) {
+    const lista = listaAsistente(panel);
+    if (lista) lista.scrollTop = lista.scrollHeight;
+  }
+
+  function enfocarAsistente(panel) {
+    bajarAlFinal(panel);
+    const caja = panel.querySelector("[data-asistente-form] textarea");
+    if (caja && !caja.disabled) caja.focus();
+  }
+
+  // Entrar y salir con movimiento (app.css, sección 8, "El panel del asistente entra y
+  // sale"): el panel se desliza desde la derecha encima de la hoja, que no se mueve. Solo
+  // cuando la persona lo abre o lo cierra: si ya viene abierto de otra pantalla, no se anima;
+  // con menos movimiento pedido, abre y cierra de una vez. Mientras se mueve,
+  // `asistenteVaAbierto` dice cómo va a quedar, y cada movimiento lleva su número: si se toca
+  // otra vez a mitad de camino, cambia de dirección sin trabarse.
+  let movimientoAsistente = 0;
+  let asistenteVaAbierto = null;
+
+  function estaAbierto(panel) {
+    return asistenteVaAbierto === null ? !panel.hidden : asistenteVaAbierto;
+  }
+
+  function mostrarAsistente(panel, abrir, despues) {
+    const numero = ++movimientoAsistente;
+    asistenteVaAbierto = abrir;
+    panel.classList.remove("entra", "se-cierra");
+    if (abrir) panel.hidden = false;
+    if (abrir && despues) despues();
+    function terminar() {
+      if (numero !== movimientoAsistente) return;
+      asistenteVaAbierto = null;
+      panel.classList.remove("entra", "se-cierra");
+      if (!abrir) panel.hidden = true;
+    }
+    if (!hayMovimiento()) {
+      terminar();
+      return;
+    }
+    void panel.offsetWidth;  // así la clase, puesta otra vez, anima desde el principio
+    panel.classList.add(abrir ? "entra" : "se-cierra");
+    alTerminar(panel, milisegundos(abrir ? "--duracion-larga" : "--duracion"), terminar);
+  }
+
+  function abrirAsistente() {
+    const panel = panelAsistente();
+    if (!panel) return false;
+    marcarBotonesAsistente(true);
+    if (window.matchMedia(PANEL_SE_RECUERDA).matches) {
+      document.cookie = "asistente=abierto; path=/; max-age=" + UN_ANO + "; SameSite=Lax";
+    }
+    function listo() {
+      if (panel.childElementCount) {
+        enfocarAsistente(panel);
+      } else if (window.htmx) {
+        // Primera vez: se pide el panel. Al llegar, el cursor queda en la caja.
+        asistenteQuiereFoco = true;
+        window.htmx.trigger(panel, "asistente-abrir");
+      }
+    }
+    if (estaAbierto(panel)) {
+      listo();
+    } else {
+      mostrarAsistente(panel, true, listo);
+    }
+    return true;
+  }
+
+  function cerrarAsistente() {
+    const panel = panelAsistente();
+    if (!panel || !estaAbierto(panel)) return false;
+    mostrarAsistente(panel, false);
+    marcarBotonesAsistente(false);
+    document.cookie = "asistente=; path=/; max-age=0; SameSite=Lax";
+    // El cursor vuelve al botón que se ve (el del computador o el redondo del celular).
+    const boton = Array.prototype.find.call(
+      document.querySelectorAll("[data-asistente-abrir]"),
+      function (b) { return b.offsetParent !== null; }
+    );
+    if (boton) boton.focus();
+    return true;
+  }
+
+  function alternarAsistente() {
+    const panel = panelAsistente();
+    if (!panel) return false;
+    return estaAbierto(panel) ? cerrarAsistente() : abrirAsistente();
+  }
+
+  document.addEventListener("click", function (evento) {
+    if (evento.target.closest("[data-asistente-abrir]") && panelAsistente()) {
+      evento.preventDefault();
+      alternarAsistente();
+      return;
+    }
+    if (evento.target.closest("[data-asistente-cerrar]")) {
+      evento.preventDefault();
+      cerrarAsistente();
+      return;
+    }
+    const sugerencia = evento.target.closest("[data-asistente-sugerencia]");
+    if (sugerencia) {
+      const panel = sugerencia.closest("#asistente") || panelAsistente();
+      const formulario = panel && panel.querySelector("[data-asistente-form]");
+      const caja = formulario && formulario.querySelector("textarea");
+      if (!caja || caja.disabled) return;
+      evento.preventDefault();
+      caja.value = sugerencia.dataset.asistenteSugerencia || sugerencia.textContent.trim();
+      formulario.requestSubmit();
+    }
+  });
+
+  // Se escucha antes que los demás (captura): así, si hay una ventana o un menú abierto, Esc
+  // los cierra a ellos primero y el panel se queda.
+  document.addEventListener("keydown", function (evento) {
+    const panel = panelAsistente();
+    if (!panel) return;
+    if ((evento.ctrlKey || evento.metaKey) && !evento.altKey && !evento.shiftKey &&
+        evento.key.toLowerCase() === "j") {
+      evento.preventDefault();
+      alternarAsistente();
+    } else if (evento.key === "Escape" && estaAbierto(panel) &&
+               !document.querySelector("dialog[open], details.desplegable[open]")) {
+      cerrarAsistente();
+    }
+  }, true);
+
+  // Enter envía; Shift+Enter (o mientras se escribe una tilde) hace salto de línea. La caja
+  // crece con el texto hasta 120 px (el máximo lo pone app.css).
+  const CAJAS_ASISTENTE = "[data-asistente-form] textarea, [data-asistente-caja] textarea";
+
+  document.addEventListener("keydown", function (evento) {
+    const caja = evento.target.closest && evento.target.closest(CAJAS_ASISTENTE);
+    if (!caja || evento.key !== "Enter" || evento.shiftKey || evento.isComposing) return;
+    evento.preventDefault();
+    caja.closest("form").requestSubmit();
+  });
+
+  document.addEventListener("input", function (evento) {
+    const caja = evento.target.closest && evento.target.closest(CAJAS_ASISTENTE);
+    if (!caja) return;
+    caja.style.height = "auto";
+    caja.style.height = caja.scrollHeight + "px";
+  });
+
+  // Antes de que HTMX envíe la pregunta (captura, para ir antes que él): si está vacía o ya
+  // hay una en camino, no se envía. Si no, la burbuja sale de una vez con los tres puntos, en
+  // #asistente-pendiente, que es donde HTMX pondrá la respuesta.
+  document.addEventListener("submit", function (evento) {
+    const formulario = evento.target.closest("[data-asistente-form]");
+    if (!formulario || !window.htmx) return;
+    const panel = formulario.closest("#asistente") || document;
+    const caja = formulario.querySelector("textarea");
+    const pregunta = caja ? caja.value.trim() : "";
+    if (!pregunta || panel.querySelector("#asistente-pendiente")) {
+      evento.preventDefault();
+      evento.stopImmediatePropagation();
+      return;
+    }
+    const pagina = formulario.querySelector("input[name=pagina]");
+    if (pagina) pagina.value = window.location.pathname + window.location.search;
+    const lista = panel.querySelector("#asistente-mensajes");
+    if (!lista) return;
+    const bienvenida = lista.querySelector("[data-asistente-bienvenida]");
+    if (bienvenida) bienvenida.remove();
+
+    const pendiente = document.createElement("div");
+    pendiente.id = "asistente-pendiente";
+    pendiente.className = "asistente__turno";
+    const burbuja = document.createElement("div");
+    burbuja.className = "mensaje mensaje--usuaria";
+    const texto = document.createElement("p");
+    texto.textContent = pregunta;
+    burbuja.appendChild(texto);
+    const respuesta = document.createElement("div");
+    respuesta.className = "mensaje mensaje--asistente";
+    const pensando = document.createElement("p");
+    pensando.className = "mensaje__pensando";
+    const puntos = document.createElement("span");
+    puntos.className = "mensaje__puntos";
+    puntos.setAttribute("aria-hidden", "true");
+    for (let i = 0; i < 3; i++) puntos.appendChild(document.createElement("span"));
+    pensando.appendChild(puntos);
+    pensando.appendChild(document.createTextNode("Revisando tus datos…"));
+    respuesta.appendChild(pensando);
+    pendiente.appendChild(burbuja);
+    pendiente.appendChild(respuesta);
+    lista.appendChild(pendiente);
+    bajarAlFinal(panel);
+    asistenteQuiereFoco = true;
+  }, true);
+
+  // La caja grande de Hoy: la pregunta se pasa al panel y se envía desde allá. Si el panel
+  // todavía no ha llegado, espera a que llegue (htmx:afterSettle, abajo).
+  function enviarPreguntaEnEspera() {
+    const panel = panelAsistente();
+    const formulario = panel && panel.querySelector("[data-asistente-form]");
+    const caja = formulario && formulario.querySelector("textarea");
+    if (!preguntaEnEspera || !caja) return;
+    const pregunta = preguntaEnEspera;
+    preguntaEnEspera = "";
+    if (caja.disabled) return;  // sin preguntas: el panel ya dice cuándo vuelve
+    caja.value = pregunta;
+    formulario.requestSubmit();
+  }
+
+  document.addEventListener("submit", function (evento) {
+    const formulario = evento.target.closest("[data-asistente-caja]");
+    // Sin el panel o sin HTMX, el formulario lleva a la página del asistente.
+    if (!formulario || !panelAsistente() || !window.htmx) return;
+    evento.preventDefault();
+    const campo = formulario.querySelector("textarea");
+    const pregunta = campo ? campo.value.trim() : "";
+    if (!pregunta) return;
+    campo.value = "";
+    campo.style.height = "";
+    preguntaEnEspera = pregunta;
+    abrirAsistente();
+    enviarPreguntaEnEspera();
+  }, true);
+
+  // HTMX ya tomó la pregunta: se vacía la caja.
+  document.addEventListener("htmx:beforeRequest", function (evento) {
+    const formulario = evento.target.closest && evento.target.closest("[data-asistente-form]");
+    if (!formulario) return;
+    const caja = formulario.querySelector("textarea");
+    if (caja) {
+      caja.value = "";
+      caja.style.height = "";
+    }
+  });
+
+  // Llegó el panel o una respuesta: abajo del todo y el cursor en la caja (solo si la dueña
+  // lo abrió o preguntó; al cargar una pantalla con el panel abierto, el cursor no se mueve).
+  document.addEventListener("htmx:afterSettle", function (evento) {
+    const panel = panelAsistente();
+    if (!panel || !panel.contains(evento.target) && evento.target !== panel) return;
+    bajarAlFinal(panel);
+    if (asistenteQuiereFoco && !panel.hidden) {
+      asistenteQuiereFoco = false;
+      enfocarAsistente(panel);
+    }
+    if (preguntaEnEspera && !panel.hidden) enviarPreguntaEnEspera();
+  });
+
+  // Si la pregunta no llegó (sin internet, servidor caído), los tres puntos cambian por el
+  // aviso, y se puede volver a preguntar.
+  function sinRespuesta(evento) {
+    const formulario = evento.target.closest && evento.target.closest("[data-asistente-form]");
+    if (!formulario) return;
+    const pendiente = document.getElementById("asistente-pendiente");
+    if (!pendiente) return;
+    pendiente.removeAttribute("id");
+    const pensando = pendiente.querySelector(".mensaje__pensando");
+    if (pensando) {
+      const aviso = document.createElement("p");
+      aviso.textContent = SIN_RESPUESTA;
+      pensando.replaceWith(aviso);
+    }
+  }
+
+  document.addEventListener("htmx:sendError", sinRespuesta);
+  document.addEventListener("htmx:responseError", sinRespuesta);
+
 })();

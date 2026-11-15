@@ -1,0 +1,11 @@
+{% comment %}
+Tarjeta "Telas" dentro de una respuesta del asistente (carril A, T27): las mismas filas de
+"Quién te debe" (diseno/asistente.html) con el nombre de la tela, su insignia de la pantalla
+Telas ("Se está acabando" en ámbar o "Suficiente" en gris) y los metros que quedan. Primero
+las que se acaban. Hasta 6 filas y "y N más".
+Recibe `tarjeta` (asistente.contratos.Tarjeta o el mismo diccionario guardado en la sesión):
+  tarjeta.datos = {filas: [{nombre, metros ("6.50"), etiqueta}], mas}
+{% endcomment %}{% load piezas %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+{% for fila in tarjeta.datos.filas %}<div class="fila-proporcion"><span class="fila-proporcion__nombre">{{ fila.nombre }} {% include "piezas/_etiqueta.html" with insignia=fila.etiqueta only %}</span><strong>{{ fila.metros|metros }}</strong></div>
+{% endfor %}{% if tarjeta.datos.mas %}<div class="fila-proporcion"><span class="fila-proporcion__nombre texto-2">y {{ tarjeta.datos.mas }} más</span></div>
+{% endif %}</section>

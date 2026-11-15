@@ -1,0 +1,7 @@
+{% load piezas %}{% comment %}
+La tarjeta "Preguntas este mes" del bloque Asistente de Mi taller (diseno/mi-taller.html).
+Cuenta preguntas, no plata. Recibe `uso_asistente` (asistente.uso.Cupo).
+{% endcomment %}<section class="tarjeta" aria-labelledby="t-asistente">
+<div class="tarjeta__cabeza"><h2 id="t-asistente">Preguntas este mes</h2><span class="tarjeta__aparte">{{ uso_asistente.usadas_mes }} de {{ uso_asistente.limite_mes }}</span></div>
+<div class="tarjeta__cuerpo"><span class="progreso" role="img" aria-label="Llevas {{ uso_asistente.usadas_mes }} de {{ uso_asistente.limite_mes }} preguntas este mes"><span class="progreso__relleno" style="width: {{ uso_asistente.porcentaje_mes }}%"></span></span><p class="texto-2">Hoy llevas {{ uso_asistente.usadas_hoy }} de {{ uso_asistente.limite_dia }}. El conteo del mes vuelve a cero el {{ uso_asistente.vuelve_el|dia_y_mes }}.</p></div>
+</section>

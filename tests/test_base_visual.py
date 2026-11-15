@@ -466,6 +466,22 @@ def test_el_marco_es_negro_con_un_brillo_azul_abajo():
     assert "background: var(--brillo);" in marco and "bottom: -150px;" in marco
 
 
+def test_el_encabezado_usa_el_ancho_del_contenido_de_cada_pantalla(sesion_duena):
+    # Pedido de David (2026-11-15): en Hoy y Mi taller el encabezado sobresalía de lo de abajo.
+    css = (ESTATICOS / "css/app.css").read_text("utf-8")
+    assert ".hoja--angosta {\n  --ancho-pagina: 940px;\n}" in css
+    assert ".hoja--ajustes {\n  --ancho-pagina: 1000px;\n}" in css
+    # El encabezado se acomoda con esa misma variable.
+    encabezado = re.search(r"\n\.encabezado \{(.*?)\}", css, re.DOTALL).group(1)
+    assert "var(--ancho-pagina)" in encabezado
+
+    assert '<main class="hoja hoja--angosta" id="contenido">' in sesion_duena.get("/").text
+    assert '<main class="hoja hoja--ajustes" id="contenido">' in sesion_duena.get("/mi-taller/").text
+    assert '<main class="hoja" id="contenido">' in sesion_duena.get("/clientes/").text
+    for pagina, clase in (("hoy", "hoja--angosta"), ("mi-taller", "hoja--ajustes")):
+        assert f'<main class="hoja {clase}" id="contenido">' in (RAIZ / f"diseno/{pagina}.html").read_text("utf-8")
+
+
 def test_la_pagina_no_se_mueve_y_la_hoja_se_desplaza_por_dentro():
     # docs/08-diseno.md, "Desplazamiento": en computador el marco mide la ventana y lo que se
     # desplaza es el contenido de la hoja. Ya no hay "pantalla fija" (.llenar, .desplazable).
@@ -807,3 +823,213 @@ def test_un_enlace_a_un_campo_plegado_lo_abre_y_deja_aire_arriba():
     # plegada (static/js/app.js) y el campo no queda pegado arriba de la hoja.
     assert 'destino.closest("details")' in _js()
     assert re.search(r"\.campo__control \{\s*scroll-margin-top: 48px;", _css())
+
+
+# --- Tanda 7: el botón y el panel del asistente -------------------------------------------
+
+
+@pytest.fixture
+def asistente_prendido(settings, taller):
+    settings.ANTHROPIC_API_KEY = "clave-de-prueba"
+    taller.asistente_limite_mes = 600
+    taller.asistente_limite_dia = 40
+    taller.save()
+    return taller
+
+
+def _boton_asistente(html):
+    return [e for e in Elementos(html).elementos if "data-asistente-abrir" in e["atributos"]]
+
+
+def _panel_asistente(html):
+    return [e for e in Elementos(html).elementos if e["atributos"].get("id") == "asistente"]
+
+
+def test_el_asistente_no_sale_sin_clave_aunque_el_taller_lo_tenga(sesion_duena, settings, taller):
+    taller.asistente_limite_mes, taller.asistente_limite_dia = 600, 40
+    taller.save()
+    settings.ANTHROPIC_API_KEY = ""
+
+    html = sesion_duena.get("/").text
+
+    assert not _boton_asistente(html) and not _panel_asistente(html)
+
+
+def test_el_asistente_no_sale_si_el_taller_lo_tiene_apagado(sesion_duena, settings):
+    settings.ANTHROPIC_API_KEY = "clave-de-prueba"
+
+    html = sesion_duena.get("/").text
+
+    assert not _boton_asistente(html) and not _panel_asistente(html)
+
+
+def test_el_asistente_no_le_sale_a_la_costurera(client, costurera, asistente_prendido):
+    client.force_login(costurera)
+
+    html = client.get("/").text
+
+    assert not _boton_asistente(html) and not _panel_asistente(html)
+
+
+# Mi taller con el asistente prendido muestra el cupo (asistente.uso.cupo): la prueba el
+# carril D (T34) en asistente/tests/test_uso.py.
+@pytest.mark.parametrize(
+    "direccion", ["/", "/pedidos/", "/calendario/", "/clientes/", "/cotizador/", "/telas/",
+                  "/resumen/"],
+)
+def test_la_duena_ve_el_boton_en_cada_pantalla_y_el_panel_cerrado(
+    sesion_duena, asistente_prendido, direccion
+):
+    html = sesion_duena.get(direccion).text
+    boton, = _boton_asistente(html)
+    panel, = _panel_asistente(html)
+
+    assert boton["atributos"]["href"] == "/asistente/"
+    assert boton["atributos"]["aria-controls"] == "asistente"
+    assert boton["atributos"]["aria-expanded"] == "false"
+    assert "Asistente" in boton["texto"]
+    assert "hidden" in panel["atributos"]
+    assert panel["atributos"]["hx-get"] == "/asistente/"
+    assert panel["atributos"]["hx-trigger"] == "asistente-abrir once"
+
+
+def test_el_boton_del_asistente_va_a_la_izquierda_del_principal(sesion_duena, asistente_prendido):
+    for direccion in ("/", "/pedidos/"):
+        html = sesion_duena.get(direccion).text
+        acciones = html[html.index('class="encabezado__acciones"'):html.index("</header>")]
+
+        assert acciones.index("data-asistente-abrir") < acciones.index("boton--principal")
+    # Hoy: la fecha y la lupa del celular siguen antes; Resumen: "Excel" antes.
+    hoy = sesion_duena.get("/").text
+    assert hoy.index("encabezado__apoyo") < hoy.index("data-asistente-abrir")
+    resumen = sesion_duena.get("/resumen/").text
+    assert resumen.index("Descargar para Excel") < resumen.index("data-asistente-abrir")
+
+
+def test_con_la_cookie_el_panel_sale_abierto_y_se_llena_al_cargar(
+    sesion_duena, asistente_prendido
+):
+    sesion_duena.cookies["asistente"] = "abierto"
+
+    html = sesion_duena.get("/").text
+    boton, = _boton_asistente(html)
+    panel, = _panel_asistente(html)
+
+    assert "hidden" not in panel["atributos"]
+    assert panel["atributos"]["hx-trigger"] == "load"
+    assert boton["atributos"]["aria-expanded"] == "true"
+    assert "es-presionado" in boton["clases"]
+
+
+def test_el_panel_va_al_lado_de_la_hoja_dentro_del_marco(sesion_duena, asistente_prendido):
+    html = sesion_duena.get("/").text
+
+    assert html.index('<main class="hoja') < html.index('id="asistente"') < html.index(
+        "navegacion-celular"
+    )
+
+
+def test_el_javascript_del_asistente_tiene_su_atajo_y_sus_piezas():
+    js = (ESTATICOS / "js/app.js").read_text("utf-8")
+    seccion = js[js.index("/* 14. Asistente"):]
+
+    assert 'evento.key.toLowerCase() === "j"' in seccion
+    for pieza in ("[data-asistente-abrir]", "[data-asistente-cerrar]", "[data-asistente-form]",
+                  "[data-asistente-sugerencia]", "#asistente-pendiente", "Revisando tus datos…",
+                  "asistente=abierto"):
+        assert pieza in seccion
+    # La burbuja se escribe como texto, nunca como HTML.
+    assert "innerHTML" not in seccion
+    assert "texto.textContent = pregunta" in seccion
+
+
+def test_el_panel_del_asistente_entra_y_sale_con_movimiento():
+    # Pedido de David (2026-11-15): el panel salía "muy crudo".
+    js = (ESTATICOS / "js/app.js").read_text("utf-8")
+    seccion = js[js.index("/* 14. Asistente"):]
+    css = (ESTATICOS / "css/app.css").read_text("utf-8")
+
+    # Después: "se ve mal cuando la página se contrae". Desde 768 px el panel flota encima de
+    # la hoja, que no cambia de ancho ni pasa sus columnas a una; el panel solo se desliza.
+    assert "/* Computador y pantallas medianas: el panel flota encima de la hoja" in css
+    assert "@media (min-width: 768px) {\n  .asistente {\n    position: absolute;" in css
+    assert ".asistente:not([hidden])" not in css
+    assert "startViewTransition" not in seccion and "view-transition-name: hoja" not in css
+    assert ".asistente.entra {\n  animation: asistente-llega var(--duracion-larga) var(--curva);" in css
+    assert ".asistente.se-cierra {\n  animation: asistente-se-va var(--duracion) var(--curva-salida) forwards;" in css
+    assert "from { transform: translateX(calc(100% + 8px)); }" in css
+    # Sin movimiento pedido, cambia de una vez; un movimiento viejo no deshace uno nuevo.
+    assert "hayMovimiento()" in seccion and "numero !== movimientoAsistente" in seccion
+
+
+def test_los_iconos_del_asistente_estan_guardados():
+    iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")
+
+    assert '<symbol id="enviar"' in iconos
+
+
+def test_con_el_asistente_la_caja_de_hoy_le_pregunta(sesion_duena, asistente_prendido):
+    html = sesion_duena.get("/").text
+    elementos = Elementos(html).elementos
+    caja, = [e for e in elementos if "data-asistente-caja" in e["atributos"]]
+    texto, = [e for e in elementos if e["atributos"].get("id") == "hoy-pregunta"]
+
+    assert "caja-grande--asistente" in caja["clases"]
+    assert caja["atributos"]["action"] == "/asistente/"
+    assert texto["etiqueta"] == "textarea"
+    assert texto["atributos"]["placeholder"] == "Pregúntale algo a tu asistente"
+    assert texto["atributos"]["maxlength"] == "500"
+    assert any("avatar-asistente" in e["clases"] for e in elementos)
+    # Los atajos de siempre siguen, y el buscador de la caja ya no está.
+    for atajo in ("Nuevo pedido", "Registrar abono", "Cotizar"):
+        assert atajo in caja["texto"]
+    assert 'placeholder="Busca un pedido o un cliente"' not in html
+
+
+def test_sin_el_asistente_la_caja_de_hoy_sigue_buscando(sesion_duena):
+    html = sesion_duena.get("/").text
+
+    assert 'placeholder="Busca un pedido o un cliente"' in html
+    assert "data-asistente-caja" not in html
+
+
+def test_la_caja_de_hoy_abre_el_panel_y_pregunta_desde_alla():
+    js = (ESTATICOS / "js/app.js").read_text("utf-8")
+    seccion = js[js.index("/* 14. Asistente"):]
+
+    assert "[data-asistente-caja]" in seccion
+    assert "preguntaEnEspera" in seccion and "formulario.requestSubmit()" in seccion
+
+
+def test_el_icono_del_asistente_es_la_esfera_de_lucy(sesion_duena, asistente_prendido):
+    # Pedido de David (2026-11-15): la esfera azul de Lucy reemplaza al botón con carita.
+    html = sesion_duena.get("/").text
+    elementos = Elementos(html).elementos
+    esferas = [e for e in elementos if "data-esfera" in e["atributos"]]
+    boton = html[html.index("data-asistente-abrir"):]
+    boton = boton[:boton.index("</a>")]
+
+    # En el botón del encabezado (20 px en celular, 16 px en computador) y en la caja de Hoy.
+    assert 'class="esfera esfera--boton"' in boton and 'class="esfera esfera--chica"' in boton
+    assert all(e["atributos"]["aria-hidden"] == "true" for e in esferas)
+    # La de la caja de Hoy se mueve (pedido de David); las del botón quedan quietas.
+    vivas = [e for e in esferas if "data-esfera-viva" in e["atributos"]]
+    assert len(vivas) == 1 and "avatar-asistente" in vivas[0]["clases"]
+    assert 'data-esfera-viva' not in boton
+    assert '<script src="/static/js/esfera.js" defer></script>' in html
+    # El botón con carita ya no está en el juego de íconos.
+    iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")
+    assert 'id="asistente"' not in iconos and 'id="asistente-cara"' not in iconos
+
+
+def test_la_esfera_se_dibuja_aqui_sin_nada_de_afuera():
+    js = (ESTATICOS / "js/esfera.js").read_text("utf-8")
+    css = (ESTATICOS / "css/app.css").read_text("utf-8")
+
+    assert "http" not in js and "fetch(" not in js
+    # Se detiene si no se ve o si la persona pidió menos movimiento.
+    assert "prefers-reduced-motion: reduce" in js and "document.hidden" in js
+    # Late mientras app.js muestra los tres puntos (#asistente-pendiente).
+    assert 'getElementById("asistente-pendiente")' in js and "esfera--atendiendo" in js
+    esfera = re.search(r"\n\.esfera \{(.*?)\}", css, re.DOTALL).group(1)
+    assert "background: #1463FF;" in esfera and "border-radius: 50%;" in esfera

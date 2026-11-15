@@ -66,6 +66,22 @@ En particular:
 - Una costurera no puede registrar abonos aunque envíe el formulario a mano.
 - Sin sesión, las pantallas internas redirigen al inicio de sesión.
 
+### Asistente (tanda 7)
+
+- `uv run pytest` nunca llama a la API de Claude: los ajustes de pruebas borran la clave y
+  ponen un cliente que falla si alguien lo usa. Las respuestas de Claude se simulan con
+  `asistente.falso.ClienteFalso` y un guion.
+- Cada herramienta, con dos talleres: nunca devuelve lo del otro, y un id ajeno da el mismo
+  error que uno que no existe.
+- Lo que va a Claude (`Resultado.datos`) no lleva teléfonos, notas, nombres ni medidas de
+  tallas, ni el token del enlace, y no tiene números con decimales sueltos (float).
+- Las cifras del asistente coinciden con las de las pantallas: "Quién te debe" con Hoy, las
+  cuentas del mes con Resumen, la cotización con el Cotizador.
+- El límite de preguntas frena antes de llamar a Claude, y un error del servicio no gasta una
+  pregunta.
+- Lo que escribe Claude se muestra escapado: un `<script>` en su texto sale como texto.
+- La prueba con preguntas reales (T36) se hace a mano, con la clave, fuera de pytest.
+
 ### Archivos
 
 - El recibo se genera como PDF válido y contiene cliente, valor, total y saldo.

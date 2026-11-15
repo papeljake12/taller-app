@@ -507,3 +507,38 @@ def test_buscar_sin_tildes_ni_mayusculas():
     assert calculos.coincide("MARTA", "8 overoles", "Marta")
     assert not calculos.coincide("colegio", "Ferretería")
     assert calculos.coincide("  ", "lo que sea")
+
+
+# --- 3. Gastos por fechas y por tipo (tanda 7, para el asistente) -----------------------------
+
+
+def test_gastos_entre_cuenta_los_dos_dias_del_borde_y_filtra_por_tipo(taller):
+    fabricas.crear_gasto(taller, valor=10_000, fecha=date(2026, 10, 31), categoria="telas")
+    primero = fabricas.crear_gasto(taller, valor=20_000, fecha=date(2026, 11, 1), categoria="telas")
+    ultimo = fabricas.crear_gasto(taller, valor=30_000, fecha=date(2026, 11, 30), categoria="otros")
+    fabricas.crear_gasto(taller, valor=40_000, fecha=date(2026, 12, 1), categoria="otros")
+    fabricas.crear_gasto(fabricas.crear_taller(), valor=99_000, fecha=date(2026, 11, 15))
+
+    noviembre = calculos.gastos_entre(taller, date(2026, 11, 1), date(2026, 11, 30))
+    solo_telas = calculos.gastos_entre(taller, date(2026, 11, 1), date(2026, 11, 30), "telas")
+
+    assert list(noviembre) == [ultimo, primero]
+    assert list(solo_telas) == [primero]
+
+
+def test_gastos_entre_un_mes_suma_lo_mismo_que_gastado_en(ejemplo):
+    gastos = calculos.gastos_entre(ejemplo, date(2026, 11, 1), date(2026, 11, 30))
+
+    assert sum(g.valor for g in gastos) == calculos.gastado_en(ejemplo, 2026, 11)
+
+
+def test_gastos_por_categoria_de_mayor_a_menor_y_sin_tipos_vacios(taller):
+    fabricas.crear_gasto(taller, valor=20_000, fecha=date(2026, 11, 2), categoria="telas")
+    fabricas.crear_gasto(taller, valor=25_000, fecha=date(2026, 11, 3), categoria="telas")
+    fabricas.crear_gasto(taller, valor=60_000, fecha=date(2026, 11, 4), categoria="servicios")
+    fabricas.crear_gasto(taller, valor=5_000, fecha=date(2026, 12, 1), categoria="insumos")
+
+    assert calculos.gastos_por_categoria(taller, date(2026, 11, 1), date(2026, 11, 30)) == [
+        {"categoria": "servicios", "nombre": "Servicios", "total": 60_000},
+        {"categoria": "telas", "nombre": "Telas", "total": 45_000},
+    ]

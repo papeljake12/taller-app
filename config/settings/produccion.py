@@ -142,5 +142,7 @@ LOGGING = {
         "django": {"handlers": ["consola"], "level": "INFO", "propagate": False},
         # Intentos fallidos al entrar y bloqueos (los avisos de rutina no se escriben).
         "axes": {"handlers": ["consola"], "level": "WARNING", "propagate": False},
+        # Cada pregunta al asistente: taller, vueltas, tokens y esfuerzo. Nunca el texto.
+        "asistente": {"handlers": ["consola"], "level": "INFO", "propagate": False},
     },
 }

@@ -1,0 +1,7 @@
+{% comment %}
+El aviso de uso del panel (diseno/asistente.html, encima de la caja). Mientras vaya bien no se
+ve nada; cuando quedan pocas (asistente.uso.Cupo.pocas: 5 o menos hoy, o el 10 % o menos del
+mes), sale la línea ámbar. Recibe `cupo`. La caja #asistente-uso va siempre, aunque esté vacía:
+"preguntar" la vuelve a mandar con hx-swap-oob (`oob`) para que el aviso cambie con cada
+respuesta.
+{% endcomment %}<div id="asistente-uso"{% if oob %} hx-swap-oob="true"{% endif %}>{% if cupo.pocas %}<p class="aviso asistente__uso">{{ cupo.aviso }}</p>{% endif %}</div>

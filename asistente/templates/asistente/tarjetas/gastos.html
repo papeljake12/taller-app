@@ -1,0 +1,14 @@
+{% comment %}
+Tarjeta "Gastos" dentro de una respuesta del asistente (carril A, T28): lo gastado en cada
+tipo de gasto, de mayor a menor, y el total, con las filas de "Cuentas" de la tarjeta de
+cotización (diseno/asistente.html).
+Recibe `tarjeta` (asistente.contratos.Tarjeta o el mismo diccionario guardado en la sesión):
+  tarjeta.datos = {total, filas: [{nombre ("Telas"), total}]}
+{% endcomment %}{% load piezas %}{% with d=tarjeta.datos %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+<div class="tarjeta__cabeza"><h3 class="mensaje__para">{{ tarjeta.titulo }}</h3></div>
+{% if d.filas %}<div class="cuentas">
+{% for fila in d.filas %}<div class="cuentas__fila"><span>{{ fila.nombre }}</span><span class="dinero">{{ fila.total|pesos }}</span></div>
+{% endfor %}<div class="cuentas__fila cuentas__fila--total"><span>Total</span><span class="dinero">{{ d.total|pesos }}</span></div>
+</div>
+{% else %}<p class="tarjeta__nota">No hay gastos anotados en esas fechas.</p>
+{% endif %}</section>{% endwith %}

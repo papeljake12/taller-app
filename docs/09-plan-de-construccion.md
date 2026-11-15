@@ -215,6 +215,33 @@ el formulario público de tallas y Mi taller.
 Al terminar: permisos aplicados y probados, todas las pantallas revisadas contra `diseno/`,
 y la guía lista para que David la ejecute.
 
+### Tanda 7. Asistente del taller (base y 4 carriles)
+
+El plan completo, con los contratos que comparten los carriles, está en
+`docs/11-plan-tanda-7.md`. Rama: `tanda-7-asistente`.
+
+1. Base, un solo agente (el coordinador): T25 y T26. Antes de lanzar los carriles, David
+   aprueba las piezas nuevas de la maqueta y pone la clave en `.env` para una prueba corta de
+   3 llamadas.
+2. Carriles, cada uno en su copia:
+
+| Carril | Tareas | Archivos propios |
+|---|---|---|
+| A. Consultas | T27, T28 | `asistente/herramientas/pedidos.py`, `plata.py`, `catalogo.py`, sus tarjetas y pruebas |
+| B. Motor | T29, T30 | `asistente/cliente.py`, `conversacion.py`, `instrucciones.py`, `pagina.py`, `esfuerzo.py`, sus pruebas |
+| C. Mensajes y cotizar | T31, T32 | `asistente/herramientas/mensajes.py`, `cotizar.py`, sus tarjetas y pruebas |
+| D. Panel y uso | T33, T34 | `asistente/vistas.py`, `uso.py`, las plantillas del panel, sus pruebas |
+
+Además de los archivos congelados de siempre, en esta tanda quedan congelados
+`asistente/contratos.py`, `esquemas.py`, `falso.py`, `herramientas/__init__.py` y `urls.py`.
+
+3. Unión en este orden: A, C, B, D, con `uv run pytest` después de cada uno. Luego T35
+   (integración y capturas) y T36 (20 preguntas reales con la clave, a mano).
+
+Al terminar: la dueña de un taller con el asistente prendido le pregunta por sus pedidos,
+su plata, sus telas y sus clientes, le pide mensajes y cotizaciones, y David ve en `/admin`
+cuántas preguntas y cuánto costaron.
+
 ## Cómo trabaja el coordinador dentro de una tanda
 
 1. Anota el plan de la tanda (carriles, agentes y archivos) al comienzo de
@@ -230,7 +257,7 @@ y la guía lista para que David la ejecute.
    arreglos, capturas finales en `docs/capturas/tanda-N/` y resumen en
    `docs/bitacora/tanda-N.md`.
 8. Si todas las pruebas pasan, sube la rama, la une a `main` y empieza la tanda siguiente,
-   hasta terminar la tanda 6.
+   hasta terminar la tanda 6. La tanda 7 la pidió David aparte; se trabaja igual.
 
 Se detiene solo en los casos de "Cuándo detenerse y preguntar" de
 `docs/07-forma-de-trabajo.md`, o si algo necesita una clave o una decisión de David.

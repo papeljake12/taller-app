@@ -15,6 +15,18 @@ class Taller(models.Model):
     nombre = models.CharField("nombre", max_length=50)
     telefono = models.CharField("teléfono", max_length=40, blank=True)
     logo = models.ImageField("logo", upload_to="talleres/logos/", blank=True)
+    # Asistente (docs/10-asistente.md). 0 en cualquiera de los dos lo apaga: así viene cada
+    # taller nuevo, y David lo activa en /admin (600 al mes y 40 al día).
+    asistente_limite_mes = models.PositiveIntegerField(
+        "preguntas al asistente por mes",
+        default=0,
+        help_text="0 apaga el asistente. Lo normal: 600.",
+    )
+    asistente_limite_dia = models.PositiveIntegerField(
+        "preguntas al asistente por día",
+        default=0,
+        help_text="0 apaga el asistente. Lo normal: 40.",
+    )
     creado = models.DateTimeField("creado", auto_now_add=True)
     actualizado = models.DateTimeField("actualizado", auto_now=True)
 

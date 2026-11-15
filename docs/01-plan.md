@@ -34,6 +34,9 @@ Con esta etapa ya hay algo que se puede vender.
 
 ### 3. Ahorro de trabajo
 
+- Asistente del taller (tanda 7): la dueña le pregunta por sus pedidos, abonos, telas y
+  gastos y le contesta con las cifras; redacta mensajes y cotiza. Solo consulta. En la tanda 8,
+  tareas con confirmación. Ver `docs/10-asistente.md`.
 - IA para crear pedidos desde un mensaje o dictado.
 - Avisos automáticos: entregas de la semana, saldos vencidos, fechas de dotación.
 - Ficha de producción por pedido, para imprimir.

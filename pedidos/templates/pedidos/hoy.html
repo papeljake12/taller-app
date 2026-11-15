@@ -4,21 +4,25 @@ Pantalla Hoy (diseno/hoy.html). Esta plantilla solo reúne las partes; cada una 
   _hoy_estado (el "N pedidos atrasados" de arriba), _hoy_cuenta (la frase de cosas pendientes),
   _hoy_pendientes (las tarjetas de lo que hay que hacer), _cifras, _grafica, _quien_debe y
   _etapas. La costurera no ve la gráfica ni "Quién te debe" (T21, docs/04-permisos.md).
+Con el asistente prendido (tanda 7), la caja grande le pregunta al asistente
+(asistente/_caja_hoy.html) en vez de buscar.
 {% endcomment %}
 {% block pestana %}Hoy{% endblock %}
+{% block clase_hoja %} hoja--angosta{% endblock %}
 {% block encabezado_izquierda %}<a class="encabezado__logo" href="{% url 'pedidos:hoy' %}" aria-label="Ir a Hoy">{% icono "tijeras" %}</a>{% endblock %}
 {% block encabezado_titulo %}{% include "pedidos/_hoy_estado.html" %}{% endblock %}
-{% block acciones %}<span class="encabezado__apoyo solo-computador">{{ hoy|fecha_larga }}</span><a class="boton boton--redondo-celular solo-celular" href="{% url 'pedidos:buscar' %}" aria-label="Buscar"><span class="boton__icono-celular">{% icono "buscar" 20 %}</span></a>{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
+{% block acciones_antes %}<span class="encabezado__apoyo solo-computador">{{ hoy|fecha_larga }}</span><a class="boton boton--redondo-celular solo-celular" href="{% url 'pedidos:buscar' %}" aria-label="Buscar"><span class="boton__icono-celular">{% icono "buscar" 20 %}</span></a>{% endblock %}
+{% block acciones %}{% include "piezas/_boton_nuevo_pedido.html" %}{% endblock %}
 {% block contenido %}
 <div class="angosto">
 <div class="bienvenida">
 <h1>{{ saludo }}<span class="bienvenida__resto"><br>Esto es lo de hoy en <span class="bienvenida__taller">{{ request.taller.nombre }}</span></span></h1>
 {% include "pedidos/_hoy_cuenta.html" %}
 </div>
-<form class="caja-grande" role="search" action="{% url 'pedidos:buscar' %}" method="get">
+{% if asistente.disponible %}{% include "asistente/_caja_hoy.html" %}{% else %}<form class="caja-grande" role="search" action="{% url 'pedidos:buscar' %}" method="get">
 <label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar</span><input type="search" name="q" placeholder="{% if es_duena %}Busca un pedido o un cliente{% else %}Busca un pedido{% endif %}"></label>
 {% if es_duena %}<div class="caja-grande__atajos"><a class="chip" href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}" hx-target="#ventana">{% icono "sumar" 14 %}Nuevo pedido</a><a class="chip" href="{% url 'pedidos:lista' %}?filtro=saldo">{% icono "recibo" 14 %}Registrar abono</a><a class="chip" href="{% url 'cotizador:inicio' %}">{% icono "cotizador" 14 %}Cotizar</a></div>{% endif %}
-</form>
+</form>{% endif %}
 <section class="cartas" id="hoy-que-hacer" aria-label="Lo que hay que hacer hoy">{% include "pedidos/_hoy_pendientes.html" %}</section>
 <div class="seccion-titulo"><h2>{{ titulo_cifras }}</h2>{% if es_duena %}<a class="chip" href="{% url 'finanzas:resumen' %}">{% icono "calendario" 14 %}{{ mes }}</a>{% endif %}</div>
 {% include "pedidos/_cifras.html" %}

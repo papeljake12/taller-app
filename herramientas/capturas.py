@@ -5,6 +5,12 @@ Levanta el servidor de desarrollo, entra con una usuaria, abre cada pantalla con
 docs/capturas/tanda-N/. Además avisa si algo se sale del ancho, si un archivo no cargó o
 si el navegador mostró un error.
 
+Desde la tanda 7 (el asistente) el taller tiene el asistente prendido mientras se toman las
+capturas, y el panel sale abierto con una conversación de ejemplo en las pantallas marcadas.
+La conversación se siembra por la vista de verdad con un Claude de mentira (asistente.falso) y
+una clave falsa: nunca se usa la clave del .env ni se sale a internet. Al terminar, los límites
+del taller y el conteo de preguntas quedan como estaban.
+
 Con --formatos completo toma cada pantalla en 1366 x 768, en 1920 x 1080 y en celular (390 px).
 En computador comprueba que la página misma no se desplace (docs/08-diseno.md,
 "Desplazamiento": lo que se desplaza es el contenido de la hoja) y guarda la hoja completa,
@@ -57,6 +63,7 @@ class Pantalla:
     menu: str | None = None  # "contraido" para el menú contraído
     sin_sesion: bool = False
     solo_computador: bool = False
+    asistente: bool = False  # el panel del asistente abierto, con la conversación de ejemplo
 
 
 # Cada tanda agrega aquí sus pantallas.
@@ -87,7 +94,15 @@ PANTALLAS = {
     4: [
         Pantalla("resumen-octubre", "/resumen/?mes={mes_anterior}"),
     ],
+    7: [
+        Pantalla("asistente", "/", "asistente.html", asistente=True),
+        Pantalla("pedido-con-asistente", "/pedidos/{pedido}/", asistente=True),
+        Pantalla("resumen-con-asistente", "/resumen/", asistente=True, solo_computador=True),
+    ],
 }
+
+# Una clave que no sirve para nada: el asistente aparece, pero nada puede llamar a Claude.
+CLAVE_FALSA = "clave-falsa-solo-para-capturas"
 
 DESBORDE = """(ancho) => {
   const fuera = [];
@@ -126,10 +141,11 @@ def puerto_libre():
         return s.getsockname()[1]
 
 
-def levantar_servidor(puerto):
+def levantar_servidor(puerto, entorno=None):
     proceso = subprocess.Popen(
         [sys.executable, "manage.py", "runserver", f"127.0.0.1:{puerto}", "--noreload"],
         cwd=RAIZ, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        env={**os.environ, **(entorno or {})},
     )
     for _ in range(100):
         try:
@@ -179,6 +195,85 @@ def datos_para_direcciones(usuario):
         "token": pedido.token_tallas,
         "mes_anterior": f"{anterior.year}-{anterior.month:02d}",
     }
+
+
+def preparar_asistente(usuario, clave):
+    """Prende el asistente del taller y siembra una conversación de ejemplo en la sesión.
+
+    Las tres preguntas pasan por la vista de verdad (cupo, ciclo, herramientas y tarjetas) con
+    un Claude de mentira que sigue un guion. Devuelve una función que deja todo como estaba.
+    """
+    from django.conf import settings
+    from django.contrib.auth import get_user_model
+    from django.test import Client
+    from django.utils import timezone
+
+    from asistente import falso
+    from asistente.models import UsoAsistente
+    from pedidos.models import Pedido
+
+    taller = get_user_model().objects.get(username=usuario).taller
+    limites = (taller.asistente_limite_mes, taller.asistente_limite_dia)
+    hoy = timezone.localdate()
+    uso_antes = UsoAsistente.objects.filter(taller=taller, fecha=hoy).values().first()
+    taller.asistente_limite_mes = taller.asistente_limite_mes or 600
+    taller.asistente_limite_dia = taller.asistente_limite_dia or 40
+    taller.save(update_fields=["asistente_limite_mes", "asistente_limite_dia"])
+
+    def deshacer():
+        taller.asistente_limite_mes, taller.asistente_limite_dia = limites
+        taller.save(update_fields=["asistente_limite_mes", "asistente_limite_dia"])
+        UsoAsistente.objects.filter(taller=taller, fecha=hoy).delete()
+        if uso_antes:
+            UsoAsistente.objects.create(**uso_antes)
+
+    tambores = Pedido.objects.filter(taller=taller, detalle__startswith="15 polleras").first()
+    guion = [
+        falso.usa(("quien_debe", {}, "toolu_1")),
+        falso.texto("Te deben $ 5.790.000 entre 4 clientes.\n\nLa de Ferretería La Esquina es "
+                    "la más urgente: su pedido de 8 overoles va atrasado."),
+    ]
+    preguntas = ["¿Quién me debe plata?"]
+    if tambores:
+        guion += [
+            falso.usa(("preparar_mensaje", {
+                "pedido_id": tambores.pk, "cliente_id": None, "motivo": "listo",
+                "texto": f"Hola, le escribimos de {taller.nombre}. Su pedido (15 polleras con "
+                         "blusa) ya está listo para entregar. Saldo pendiente: $ 750.000. "
+                         "¿Cuándo le queda bien recogerlo?",
+            }, "toolu_2")),
+            falso.texto("Te dejé el mensaje escrito. Revísalo antes de enviarlo."),
+        ]
+        preguntas.append("Escríbele a Tambores del Río que ya está listo")
+    guion += [
+        falso.usa(("cotizar", {"prenda": "Vestido de comparsa", "cantidad": 15,
+                               "ganancia_pct": None, "abono_pct": None}, "toolu_3")),
+        falso.texto("Con 30 % de ganancia y la mitad de abono te queda así.\n\nSi quieres otra "
+                    "ganancia u otra cantidad, dímelo y la vuelvo a sacar."),
+    ]
+    preguntas.append("¿Cuánto cobro por 15 vestidos de comparsa?")
+
+    import asistente.cliente
+
+    claude = falso.ClienteFalso(guion)
+    original = asistente.cliente.obtener_cliente
+    settings.ANTHROPIC_API_KEY = CLAVE_FALSA
+    asistente.cliente.obtener_cliente = lambda: claude
+    try:
+        navegador = Client(HTTP_HOST="127.0.0.1")
+        navegador.cookies["sessionid"] = clave
+        for pregunta in preguntas:
+            respuesta = navegador.post("/asistente/preguntar/",
+                                       {"pregunta": pregunta, "pagina": "/"},
+                                       HTTP_HX_REQUEST="true")
+            if respuesta.status_code != 200 or "asistente__turno" not in respuesta.text:
+                raise SystemExit(f"No se pudo sembrar la conversación: «{pregunta}».")
+    except BaseException:
+        deshacer()
+        raise
+    finally:
+        asistente.cliente.obtener_cliente = original
+    return deshacer
 
 
 def cerrar_sesion(clave):
@@ -244,8 +339,15 @@ def main():
     faltan = [p.nombre for p in pantallas if "{" in p.url and not datos]
     if faltan:
         raise SystemExit(f"Faltan pedidos para {faltan}: carga los ejemplos (cargar_ejemplos).")
+    deshacer = preparar_asistente(usuario, clave) if opciones.tanda >= 7 else None
     puerto = puerto_libre()
-    servidor = levantar_servidor(puerto)
+    try:
+        servidor = levantar_servidor(
+            puerto, {"ANTHROPIC_API_KEY": CLAVE_FALSA} if deshacer else None)
+    except BaseException:
+        if deshacer:
+            deshacer()
+        raise
     base = f"http://127.0.0.1:{puerto}"
     print(f"Servidor en {base}, sesión de {usuario}. Capturas en {salida}")
     total = 0
@@ -258,6 +360,8 @@ def main():
                     {"name": "sessionid", "value": clave, "url": base}]
                 if pantalla.menu:
                     cookies.append({"name": "menu", "value": pantalla.menu, "url": base})
+                if pantalla.asistente:
+                    cookies.append({"name": "asistente", "value": "abierto", "url": base})
                 formatos = []
                 for nombre_formato, formato in FORMATOS[opciones.formatos]:
                     celular = formato.get("is_mobile", False)
@@ -284,6 +388,8 @@ def main():
     finally:
         servidor.terminate()
         cerrar_sesion(clave)
+        if deshacer:
+            deshacer()
     print("Sin problemas." if total == 0 else f"{total} problema(s) para revisar.")
     return 1 if total else 0
 

@@ -435,6 +435,9 @@ Qué hace cada una, en corto (la explicación larga está en `docs/bitacora/T24.
 - `DJANGO_MEDIA_ROOT`: dónde se guardan las fotos y los logos. Es obligatoria y debe ser
   `/srv/taller/media`, la misma carpeta que entrega NGINX (paso 13) y que guarda la copia de
   seguridad (paso 17).
+- `ANTHROPIC_API_KEY`: la clave del asistente (tanda 7), del espacio de trabajo "taller" de la
+  consola de Anthropic, con su tope de gasto. Vacía, el asistente no aparece. Aunque tenga
+  clave, cada taller lo tiene apagado hasta que le pongas límites en `/admin` (paso 15).
 
 ## 11. Instalar las librerías y preparar la base de datos
 
@@ -840,6 +843,34 @@ El script hace, en orden, y se detiene si algo falla:
 Después entra a la aplicación y revisa la pantalla que cambió. Si el paso 3 dice que no se
 puede hacer "fast-forward", alguien cambió archivos en el servidor: no fuerces nada,
 pregunta.
+
+### Una sola vez, con la tanda 7 (el asistente)
+
+El asistente puede tardar hasta un minuto en contestar. Gunicorn y NGINX cortaban las visitas
+a los 60 segundos; ahora esperan 120, y Gunicorn atiende con hilos para que una pregunta
+larga no frene las demás pantallas. Esto no lo hace `actualizar.sh`, porque esos dos
+archivos viven fuera de la carpeta del código. Después de actualizar:
+
+```
+sudo cp herramientas/servidor/taller.service /etc/systemd/system/taller.service
+sudo sed -i "s/TU_USUARIO/$USER/g" /etc/systemd/system/taller.service
+sudo systemctl daemon-reload
+sudo systemctl restart taller
+```
+
+El servicio nuevo, con tu usuario, como en el paso 12.
+
+```
+sudo sed -i "s/proxy_read_timeout 60s;/proxy_read_timeout 120s;/" /etc/nginx/sites-available/taller
+grep -n "proxy_read_timeout" /etc/nginx/sites-available/taller
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Cambia solo esa línea del sitio (no se copia el archivo entero, para no borrar lo que agregó
+certbot en el paso 14). El `grep` debe mostrar `120s`, y `nginx -t` debe decir `ok`.
+
+Luego pon `ANTHROPIC_API_KEY` en el `.env` (paso 10), reinicia (`sudo systemctl restart
+taller`) y, en `/admin`, ponle al taller 600 preguntas al mes y 40 al día.
 
 ## 21. Volver a la versión anterior
 

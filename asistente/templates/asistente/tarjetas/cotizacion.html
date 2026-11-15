@@ -1,0 +1,19 @@
+{% load piezas %}{% comment %}
+Carril C (T32). Tarjeta "cotizacion": lo que devolvió cotizar (asistente/herramientas/cotizar.py)
+con la fórmula del Cotizador. Copia la de diseno/asistente.html: el total grande y las filas
+del Cotizador.
+
+Recibe `tarjeta` (asistente.contratos.Tarjeta, o el diccionario guardado en la sesión):
+- tarjeta.titulo: "Total de 15 vestidos de comparsa".
+- tarjeta.datos: total, precio_unidad, costo, ganancia, abono (enteros en pesos) y
+  url_cotizador (la pantalla del Cotizador con esa prenda y esas cifras, armada con reverse).
+{% endcomment %}<section class="tarjeta mensaje__tarjeta" aria-label="{{ tarjeta.titulo }}">
+<div class="tarjeta__cuerpo mensaje__total"><h3 class="texto-2">{{ tarjeta.titulo }}</h3><p class="cotizacion__total dinero">{{ tarjeta.datos.total|pesos }}</p></div>
+<div class="cuentas">
+<div class="cuentas__fila"><span>Precio por unidad</span><span class="dinero fuerte">{{ tarjeta.datos.precio_unidad|pesos }}</span></div>
+<div class="cuentas__fila"><span>Costo de hacer una</span><span class="dinero">{{ tarjeta.datos.costo|pesos }}</span></div>
+<div class="cuentas__fila"><span>Tu ganancia en el pedido</span><span class="dinero">{{ tarjeta.datos.ganancia|pesos }}</span></div>
+<div class="cuentas__fila"><span>Abono para empezar</span><span class="dinero">{{ tarjeta.datos.abono|pesos }}</span></div>
+</div>
+<div class="tarjeta__pie"><a class="boton" href="{{ tarjeta.datos.url_cotizador }}">{% icono "cotizador" 16 %}Abrir en el Cotizador</a></div>
+</section>
