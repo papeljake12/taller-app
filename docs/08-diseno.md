@@ -350,7 +350,8 @@ de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
   sección 7 ("La esfera"). Sin JavaScript se ve el azul de fondo (`#1463FF`). Mide 24 px como
   **avatar** (`.avatar-asistente`: la caja de Hoy y arriba del panel), 20 px en el botón
   redondo del celular y 16 px en el botón "Asistente" del encabezado y en el título de su
-  página. Solo la de arriba del panel se mueve; mientras el asistente revisa los datos late
+  página. Se mueven la de arriba del panel y la de la caja de Hoy (pedido de David, el mismo
+  día); las del botón quedan quietas. Mientras el asistente revisa los datos, la del panel late
   despacio y la tinta corre más rápido. Con "menos movimiento" queda quieta. Es la única
   excepción al azul de "gráficas y en proceso": es la marca del asistente, no un estado.
 - **Botón:** "Asistente" con su ícono, en el encabezado, a la izquierda del botón principal.

@@ -8,12 +8,12 @@
    (--esfera-tonos) y cada esfera lo copia agrandado y un poco difuminado. Pocos puntos
    agrandados: de ahí lo borroso.
 
-   Qué se mueve: solo la esfera viva (data-esfera-viva: la de arriba del panel), unas 30 veces
-   por segundo. Las demás (el botón del encabezado, la caja de Hoy) se dibujan una vez y quedan
-   quietas. El reloj se detiene si la pestaña no se ve, si el panel está cerrado o si la
-   persona pidió menos movimiento. Mientras el asistente revisa los datos (static/js/app.js
-   pone #asistente-pendiente), la viva lleva esfera--atendiendo: late (CSS) y la tinta corre
-   más rápido.
+   Qué se mueve: solo las esferas vivas (data-esfera-viva: la de arriba del panel y la de la
+   caja de Hoy), unas 30 veces por segundo. Las del botón del encabezado se dibujan una vez y
+   quedan quietas. El reloj se detiene si la pestaña no se ve, si ninguna viva está a la vista
+   o si la persona pidió menos movimiento. Mientras el asistente revisa los datos
+   (static/js/app.js pone #asistente-pendiente), la de arriba del panel lleva
+   esfera--atendiendo: late (CSS) y la tinta corre más rápido.
 
    Las esferas nuevas (HTMX llena el panel sin recargar) las encuentra un MutationObserver, y
    un ResizeObserver ajusta cada lienzo a su esfera: una que estaba oculta se dibuja cuando
@@ -207,11 +207,12 @@
     }, { once: true });
   }
 
-  // Mientras el asistente revisa los datos (app.js pone #asistente-pendiente), la viva late.
+  // Mientras el asistente revisa los datos (app.js pone #asistente-pendiente), late la de
+  // arriba del panel: la que responde. La de Hoy sigue moviéndose sin latir.
   function revisarAtendiendo() {
     const atiende = document.getElementById("asistente-pendiente") !== null;
     esferas.forEach(function (esfera) {
-      if (esfera.viva) esfera.el.classList.toggle("esfera--atendiendo", atiende);
+      if (esfera.panel) esfera.el.classList.toggle("esfera--atendiendo", atiende);
     });
   }
 
@@ -223,7 +224,8 @@
       lienzo.className = "esfera__lienzo";
       el.prepend(lienzo);
     }
-    esferas.set(el, { el: el, lienzo: lienzo, ctx: lienzo.getContext("2d"), lado: 0, viva: el.hasAttribute("data-esfera-viva") });
+    esferas.set(el, { el: el, lienzo: lienzo, ctx: lienzo.getContext("2d"), lado: 0, viva: el.hasAttribute("data-esfera-viva"),
+      panel: el.closest(".asistente__titulo") !== null });
     tamanos.observe(el);
   }
 

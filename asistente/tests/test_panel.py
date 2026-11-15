@@ -224,7 +224,7 @@ def test_el_panel_con_htmx_trae_lo_que_espera_app_js(sesion_duena, prendido):
 def test_el_panel_copia_la_cabeza_de_la_maqueta(sesion_duena, prendido):
     html = sesion_duena.get("/asistente/", **HTMX).text
 
-    # El avatar es la esfera de Lucy, y es la única que se mueve.
+    # El avatar es la esfera de Lucy, y se mueve.
     assert ('<span class="esfera avatar-asistente" data-esfera data-esfera-viva aria-hidden="true">'
             '<canvas class="esfera__lienzo"></canvas></span>Asistente</h2>') in html
     assert "#asistente-cara" not in html

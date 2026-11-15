@@ -976,10 +976,11 @@ def test_el_icono_del_asistente_es_la_esfera_de_lucy(sesion_duena, asistente_pre
 
     # En el botón del encabezado (20 px en celular, 16 px en computador) y en la caja de Hoy.
     assert 'class="esfera esfera--boton"' in boton and 'class="esfera esfera--chica"' in boton
-    assert any("avatar-asistente" in e["clases"] for e in esferas)
     assert all(e["atributos"]["aria-hidden"] == "true" for e in esferas)
-    # Ninguna de estas se mueve: solo la de arriba del panel (test_panel).
-    assert not any("data-esfera-viva" in e["atributos"] for e in esferas)
+    # La de la caja de Hoy se mueve (pedido de David); las del botón quedan quietas.
+    vivas = [e for e in esferas if "data-esfera-viva" in e["atributos"]]
+    assert len(vivas) == 1 and "avatar-asistente" in vivas[0]["clases"]
+    assert 'data-esfera-viva' not in boton
     assert '<script src="/static/js/esfera.js" defer></script>' in html
     # El botón con carita ya no está en el juego de íconos.
     iconos = (ESTATICOS / "iconos/iconos.svg").read_text("utf-8")

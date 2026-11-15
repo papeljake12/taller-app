@@ -3400,8 +3400,8 @@ a.etapas__etapa:hover {
    del fondo. Mate: por fuera un filo claro y por dentro un filo de luz muy tenue. Mide 24 px
    como avatar (.avatar-asistente: la caja de Hoy y arriba del panel), 20 px en el botón
    redondo del celular y 16 px en el botón "Asistente" del encabezado y en el título de su
-   página. Solo la de arriba del panel se mueve; mientras el asistente revisa los datos late
-   despacio y la tinta corre más rápido. */
+   página. Se mueven la de arriba del panel y la de la caja de Hoy; mientras el asistente
+   revisa los datos, la del panel late despacio y la tinta corre más rápido. */
 .esfera {
   --lado-esfera: 24px;
   --esfera-tonos: #0B2A9A #0E48DE #1463FF #2283FF #4DB3FF #BDE5FF;
