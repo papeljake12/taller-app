@@ -933,15 +933,23 @@ def test_el_panel_del_asistente_entra_y_sale_con_movimiento():
     seccion = js[js.index("/* 14. Asistente"):]
     css = (ESTATICOS / "css/app.css").read_text("utf-8")
 
-    assert 'moverAsistente(panel, "entra", "--duracion-larga")' in seccion
-    assert 'moverAsistente(panel, "se-cierra", "--duracion"' in seccion
-    # Se esconde solo al terminar, y un cierre viejo no esconde un panel que se volvió a abrir.
-    assert "numero !== movimientoAsistente" in seccion and "hayMovimiento()" in seccion
-    assert ".asistente.entra {\n  animation: asistente-entra var(--duracion-larga) var(--curva);" in css
-    assert ".asistente.se-cierra {\n  animation: asistente-sale var(--duracion) var(--curva-salida) forwards;" in css
-    # En computador entra con el margen (la hoja se angosta a la vez); encima, se desliza.
-    assert "from { margin-right: -360px; opacity: 0; }" in css
-    assert "from { transform: translateX(calc(100% + 8px)); }" in css
+    # Después "se bugeaba": animar el ancho de la hoja la reacomodaba en cada cuadro. En
+    # computador ahora pasa de una foto a otra (View Transitions): la hoja cambia una sola vez.
+    assert "document.startViewTransition(cambiar)" in seccion
+    assert "margin-right: -360px" not in css
+    # Los nombres solo mientras cambia, para no tocar el paso entre secciones.
+    assert ".marco.asistente-cambia > .hoja {\n  view-transition-name: hoja;" in css
+    assert ".marco.asistente-cambia > .asistente {\n  view-transition-name: asistente;" in css
+    # Las fotos de la hoja se recortan, no se estiran.
+    assert "object-fit: none;" in css and "object-position: left top;" in css
+    assert "::view-transition-new(asistente):only-child {\n  animation: asistente-llega var(--duracion-larga)" in css
+    # Encima de la hoja (medianas y celular) solo se desliza.
+    assert ".asistente.entra {\n    animation: asistente-llega var(--duracion-larga) var(--curva);" in css
+    assert ".asistente.se-cierra {\n    animation: asistente-se-va var(--duracion) var(--curva-salida) forwards;" in css
+    # Sin movimiento pedido, o sin fotos en el navegador, cambia de una vez; un movimiento
+    # viejo no deshace uno nuevo.
+    assert "hayMovimiento()" in seccion and "!document.startViewTransition" in seccion
+    assert "numero !== movimientoAsistente" in seccion
 
 
 def test_los_iconos_del_asistente_estan_guardados():

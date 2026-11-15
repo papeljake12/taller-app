@@ -830,59 +830,92 @@
   }
 
   // Entrar y salir con movimiento (app.css, sección 8, "El panel del asistente entra y
-  // sale"): en computador entra desde la derecha y la hoja se angosta a la vez; en pantallas
-  // medianas y en celular se desliza encima de la hoja. Solo cuando la persona lo abre o lo
-  // cierra: si ya viene abierto de otra pantalla, no se anima. Cada movimiento lleva su
-  // número: si se abre mientras se estaba cerrando, el cierre viejo ya no lo esconde.
+  // sale"). Solo cuando la persona lo abre o lo cierra: si ya viene abierto de otra pantalla,
+  // no se anima; con menos movimiento pedido, abre y cierra de una vez.
+  //   Computador: el navegador toma una foto antes y otra después (View Transitions) y pasa
+  //   de una a otra: el panel entra desde la derecha y la orilla de la hoja se corre con él.
+  //   La hoja se acomoda a su nuevo ancho una sola vez; si se animara su ancho, lo de adentro
+  //   (textos, tarjetas, el saludo) se reacomodaría en cada cuadro y se vería temblar.
+  //   Pantallas medianas y celular: el panel va encima de la hoja; solo se desliza (.entra y
+  //   .se-cierra) y la hoja no cambia.
+  // Mientras se mueve, `asistenteVaAbierto` dice cómo va a quedar, y cada movimiento lleva
+  // su número: si se toca otra vez a mitad de camino, cambia de dirección sin trabarse.
   let movimientoAsistente = 0;
+  let asistenteVaAbierto = null;
 
-  function seEstaCerrando(panel) {
-    return panel.classList.contains("se-cierra");
+  function estaAbierto(panel) {
+    return asistenteVaAbierto === null ? !panel.hidden : asistenteVaAbierto;
   }
 
-  function moverAsistente(panel, clase, duracion, despues) {
+  function mostrarAsistente(panel, abrir, despues) {
     const numero = ++movimientoAsistente;
+    const marco = panel.closest("[data-marco]") || panel.parentElement;
+    asistenteVaAbierto = abrir;
     panel.classList.remove("entra", "se-cierra");
-    if (!hayMovimiento()) {
-      if (despues) despues();
-      return;
-    }
-    void panel.offsetWidth;  // así la clase, puesta otra vez, anima desde el principio
-    panel.classList.add(clase);
-    alTerminar(panel, milisegundos(duracion), function () {
+    function terminar() {
       if (numero !== movimientoAsistente) return;
-      panel.classList.remove(clase);
+      asistenteVaAbierto = null;
+      panel.classList.remove("entra", "se-cierra");
+      marco.classList.remove("asistente-cambia");
+    }
+    function cambiar() {
+      panel.hidden = !abrir;
       if (despues) despues();
-    });
+    }
+
+    if (!hayMovimiento()) {
+      cambiar();
+      terminar();
+    } else if (window.matchMedia(PANEL_AL_LADO).matches) {
+      if (!document.startViewTransition) {
+        cambiar();  // un navegador sin fotos: cambia de una vez, sin temblar
+        terminar();
+        return;
+      }
+      // .asistente-cambia les da nombre a la hoja y al panel solo durante el cambio.
+      marco.classList.add("asistente-cambia");
+      document.startViewTransition(cambiar).finished.finally(terminar);
+    } else {
+      if (abrir) panel.hidden = false;
+      void panel.offsetWidth;  // así la clase, puesta otra vez, anima desde el principio
+      panel.classList.add(abrir ? "entra" : "se-cierra");
+      alTerminar(panel, milisegundos(abrir ? "--duracion-larga" : "--duracion"), function () {
+        if (numero !== movimientoAsistente) return;
+        if (!abrir) panel.hidden = true;
+        terminar();
+      });
+      if (abrir && despues) despues();
+    }
   }
 
   function abrirAsistente() {
     const panel = panelAsistente();
     if (!panel) return false;
-    if (panel.hidden || seEstaCerrando(panel)) {
-      panel.hidden = false;
-      moverAsistente(panel, "entra", "--duracion-larga");
-    }
     marcarBotonesAsistente(true);
     if (window.matchMedia(PANEL_AL_LADO).matches) {
       document.cookie = "asistente=abierto; path=/; max-age=" + UN_ANO + "; SameSite=Lax";
     }
-    if (panel.childElementCount) {
-      enfocarAsistente(panel);
-    } else if (window.htmx) {
-      // Primera vez: se pide el panel. Al llegar, el cursor queda en la caja.
-      asistenteQuiereFoco = true;
-      window.htmx.trigger(panel, "asistente-abrir");
+    function listo() {
+      if (panel.childElementCount) {
+        enfocarAsistente(panel);
+      } else if (window.htmx) {
+        // Primera vez: se pide el panel. Al llegar, el cursor queda en la caja.
+        asistenteQuiereFoco = true;
+        window.htmx.trigger(panel, "asistente-abrir");
+      }
+    }
+    if (estaAbierto(panel)) {
+      listo();
+    } else {
+      mostrarAsistente(panel, true, listo);
     }
     return true;
   }
 
   function cerrarAsistente() {
     const panel = panelAsistente();
-    if (!panel || panel.hidden || seEstaCerrando(panel)) return false;
-    moverAsistente(panel, "se-cierra", "--duracion", function () {
-      panel.hidden = true;
-    });
+    if (!panel || !estaAbierto(panel)) return false;
+    mostrarAsistente(panel, false);
     marcarBotonesAsistente(false);
     document.cookie = "asistente=; path=/; max-age=0; SameSite=Lax";
     // El cursor vuelve al botón que se ve (el del computador o el redondo del celular).
@@ -897,7 +930,7 @@
   function alternarAsistente() {
     const panel = panelAsistente();
     if (!panel) return false;
-    return panel.hidden || seEstaCerrando(panel) ? abrirAsistente() : cerrarAsistente();
+    return estaAbierto(panel) ? cerrarAsistente() : abrirAsistente();
   }
 
   document.addEventListener("click", function (evento) {
@@ -932,7 +965,7 @@
         evento.key.toLowerCase() === "j") {
       evento.preventDefault();
       alternarAsistente();
-    } else if (evento.key === "Escape" && !panel.hidden &&
+    } else if (evento.key === "Escape" && estaAbierto(panel) &&
                !document.querySelector("dialog[open], details.desplegable[open]")) {
       cerrarAsistente();
     }

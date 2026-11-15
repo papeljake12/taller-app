@@ -366,8 +366,11 @@ de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
   Con el panel abierto y una pantalla de menos de 1440 px, las columnas de la hoja pasan a
   una, como en las pantallas medianas, para que nada se apriete.
 - **Abrir y cerrar con movimiento** (pedido de David del 15 de noviembre de 2026): en
-  computador el panel entra desde la derecha, apareciendo, y la hoja se angosta a la vez
-  (`--duracion-larga`); al cerrar hace el camino de vuelta (`--duracion`). En pantallas
+  computador el navegador pasa de una foto de la pantalla a otra (View Transitions): el panel
+  entra desde la derecha y la orilla de la hoja se corre con él (`--duracion-larga`); la hoja
+  se acomoda a su nuevo ancho una sola vez. Nunca se anima el ancho de la hoja: la
+  reacomodaría en cada cuadro y se vería temblar. En un navegador sin fotos, cambia de una
+  vez. Al cerrar hace el camino de vuelta. En pantallas
   medianas y en celular se desliza desde la derecha encima de la hoja. Si ya venía abierto de
   otra pantalla no se anima, y con "menos movimiento" abre y cierra de una vez.
 - **Pantallas medianas (768 a 1023 px):** el panel flota encima de la hoja, a la derecha, con
