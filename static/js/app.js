@@ -829,10 +829,40 @@
     if (caja && !caja.disabled) caja.focus();
   }
 
+  // Entrar y salir con movimiento (app.css, sección 8, "El panel del asistente entra y
+  // sale"): en computador entra desde la derecha y la hoja se angosta a la vez; en pantallas
+  // medianas y en celular se desliza encima de la hoja. Solo cuando la persona lo abre o lo
+  // cierra: si ya viene abierto de otra pantalla, no se anima. Cada movimiento lleva su
+  // número: si se abre mientras se estaba cerrando, el cierre viejo ya no lo esconde.
+  let movimientoAsistente = 0;
+
+  function seEstaCerrando(panel) {
+    return panel.classList.contains("se-cierra");
+  }
+
+  function moverAsistente(panel, clase, duracion, despues) {
+    const numero = ++movimientoAsistente;
+    panel.classList.remove("entra", "se-cierra");
+    if (!hayMovimiento()) {
+      if (despues) despues();
+      return;
+    }
+    void panel.offsetWidth;  // así la clase, puesta otra vez, anima desde el principio
+    panel.classList.add(clase);
+    alTerminar(panel, milisegundos(duracion), function () {
+      if (numero !== movimientoAsistente) return;
+      panel.classList.remove(clase);
+      if (despues) despues();
+    });
+  }
+
   function abrirAsistente() {
     const panel = panelAsistente();
     if (!panel) return false;
-    panel.hidden = false;
+    if (panel.hidden || seEstaCerrando(panel)) {
+      panel.hidden = false;
+      moverAsistente(panel, "entra", "--duracion-larga");
+    }
     marcarBotonesAsistente(true);
     if (window.matchMedia(PANEL_AL_LADO).matches) {
       document.cookie = "asistente=abierto; path=/; max-age=" + UN_ANO + "; SameSite=Lax";
@@ -849,8 +879,10 @@
 
   function cerrarAsistente() {
     const panel = panelAsistente();
-    if (!panel || panel.hidden) return false;
-    panel.hidden = true;
+    if (!panel || panel.hidden || seEstaCerrando(panel)) return false;
+    moverAsistente(panel, "se-cierra", "--duracion", function () {
+      panel.hidden = true;
+    });
     marcarBotonesAsistente(false);
     document.cookie = "asistente=; path=/; max-age=0; SameSite=Lax";
     // El cursor vuelve al botón que se ve (el del computador o el redondo del celular).
@@ -865,7 +897,7 @@
   function alternarAsistente() {
     const panel = panelAsistente();
     if (!panel) return false;
-    return panel.hidden ? abrirAsistente() : cerrarAsistente();
+    return panel.hidden || seEstaCerrando(panel) ? abrirAsistente() : cerrarAsistente();
   }
 
   document.addEventListener("click", function (evento) {

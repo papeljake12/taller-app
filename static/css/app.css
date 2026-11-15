@@ -3765,6 +3765,39 @@ button.casilla:active {
   animation: bajar var(--duracion-corta) var(--curva-salida) forwards;
 }
 
+/* El panel del asistente entra y sale (static/js/app.js le pone .entra al abrirlo y
+   .se-cierra al cerrarlo, y lo esconde al terminar). En computador entra desde la derecha
+   con el margen, no con el ancho: la hoja se angosta a la vez y lo de adentro del panel no
+   se reacomoda mientras entra. En pantallas medianas y en celular se desliza encima. */
+.asistente.entra {
+  animation: asistente-entra var(--duracion-larga) var(--curva);
+}
+
+.asistente.se-cierra {
+  animation: asistente-sale var(--duracion) var(--curva-salida) forwards;
+}
+
+@keyframes asistente-entra {
+  from { margin-right: -360px; opacity: 0; }
+}
+
+@keyframes asistente-sale {
+  to { margin-right: -360px; opacity: 0; }
+}
+
+@media (max-width: 1023.98px) {
+  .asistente.entra { animation-name: asistente-desliza-entra; }
+  .asistente.se-cierra { animation-name: asistente-desliza-sale; }
+}
+
+@keyframes asistente-desliza-entra {
+  from { transform: translateX(calc(100% + 8px)); }
+}
+
+@keyframes asistente-desliza-sale {
+  to { transform: translateX(calc(100% + 8px)); }
+}
+
 /* Menú: al contraerlo o abrirlo, cambia de ancho con transición y lo de adentro aparece
    suave. static/js/app.js pone .menu-cambia solo mientras dura (no al abrir cada página). */
 .marco.menu-cambia .menu {
