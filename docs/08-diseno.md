@@ -167,9 +167,11 @@ dos líneas (`.dinero`).
 - **Encabezado de la hoja (52 px, quieto):** a la izquierda, el ícono y el nombre de la sección
   (o la miga para volver, en el pedido); a la derecha, los botones, el principal de último.
 - **Contenido:** relleno de 4 px arriba, 16 px a los lados y 24 px abajo, 16 px entre bloques.
-  Se desplaza por dentro. No pasa de 1200 px de ancho (en pantallas grandes queda centrado, y
-  el encabezado se alinea con él). Hoy usa una columna de 940 px; Pedidos usa todo el ancho
-  (`hoja--completa`).
+  Se desplaza por dentro. No pasa de 1200 px de ancho (en pantallas grandes queda centrado).
+  **El encabezado se alinea con el contenido de cada pantalla**: Hoy usa una columna de 940 px
+  (`hoja--angosta`), Mi taller una de 1000 px (`hoja--ajustes`) y Pedidos todo el ancho
+  (`hoja--completa`); en las tres, el encabezado usa ese mismo ancho. Antes el encabezado de
+  Hoy y de Mi taller usaba 1200 px y sobresalía de lo de abajo (lo vio David el 2026-11-15).
 
 Secciones del menú, en orden: Hoy, Pedidos, Calendario, Clientes, Cotizador, Telas, Resumen.
 

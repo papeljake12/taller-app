@@ -466,6 +466,22 @@ def test_el_marco_es_negro_con_un_brillo_azul_abajo():
     assert "background: var(--brillo);" in marco and "bottom: -150px;" in marco
 
 
+def test_el_encabezado_usa_el_ancho_del_contenido_de_cada_pantalla(sesion_duena):
+    # Pedido de David (2026-11-15): en Hoy y Mi taller el encabezado sobresalía de lo de abajo.
+    css = (ESTATICOS / "css/app.css").read_text("utf-8")
+    assert ".hoja--angosta {\n  --ancho-pagina: 940px;\n}" in css
+    assert ".hoja--ajustes {\n  --ancho-pagina: 1000px;\n}" in css
+    # El encabezado se acomoda con esa misma variable.
+    encabezado = re.search(r"\n\.encabezado \{(.*?)\}", css, re.DOTALL).group(1)
+    assert "var(--ancho-pagina)" in encabezado
+
+    assert '<main class="hoja hoja--angosta" id="contenido">' in sesion_duena.get("/").text
+    assert '<main class="hoja hoja--ajustes" id="contenido">' in sesion_duena.get("/mi-taller/").text
+    assert '<main class="hoja" id="contenido">' in sesion_duena.get("/clientes/").text
+    for pagina, clase in (("hoy", "hoja--angosta"), ("mi-taller", "hoja--ajustes")):
+        assert f'<main class="hoja {clase}" id="contenido">' in (RAIZ / f"diseno/{pagina}.html").read_text("utf-8")
+
+
 def test_la_pagina_no_se_mueve_y_la_hoja_se_desplaza_por_dentro():
     # docs/08-diseno.md, "Desplazamiento": en computador el marco mide la ventana y lo que se
     # desplaza es el contenido de la hoja. Ya no hay "pantalla fija" (.llenar, .desplazable).

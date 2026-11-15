@@ -8,6 +8,7 @@ Con el asistente prendido (tanda 7), la caja grande le pregunta al asistente
 (asistente/_caja_hoy.html) en vez de buscar.
 {% endcomment %}
 {% block pestana %}Hoy{% endblock %}
+{% block clase_hoja %} hoja--angosta{% endblock %}
 {% block encabezado_izquierda %}<a class="encabezado__logo" href="{% url 'pedidos:hoy' %}" aria-label="Ir a Hoy">{% icono "tijeras" %}</a>{% endblock %}
 {% block encabezado_titulo %}{% include "pedidos/_hoy_estado.html" %}{% endblock %}
 {% block acciones_antes %}<span class="encabezado__apoyo solo-computador">{{ hoy|fecha_larga }}</span><a class="boton boton--redondo-celular solo-celular" href="{% url 'pedidos:buscar' %}" aria-label="Buscar"><span class="boton__icono-celular">{% icono "buscar" 20 %}</span></a>{% endblock %}

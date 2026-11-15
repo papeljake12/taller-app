@@ -586,6 +586,17 @@ textarea {
   --ancho-pagina: 100%;
 }
 
+/* Pantallas de una columna angosta: el contenido y el encabezado usan el mismo ancho, para que
+   el encabezado se alinee con lo de abajo (pedido de David, 2026-11-15). Hoy usa 940 px y Mi
+   taller 1000 px. */
+.hoja--angosta {
+  --ancho-pagina: 940px;
+}
+
+.hoja--ajustes {
+  --ancho-pagina: 1000px;
+}
+
 /* Encabezado de la hoja: 52 px, quieto arriba. A la izquierda, el nombre de la sección con su
    ícono (o la miga para volver); a la derecha, los botones, el principal de último. */
 .encabezado {
