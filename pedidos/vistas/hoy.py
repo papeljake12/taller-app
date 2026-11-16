@@ -31,6 +31,7 @@ from django.utils.dates import MONTHS
 from django.utils.text import capfirst
 from django.views.decorators.http import require_POST
 
+from asistente import resumen as resumen_del_agente
 from config.menu import construir_menu
 from config.piezas import pesos
 from config.ventanas import es_htmx
@@ -300,6 +301,8 @@ def contexto_de_hoy(request, hoy):
         "cifras": cifras(taller, hoy, con_plata),
         "pendientes": lista_pendientes,
         "etapas": etapas(taller, hoy, con_plata),
+        # Tanda 8: el resumen de la mañana del agente (None si no sale).
+        "resumen": resumen_del_agente.para_hoy(request),
     }
     if con_plata:
         lista_deudores = deudores(taller, hoy)

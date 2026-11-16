@@ -95,12 +95,14 @@ class ClienteAnthropic:
             "model": settings.ASISTENTE_MODELO,
             "max_tokens": MAXIMO_TOKENS,
             "system": sistema,
-            "tools": herramientas,
-            "tool_choice": {"type": "none" if sin_herramientas else "auto"},
             "messages": mensajes,
             "output_config": {"effort": esfuerzo},
             "cache_control": {"type": "ephemeral"},
         }
+        if herramientas:
+            datos["tools"] = herramientas
+            datos["tool_choice"] = {"type": "none" if sin_herramientas else "auto"}
+        # Sin herramientas (el resumen de la mañana, tanda 8) no van ni `tools` ni `tool_choice`.
         api = self._con_plazo(plazo)
         if settings.ASISTENTE_FALLBACKS:
             # Si Claude Opus 5.5 no quiere contestar por sus reglas de seguridad, la API

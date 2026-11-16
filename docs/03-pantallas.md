@@ -75,6 +75,37 @@ Lista cuando:
 - Los pedidos por etapa muestran cuántos hay en cada etapa y cuántos van atrasados.
 - La costurera no ve la plata: ni la gráfica, ni "Quién te debe", ni las cifras en pesos.
 
+### Tu resumen de hoy (tanda 8, T43)
+
+Referencia: `diseno/hoy-agente.html`. Solo sale con el asistente prendido; con el asistente
+apagado, Hoy queda como en `diseno/hoy.html`. Qué es y por qué: `docs/12-agente.md`
+("Avisa sin que le pregunten").
+
+Una tarjeta arriba, después del saludo y antes de la caja grande: la esfera, "Tu resumen de
+hoy", la hora en que se preparó ("Lo preparé a las 5:00 a. m."), un párrafo que escribió el
+agente en la madrugada y, debajo, una fila por cada cosa que pide una acción, con su botón.
+
+Lista cuando:
+- El párrafo lo escribe Claude cada madrugada con el comando `preparar_resumen` (lo corre el
+  servidor a las 5:00 a. m., hora de Bogotá) y se guarda en `ResumenDelDia`. Ella no espera
+  ni gasta preguntas al abrir Hoy.
+- Toda cifra en pesos del párrafo coincide con las de la aplicación. Si Claude escribe una
+  cifra que no está en los cálculos, el párrafo no se guarda.
+- Las filas se calculan al abrir Hoy (siempre al día) y son solo de lo que las tarjetas de
+  "lo que hay que hacer hoy" no muestran:
+  - a quién cobrar: el cliente, cuánto debe y hace cuánto fue su último abono; la deuda de un
+    pedido atrasado lleva la insignia roja "Vencida". Botón "Cobrar" (abre WhatsApp con el
+    mensaje de cobro que ya existe);
+  - tela que se está acabando o que no alcanza para los pedidos confirmados. Botón "Ver
+    telas";
+  - pedidos sin entregar que esperan tallas ("Faltan 31 de 40 tallas", ejemplo). Botón
+    "Pedir tallas" (el mensaje que ya existe).
+- Las cifras de las filas coinciden con "Quién te debe" de Hoy y con Telas.
+- Sin párrafo de hoy (la tarea no corrió o falló), se ven solo las filas. Sin nada pendiente,
+  la tarjeta no sale.
+- Los botones no llaman a Claude.
+- En 390 px no se desborda: el botón de cada fila va a la derecha.
+
 ## Pedidos
 
 Referencia: `diseno/pedidos.html`.
@@ -111,7 +142,8 @@ Lista cuando:
 - Valida cada campo y dice qué falta en lenguaje claro.
 - El pedido nace en estado `cotizado` y abre su pantalla de detalle.
 
-El cuadro "pega el mensaje del cliente y la IA lo llena" es de la etapa 3.
+El cuadro "pega el mensaje del cliente y la IA lo llena" es de la etapa 3. Desde la tanda 8
+eso lo hace el agente en su panel (ver "Asistente", abajo); esta ventana no cambia.
 
 ## Pedido por dentro
 
@@ -137,6 +169,17 @@ Lista cuando:
 - Tallas: muestra "N de M recibidas" y una barra por talla.
 - Hay un botón para copiar el enlace público de tallas y otro para copiar el resumen.
 - Materiales: agregar, marcar como comprado, quitar. Muestra "N de M comprados".
+- **Tela del pedido** (tanda 8): una tarjeta solo para ver, con cada tela que usa el pedido y
+  sus metros (el nombre lleva a Telas). La anota el agente al guardar un pedido nuevo;
+  corregirla desde aquí llega con T42.
+  - Si el pedido está Confirmado y la tela no alcanza: la insignia ámbar "Falta tela" y, debajo
+    de esa tela, el aviso "Te faltan N m de X: tienes M m.".
+  - Si el pedido ya está en corte o después: la insignia gris "Ya se cortó".
+  - Si está Cotizado: sin insignia, porque todavía no aparta tela.
+  - Sin tela anotada, la tarjeta no sale.
+- **Cronología** (tanda 8): lo que se guardó con el agente (el pedido y sus abonos) lleva
+  debajo, en gris y con la esfera pequeña, "Lo anotó el asistente". Lo hecho desde las
+  pantallas no lleva nada.
 
 Estas partes no están dibujadas en la referencia. Se agregan con las mismas piezas y se le
 muestran a David:
@@ -264,8 +307,61 @@ Lista cuando:
   cliente no tiene número). No envía nada solo.
 - "¿Cuánto cobro por…?" da la cotización con los precios guardados y abre el Cotizador con
   las mismas cifras.
-- No crea, no cambia y no borra nada.
+- Tanda 7: no crea, no cambia y no borra nada. Desde la tanda 8 propone borradores que ella
+  guarda (abajo). Nunca borra.
 - "Nueva conversación" la borra. La conversación sigue al cambiar de pantalla.
 - Cuando quedan pocas preguntas sale la línea ámbar; sin preguntas, el aviso dice cuándo
   vuelve y la caja queda apagada.
 - Funciona en 1280 px (panel al lado), 900 px (panel flotando) y 390 px (pantalla completa).
+
+### El agente en el panel (tanda 8)
+
+Referencia: `diseno/asistente-agente.html` (borradores) y `diseno/asistente.html` (sin la
+insignia y con la nota nueva). Qué hace y por qué: `docs/12-agente.md`.
+
+Ella le cuenta lo que pasó ("me abonaron 500 mil", "pagué la luz") y el agente arma un
+**borrador**: una tarjeta con cada cosa que se va a guardar. Nada se guarda hasta que ella
+toca **Guardar**.
+
+Lista cuando:
+- La insignia "Solo consulta" ya no está. La nota de abajo dice "Nada se guarda hasta que
+  toques Guardar. Puede equivocarse: revisa antes de guardar."
+- El saludo dice "Cuéntame qué pasó o pregúntame algo de tu taller." La caja del panel dice
+  "Cuéntame o pregúntame algo" y la caja grande de Hoy, "Cuéntale o pregúntale algo a tu
+  asistente".
+- Sabe proponer un pedido nuevo (con su cliente, su abono y su tela), un abono a un pedido
+  que ya existe y un gasto. Varias cosas de un mismo mensaje van en un solo borrador.
+- La tarjeta del borrador tiene una fila por cosa: qué es en negrita ("Pedido nuevo", "Abono
+  de hoy", "Tela", "Tallas", "Gasto"), el detalle en gris, el valor en pesos a la derecha y,
+  si falta algo o la tela no alcanza, un aviso ámbar debajo ("Te faltan 48 m", ejemplo).
+- Las cifras del borrador las pone la aplicación, no Claude: el total sale del Cotizador con
+  la prenda guardada (si ella no dijo otro), el "Falta" sale del saldo y la tela que falta,
+  del cálculo de tela comprometida.
+- Un pedido con abono dice "Confirmado, porque dejó abono"; sin abono nace Cotizado.
+- La tarjeta tiene cuatro estados:
+  - **pendiente:** insignia ámbar "Sin guardar", y los botones "Corregir" y "Guardar" (el
+    principal, negro);
+  - **guardado:** el título cambia a "Guardado", insignia verde "Listo", "Guardado a las …" y
+    los enlaces a lo que se creó ("Ver el pedido"). Al recargar el panel sigue en "Listo";
+  - **reemplazado:** se corrigió con un borrador nuevo. Queda en gris, con la insignia gris
+    "Reemplazado" y sin botones;
+  - **fallido:** "No se guardó nada: …" en ámbar con el mensaje de la pantalla y, si se puede
+    arreglar sin cambiar el borrador, "Guardar" otra vez.
+- "Guardar" guarda todo o nada: si una cosa falla (por ejemplo el abono), no queda ni el
+  pedido. Usa los mismos formularios y reglas de las pantallas: lo que la pantalla no deja,
+  el agente tampoco.
+- Dos toques seguidos no guardan dos veces. Un borrador sirve una sola vez y vence a las 2
+  horas ("Este borrador venció. Pídemelo otra vez."). Uno ya usado o de otra persona dice
+  "Este borrador ya no sirve." y no guarda nada.
+- "Guardar" no cuenta como pregunta y no llama a Claude. En la siguiente pregunta, la
+  aplicación le cuenta a Claude lo que ella guardó.
+- "Corregir" no abre otra pantalla: pone el cursor en la caja del panel con "Dime qué
+  corrijo". Ella escribe ("no, son 35", ejemplo), el agente arma un borrador nuevo y el
+  anterior pasa a "Reemplazado".
+- **Si no está seguro, pregunta.** Si hay dos clientes, pedidos, prendas o telas parecidas,
+  no arma borrador: pregunta "¿a cuál?" con un chip por opción, y tocar un chip manda esa
+  opción como respuesta.
+- Un pedido o cliente de otro taller da "No encontré ese pedido.", igual que en la tanda 7.
+- Lo guardado con el agente queda marcado en la cronología del pedido ("Lo anotó el
+  asistente").
+- En 390 px la tarjeta no se desborda y los botones miden 40 px.

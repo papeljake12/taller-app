@@ -242,6 +242,49 @@ Al terminar: la dueña de un taller con el asistente prendido le pregunta por su
 su plata, sus telas y sus clientes, le pide mensajes y cotizaciones, y David ve en `/admin`
 cuántas preguntas y cuánto costaron.
 
+### Tanda 8. El agente del taller, lo mínimo (base y 3 carriles)
+
+Qué se construye y por qué: `docs/12-agente.md` (aprobado por David el 15 de noviembre de
+2026). El plan completo, con los contratos que comparten los carriles, está en
+`docs/13-plan-tanda-8.md`. Rama: `tanda-8-agente`. Se hace **solo lo mínimo**: T38, T39, T40
+y T43. Con eso funcionan de verdad el pedido que ella cuenta y el resumen de la mañana.
+
+1. Base, un solo agente (el coordinador): T38. Documentos al día, la maqueta de las piezas
+   nuevas (aprobada por David el mismo día), los cambios al modelo con sus migraciones, los
+   cálculos de tela, el borrador firmado, la vista `asistente/confirmar/` y una prueba corta
+   con la clave antes de lanzar los carriles.
+2. Carriles, cada uno en su copia:
+
+| Carril | Tareas | Archivos propios |
+|---|---|---|
+| A. Pedido nuevo | T39 | `asistente/herramientas/pedido_nuevo.py`, sus pruebas |
+| B. Abonos y gastos | T40 | `asistente/herramientas/anotar.py`, sus pruebas |
+| C. Resumen de la mañana | T43 | `asistente/resumen.py`, el comando `preparar_resumen`, `_resumen_hoy.html`, sus pruebas |
+
+Además de los archivos congelados de siempre y los de la tanda 7, en esta tanda quedan
+congelados `asistente/borradores.py`, `guardar.py`, `vistas.py`, `models.py`,
+`instrucciones.py` y `esfuerzo.py`: son de la base y solo los cambia el coordinador.
+
+3. Cada carril pasa por el revisor, con la lista de la tanda 7 y la de la tanda 8 (sección 4
+   de `docs/13-plan-tanda-8.md`; la más importante: ninguna herramienta escribe en la base,
+   solo `confirmar` después del toque, y nada borra).
+4. Unión en este orden: A, B, C, con `uv run pytest` después de cada uno. Luego el cierre:
+   prueba de punta a punta, capturas y una prueba real corta con la clave (10 tareas y 3
+   resúmenes, a mano).
+5. La tarea de la madrugada del resumen (`herramientas/servidor/cron-resumen.txt`) la instala
+   David al publicar, con el paso de `docs/guia-publicacion.md`. Claude Code no toca el
+   servidor.
+
+**Quedan para después** de presentárselo a ella y preguntarle qué más quiere: T41 (etapa,
+"Usé" y "Entró" con el agente, y descontar la tela al pasar a Corte), T42 (corregir la tela
+del pedido y la lista de compras), T44 (avisos con la acción lista) y T45 (integración
+completa y prueba real de todo el agente). Están escritas en la sección 7 de
+`docs/13-plan-tanda-8.md`.
+
+Al terminar: la dueña le cuenta al agente un pedido con su abono y su tela, un abono o un
+gasto, lo revisa en un borrador y lo guarda con un toque; y cada mañana encuentra en Hoy su
+resumen con a quién cobrar, qué tela no alcanza y qué pedidos esperan tallas.
+
 ## Cómo trabaja el coordinador dentro de una tanda
 
 1. Anota el plan de la tanda (carriles, agentes y archivos) al comienzo de
@@ -257,7 +300,7 @@ cuántas preguntas y cuánto costaron.
    arreglos, capturas finales en `docs/capturas/tanda-N/` y resumen en
    `docs/bitacora/tanda-N.md`.
 8. Si todas las pruebas pasan, sube la rama, la une a `main` y empieza la tanda siguiente,
-   hasta terminar la tanda 6. La tanda 7 la pidió David aparte; se trabaja igual.
+   hasta terminar la tanda 6. Las tandas 7 y 8 las pidió David aparte; se trabajan igual.
 
 Se detiene solo en los casos de "Cuándo detenerse y preguntar" de
 `docs/07-forma-de-trabajo.md`, o si algo necesita una clave o una decisión de David.

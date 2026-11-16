@@ -216,8 +216,9 @@ texto de ayuda "Dime qué corrijo".
 | `BorradorUsado` (decisión 3) | `asistente/models.py` | `ModeloDeTaller` con `clave` (32, única) y `creado`. Se anota al guardar, dentro de la misma transacción |
 
 Tres migraciones nuevas (pedidos, finanzas y telas) y una del asistente, todas del
-coordinador. Ninguna borra datos. `cargar_ejemplos` agrega la tela de dos pedidos de ejemplo
-para que el "¿alcanza?" se vea en las capturas.
+coordinador. Ninguna borra datos. `cargar_ejemplos` agrega la tela del pedido de El Fogón (22 m
+de piqué y 16 m de dril), como en `diseno/pedido.html`. Como ya está en corte, no aparta tela, y
+el ejemplo de las 10:30 da lo mismo que la maqueta (66 m de dril, hay 18, faltan 48).
 
 **Cálculos nuevos en `pedidos/calculos.py`** (base):
 
@@ -277,6 +278,49 @@ def para_hoy(request) -> dict | None   # lo que pinta Hoy; None si el asistente 
   que hoy.
 - Los botones de WhatsApp usan los textos que ya existen (`pedidos/mensajes.py`: cobro y
   pedir tallas). No llaman a Claude.
+
+### 1.6 Cómo quedó la base (ajustes del coordinador en T38)
+
+Lo que cambió respecto a lo de arriba al construir la base. **Manda esto si algo choca.**
+
+- **Sin `null` en las herramientas nuevas.** La prueba corta con la clave dio 400: con `strict`
+  la API acepta como mucho **16 parámetros anulables sumando todas las herramientas**, y con
+  las nuevas había 26. Las `proponer_*` dicen "no hay" con `0` (ids, total, abono) o `""`
+  (textos, `tipo_cliente`, `metros`, `fecha`). `herramientas.validar()` los convierte en `None`
+  (`VACIOS`) y las fechas de texto en `date` (`FECHAS_DE_TEXTO`): **la herramienta recibe
+  `None` como dice la tabla de 1.2**. `test_contratos.py` vigila que no se pase de 16.
+- **No hay acción `cliente`.** El cliente va dentro de la acción `pedido` (`cliente`,
+  `cliente_id`, `tipo`): el guardador usa `crear_pedido`, que lo busca por nombre o lo crea, como
+  la pantalla. `TIPOS = ("pedido", "etapa", "abono", "gasto", "tela_pedido")`.
+- **Datos de cada acción** (lo que guarda `asistente/guardar.py`):
+  - `pedido`: `cliente`, `cliente_id` (o None), `tipo`, `detalle`, `cantidad`, `tallaje`,
+    `fecha_entrega` (ISO), `total`.
+  - `etapa`: `pedido` ("@0" o id), `estado`. El pedido con abono lleva `etapa` "confirmado"
+    después del `pedido` (decisión 4).
+  - `abono`: `pedido`, `valor`, `fecha` (ISO o None = hoy).
+  - `gasto`: `concepto`, `categoria`, `valor`, `fecha` (ISO o None), `pedido` (id o None).
+  - `tela_pedido`: `pedido`, `tela` (id), `metros` (texto, "66.00").
+- **Ayudas de `asistente/borradores.py` para los carriles:** `resultado(ctx, acciones, filas,
+  revisado)` devuelve el `Resultado` con la tarjeta y, para Claude, las filas sin firma;
+  `opciones(que, [(id, nombre)], revisado)` devuelve el "¿a cuál?" sin borrador.
+- **"Reemplazado"** se decide en la sesión: la pregunta trae `corrige` (la clave) y, si su
+  respuesta trae un borrador nuevo, el viejo queda reemplazado y `confirmar` ya no lo guarda.
+  `BorradorUsado` cubre el doble toque.
+- **`confirmar` solo guarda un borrador que esté en la conversación** de esa sesión (busca la
+  tarjeta por su firma); una firma válida que no se le mostró no sirve.
+- **La nota de lo guardado** (`conv["notas"]`) va en el `system` de la siguiente pregunta
+  (`conversacion.preguntar(..., nota=...)`) y se borra cuando esa pregunta sale bien.
+- **Esfuerzo:** "pedido" no cuenta como palabra de plata ("¿qué pedidos están atrasados?" sigue
+  en `medium`); sí "anot", "pag", "compr", "dej", "encarg", "mil", "nuevo pedido" y "pedido
+  nuevo".
+- **Lo que mostró la prueba corta (15 de noviembre de 2026,** `herramientas/humo_agente.py`,
+  5 llamadas, US$ 0,10 en total):
+  - con el pedido de las 10:30, Claude pidió `buscar_clientes`, `cotizar` y `telas` juntas, y
+    después `proponer_pedido` con los vacíos bien puestos (`total: 0`, `metros: ""`). Dijo
+    "Revísalo y toca Guardar" y comentó la tela que falta. Tres llamadas, unos 6,5 centavos (la
+    primera escribe la caché);
+  - la nota de lo guardado en el `system` de la siguiente pregunta se acepta y Claude la usa;
+  - sin herramientas (como el resumen) contesta un párrafo corto sin 400.
 
 ## 2. Base del coordinador (T38, sin carriles)
 

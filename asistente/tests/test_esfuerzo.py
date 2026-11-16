@@ -54,6 +54,22 @@ PREGUNTAS_DE_PLATA = {
         "Cotiza 30 camisas de colegio",
         "¿Qué precio le pongo a 20 uniformes?",
     ],
+    # Tanda 8: lo que se cuenta para que el agente lo anote.
+    "proponer_pedido": [
+        "Vino la profe del colegio, quiere 30 uniformes para el 15 de diciembre y dejó 500 mil",
+        "Me encargaron 20 camisas polo para el viernes",
+        "Anota un pedido nuevo de 12 vestidos para la comparsa",
+    ],
+    "proponer_abono": [
+        "Me abonaron 300 mil de Tambores del Río",
+        "La ferretería pagó lo que debía",
+        "Anota un abono al colegio",
+    ],
+    "proponer_gasto": [
+        "Pagué la luz, 180 mil",
+        "Compré 30 metros de lino",
+        "Anota un gasto de transporte",
+    ],
 }
 
 

@@ -119,7 +119,8 @@
 <li class="cronologia__dia">Hoy</li>
 <li class="cronologia__evento"><span>2 personas enviaron su talla por el enlace.</span><span class="cronologia__quien">Enlace</span></li>
 <li class="cronologia__dia">7 de noviembre</li>
-<li class="cronologia__evento"><span>Se registró un abono de <span class="dinero">$ 1.260.000</span>.</span><span class="cronologia__quien">Dueña de ejemplo</span></li>
+<!-- APROBADO POR DAVID (2026-11-15, T38): lo que se guardó con el agente lleva debajo la esfera pequeña y "Lo anotó el asistente", en gris. Quien lo guardó sigue a la derecha. -->
+<li class="cronologia__evento"><span class="cronologia__que"><span>Se registró un abono de <span class="dinero">$ 1.260.000</span>.</span><span class="cronologia__asistente"><span class="esfera" data-esfera aria-hidden="true"><canvas class="esfera__lienzo"></canvas></span>Lo anotó el asistente</span></span><span class="cronologia__quien">Dueña de ejemplo</span></li>
 <li class="cronologia__dia">5 de noviembre</li>
 <li class="cronologia__evento"><span>12 personas enviaron su talla por el enlace.</span><span class="cronologia__quien">Enlace</span></li>
 <li class="cronologia__evento"><span>Se creó el pedido por <span class="dinero">$ 2.520.000</span>.</span><span class="cronologia__quien">Dueña de ejemplo</span></li>
@@ -148,6 +149,14 @@
 <div class="tarjeta__cabeza"><h2 id="t-foto">Foto</h2></div>
 <div class="subir"><label class="boton"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#subir"></use></svg>Subir foto<input class="oculto" type="file" accept="image/*"></label>Sale en Hoy y en la lista de pedidos</div>
 </section>
+<!-- APROBADO POR DAVID (2026-11-15, decisión 2 de docs/13-plan-tanda-8.md): "Tela del pedido", solo para ver. Qué tela del inventario usa y cuántos metros. Mientras el pedido está Confirmado, esos metros cuentan como apartados y, si no alcanzan, sale la insignia ámbar "Falta tela" con un aviso ("Te faltan 48 m de dril azul: tienes 18 m"). Este pedido ya está en corte: la tela ya no cuenta como apartada. -->
+<section class="tarjeta" aria-labelledby="t-tela-pedido">
+<div class="tarjeta__cabeza"><h2 id="t-tela-pedido">Tela del pedido</h2><span class="tarjeta__aparte"><span class="etiqueta etiqueta--gris">Ya se cortó</span></span></div>
+<div class="tarjeta__cuerpo" style="gap: 0; padding-top: 0">
+<div class="renglon"><a class="enlace" href="telas.html" style="flex: 1">Piqué blanco</a><span class="texto-2">22 m</span></div>
+<div class="renglon"><a class="enlace" href="telas.html" style="flex: 1">Dril azul</a><span class="texto-2">16 m</span></div>
+</div>
+</section>
 <section class="tarjeta" aria-labelledby="t-materiales">
 <div class="tarjeta__cabeza"><h2 id="t-materiales">Materiales</h2><span class="tarjeta__aparte">2 de 4</span></div>
 <div class="tarjeta__cuerpo" style="gap: 0; padding-top: 0">
@@ -170,5 +179,6 @@
 <button type="button" class="navegacion-celular__enlace" aria-expanded="false" aria-controls="panel-mas"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#mas"></use></svg>Más</button>
 </nav>
 </div>
+<script src="../static/js/esfera.js" defer></script>
 </body>
 </html>

@@ -113,6 +113,10 @@ class Pedido(ModeloDeTaller):
         on_delete=models.PROTECT,
         related_name="pedidos_creados",
     )
+    por_asistente = models.BooleanField(
+        "lo anotó el asistente", default=False,
+        help_text="Se guardó con el agente (la dueña tocó Guardar en su borrador).",
+    )
     creado = models.DateTimeField("creado", default=timezone.now)
     actualizado = models.DateTimeField("actualizado", auto_now=True)
 
@@ -160,6 +164,10 @@ class Abono(models.Model):
         verbose_name="registrado por",
         on_delete=models.PROTECT,
         related_name="abonos_registrados",
+    )
+    por_asistente = models.BooleanField(
+        "lo anotó el asistente", default=False,
+        help_text="Se guardó con el agente (la dueña tocó Guardar en su borrador).",
     )
     creado = models.DateTimeField("creado", auto_now_add=True)
 

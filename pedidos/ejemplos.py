@@ -21,7 +21,7 @@ from cotizador.models import PrendaGuardada
 from cuentas.models import Taller, Usuario
 from finanzas.models import Gasto
 from pedidos.models import Abono, Cliente, Material, Pedido, Talla
-from telas.models import MovimientoTela, Tela
+from telas.models import MovimientoTela, Tela, TelaPedido
 
 NOMBRE_TALLER = "Taller de ejemplo"
 MARCA = "Dato de ejemplo."
@@ -126,6 +126,15 @@ TELAS = (
     ("Popelina blanca", "4", "12"),
 )
 
+# La tela de los pedidos (tanda 8): (cliente del pedido, tela, metros). Como en
+# diseno/pedido.html: el pedido de El Fogón ya está en corte, así que su tela ya no cuenta como
+# apartada y el dril azul alcanza para el pedido nuevo del ejemplo de las 10:30
+# (diseno/asistente-agente.html: 66 m, hay 18, faltan 48).
+TELAS_DE_PEDIDOS = (
+    ("Restaurante El Fogón Costeño", "Piqué blanco", "22"),
+    ("Restaurante El Fogón Costeño", "Dril azul", "16"),
+)
+
 # (nombre, metros, precio del metro, insumos, mano de obra, extra)
 PRENDAS = (
     ("Camisa polo bordada", "1.2", 18_000, 3_000, 12_000, 5_000),
@@ -227,12 +236,20 @@ def cargar(taller=None, hoy=None, con_fotos=True):
         Gasto(taller=taller, fecha=dia(dias), concepto=concepto, categoria=categoria, valor=valor)
         for dias, concepto, categoria, valor in GASTOS
     )
+    telas = {}
     for nombre, metros, minimo in TELAS:
         tela = Tela.objects.create(
             taller=taller, nombre=nombre, metros=Decimal(metros), minimo=Decimal(minimo)
         )
+        telas[nombre] = tela
         MovimientoTela.objects.create(
             tela=tela, metros=Decimal(metros), usuario=duena, fecha=_a_las_diez(dia(-10))
+        )
+    for cliente, tela, metros in TELAS_DE_PEDIDOS:
+        TelaPedido.objects.create(
+            pedido=Pedido.objects.get(taller=taller, cliente__nombre=cliente),
+            tela=telas[tela],
+            metros=Decimal(metros),
         )
     PrendaGuardada.objects.bulk_create(
         PrendaGuardada(

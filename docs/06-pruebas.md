@@ -82,6 +82,38 @@ En particular:
 - Lo que escribe Claude se muestra escapado: un `<script>` en su texto sale como texto.
 - La prueba con preguntas reales (T36) se hace a mano, con la clave, fuera de pytest.
 
+### El agente (tanda 8)
+
+El detalle de cada tarea está en `docs/13-plan-tanda-8.md` (secciones 2 y 3). Lo que siempre
+se prueba:
+
+- **Sin tocar Guardar no cambia nada.** Proponer un pedido, un abono o un gasto deja la misma
+  cantidad de registros en la base que antes.
+- **Todo o nada.** Si una cosa del borrador falla (por ejemplo el abono), no queda ninguna:
+  ni el pedido, ni el cliente, ni la tela.
+- **Un solo uso.** Un borrador ya guardado, vencido (más de 2 horas), de otro taller o de otra
+  usuaria se rechaza y no guarda nada. Dos toques seguidos guardan una sola vez.
+- **Las mismas reglas que las pantallas.** Una fecha, una cantidad o un valor que la pantalla
+  no acepta da el mismo mensaje con el agente. El permiso se revisa en el servidor al guardar.
+- **Aislamiento.** Un cliente o pedido de otro taller, aunque tenga el mismo nombre, no se ve
+  ni se toca; un id ajeno da "No encontré ese pedido.". Cada modelo nuevo (`TelaPedido`,
+  `ResumenDelDia`, `BorradorUsado`) está en `tests/test_aislamiento.py`.
+- **Las cifras coinciden con las pantallas.** El total del borrador es el del Cotizador; el
+  "Falta" es el saldo del pedido y, después de guardar, coincide con la tarjeta Pagos; un
+  gasto guardado da el mismo total en el Resumen del mes que si se anotara en la pantalla;
+  los cobros del resumen de la mañana coinciden con "Quién te debe" de Hoy, y la tela que no
+  alcanza, con `telas_que_no_alcanzan`.
+- **El párrafo de la mañana no inventa cifras.** Si trae una cifra en pesos que no está en los
+  cálculos, no se guarda.
+- **Se ve quién lo hizo.** Lo guardado con el agente lleva `por_asistente` y la cronología
+  dice "Lo anotó el asistente"; lo de las pantallas, no.
+- **No hay herramienta de borrar**, ni guardador que borre.
+- **Lo que va a Claude** no trae la firma del borrador, ni teléfonos, ni notas, ni tallas con
+  nombre, ni el token del enlace.
+- **Tocar Guardar no gasta preguntas** y no llama a Claude.
+- **Las pruebas nunca llaman a la API**, igual que en la tanda 7: Claude se simula con
+  `ClienteFalso`. La prueba real con la clave se hace a mano, fuera de pytest.
+
 ### Archivos
 
 - El recibo se genera como PDF válido y contiene cliente, valor, total y saldo.

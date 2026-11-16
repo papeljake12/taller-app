@@ -64,13 +64,17 @@ def sistema() -> list[dict]:
     return [{"type": "text", "text": INSTRUCCIONES, "cache_control": {"type": "ephemeral"}}]
 
 
-def contexto(ctx, pagina: str) -> str:
-    """El mensaje `role: "system"` de una pregunta: hoy, el taller y la pantalla."""
+def contexto(ctx, pagina: str, nota: str = "") -> str:
+    """El mensaje `role: "system"` de una pregunta: hoy, el taller, la pantalla y, si la dueña
+    guardó algún borrador desde la última respuesta, qué guardó (tanda 8). Así lo guardado se le
+    cuenta a Claude sin tocar el historial."""
     fecha = fecha_larga(ctx.hoy)
     fecha = fecha[:1].lower() + fecha[1:]  # "sábado, 14 de noviembre"
     partes = [f"Hoy es {fecha} de {ctx.hoy.year}.", f"Taller: {ctx.taller.nombre}."]
     if pagina:
         partes.append(pagina)
+    if nota:
+        partes.append(f"Desde tu última respuesta, la dueña tocó Guardar y quedó guardado: {nota}.")
     return " ".join(partes)
 
 
@@ -107,12 +111,14 @@ def _correr(pedidas, ctx):
     return bloques, buenos
 
 
-def preguntar(*, cliente, ctx, mensajes, pregunta, pagina, herramientas=None) -> Respuesta:
+def preguntar(
+    *, cliente, ctx, mensajes, pregunta, pagina, herramientas=None, nota=""
+) -> Respuesta:
     """Hace una pregunta a Claude con el historial de la conversación.
 
     `pagina` es el texto de la pantalla (asistente/pagina.py), no la ruta. `herramientas`
     None quiere decir todas (`esquemas.ESQUEMAS`). `mensajes` no se toca: la respuesta trae
-    un historial nuevo.
+    un historial nuevo. `nota`: lo que la dueña guardó desde la última respuesta (tanda 8).
     """
     inicio = time.monotonic()
     lista_de_herramientas = ESQUEMAS if herramientas is None else herramientas
@@ -120,7 +126,7 @@ def preguntar(*, cliente, ctx, mensajes, pregunta, pagina, herramientas=None) ->
     historial = [
         *mensajes,
         {"role": "user", "content": pregunta},
-        {"role": "system", "content": contexto(ctx, pagina)},
+        {"role": "system", "content": contexto(ctx, pagina, nota)},
     ]
     uso = Uso()
     resultados = []

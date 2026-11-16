@@ -31,6 +31,10 @@ class Gasto(ModeloDeTaller):
         related_name="gastos",
         help_text="Opcional. Sirve para calcular la ganancia por pedido (etapa 3).",
     )
+    por_asistente = models.BooleanField(
+        "lo anotó el asistente", default=False,
+        help_text="Se guardó con el agente (la dueña tocó Guardar en su borrador).",
+    )
     creado = models.DateTimeField("creado", auto_now_add=True)
     actualizado = models.DateTimeField("actualizado", auto_now=True)
 

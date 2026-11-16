@@ -542,3 +542,59 @@ def test_gastos_por_categoria_de_mayor_a_menor_y_sin_tipos_vacios(taller):
         {"categoria": "servicios", "nombre": "Servicios", "total": 60_000},
         {"categoria": "telas", "nombre": "Telas", "total": 45_000},
     ]
+
+
+# --- Tela de los pedidos (tanda 8) ----------------------------------------------------------
+
+
+def test_solo_los_confirmados_apartan_tela(taller):
+    dril = fabricas.crear_tela(taller, nombre="Dril azul", metros=18)
+    for estado, metros in [("cotizado", 5), ("confirmado", 30), ("corte", 7), ("entregado", 9)]:
+        fabricas.crear_tela_pedido(fabricas.crear_pedido(taller, estado=estado), dril, metros)
+
+    assert calculos.tela_comprometida(taller) == {dril.pk: Decimal("30")}
+
+
+def test_falta_tela_suma_lo_apartado_y_da_cero_si_alcanza(taller):
+    dril = fabricas.crear_tela(taller, nombre="Dril azul", metros=18)
+    otro = fabricas.crear_pedido(taller, estado="confirmado")
+    fabricas.crear_tela_pedido(otro, dril, 10)
+    comprometida = calculos.tela_comprometida(taller)
+
+    # El ejemplo del borrador (docs/12-agente.md): 66 m de dril y hay 18 (8 libres).
+    assert calculos.falta_tela(dril, Decimal("66"), comprometida) == Decimal("58.00")
+    assert calculos.falta_tela(dril, Decimal("8"), comprometida) == Decimal("0")
+    assert calculos.falta_tela(dril, Decimal("66"), {}) == Decimal("48.00")
+    # Sin contar el pedido que se está revisando.
+    assert calculos.tela_comprometida(taller, sin_pedido=otro) == {}
+
+
+def test_telas_que_no_alcanzan_y_la_tarjeta_del_pedido(taller):
+    dril = fabricas.crear_tela(taller, nombre="Dril azul", metros=18)
+    pique = fabricas.crear_tela(taller, nombre="Piqué blanco", metros=40)
+    colegio = fabricas.crear_pedido(taller, estado="confirmado")
+    fabricas.crear_tela_pedido(colegio, dril, 66)
+    fabricas.crear_tela_pedido(colegio, pique, 22)
+
+    [falta] = calculos.telas_que_no_alcanzan(taller)
+    assert (falta.tela, falta.apartados, falta.faltan) == (dril, Decimal("66"), Decimal("48.00"))
+
+    tarjeta = calculos.tela_del_pedido(colegio)
+    assert tarjeta["apartada"] and tarjeta["faltan"]
+    assert [(f["tela"].nombre, f["faltan"]) for f in tarjeta["filas"]] == [
+        ("Dril azul", Decimal("48.00")), ("Piqué blanco", Decimal("0")),
+    ]
+
+    # En corte ya no aparta nada: no le falta tela.
+    colegio.estado = "corte"
+    colegio.save()
+    assert calculos.telas_que_no_alcanzan(taller) == []
+    assert not calculos.tela_del_pedido(colegio)["faltan"]
+
+
+def test_la_tela_apartada_de_otro_taller_no_cuenta(taller):
+    otro = fabricas.crear_taller(nombre="Otro taller")
+    fabricas.crear_tela_pedido(fabricas.crear_pedido(otro, estado="confirmado"), metros=50)
+
+    assert calculos.tela_comprometida(taller) == {}
+    assert calculos.telas_que_no_alcanzan(taller) == []

@@ -792,7 +792,9 @@
   //   #asistente-mensajes          la conversación, que se desplaza por dentro;
   //   [data-asistente-bienvenida]  el saludo de la conversación vacía (se va con la primera
   //                                pregunta);
-  //   [data-asistente-caja]        la caja grande de Hoy: abre el panel y pregunta desde allá.
+  //   [data-asistente-caja]        la caja grande de Hoy: abre el panel y pregunta desde allá;
+  //   [data-asistente-corregir]    "Corregir" en un borrador (tanda 8): pone el cursor en la
+  //                                caja y deja la clave del borrador en el campo "corrige".
   // Ctrl J (o Cmd J) abre y cierra. Esc cierra si no hay una ventana ni un menú abierto.
   // Enter envía y Shift+Enter hace un salto de línea.
 
@@ -1082,5 +1084,37 @@
 
   document.addEventListener("htmx:sendError", sinRespuesta);
   document.addEventListener("htmx:responseError", sinRespuesta);
+
+  // "Corregir" en un borrador (tanda 8): el cursor va a la caja con "Dime qué corrijo" y la
+  // pregunta lleva la clave de ese borrador ("corrige"). Si llega un borrador nuevo, el viejo
+  // queda reemplazado (lo decide el servidor). Después de enviar, todo vuelve a como estaba.
+  const AYUDA_CORREGIR = "Dime qué corrijo";
+
+  document.addEventListener("click", function (evento) {
+    const boton = evento.target.closest("[data-asistente-corregir]");
+    if (!boton) return;
+    const panel = boton.closest("#asistente") || document;
+    const formulario = panel.querySelector("[data-asistente-form]");
+    if (!formulario) return;
+    const campo = formulario.querySelector("input[name=corrige]");
+    if (campo) campo.value = boton.getAttribute("data-asistente-corregir");
+    const caja = formulario.querySelector("textarea");
+    if (!caja || caja.disabled) return;
+    if (caja.placeholder !== AYUDA_CORREGIR) caja.dataset.ayuda = caja.placeholder;
+    caja.placeholder = AYUDA_CORREGIR;
+    caja.focus();
+  });
+
+  document.addEventListener("htmx:afterRequest", function (evento) {
+    const formulario = evento.target.closest && evento.target.closest("[data-asistente-form]");
+    if (!formulario) return;
+    const campo = formulario.querySelector("input[name=corrige]");
+    if (campo) campo.value = "";
+    const caja = formulario.querySelector("textarea");
+    if (caja && caja.dataset.ayuda) {
+      caja.placeholder = caja.dataset.ayuda;
+      delete caja.dataset.ayuda;
+    }
+  });
 
 })();

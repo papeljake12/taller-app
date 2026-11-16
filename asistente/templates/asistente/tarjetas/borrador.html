@@ -1,0 +1,22 @@
+{% load piezas %}{% comment %}
+Tarjeta de borrador (tanda 8, diseno/asistente-agente.html): lo que el agente dejó listo para
+guardar. La arman las herramientas proponer_* con asistente/borradores.py; las filas y sus
+cifras las pone la aplicación, nunca Claude. Cada fila: qué es (negrita), el detalle (gris), el
+valor a la derecha y, si falta o no alcanza algo, un aviso ámbar debajo.
+
+Estados (datos.estado):
+- pendiente: insignia ámbar "Sin guardar", Corregir y Guardar.
+- guardado: insignia verde "Listo", la hora y los enlaces a lo que se creó.
+- reemplazado: se corrigió con otro borrador. Gris, sin botones.
+- fallido: no se guardó. El aviso ámbar dice por qué y, si se puede, Guardar otra vez.
+
+Guardar envía la firma a asistente:confirmar, que devuelve esta misma tarjeta en su estado
+nuevo (hx-target la tarjeta, hx-swap outerHTML). Corregir (data-asistente-corregir, app.js
+sección 14) pone el cursor en la caja del panel y deja la clave en el campo "corrige".
+{% endcomment %}{% with datos=tarjeta.datos %}<section class="tarjeta mensaje__tarjeta borrador{% if datos.estado == "guardado" %} borrador--guardado{% elif datos.estado == "reemplazado" %} borrador--reemplazado{% endif %}" id="borrador-{{ datos.clave }}" aria-labelledby="borrador-titulo-{{ datos.clave }}">
+<div class="tarjeta__cabeza"><h3 class="borrador__titulo" id="borrador-titulo-{{ datos.clave }}">{% if datos.estado == "guardado" %}Guardado{% else %}{{ tarjeta.titulo }}{% endif %}</h3><span class="tarjeta__aparte">{% if datos.estado == "guardado" %}<span class="etiqueta etiqueta--verde etiqueta--lleno">Listo</span>{% elif datos.estado == "reemplazado" %}<span class="etiqueta etiqueta--gris">Reemplazado</span>{% else %}<span class="etiqueta etiqueta--ambar etiqueta--vacio">Sin guardar</span>{% endif %}</span></div>
+{% for fila in datos.filas %}<div class="borrador__fila"><div class="borrador__texto"><strong>{{ fila.titulo }}</strong>{% if fila.detalle %}<span class="texto-2">{{ fila.detalle }}</span>{% endif %}</div>{% if fila.valor is not None %}<span class="dinero fuerte">{{ fila.valor|pesos }}</span>{% else %}<span></span>{% endif %}{% if fila.aviso %}<p class="aviso borrador__aviso">{{ fila.aviso }}</p>{% endif %}</div>
+{% endfor %}{% if datos.estado == "fallido" and datos.mensaje %}<div class="borrador__fila"><p class="aviso borrador__aviso" role="alert">{{ datos.mensaje }}</p></div>
+{% endif %}{% if datos.estado == "guardado" %}<div class="tarjeta__pie borrador__pie--hecho"><span class="texto-2">Guardado a las {{ datos.hora }}</span>{% for enlace in datos.enlaces %}<a class="boton" href="{{ enlace.url }}">{{ enlace.texto }}</a>{% endfor %}</div>
+{% elif datos.estado == "pendiente" or datos.estado == "fallido" and not datos.sin_arreglo %}<form class="tarjeta__pie" action="{% url 'asistente:confirmar' %}" method="post" hx-post="{% url 'asistente:confirmar' %}" hx-target="closest .borrador" hx-swap="outerHTML" hx-disabled-elt="find button">{% csrf_token %}<input type="hidden" name="firma" value="{{ datos.firma }}"><button type="button" class="boton" data-asistente-corregir="{{ datos.clave }}">{% icono "editar" 16 %}Corregir</button><button type="submit" class="boton boton--principal">Guardar</button></form>
+{% endif %}</section>{% endwith %}

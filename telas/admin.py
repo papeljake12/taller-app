@@ -3,7 +3,7 @@
 from django.contrib import admin
 
 from cuentas.admin import SinAgregar
-from telas.models import MovimientoTela, Tela
+from telas.models import MovimientoTela, Tela, TelaPedido
 
 
 class MovimientoEnLinea(admin.TabularInline):
@@ -18,3 +18,9 @@ class TelaAdmin(SinAgregar, admin.ModelAdmin):
     search_fields = ["nombre"]
     readonly_fields = ["taller"]
     inlines = [MovimientoEnLinea]
+
+
+@admin.register(TelaPedido)
+class TelaPedidoAdmin(SinAgregar, admin.ModelAdmin):
+    list_display = ["pedido", "tela", "metros"]
+    list_filter = ["tela__taller"]

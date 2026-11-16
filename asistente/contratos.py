@@ -9,6 +9,7 @@ Archivo congelado (docs/11-plan-tanda-7.md, sección 1.1): solo lo cambia el coo
 - `Uso`: los tokens de una o varias llamadas a Claude.
 - `RespuestaClaude`: una respuesta de Claude ya traducida a diccionarios. La arma el cliente
   de verdad (asistente/cliente.py) y también el falso de las pruebas (asistente/falso.py).
+- `Fila`: una cosa de un borrador (tanda 8), como se ve en su tarjeta.
 - `ErrorDeHerramienta`: algo que Claude pidió mal (un pedido que no existe, una cifra que no
   cuadra). Su texto le llega a Claude para que corrija.
 
@@ -91,6 +92,19 @@ class RespuestaClaude:
     uso: Uso
     modelo: str  # response.model (puede ser el de respaldo)
     id_peticion: str
+
+
+@dataclass(frozen=True)
+class Fila:
+    """Una cosa de un borrador, como se ve en la tarjeta (tanda 8, docs/13-plan-tanda-8.md).
+
+    La arma la aplicación con las cifras de pedidos/calculos.py: Claude nunca la escribe.
+    """
+
+    titulo: str  # "Pedido nuevo", "Abono de hoy", "Tela", "Tallas", "Gasto de hoy"
+    detalle: str  # "Colegio Nuevo Amanecer · 30 uniformes de diario · ..."
+    valor: int | None = None  # pesos, a la derecha
+    aviso: str = ""  # en ámbar debajo: lo que falta o no alcanza ("Te faltan 48 m de dril azul.")
 
 
 class ErrorDeHerramienta(Exception):

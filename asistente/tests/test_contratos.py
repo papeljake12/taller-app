@@ -17,10 +17,49 @@ from tests import fabricas
 # --- Esquemas y registro --------------------------------------------------------------------
 
 
-def test_los_esquemas_y_el_registro_tienen_las_mismas_diez_herramientas():
-    assert len(esquemas.ESQUEMAS) == 10
+def test_los_esquemas_y_el_registro_tienen_las_mismas_trece_herramientas():
+    # Diez de consulta (tanda 7) y tres que proponen borradores (tanda 8).
+    assert len(esquemas.ESQUEMAS) == 13
     assert set(esquemas.NOMBRES) == set(herramientas.REGISTRO)
     assert herramientas.DE_PLATA <= set(herramientas.REGISTRO)
+    assert {"proponer_pedido", "proponer_abono", "proponer_gasto"} <= herramientas.DE_PLATA
+
+
+def _con_uniones(propiedad):
+    tipos = propiedad.get("type")
+    return "anyOf" in propiedad or isinstance(tipos, list)
+
+
+def test_no_pasan_del_limite_de_parametros_anulables_de_la_api():
+    # Con strict, la API acepta como mucho 16 parámetros con varios tipos (null incluido),
+    # sumando todas las herramientas: con más responde 400 (prueba corta de la tanda 8).
+    uniones = sum(
+        _con_uniones(p) for h in esquemas.ESQUEMAS for p in h["input_schema"]["properties"].values()
+    )
+    assert uniones <= 16
+
+
+def test_los_vacios_de_los_borradores_llegan_como_none(taller):
+    entrada = {"pedido_id": 0, "cliente": "", "valor": 300_000, "fecha": ""}
+    assert herramientas.validar("proponer_abono", entrada) == {
+        "pedido_id": None, "cliente": None, "valor": 300_000, "fecha": None,
+    }
+    entrada = {"pedido_id": 7, "cliente": "Tambores", "valor": 300_000, "fecha": "2026-11-15"}
+    assert herramientas.validar("proponer_abono", entrada)["fecha"].isoformat() == "2026-11-15"
+    with pytest.raises(ErrorDeHerramienta, match="AAAA-MM-DD"):
+        herramientas.validar("proponer_gasto", {
+            "concepto": "Luz", "categoria": "servicios", "valor": 1, "fecha": "ayer",
+            "pedido_id": 0,
+        })
+
+
+def test_ninguna_herramienta_borra():
+    # Regla fija del agente (docs/12-agente.md): no existe herramienta para borrar.
+    for nombre in esquemas.NOMBRES:
+        assert not any(p in nombre for p in ("borrar", "quitar", "eliminar"))
+    for esquema in esquemas.ESQUEMAS:
+        descripcion = esquema["description"].lower()
+        assert not any(p in descripcion for p in ("borrar", "borra ", "quita ", "elimina"))
 
 
 def test_los_esquemas_van_ordenados_por_nombre_y_siempre_iguales():

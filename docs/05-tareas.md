@@ -115,7 +115,7 @@ Qué es: `docs/12-agente.md` (aprobado por David el 2026-11-15). Cómo se constr
 cada tarea: `docs/13-plan-tanda-8.md`. En esta tanda van T38, T39, T40 y T43; las demás se
 hacen después de presentárselo a ella.
 
-- [ ] **T38. Base: documentos, maqueta, modelo, cálculos, borrador firmado y `confirmar`**
+- [x] **T38. Base: documentos, maqueta, modelo, cálculos, borrador firmado y `confirmar`**
   (coordinador). Documentos al día; piezas nuevas de la maqueta (las aprueba David);
   `TelaPedido`, `MovimientoTela.pedido`, `por_asistente`, `ResumenDelDia` y `BorradorUsado`
   con sus migraciones; tela comprometida y "¿alcanza?" en `calculos.py`; "Lo anotó el asistente" en

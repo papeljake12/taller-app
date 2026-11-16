@@ -20,6 +20,9 @@ Lee estos documentos antes de escribir código:
   cuesta. Decisiones de David del 14 de noviembre de 2026.
 - `docs/11-plan-tanda-7.md`: cómo se construye el asistente (tanda 7): contratos, carriles y
   pruebas de cada tarea.
+- `docs/12-agente.md`: el agente del taller (tanda 8): ella le cuenta, el agente prepara un
+  borrador y ella lo guarda con un toque. Aprobado por David el 15 de noviembre de 2026.
+- `docs/13-plan-tanda-8.md`: cómo se construye la tanda 8: contratos, carriles y pruebas.
 - `diseno/`: el diseño aprobado, una página por pantalla. Es la fuente de verdad visual.
 - `demo/index.html`: la primera demo. Sirve para el comportamiento y los textos de cada
   función. Su aspecto ya no vale: fue reemplazado por `diseno/`.
@@ -104,6 +107,9 @@ El detalle está en "Reglas para los agentes" de `docs/09-plan-de-construccion.m
   sus usuarias se crean en el panel `/admin/`.
 - Desbloquear a alguien antes de tiempo: `uv run python manage.py axes_reset`
 - Datos de ejemplo: `uv run python manage.py cargar_ejemplos` (se crea en la tanda 2, con T22).
+- Resumen de la mañana del agente: `uv run python manage.py preparar_resumen [--taller ID]
+  [--de-nuevo]` (llega con T43, tanda 8). En el servidor lo corre cron a las 5:00 a. m.
+  (`herramientas/servidor/cron-resumen.txt`).
 - Capturas de una tanda: `uv run python herramientas/capturas.py --tanda N` (levanta el
   servidor, toma cada pantalla en 1280 px y 390 px y las guarda en `docs/capturas/tanda-N/`).
 
