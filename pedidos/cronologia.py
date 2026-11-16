@@ -7,6 +7,9 @@ No tiene modelo propio: arma los eventos con lo que el pedido ya guarda.
 - Las tallas. Las que llegaron por el enlace del cliente se juntan por día ("12 personas
   enviaron su talla por el enlace", quién: "Enlace"); las agregadas a mano van una por una.
 
+El pedido y los abonos que se guardaron con el agente (tanda 8) llevan `por_asistente`: la
+tarjeta les pone debajo "Lo anotó el asistente", con la esfera pequeña.
+
 Todo sale del pedido que se pasa, que ya es del taller de la usuaria: otro taller no aparece.
 """
 
@@ -41,6 +44,7 @@ class Evento:
     quien: str = ""
     valor: int | None = None
     despues: str = ""
+    por_asistente: bool = False
     # Para ordenar los eventos de un mismo día: el más reciente primero.
     momento: object = field(default=None, repr=False)
 
@@ -77,17 +81,18 @@ def eventos_del_pedido(pedido, con_plata=True):
     if con_plata:
         eventos.append(
             (creado.date(), Evento("Se creó el pedido por ", _quien(pedido.creado_por),
-                                   pedido.total, ".", creado))
+                                   pedido.total, ".", pedido.por_asistente, momento=creado))
         )
         for abono in pedido.abonos.select_related("registrado_por"):
             momento = timezone.localtime(abono.creado)
             eventos.append(
                 (abono.fecha, Evento("Se registró un abono de ", _quien(abono.registrado_por),
-                                     abono.valor, ".", momento))
+                                     abono.valor, ".", abono.por_asistente, momento=momento))
             )
     else:
         eventos.append(
-            (creado.date(), Evento("Se creó el pedido.", _quien(pedido.creado_por), None, "", creado))
+            (creado.date(), Evento("Se creó el pedido.", _quien(pedido.creado_por), None, "",
+                                   pedido.por_asistente, momento=creado))
         )
     del_enlace = {}
     for talla in pedido.tallas.all():
@@ -97,10 +102,10 @@ def eventos_del_pedido(pedido, con_plata=True):
             del_enlace[momento.date()] = (dia, cantidad + 1, max(ultimo, momento))
         else:
             eventos.append(
-                (momento.date(), Evento(f"Se agregó a mano la talla de {talla.nombre}.", "", None, "", momento))
+                (momento.date(), Evento(f"Se agregó a mano la talla de {talla.nombre}.", momento=momento))
             )
     for dia, cantidad, ultimo in del_enlace.values():
-        eventos.append((dia, Evento(_persona(cantidad), "Enlace", None, "", ultimo)))
+        eventos.append((dia, Evento(_persona(cantidad), "Enlace", momento=ultimo)))
     return eventos
 
 

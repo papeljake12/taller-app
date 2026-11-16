@@ -37,7 +37,7 @@ from django.utils import timezone
 
 from finanzas.models import Gasto
 from pedidos.models import Abono, Cliente, Pedido, Talla
-from telas.models import Tela
+from telas.models import Tela, TelaPedido
 
 Estado = Pedido.Estado
 
@@ -654,6 +654,75 @@ def resumen_de_telas(taller):
         "cantidad": telas.count(),
         "metros": telas.aggregate(suma=Sum("metros"))["suma"] or Decimal("0"),
         "bajas": list(telas_bajas(telas).order_by("nombre")),
+    }
+
+
+# --- Tela de los pedidos (tanda 8) --------------------------------------------------------------
+#
+# Cada pedido puede decir qué tela del inventario usa y cuántos metros (TelaPedido). Mientras
+# el pedido está Confirmado, esos metros están "apartados": todavía no se cortó, pero ya no
+# están libres. Al pasar a corte ya no cuentan (la tela se gasta con un "Usé"). Los cotizados
+# no apartan nada: el cliente aún no ha dicho que sí.
+
+
+def tela_comprometida(taller, sin_pedido=None):
+    """Metros apartados por los pedidos Confirmados, por tela: {tela_id: Decimal}.
+
+    `sin_pedido` deja fuera ese pedido (para no contarlo dos veces al revisar el suyo).
+    """
+    filas = TelaPedido.objects.del_taller(taller).filter(pedido__estado=Estado.CONFIRMADO)
+    if sin_pedido is not None:
+        filas = filas.exclude(pedido=sin_pedido)
+    return {
+        fila["tela"]: fila["suma"]
+        for fila in filas.values("tela").annotate(suma=Sum("metros"))
+    }
+
+
+def falta_tela(tela, metros, comprometida):
+    """Cuántos metros faltan para cubrir `metros` más lo que ya está apartado de esa tela.
+
+    Decimal("0") si alcanza. `comprometida` es lo que devuelve `tela_comprometida`.
+    """
+    necesita = Decimal(metros) + comprometida.get(tela.pk, Decimal("0"))
+    return max(Decimal("0"), necesita - tela.metros).quantize(Decimal("0.01"))
+
+
+@dataclass(frozen=True)
+class TelaQueNoAlcanza:
+    tela: Tela
+    apartados: Decimal  # metros de los pedidos Confirmados
+    faltan: Decimal
+
+
+def telas_que_no_alcanzan(taller):
+    """Las telas cuyos metros no cubren lo apartado por los pedidos Confirmados, por nombre."""
+    comprometida = tela_comprometida(taller)
+    resultado = []
+    for tela in Tela.objects.del_taller(taller).filter(pk__in=comprometida):
+        faltan = falta_tela(tela, 0, comprometida)
+        if faltan > 0:
+            resultado.append(TelaQueNoAlcanza(tela, comprometida[tela.pk], faltan))
+    return sorted(resultado, key=lambda f: sin_tildes(f.tela.nombre))
+
+
+def tela_del_pedido(pedido):
+    """Lo que muestra la tarjeta "Tela del pedido": cada tela con sus metros y cuánto falta.
+
+    Solo un pedido Confirmado aparta tela, así que solo a él le puede faltar. Devuelve
+    {"filas": [{"tela", "metros", "faltan"}], "faltan": bool, "apartada": bool}.
+    """
+    filas = list(pedido.telas.select_related("tela").order_by("tela__nombre"))
+    apartada = pedido.estado == Estado.CONFIRMADO
+    comprometida = tela_comprometida(pedido.taller, sin_pedido=pedido) if apartada else {}
+    resultado = []
+    for fila in filas:
+        faltan = falta_tela(fila.tela, fila.metros, comprometida) if apartada else Decimal("0")
+        resultado.append({"tela": fila.tela, "metros": fila.metros, "faltan": faltan})
+    return {
+        "filas": resultado,
+        "faltan": any(f["faltan"] > 0 for f in resultado),
+        "apartada": apartada,
     }
 
 

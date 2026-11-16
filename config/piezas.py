@@ -98,6 +98,13 @@ def pesos(valor):
 
 
 @register.filter
+def pesos_juntos(texto):
+    """El signo y la cifra no se separan al partir la línea: "$ 450.000" con un espacio que no
+    se parte (tanda 8: el detalle de las filas del borrador es texto suelto)."""
+    return str(texto or "").replace("$ ", "$\u00a0")
+
+
+@register.filter
 def metros(valor):
     """Metros de tela: "60 m", "6,5 m" (coma decimal, sin ceros de más)."""
     if valor in (None, ""):

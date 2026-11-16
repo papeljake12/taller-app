@@ -1,0 +1,6 @@
+{% comment %}
+"¿A cuál?" (tanda 8, diseno/asistente-agente.html): hay dos o más parecidos (clientes, pedidos,
+prendas o telas) y el agente no adivina. Un chip por opción, que manda esa opción como pregunta
+(data-asistente-sugerencia, como las sugerencias del saludo; sin JavaScript, envía el formulario
+del panel con ese texto).
+{% endcomment %}<div class="asistente__sugerencias borrador__opciones" role="group" aria-label="{{ tarjeta.titulo }}">{% for opcion in tarjeta.datos.opciones %}<button type="submit" form="asistente-form" name="pregunta" value="{{ opcion }}" class="chip" data-asistente-sugerencia>{{ opcion }}</button>{% endfor %}</div>

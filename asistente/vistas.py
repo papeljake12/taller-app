@@ -1,4 +1,5 @@
-"""Las tres direcciones del asistente: abrir el panel, preguntar y empezar de nuevo.
+"""Las direcciones del asistente: abrir el panel, preguntar, empezar de nuevo y guardar un
+borrador (tanda 8: `confirmar`, docs/13-plan-tanda-8.md, sección 1.3).
 
 Carril D (T33). Reglas: docs/11-plan-tanda-7.md, secciones 1.4 ("Sesión"), 1.5 y 1.7. Todas
 con `@solo_duena` y 404 si `not disponible(request)`. `preguntar` responde siempre 200
@@ -10,6 +11,7 @@ La conversación vive en la sesión de la usuaria, no en la base de datos:
         "huella": ...,     # modelo + instrucciones + herramientas; si cambia, conversación nueva
         "mensajes": [...], # el historial que se le manda a Claude; solo se le agrega
         "turnos": [...],   # lo que se pinta: pregunta, texto, qué revisó, tarjetas y enlaces
+        "notas": [...],    # lo que guardó con un borrador; va en la siguiente pregunta (tanda 8)
     }
 
 Solo se guarda una respuesta que salió bien (`estado == "ok"`). Las que fallan (servicio
@@ -37,8 +39,9 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_POST
 
-from asistente import cliente, conversacion, esquemas, instrucciones, pagina, uso
+from asistente import borradores, cliente, conversacion, esquemas, guardar, instrucciones, pagina, uso
 from asistente.contratos import Contexto
+from config.avisos import avisar
 from asistente.disponibilidad import disponible
 from config.ventanas import es_htmx
 from cuentas.permisos import solo_duena
@@ -95,10 +98,11 @@ def _conversacion(request):
             "huella": actual,
             "mensajes": list(guardada.get("mensajes") or []),
             "turnos": list(guardada.get("turnos") or []),
+            "notas": list(guardada.get("notas") or []),
         }
     if guardada is not None:
         del request.session[CLAVE_SESION]
-    return {"huella": actual, "mensajes": [], "turnos": []}
+    return {"huella": actual, "mensajes": [], "turnos": [], "notas": []}
 
 
 def _borrar(request):
@@ -217,6 +221,22 @@ def _pregunta(request):
     return ""
 
 
+def _tarjetas_de_borrador(conv):
+    """Todas las tarjetas de borrador de la conversación guardada, de la más vieja a la nueva."""
+    for turno in conv["turnos"]:
+        for tarjeta in turno.get("tarjetas") or []:
+            if isinstance(tarjeta, dict) and tarjeta.get("tipo") == "borrador":
+                yield tarjeta
+
+
+def _reemplazar(conv, clave):
+    """El borrador que se estaba corrigiendo queda "reemplazado": sin botones y sin servir."""
+    for tarjeta in _tarjetas_de_borrador(conv):
+        datos = tarjeta.get("datos") or {}
+        if datos.get("clave") == clave and datos.get("estado") in ("pendiente", "fallido"):
+            datos["estado"] = "reemplazado"
+
+
 def _preguntar_a_claude(request, conv, pregunta, hoy):
     """Una pregunta que ya tiene su cupo apartado. Devuelve (turno, se_guardó)."""
     taller = request.taller
@@ -236,6 +256,7 @@ def _preguntar_a_claude(request, conv, pregunta, hoy):
             mensajes=conv["mensajes"],
             pregunta=pregunta,
             pagina=texto_pagina,
+            nota="; ".join(conv.get("notas") or []),
         )
     except Exception as error:  # noqa: BLE001 - la dueña ve el aviso amable, nunca un 500
         # Solo el tipo de error: su texto podría traer algo de la pregunta.
@@ -271,6 +292,10 @@ def _preguntar_a_claude(request, conv, pregunta, hoy):
     if respuesta.estado != "ok":
         return turno, False
     conv["mensajes"] = list(respuesta.mensajes)
+    conv["notas"] = []  # ya se las contó a Claude
+    corrige = (request.POST.get("corrige") or "").strip()
+    if corrige and any(t.get("tipo") == "borrador" for t in turno["tarjetas"]):
+        _reemplazar(conv, corrige)
     conv["turnos"].append(turno)
     request.session[CLAVE_SESION] = conv
     return turno, True
@@ -341,3 +366,108 @@ def nueva(request):
             {"turnos": [], "sugerencias": SUGERENCIAS, "cupo": uso.cupo(request.taller)},
         )
     return redirect("asistente:panel")
+
+
+# --- Guardar un borrador (tanda 8) ------------------------------------------------------------
+
+
+def _tarjeta_con_firma(conv, firma):
+    """La tarjeta del borrador con esa firma en la conversación guardada, o None."""
+    if not firma:
+        return None
+    for tarjeta in _tarjetas_de_borrador(conv):
+        if (tarjeta.get("datos") or {}).get("firma") == firma:
+            return tarjeta
+    return None
+
+
+def _hora(momento):
+    """"10:42 a. m.", como se escribe en Colombia."""
+    hora = momento.hour % 12 or 12
+    sufijo = "a. m." if momento.hour < 12 else "p. m."
+    return f"{hora}:{momento.minute:02d} {sufijo}"
+
+
+def _pintar_tarjeta(request, tarjeta, status=200):
+    html = render_to_string(
+        "asistente/tarjetas/borrador.html", {"tarjeta": tarjeta}, request=request
+    )
+    return HttpResponse(html, status=status)
+
+
+@never_cache
+@require_POST
+@solo_duena
+def confirmar(request):
+    """La dueña tocó Guardar en un borrador: se guarda todo lo que mostraba, o nada.
+
+    Revisa la firma (taller, usuaria, vencimiento, un solo uso) y que el borrador siga vivo en
+    la conversación (no reemplazado ni guardado). Guarda con los mismos formularios de las
+    pantallas (asistente/guardar.py). No llama a Claude ni gasta preguntas.
+
+    Con HTMX devuelve la tarjeta en su estado nuevo (reemplaza a la que tenía el botón) y el
+    aviso corto "Guardado."; sin JavaScript vuelve al panel. Siempre 200.
+    """
+    _exigir_disponible(request)
+    conv = _conversacion(request)
+    firma = request.POST.get("firma") or ""
+    tarjeta = _tarjeta_con_firma(conv, firma)
+    if tarjeta is None:
+        registro.info("borrador sin tarjeta taller=%s", request.taller.pk)
+        tarjeta = {"tipo": "borrador", "titulo": "Para guardar",
+                   "datos": {"estado": "fallido", "filas": [],
+                             "mensaje": borradores.MENSAJES["danado"]}}
+        return _pintar_tarjeta(request, tarjeta) if es_htmx(request) else redirect("asistente:panel")
+
+    datos = tarjeta["datos"]
+    ctx = Contexto(
+        taller=request.taller,
+        usuaria=request.user,
+        hoy=timezone.localdate(),
+        pedido_actual=None,
+        url_base=request.build_absolute_uri("/"),
+    )
+    guardados = []
+    if datos.get("estado") == "reemplazado":
+        datos["mensaje"] = borradores.MENSAJES["reemplazado"]
+    elif datos.get("estado") == "guardado":
+        pass
+    else:
+        try:
+            clave, acciones = borradores.abrir(firma, ctx)
+            guardados = guardar.guardar(ctx, clave, acciones)
+        except borradores.BorradorInvalido as error:
+            datos["estado"] = "fallido"
+            datos["mensaje"] = str(error)
+            datos["sin_arreglo"] = True
+            registro.info("borrador invalido taller=%s motivo=%s", request.taller.pk, error.motivo)
+        except guardar.NoSeGuardo as error:
+            datos["estado"] = "fallido"
+            datos["mensaje"] = f"No se guardó nada: {error}"
+            registro.info("borrador no guardado taller=%s", request.taller.pk)
+        else:
+            enlaces = []
+            for guardado in guardados:
+                enlace = guardado.enlace
+                if enlace is not None and all(e["url"] != enlace.url for e in enlaces):
+                    enlaces.append({"texto": enlace.texto, "url": enlace.url})
+            datos.update(
+                estado="guardado",
+                hora=_hora(timezone.localtime()),
+                enlaces=enlaces,
+                mensaje="",
+            )
+            conv.setdefault("notas", []).append(", ".join(g.nota for g in guardados))
+            registro.info(
+                "borrador guardado taller=%s acciones=%s", request.taller.pk,
+                ",".join(sorted({a["tipo"] for a in acciones})),
+            )
+    request.session[CLAVE_SESION] = conv
+
+    if not es_htmx(request):
+        respuesta = redirect("asistente:panel")
+    else:
+        respuesta = _pintar_tarjeta(request, tarjeta)
+    if guardados:
+        avisar(request, respuesta, "Guardado.")
+    return respuesta

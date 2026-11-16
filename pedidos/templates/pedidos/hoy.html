@@ -19,6 +19,7 @@ Con el asistente prendido (tanda 7), la caja grande le pregunta al asistente
 <h1>{{ saludo }}<span class="bienvenida__resto"><br>Esto es lo de hoy en <span class="bienvenida__taller">{{ request.taller.nombre }}</span></span></h1>
 {% include "pedidos/_hoy_cuenta.html" %}
 </div>
+{% if resumen %}{% include "asistente/_resumen_hoy.html" %}{% endif %}
 {% if asistente.disponible %}{% include "asistente/_caja_hoy.html" %}{% else %}<form class="caja-grande" role="search" action="{% url 'pedidos:buscar' %}" method="get">
 <label class="buscador">{% icono "buscar" 16 "2" %}<span class="oculto">Buscar</span><input type="search" name="q" placeholder="{% if es_duena %}Busca un pedido o un cliente{% else %}Busca un pedido{% endif %}"></label>
 {% if es_duena %}<div class="caja-grande__atajos"><a class="chip" href="{% url 'pedidos:nuevo' %}" hx-get="{% url 'pedidos:nuevo' %}" hx-target="#ventana">{% icono "sumar" 14 %}Nuevo pedido</a><a class="chip" href="{% url 'pedidos:lista' %}?filtro=saldo">{% icono "recibo" 14 %}Registrar abono</a><a class="chip" href="{% url 'cotizador:inicio' %}">{% icono "cotizador" 14 %}Cotizar</a></div>{% endif %}

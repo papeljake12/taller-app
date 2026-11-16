@@ -163,6 +163,17 @@ def solo_para_ver(*formularios):
     return formularios
 
 
+def tela_del_pedido(pedido):
+    """La tarjeta "Tela del pedido" (tanda 8): la tela de calculos.tela_del_pedido, y si el
+    pedido ya pasó por el corte (su tela ya no cuenta como apartada)."""
+    datos = calculos.tela_del_pedido(pedido)
+    datos["cortada"] = pedido.estado in (
+        Pedido.Estado.CORTE, Pedido.Estado.CONFECCION, Pedido.Estado.LISTO,
+        Pedido.Estado.ENTREGADO,
+    )
+    return datos
+
+
 def contexto_de_la_ficha(request, pedido):
     """Lo que necesitan las partes de T07: encabezado, Etapa, Entrega, Cliente y Eliminar.
 
@@ -239,6 +250,7 @@ def contexto_del_pedido(request, pedido, **extra):
     """
     contexto = contexto_de_la_ficha(request, pedido)
     contexto.update(materiales.contexto_de_materiales(pedido))  # T12
+    contexto["tela_del_pedido"] = tela_del_pedido(pedido)  # tanda 8
     if puede_ver_plata(request):
         contexto.update(abonos.contexto_pagos(request, pedido))  # T08
     contexto["tarjeta_tallas"] = tallas.tarjeta(  # T10

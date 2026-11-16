@@ -1,0 +1,15 @@
+# Línea para cron: prepara el resumen de la mañana del agente (tanda 8, T43) todos los días a
+# las 5:00 de la mañana (hora de Bogotá, si pusiste esa zona horaria en el paso 3 de
+# docs/guia-publicacion.md). Así, cuando ella abre Hoy, el párrafo ya está listo.
+#
+# Corre `preparar_resumen` con el Python de la aplicación, desde su carpeta, igual que
+# actualizar.sh: los ajustes de producción salen del .env (DJANGO_SETTINGS_MODULE). Solo
+# prepara el resumen de los talleres con el asistente prendido en /admin, y sin la clave de
+# Anthropic (ANTHROPIC_API_KEY en el .env) no hace nada y lo dice.
+#
+# Se agrega con `crontab -e` (con tu usuario, sin sudo) pegando la última línea de este
+# archivo al final. Lo que escribe queda en el registro del sistema; se lee con:
+#   journalctl -t resumen-taller
+#
+# minuto hora día mes día-de-la-semana  comando
+0 5 * * * cd /srv/taller/app && .venv/bin/python manage.py preparar_resumen 2>&1 | logger -t resumen-taller

@@ -277,3 +277,13 @@ def test_sin_plazo_usa_la_conexion_de_siempre(libreria):
     enviar()
 
     assert libreria.creados[-1].con_opciones == []
+
+
+def test_sin_lista_de_herramientas_no_manda_tools_ni_tool_choice(libreria):
+    # El resumen de la mañana (tanda 8) le pide a Claude solo un párrafo.
+    enviar(herramientas=[])
+    _, datos = ultimo_pedido(libreria)
+
+    assert "tools" not in datos
+    assert "tool_choice" not in datos
+    assert datos["messages"] == MENSAJES

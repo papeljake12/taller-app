@@ -120,3 +120,15 @@ def texto_cotizacion(taller, cotizacion, prenda, cliente="", entrega=None):
     if entrega:
         lineas.append(f"Entrega estimada: {fecha_corta(entrega)}")
     return "\n".join(lineas)
+
+
+def texto_pedir_tallas(pedido, direccion):
+    """El mensaje para pedirle al cliente las tallas que faltan, con el enlace del formulario
+    (tanda 8: lo usa el resumen de la mañana)."""
+    recibidas, esperadas = calculos.tallas_recibidas(pedido)
+    detalle = pedido.detalle.strip().rstrip(".")
+    return (
+        f"Hola, le escribimos {firma(pedido.taller)}. Para su pedido ({detalle}) todavía nos "
+        f"faltan {esperadas - recibidas} de {esperadas} tallas. Las pueden enviar en este "
+        f"enlace: {direccion} ¡Gracias!"
+    )

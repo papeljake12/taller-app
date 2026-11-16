@@ -599,6 +599,9 @@ Riesgos técnicos:
 
 ## 7. Bosquejo de la tanda 8
 
+**Reemplazado** el 15 de noviembre de 2026 por `docs/12-agente.md` (qué hace el agente) y
+`docs/13-plan-tanda-8.md` (cómo se construye). Lo de abajo queda solo como historia.
+
 - **Herramientas `proponer_*`** (pedido, abono, gasto, etapa, "Usé" tela). No escriben:
   devuelven una tarjeta `borrador` con los datos y una carga firmada
   (`django.core.signing`: taller, usuaria, vencimiento, un solo uso).

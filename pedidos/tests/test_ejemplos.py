@@ -10,7 +10,7 @@ from cuentas.models import Taller, Usuario
 from finanzas.models import Gasto
 from pedidos import ejemplos
 from pedidos.models import Abono, Cliente, Material, Pedido, Talla
-from telas.models import Tela
+from telas.models import Tela, TelaPedido
 from tests import fabricas
 
 pytestmark = pytest.mark.django_db
@@ -25,7 +25,9 @@ def en_desarrollo(settings, tmp_path):
 def contar():
     return {
         modelo.__name__: modelo.objects.count()
-        for modelo in (Cliente, Pedido, Abono, Talla, Material, Gasto, Tela, PrendaGuardada)
+        for modelo in (
+            Cliente, Pedido, Abono, Talla, Material, Gasto, Tela, PrendaGuardada, TelaPedido,
+        )
     }
 
 
@@ -35,7 +37,7 @@ def test_carga_los_ejemplos_en_el_taller_de_ejemplo():
     taller = Taller.objects.get(nombre="Taller de ejemplo")
     assert contar() == {
         "Cliente": 6, "Pedido": 6, "Abono": 7, "Talla": 58, "Material": 10, "Gasto": 5,
-        "Tela": 4, "PrendaGuardada": 4,
+        "Tela": 4, "PrendaGuardada": 4, "TelaPedido": 2,
     }
     assert set(Pedido.objects.values_list("taller", flat=True)) == {taller.pk}
     assert Pedido.objects.exclude(foto="").count() == 3

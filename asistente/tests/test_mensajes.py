@@ -383,3 +383,9 @@ def test_devuelve_una_tarjeta_de_verdad(taller, pedido):
     resultado = preparar(contexto(taller), pedido_id=pedido.pk)
     assert isinstance(resultado.tarjeta, Tarjeta)
     assert resultado.revisado == "Revisé el pedido de 8 overoles"
+
+
+def test_tambien_ve_las_cifras_escritas_con_mil_o_millones():
+    # Ajuste del revisor (tanda 8): "480 mil" no se podía colar sin revisar.
+    assert cifras_en_pesos("Te debe 480 mil y el total es 1,8 millones") == [480_000, 1_800_000]
+    assert cifras_en_pesos("Faltan $ 450.000 (450 mil)") == [450_000]

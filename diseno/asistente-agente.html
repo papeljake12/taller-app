@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseño: Asistente con borradores</title>
+<!-- APROBADO POR DAVID (2026-11-15): el agente del taller, abierto encima de Hoy,
+     con borradores para guardar (T39 y T40).
+     Lo que dice y hace está en docs/12-agente.md y el plan en docs/13-plan-tanda-8.md. Sus
+     estilos están al final de la sección 7 de estilo.css ("El agente").
+     Referencia de diseño (rediseño con el lenguaje del panel de Shopify, aprobado el
+     2026-11-13). No es código de la aplicación: de aquí se copian medidas, colores, textos y
+     orden. Las reglas están en docs/08-diseno.md y los estilos en diseno/estilo.css.
+     Se ve igual en computador y en celular: abre la página en una ventana angosta (390 px)
+     para ver el celular. La fuente Inter se carga de Google solo para poder ver el archivo;
+     en la aplicación va guardada en el proyecto. Los datos son los de ejemplo. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="tijeras" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.8"/><circle cx="6" cy="17.5" r="2.8"/><path d="M8.3 8.2L20 18M8.3 15.8L20 6"/></symbol>
+<symbol id="contraer" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></symbol>
+<symbol id="buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+<symbol id="hoy" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></symbol>
+<symbol id="pedidos" viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 3 1.7c-.6.4-1 .8-1 1.5V9"/><path d="M12 9l8.6 6.2a1 1 0 0 1-.6 1.8H4a1 1 0 0 1-.6-1.8L12 9z"/></symbol>
+<symbol id="calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="clientes" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
+<symbol id="cotizador" viewBox="0 0 24 24"><path d="M4 4h8l8 8-8 8-8-8z"/><circle cx="8.5" cy="8.5" r="1.2"/></symbol>
+<symbol id="telas" viewBox="0 0 24 24"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></symbol>
+<symbol id="resumen" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></symbol>
+<symbol id="mi-taller" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+<symbol id="mas" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+<symbol id="visto" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="salir" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></symbol>
+<symbol id="sumar" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="atras" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="adelante" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="arriba" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+<symbol id="abajo" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="foto" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></symbol>
+<symbol id="prenda" viewBox="0 0 24 24"><path d="M9 4l-5 3 2 4 2-1v10h8V10l2 1 2-4-5-3a3 3 0 0 1-6 0z"/></symbol>
+<symbol id="descargar" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+<symbol id="subir" viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 20h14"/></symbol>
+<symbol id="whatsapp" viewBox="0 0 24 24"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/></symbol>
+<symbol id="recibo" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></symbol>
+<symbol id="reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></symbol>
+<symbol id="copiar" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="enlace" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+<symbol id="editar" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></symbol>
+<symbol id="papelera" viewBox="0 0 24 24"><path d="M5 7h14M10 4h4M7 7l1 13h8l1-13"/></symbol>
+<symbol id="informacion" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/></symbol>
+<symbol id="enviar" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+</svg>
+<div class="marco">
+<nav class="menu" aria-label="Secciones">
+<div class="menu__marca"><a class="menu__logo" href="hoy.html" aria-label="Ir a Hoy"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#tijeras"></use></svg></a><button type="button" class="menu__contraer" aria-label="Contraer el menú" title="Contraer el menú"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#contraer"></use></svg></button></div>
+<button type="button" class="menu__abrir" aria-label="Abrir el menú" title="Abrir el menú"><span class="menu__logo"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#tijeras"></use></svg></span></button>
+<form class="menu__buscar" role="search" action="#"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg><label class="oculto" for="menu-buscar">Buscar pedidos y clientes</label><input type="search" id="menu-buscar" name="q" placeholder="Buscar"><kbd class="menu__atajo">Ctrl K</kbd></form>
+<button type="button" class="menu__lupa" aria-label="Buscar" title="Buscar"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg></button>
+<div class="menu__lista">
+<a class="menu__enlace es-actual" href="hoy.html" title="Hoy" aria-current="page"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#hoy"></use></svg><span class="menu__texto">Hoy</span></a>
+<a class="menu__enlace" href="pedidos.html" title="Pedidos" aria-label="Pedidos (1)"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#pedidos"></use></svg><span class="menu__texto">Pedidos</span><span class="menu__contador">1</span></a>
+<a class="menu__enlace" href="calendario.html" title="Calendario"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#calendario"></use></svg><span class="menu__texto">Calendario</span></a>
+<a class="menu__enlace" href="clientes.html" title="Clientes"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#clientes"></use></svg><span class="menu__texto">Clientes</span></a>
+<a class="menu__enlace" href="cotizador.html" title="Cotizador"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#cotizador"></use></svg><span class="menu__texto">Cotizador</span></a>
+<a class="menu__enlace" href="telas.html" title="Telas" aria-label="Telas (2)"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#telas"></use></svg><span class="menu__texto">Telas</span><span class="menu__contador">2</span></a>
+<a class="menu__enlace" href="resumen.html" title="Resumen"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#resumen"></use></svg><span class="menu__texto">Resumen</span></a>
+</div>
+<div class="menu__pie">
+<a class="menu__enlace" href="mi-taller.html" title="Mi taller"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#mi-taller"></use></svg><span class="menu__texto">Mi taller</span></a>
+<div class="menu__taller"><span class="menu__avatar" aria-hidden="true">TE</span><span class="menu__nombre" id="menu-taller" title="Taller de ejemplo">Taller de ejemplo</span><form action="#"><button type="submit" class="menu__salir" aria-label="Salir" title="Salir"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#salir"></use></svg></button></form></div>
+</div>
+</nav>
+<main class="hoja hoja--angosta" id="contenido">
+<header class="encabezado"><a class="encabezado__logo" href="hoy.html" aria-label="Ir a Hoy"><svg class="icono" aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#tijeras"></use></svg></a><div class="encabezado__titulo solo-computador"><a class="estado" href="pedidos.html"><span class="estado__punto"></span>1 pedido atrasado</a></div><div class="encabezado__acciones"><span class="encabezado__apoyo solo-computador">Viernes, 13 de noviembre</span><a class="boton boton--redondo-celular solo-celular" href="#" aria-label="Buscar"><span class="boton__icono-celular"><svg class="icono" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#buscar"></use></svg></span></a><button type="button" class="boton boton--redondo-celular es-presionado" aria-expanded="true" aria-controls="asistente" title="Asistente (Ctrl J)"><span class="boton__icono-celular"><span class="esfera esfera--boton" data-esfera aria-hidden="true"><canvas class="esfera__lienzo"></canvas></span></span><span class="boton__texto"><span class="esfera esfera--chica" data-esfera aria-hidden="true"><canvas class="esfera__lienzo"></canvas></span>Asistente</span></button><a class="boton boton--principal boton--redondo-celular" href="nuevo-pedido.html"><span class="boton__icono-celular"><svg class="icono" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#sumar"></use></svg></span><span class="boton__texto">Nuevo pedido</span></a></div></header>
+<div class="hoja__contenido">
+<div class="angosto">
+<div class="bienvenida">
+<h1>¡Buenas tardes!<span class="bienvenida__resto"><br>Esto es lo de hoy en <span class="bienvenida__taller">Taller de ejemplo</span></span></h1>
+<p class="bienvenida__apoyo">Tienes 3 cosas pendientes hoy</p>
+</div>
+<!-- El resumen de la mañana (T43): lo arma una tarea del servidor cada madrugada. El párrafo lo escribe el agente con las cifras que le pasa la aplicación; las filas de abajo se calculan al abrir Hoy y cada una trae su botón. Solo lleva lo que las cartas de abajo no muestran: a quién cobrar, tela y tallas. Sin nada pendiente, no sale. -->
+<section class="tarjeta resumen-dia" aria-labelledby="t-resumen">
+<div class="tarjeta__cabeza"><span class="esfera esfera--chica" data-esfera aria-hidden="true"><canvas class="esfera__lienzo"></canvas></span><h2 id="t-resumen">Tu resumen de hoy</h2><span class="tarjeta__aparte"><span><span class="solo-computador">Lo preparé a las </span>5:00 a. m.</span></span></div>
+<div class="tarjeta__cuerpo"><p class="resumen-dia__parrafo">Buenos días. Hoy no tienes entregas. Va atrasado el pedido de 8 overoles de Ferretería La Esquina, que era para el miércoles, y todavía te debe <span class="dinero">$ 480.000</span>. El lunes entregas las 15 polleras de Tambores del Río, que ya están listas. Faltan tallas en dos pedidos y se están acabando la popelina y el piqué.</p></div>
+<div class="fila fila--compacta"><div class="fila__texto"><span class="fila__titulo"><strong>Ferretería La Esquina</strong><span class="etiqueta etiqueta--rojo">Vencida</span></span><span class="fila__detalle">Debe <span class="dinero">$ 480.000</span>. Su último abono fue hace 20 días.</span></div><a class="boton" href="#" target="_blank" rel="noopener"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#whatsapp"></use></svg>Cobrar</a></div>
+<div class="fila fila--compacta"><div class="fila__texto"><span class="fila__titulo"><strong>Colegio Nuevo Amanecer</strong></span><span class="fila__detalle">Faltan 31 de 40 tallas.</span></div><a class="boton" href="#" target="_blank" rel="noopener"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#whatsapp"></use></svg>Pedir tallas</a></div>
+<div class="fila fila--compacta"><div class="fila__texto"><span class="fila__titulo"><strong>Restaurante El Fogón Costeño</strong></span><span class="fila__detalle">Faltan 4 de 18 tallas, y ya está en corte.</span></div><a class="boton" href="#" target="_blank" rel="noopener"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#whatsapp"></use></svg>Pedir tallas</a></div>
+<div class="fila fila--compacta"><div class="fila__texto"><span class="fila__titulo"><strong>Telas por acabarse</strong><span class="etiqueta etiqueta--ambar etiqueta--vacio">2 telas</span></span><span class="fila__detalle">Popelina blanca (quedan 4 m) y piqué blanco (quedan 6 m).</span></div><a class="boton" href="telas.html"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#telas"></use></svg>Ver telas</a></div>
+</section>
+<!-- Con el asistente prendido, la caja grande de Hoy le pregunta al asistente (como en Shopify): lo que se escribe abre el panel con esa pregunta. Apagado, es el buscador de hoy.html. -->
+<form class="caja-grande caja-grande--asistente" action="#">
+<label class="oculto" for="hoy-pregunta">Cuéntale o pregúntale algo a tu asistente</label><textarea id="hoy-pregunta" name="pregunta" rows="1" maxlength="500" placeholder="Cuéntale o pregúntale algo a tu asistente"></textarea>
+<span class="esfera avatar-asistente" data-esfera data-esfera-viva aria-hidden="true"><canvas class="esfera__lienzo"></canvas></span>
+<div class="caja-grande__atajos"><a class="chip" href="nuevo-pedido.html"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#sumar"></use></svg>Nuevo pedido</a><a class="chip" href="pedidos.html"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#recibo"></use></svg>Registrar abono</a><a class="chip" href="cotizador.html"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#cotizador"></use></svg>Cotizar</a></div>
+<button type="submit" class="boton boton--principal boton--icono caja-grande__enviar" aria-label="Preguntar" title="Preguntar (Enter)"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#enviar"></use></svg></button>
+</form>
+<section class="cartas" aria-label="Lo que hay que hacer hoy">
+<article class="carta">
+<div class="carta__foto"><span class="carta__sin-foto"><svg class="icono" aria-hidden="true" focusable="false" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#prenda"></use></svg></span><span class="etiqueta etiqueta--rojo etiqueta--alerta">Atrasado 2 días</span></div>
+<div class="carta__texto"><h3><a href="pedido.html">Ferretería La Esquina</a></h3><span class="texto-2">8 overoles con logo estampado. En confección con Carmen. Debe <span class="dinero">$ 480.000</span>.</span></div>
+<div class="carta__acciones"><button type="button" class="boton">Marcar como listo</button><a class="boton boton--plano" href="#">Avisar</a></div>
+</article>
+<article class="carta">
+<div class="carta__foto"><img src="img/foto-comparsa.jpg" alt="Foto de ejemplo: polleras de comparsa"><span class="etiqueta etiqueta--ambar etiqueta--vacio">Faltan 3 días</span></div>
+<div class="carta__texto"><h3><a href="pedido.html">Grupo de danza Tambores del Río</a></h3><span class="texto-2">15 polleras con blusa. Ya está listo. Debe <span class="dinero">$ 750.000</span>.</span></div>
+<div class="carta__acciones"><button type="button" class="boton">Marcar como entregado</button><a class="boton boton--plano" href="#">Avisar</a></div>
+</article>
+<article class="carta">
+<div class="carta__foto"><img src="img/foto-grado.jpg" alt="Foto de ejemplo: vestido de grado azul"><span class="etiqueta etiqueta--gris etiqueta--vacio">Por confirmar</span></div>
+<div class="carta__texto"><h3><a href="pedido.html">Marcela P.</a></h3><span class="texto-2">Vestido de grado a la medida. Cotizado en <span class="dinero">$ 380.000</span>.</span></div>
+<div class="carta__acciones"><button type="button" class="boton">Confirmar pedido</button><a class="boton boton--plano" href="#">Avisar</a></div>
+</article>
+</section>
+<div class="seccion-titulo"><h2>Tu mes</h2><a class="chip" href="resumen.html"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#calendario"></use></svg>Noviembre</a></div>
+<section class="cifras" aria-label="Tu mes">
+<a class="cifra" href="resumen.html" title="Los abonos que recibiste este mes"><span class="cifra__nombre">Cobrado</span><span class="cifra__valor">$ 4.460.000</span></a>
+<a class="cifra" href="resumen.html" title="Los gastos que anotaste este mes"><span class="cifra__nombre">Gastado</span><span class="cifra__valor">$ 939.000</span></a>
+<a class="cifra" href="pedidos.html" title="Lo que te deben los pedidos confirmados: 4 pedidos con saldo"><span class="cifra__nombre">Por cobrar</span><span class="cifra__valor">$ 5.790.000</span></a>
+<a class="cifra" href="pedidos.html" title="Pedidos confirmados que no se han entregado: 1 por confirmar"><span class="cifra__nombre">En producción</span><span class="cifra__valor">4</span></a>
+</section>
+<div class="dos-columnas">
+<section class="tarjeta" aria-labelledby="t-grafica">
+<div class="tarjeta__cabeza"><h2 id="t-grafica">Cobrado y gastado por mes</h2><div class="leyenda"><span class="leyenda__serie"><span class="leyenda__color leyenda__color--cobrado"></span>Cobrado</span><span class="leyenda__serie"><span class="leyenda__color leyenda__color--gastado"></span>Gastado</span></div></div>
+<div class="tarjeta__cuerpo"><svg class="grafica" role="img" aria-label="Barras de cobrado y gastado de junio a noviembre. En noviembre: cobrado 4,46 millones y gastado 0,94 millones." viewBox="0 0 600 160">
+<line x1="36" y1="74" x2="596" y2="74" stroke="#F1F1F1" stroke-width="1"></line><line x1="36" y1="24" x2="596" y2="24" stroke="#F1F1F1" stroke-width="1"></line>
+<text x="0" y="78" font-size="11" fill="#616161">2 M</text><text x="0" y="28" font-size="11" fill="#616161">4 M</text>
+<rect x="438" y="57" width="22" height="67" rx="4" fill="#2563C9"></rect><rect x="532" y="12" width="22" height="112" rx="4" fill="#2563C9"></rect><rect x="556" y="100" width="22" height="24" rx="4" fill="#B5B5B5"></rect>
+<line x1="36" y1="124" x2="596" y2="124" stroke="#E3E3E3" stroke-width="1"></line>
+<text x="85" y="148" font-size="11" text-anchor="middle" fill="#616161">jun</text><text x="179" y="148" font-size="11" text-anchor="middle" fill="#616161">jul</text><text x="273" y="148" font-size="11" text-anchor="middle" fill="#616161">ago</text><text x="367" y="148" font-size="11" text-anchor="middle" fill="#616161">sep</text><text x="461" y="148" font-size="11" text-anchor="middle" fill="#616161">oct</text><text x="555" y="148" font-size="11" font-weight="650" text-anchor="middle" fill="#1A1A1A">nov</text>
+</svg></div>
+</section>
+<section class="tarjeta" aria-labelledby="t-quien-debe">
+<div class="tarjeta__cabeza"><h2 id="t-quien-debe">Quién te debe</h2><span class="tarjeta__aparte dinero">$ 5.790.000</span></div>
+<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="pedidos.html">Colegio Nuevo Amanecer</a><strong class="dinero">$ 3.300.000</strong><span class="proporcion" style="width: 100%"></span></div>
+<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="pedidos.html">Restaurante El Fogón Costeño</a><strong class="dinero">$ 1.260.000</strong><span class="proporcion" style="width: 38%"></span></div>
+<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="pedidos.html">Grupo de danza Tambores del Río</a><strong class="dinero">$ 750.000</strong><span class="proporcion" style="width: 23%"></span></div>
+<div class="fila-proporcion"><a class="fila-proporcion__nombre" href="pedidos.html">Ferretería La Esquina <span class="etiqueta etiqueta--rojo">Vencida</span></a><strong class="dinero">$ 480.000</strong><span class="proporcion proporcion--atrasado" style="width: 15%"></span></div>
+</section>
+</div>
+<section class="etapas" aria-label="Pedidos por etapa">
+<a class="etapas__etapa" href="pedidos.html"><span class="etapas__nombre">Cotizado</span><span class="etapas__cantidad">1</span></a>
+<a class="etapas__etapa" href="pedidos.html"><span class="etapas__nombre">Confirmado</span><span class="etapas__cantidad">1</span></a>
+<a class="etapas__etapa" href="pedidos.html"><span class="etapas__nombre">En corte</span><span class="etapas__cantidad">1</span></a>
+<a class="etapas__etapa" href="pedidos.html"><span class="etapas__nombre">En confección</span><span class="etapas__cantidad">1 <span class="etiqueta etiqueta--rojo">1 atrasado</span></span></a>
+<a class="etapas__etapa" href="pedidos.html"><span class="etapas__nombre">Listo</span><span class="etapas__cantidad">1</span></a>
+<a class="etapas__etapa" href="pedidos.html"><span class="etapas__nombre">Entregado</span><span class="etapas__cantidad">1</span></a>
+</section>
+</div>
+</div>
+</main>
+<aside class="asistente" id="asistente" aria-labelledby="asistente-titulo">
+<header class="asistente__cabeza">
+<h2 class="asistente__titulo" id="asistente-titulo"><span class="esfera avatar-asistente" data-esfera data-esfera-viva aria-hidden="true"><canvas class="esfera__lienzo"></canvas></span>Asistente</h2>
+<div class="asistente__acciones">
+<button type="button" class="boton boton--icono boton--plano asistente__boton" aria-label="Nueva conversación" title="Nueva conversación"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#sumar"></use></svg></button>
+<button type="button" class="boton boton--icono boton--plano asistente__boton" aria-label="Cerrar el asistente" title="Cerrar (Esc)"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#cerrar"></use></svg></button>
+</div>
+</header>
+<div class="asistente__mensajes" aria-live="polite">
+<!-- La bienvenida y las sugerencias solo se ven con la conversación vacía. Aquí van juntas
+     con una conversación para ver todo en una sola página. -->
+<div class="asistente__bienvenida">
+<p class="asistente__saludo">Cuéntame qué pasó o pregúntame algo de tu taller.</p>
+<p class="texto-2">Anoto pedidos, abonos y gastos cuando me cuentas, y te contesto con tus cifras.</p>
+<div class="asistente__sugerencias">
+<button type="button" class="chip">¿Qué entrego esta semana?</button>
+<button type="button" class="chip">¿Cuánto gasté este mes?</button>
+<button type="button" class="chip">¿Qué tela se está acabando?</button>
+</div>
+</div>
+<div class="mensaje mensaje--usuaria"><p>Vino la profe del Colegio Nuevo Amanecer, quiere 30 uniformes de diario para el 15 de diciembre y dejó 500 mil.</p></div>
+<div class="mensaje mensaje--asistente">
+<p class="mensaje__consulta"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#visto"></use></svg>Revisé tus clientes, tu prenda «Uniforme de diario» y tus telas</p>
+<p>Te dejé el pedido listo. Revísalo y toca Guardar:</p>
+<!-- Borrador pendiente (T39): varias cosas de un solo mensaje. Se guardan juntas: o todo, o nada. -->
+<section class="tarjeta mensaje__tarjeta borrador" aria-labelledby="b-1">
+<div class="tarjeta__cabeza"><h3 class="borrador__titulo" id="b-1">Para guardar</h3><span class="tarjeta__aparte"><span class="etiqueta etiqueta--ambar etiqueta--vacio">Sin guardar</span></span></div>
+<div class="borrador__fila"><div class="borrador__texto"><strong>Pedido nuevo</strong><span class="texto-2">Colegio Nuevo Amanecer · 30 uniformes de diario · Niño (4 a 16) · Se entrega el 15 de diciembre · Confirmado, porque dejó abono</span></div><span class="dinero fuerte">$ 2.310.000</span></div>
+<div class="borrador__fila"><div class="borrador__texto"><strong>Abono de hoy</strong><span class="texto-2">Después del abono falta <span class="dinero">$ 1.810.000</span></span></div><span class="dinero fuerte">$ 500.000</span></div>
+<div class="borrador__fila"><div class="borrador__texto"><strong>Tela</strong><span class="texto-2">66 m de dril azul (2,2 m por uniforme). Tienes 18 m.</span></div><span></span><p class="aviso borrador__aviso">Te faltan 48 m de dril azul.</p></div>
+<div class="borrador__fila"><div class="borrador__texto"><strong>Tallas</strong><span class="texto-2">El enlace para pedir las tallas queda listo al guardar.</span></div><span></span></div>
+<div class="tarjeta__pie"><button type="button" class="boton"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#editar"></use></svg>Corregir</button><button type="button" class="boton boton--principal">Guardar</button></div>
+</section>
+<p>El total sale de tu prenda guardada, con 30 % de ganancia. Si cobras otro precio, dímelo.</p>
+</div>
+<div class="mensaje mensaje--usuaria"><p>Me abonaron 300 mil de Tambores del Río</p></div>
+<div class="mensaje mensaje--asistente">
+<p class="mensaje__consulta"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#visto"></use></svg>Revisé el pedido de 15 polleras con blusa</p>
+<p>Este es el abono. Revísalo y toca Guardar:</p>
+<!-- El mismo borrador después de tocar Guardar: insignia "Listo" y el enlace a lo que se creó. -->
+<section class="tarjeta mensaje__tarjeta borrador borrador--guardado" aria-labelledby="b-2">
+<div class="tarjeta__cabeza"><h3 class="borrador__titulo" id="b-2">Guardado</h3><span class="tarjeta__aparte"><span class="etiqueta etiqueta--verde etiqueta--lleno">Listo</span></span></div>
+<div class="borrador__fila"><div class="borrador__texto"><strong>Abono de hoy</strong><span class="texto-2">Grupo de danza Tambores del Río · 15 polleras con blusa · Falta <span class="dinero">$ 450.000</span></span></div><span class="dinero fuerte">$ 300.000</span></div>
+<div class="tarjeta__pie borrador__pie--hecho"><span class="texto-2">Guardado a las 10:42 a. m.</span><a class="boton" href="pedido.html">Ver el pedido</a></div>
+</section>
+</div>
+<div class="mensaje mensaje--usuaria"><p>Anota 200 mil del colegio</p></div>
+<div class="mensaje mensaje--asistente">
+<p class="mensaje__consulta"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#visto"></use></svg>Revisé los pedidos de Colegio Nuevo Amanecer</p>
+<!-- Si no está seguro, pregunta: un chip por opción, que manda esa respuesta. No arma borrador. -->
+<p>Colegio Nuevo Amanecer tiene dos pedidos con saldo. ¿A cuál le anoto los <span class="dinero">$ 200.000</span>?</p>
+<div class="asistente__sugerencias borrador__opciones"><button type="button" class="chip">40 uniformes de diario</button><button type="button" class="chip">30 uniformes de diario</button></div>
+</div>
+<div class="mensaje mensaje--usuaria"><p>Pagué el agua del taller, 65 mil</p></div>
+<div class="mensaje mensaje--asistente">
+<p class="mensaje__consulta"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#visto"></use></svg>Preparé el gasto</p>
+<p>Revísalo y toca Guardar:</p>
+<!-- Borrador de gasto (T40) -->
+<section class="tarjeta mensaje__tarjeta borrador" aria-labelledby="b-3">
+<div class="tarjeta__cabeza"><h3 class="borrador__titulo" id="b-3">Para guardar</h3><span class="tarjeta__aparte"><span class="etiqueta etiqueta--ambar etiqueta--vacio">Sin guardar</span></span></div>
+<div class="borrador__fila"><div class="borrador__texto"><strong>Gasto de hoy</strong><span class="texto-2">Recibo de agua del taller · Servicios</span></div><span class="dinero fuerte">$ 65.000</span></div>
+<div class="tarjeta__pie"><button type="button" class="boton"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#editar"></use></svg>Corregir</button><button type="button" class="boton boton--principal">Guardar</button></div>
+</section>
+</div>
+<div class="mensaje mensaje--usuaria"><p>¿Qué tela me falta comprar?</p></div>
+<div class="mensaje mensaje--asistente">
+<p class="mensaje__pensando"><span class="mensaje__puntos" aria-hidden="true"><span></span><span></span><span></span></span>Revisando tus telas…</p>
+</div>
+</div>
+<form class="asistente__pie" action="#">
+<div class="asistente__caja">
+<label class="oculto" for="asistente-pregunta">Tu pregunta</label>
+<textarea id="asistente-pregunta" name="pregunta" rows="1" maxlength="500" placeholder="Cuéntame o pregúntame algo"></textarea>
+<button type="submit" class="boton boton--principal boton--icono asistente__enviar" aria-label="Enviar" title="Enviar (Enter)"><svg class="icono" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#enviar"></use></svg></button>
+</div>
+<p class="asistente__nota"><svg class="icono" aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#informacion"></use></svg>Nada se guarda hasta que toques Guardar. Puede equivocarse: revisa antes de guardar.</p>
+</form>
+</aside>
+<nav class="navegacion-celular" aria-label="Secciones">
+<a class="navegacion-celular__enlace es-actual" href="hoy.html" aria-current="page"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#hoy"></use></svg>Hoy</a>
+<a class="navegacion-celular__enlace" href="pedidos.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#pedidos"></use></svg>Pedidos</a>
+<a class="navegacion-celular__enlace" href="calendario.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#calendario"></use></svg>Calendario</a>
+<a class="navegacion-celular__enlace" href="clientes.html"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#clientes"></use></svg>Clientes</a>
+<button type="button" class="navegacion-celular__enlace" aria-expanded="false" aria-controls="panel-mas"><svg class="icono" aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#mas"></use></svg>Más</button>
+</nav>
+</div>
+<script src="../static/js/esfera.js" defer></script>
+</body>
+</html>

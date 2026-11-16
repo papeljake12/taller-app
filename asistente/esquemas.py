@@ -9,6 +9,10 @@ Reglas:
   guarda las herramientas en caché y cada pregunta cuesta menos.
 - Los rangos (meses de 1 a 12, cantidades hasta 2000...) no se pueden poner en el esquema con
   `strict`: los revisa `asistente.herramientas.ejecutar()`.
+- Con `strict`, la API acepta como mucho 16 parámetros anulables (o con varios tipos) sumando
+  todas las herramientas (lo mostró la prueba corta de la tanda 8). Por eso las herramientas
+  `proponer_*` dicen "no hay" con 0 o "" en vez de null; `ejecutar()` los convierte en None
+  (`VACIOS` en asistente/herramientas/__init__.py).
 - Las descripciones dicen a Claude qué hace cada una. Ninguna lleva datos de un taller.
 """
 
@@ -16,6 +20,9 @@ FECHA = {"type": "string", "format": "date", "description": "Fecha AAAA-MM-DD."}
 FECHA_O_NADA = {"anyOf": [FECHA, {"type": "null"}]}
 TEXTO_O_NADA = {"type": ["string", "null"]}
 ENTERO_O_NADA = {"type": ["integer", "null"]}
+FECHA_O_HOY = {"type": "string", "description": 'Fecha AAAA-MM-DD, o "" para hoy.'}
+ID_O_CERO = {"type": "integer"}
+TEXTO_O_VACIO = {"type": "string"}
 
 
 def _opciones_o_nada(opciones, descripcion):
@@ -137,6 +144,71 @@ _HERRAMIENTAS = [
                 "description": "Para qué es el mensaje.",
             },
             "texto": {"type": "string", "description": "El mensaje, hasta 700 caracteres."},
+        },
+    ),
+    _herramienta(
+        "proponer_abono",
+        "Prepara un borrador para anotar un abono a un pedido que ya existe. No guarda nada: la "
+        "aplicación le muestra el borrador a la dueña y ella toca Guardar. Con pedido_id 0 "
+        "usa el pedido de la pantalla; si no hay, busca por el nombre del cliente. Si hay dos "
+        "pedidos posibles, devuelve las opciones para preguntar cuál.",
+        {
+            "pedido_id": _con("Id del pedido, o 0 para el de la pantalla.", ID_O_CERO),
+            "cliente": _con('Nombre del cliente si no hay pedido_id, o "".', TEXTO_O_VACIO),
+            "valor": {"type": "integer", "description": "Valor del abono en pesos."},
+            "fecha": FECHA_O_HOY,
+        },
+    ),
+    _herramienta(
+        "proponer_gasto",
+        "Prepara un borrador para anotar un gasto del taller. No guarda nada: la aplicación le "
+        "muestra el borrador a la dueña y ella toca Guardar.",
+        {
+            "concepto": {"type": "string", "description": "En qué se gastó, corto."},
+            "categoria": {
+                "type": "string",
+                "enum": ["telas", "insumos", "servicios", "otros"],
+                "description": "Tipo de gasto.",
+            },
+            "valor": {"type": "integer", "description": "Valor en pesos."},
+            "fecha": FECHA_O_HOY,
+            "pedido_id": _con("Id del pedido al que corresponde, o 0.", ID_O_CERO),
+        },
+    ),
+    _herramienta(
+        "proponer_pedido",
+        "Prepara un borrador de pedido nuevo: el cliente (el que ya existe o uno nuevo), el "
+        "pedido, el abono que dejó y la tela que usa. No guarda nada: la aplicación le muestra "
+        "el borrador a la dueña y ella toca Guardar. Sin total, lo calcula con la prenda "
+        "guardada del Cotizador. Sin metros, los saca de la prenda por la cantidad. Si el "
+        "cliente, la prenda o la tela coinciden con varias, devuelve las opciones para preguntar.",
+        {
+            "cliente": {
+                "type": "string", "description": "Nombre del cliente como lo dijo la dueña.",
+            },
+            "cliente_id": _con("Id del cliente si ya lo encontraste, o 0.", ID_O_CERO),
+            "tipo_cliente": {
+                "type": "string",
+                "enum": ["comparsa", "empresa", "colegio", "particular", ""],
+                "description": 'Tipo de cliente si es nuevo, o "" si no lo sabes.',
+            },
+            "detalle": {
+                "type": "string", "description": "Qué pidió, corto: 30 uniformes de diario.",
+            },
+            "cantidad": {"type": "integer", "description": "Para cuántas personas (1 a 2000)."},
+            "tallaje": {
+                "type": "string",
+                "enum": ["adulto", "nino"],
+                "description": "Tallas de adulto (XS a XXL) o de niño (4 a 16).",
+            },
+            "fecha_entrega": _con("Fecha de entrega.", FECHA),
+            "prenda": _con('Nombre de la prenda guardada en el Cotizador, o "".', TEXTO_O_VACIO),
+            "total": _con("Total en pesos si la dueña lo dijo, o 0.", ID_O_CERO),
+            "abono": _con("Abono que dejó, en pesos, o 0.", ID_O_CERO),
+            "tela": _con('Nombre de la tela del inventario que usa, o "".', TEXTO_O_VACIO),
+            "metros": _con(
+                'Metros de esa tela para todo el pedido (66 o 12.5), o "".', TEXTO_O_VACIO
+            ),
         },
     ),
     _herramienta(

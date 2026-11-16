@@ -3557,3 +3557,107 @@ a.etapas__etapa:hover {
     border-radius: 50%;
   }
 }
+
+/* --- El agente (tanda 8, docs/12-agente.md) --- */
+
+/* Tarjeta de borrador: lo que el agente dejó listo para guardar. Cada cosa en su fila (qué
+   es en negrita, el detalle en gris y el valor a la derecha); lo que falta o no alcanza, en un
+   aviso ámbar debajo de su fila. Abajo, Corregir y Guardar (el principal, negro). Al guardar,
+   la insignia pasa de "Sin guardar" (ámbar, pendiente) a "Listo" (verde) y el pie trae los
+   enlaces a lo que se creó. */
+.borrador__titulo {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 650;
+}
+
+.borrador__fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 6px 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--linea);
+}
+
+.tarjeta__cabeza + .borrador__fila {
+  margin-top: 8px;
+}
+
+.borrador__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.borrador__texto strong {
+  font-weight: 650;
+}
+
+.borrador__aviso {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.borrador__pie--hecho {
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Reemplazado: se corrigió con un borrador nuevo. Queda en gris, sin botones. */
+.borrador--reemplazado .borrador__fila {
+  color: var(--texto-3);
+}
+
+/* "¿A cuál?": cuando hay dos parecidos, el agente pregunta con un chip por opción */
+.borrador__opciones {
+  margin-top: 0;
+}
+
+/* El resumen de la mañana, arriba de Hoy: la esfera, el párrafo que escribió el agente y, debajo,
+   lo que necesita una acción, cada cosa con su botón. */
+.resumen-dia .tarjeta__cabeza h2 {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.resumen-dia__parrafo {
+  max-width: 68ch;
+}
+
+.resumen-dia .fila__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Cronología: lo que se guardó con el agente lleva debajo, en gris, la esfera pequeña y
+   "Lo anotó el asistente" */
+.cronologia__que {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cronologia__asistente {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--texto-2);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.cronologia__asistente .esfera {
+  --lado-esfera: 14px;
+}
+
+@media (max-width: 767.98px) {
+  .resumen-dia .fila .boton {
+    margin-left: auto;
+  }
+}

@@ -872,6 +872,55 @@ certbot en el paso 14). El `grep` debe mostrar `120s`, y `nginx -t` debe decir `
 Luego pon `ANTHROPIC_API_KEY` en el `.env` (paso 10), reinicia (`sudo systemctl restart
 taller`) y, en `/admin`, ponle al taller 600 preguntas al mes y 40 al día.
 
+### Una sola vez, con la tanda 8 (el resumen de la mañana)
+
+El agente deja cada mañana un resumen arriba de Hoy. Para que ella no espere ni gaste
+preguntas al abrir Hoy, el párrafo se prepara antes, de madrugada, con una tarea programada
+de cron, como la copia de seguridad del paso 17. `actualizar.sh` no la instala, porque cron
+vive fuera de la carpeta del código.
+
+Antes, revisa dos cosas: que el `.env` tenga `ANTHROPIC_API_KEY` (paso 10) y que en `/admin`
+el taller tenga el asistente prendido (límites mayores que 0). Sin la clave el comando no
+hace nada, y un taller con el asistente apagado no recibe resumen.
+
+Pruébalo a mano primero:
+
+```
+cd /srv/taller/app
+.venv/bin/python manage.py preparar_resumen
+```
+
+Dice qué hizo con cada taller, o por qué no hizo nada. Si ya existe el de hoy, no lo repite
+(para repetirlo, agrega `--de-nuevo`). Entra a Hoy: arriba debe salir "Tu resumen de hoy".
+
+Ahora prográmalo para todas las mañanas:
+
+```
+crontab -e
+```
+
+Baja hasta el final, debajo de la línea de la copia, y pega la última línea de
+`herramientas/servidor/cron-resumen.txt`:
+
+```
+0 5 * * * cd /srv/taller/app && .venv/bin/python manage.py preparar_resumen 2>&1 | logger -t resumen-taller
+```
+
+Quiere decir: a las 5:00 de la mañana (hora de Bogotá, la que pusiste en el paso 3), todos
+los días, entrar a la carpeta de la aplicación, preparar el resumen y anotar lo que diga en el
+registro del sistema con el nombre `resumen-taller`. Guarda y sal. `crontab -l` debe mostrar
+las dos líneas, la de la copia y esta.
+
+Al día siguiente, revisa que corrió:
+
+```
+journalctl -t resumen-taller --since yesterday
+```
+
+Si la tarea no corre o falla, nada se rompe: Hoy muestra las filas (a quién cobrar, tela,
+tallas) sin el párrafo. Cada resumen cuesta 1 o 2 centavos de dólar y se ve en `/admin` con
+el uso del asistente (no cuenta como pregunta).
+
 ## 21. Volver a la versión anterior
 
 Si después de actualizar algo no funciona, primero mira los registros (paso 22). Si hay que
@@ -943,6 +992,12 @@ journalctl -t copia-taller
 
 Lo que dijeron las copias de seguridad de cada noche.
 
+```
+journalctl -t resumen-taller
+```
+
+Lo que dijo el resumen de la mañana de cada día (tanda 8).
+
 ### Desbloquear a alguien
 
 Después de 5 intentos fallidos, ese usuario queda bloqueado 15 minutos en ese celular. Para
@@ -971,6 +1026,7 @@ Desbloquea solo a ese usuario. `axes_reset` (sin nada más) desbloquea a todos.
 | El enlace de tallas empieza por `http://` | Igual que "da vueltas": falta `X-Forwarded-Proto` en NGINX. |
 | El navegador dice que el certificado venció | `sudo certbot renew` y `sudo systemctl reload nginx`. Revisa `systemctl list-timers \| grep certbot`. |
 | No hay copias nuevas | `journalctl -t copia-taller` y `crontab -l`. Corre el script a mano para ver el error. |
+| Hoy no muestra el párrafo del resumen | `journalctl -t resumen-taller` y `crontab -l`. Revisa la clave en el `.env` y que el asistente esté prendido en `/admin`. Córrelo a mano con `.venv/bin/python manage.py preparar_resumen`. |
 | El disco está lleno | `df -h /` y `du -sh /srv/taller/*`. Las copias viejas se borran solas a los 14 días. |
 | No puedes entrar por SSH | Desde el panel del proveedor hay una "consola" web para entrar. Revisa `sudo ufw status` (debe estar `OpenSSH`). |
 
@@ -990,5 +1046,6 @@ PostgreSQL arrancan solos.
 | Ver si está encendida | `systemctl status taller` |
 | Ver los errores | `journalctl -u taller -f` |
 | Hacer una copia ya | `bash herramientas/servidor/copia-de-seguridad.sh` |
+| Preparar el resumen de hoy otra vez | `.venv/bin/python manage.py preparar_resumen --de-nuevo` |
 | Traer las copias (desde tu computador) | `scp "TU_USUARIO@TU_DOMINIO:/srv/taller/copias/*" $HOME\copias-taller\` |
 | Desbloquear a alguien | `.venv/bin/python manage.py axes_reset_username USUARIO` |

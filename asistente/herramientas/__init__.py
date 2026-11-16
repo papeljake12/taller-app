@@ -18,7 +18,15 @@ from datetime import date
 
 from asistente.contratos import Contexto, ErrorDeHerramienta, Resultado
 from asistente.esquemas import POR_NOMBRE
-from asistente.herramientas import catalogo, cotizar, mensajes, pedidos, plata
+from asistente.herramientas import (
+    anotar,
+    catalogo,
+    cotizar,
+    mensajes,
+    pedido_nuevo,
+    pedidos,
+    plata,
+)
 
 registro_del_servidor = logging.getLogger("asistente")
 
@@ -30,6 +38,9 @@ REGISTRO = {
     "entregas": pedidos.entregas,
     "gastos": plata.gastos,
     "preparar_mensaje": mensajes.preparar_mensaje,
+    "proponer_abono": anotar.proponer_abono,
+    "proponer_gasto": anotar.proponer_gasto,
+    "proponer_pedido": pedido_nuevo.proponer_pedido,
     "quien_debe": plata.quien_debe,
     "telas": catalogo.telas,
     "ver_pedido": pedidos.ver_pedido,
@@ -37,7 +48,10 @@ REGISTRO = {
 
 # Las herramientas que tocan plata. Las preguntas típicas de estas deben caer en esfuerzo
 # "high" (asistente/esfuerzo.py); las pruebas lo comprueban.
-DE_PLATA = frozenset({"quien_debe", "cuentas_del_mes", "gastos", "cotizar"})
+DE_PLATA = frozenset({
+    "quien_debe", "cuentas_del_mes", "gastos", "cotizar",
+    "proponer_pedido", "proponer_abono", "proponer_gasto",
+})
 
 # Rangos que el esquema no puede expresar con `strict`: (mínimo, máximo), ambos incluidos.
 RANGOS = {
@@ -53,7 +67,42 @@ RANGOS = {
     ("preparar_mensaje", "pedido_id"): (1, 2**63 - 1),
     ("preparar_mensaje", "cliente_id"): (1, 2**63 - 1),
     ("ver_pedido", "pedido_id"): (1, 2**63 - 1),
+    # Tanda 8: los borradores. Los textos con el largo de su campo en la pantalla.
+    ("proponer_pedido", "cliente"): (1, 80),
+    ("proponer_pedido", "cliente_id"): (1, 2**63 - 1),
+    ("proponer_pedido", "detalle"): (1, 160),
+    ("proponer_pedido", "cantidad"): (1, 2000),
+    ("proponer_pedido", "prenda"): (1, 80),
+    ("proponer_pedido", "total"): (1, 1_000_000_000),
+    ("proponer_pedido", "abono"): (1, 1_000_000_000),
+    ("proponer_pedido", "tela"): (1, 60),
+    ("proponer_pedido", "metros"): (1, 10),
+    ("proponer_abono", "pedido_id"): (1, 2**63 - 1),
+    ("proponer_abono", "cliente"): (1, 80),
+    ("proponer_abono", "valor"): (1, 1_000_000_000),
+    ("proponer_gasto", "concepto"): (1, 80),
+    ("proponer_gasto", "valor"): (1, 1_000_000_000),
+    ("proponer_gasto", "pedido_id"): (1, 2**63 - 1),
 }
+
+# "No hay" en las herramientas proponer_* (0 o "" en vez de null: ver asistente/esquemas.py).
+# Antes de correr la herramienta se convierten en None, así que ella recibe None como siempre.
+VACIOS = {
+    ("proponer_pedido", "cliente_id"): 0,
+    ("proponer_pedido", "tipo_cliente"): "",
+    ("proponer_pedido", "prenda"): "",
+    ("proponer_pedido", "total"): 0,
+    ("proponer_pedido", "abono"): 0,
+    ("proponer_pedido", "tela"): "",
+    ("proponer_pedido", "metros"): "",
+    ("proponer_abono", "pedido_id"): 0,
+    ("proponer_abono", "cliente"): "",
+    ("proponer_abono", "fecha"): "",
+    ("proponer_gasto", "fecha"): "",
+    ("proponer_gasto", "pedido_id"): 0,
+}
+# Fechas que llegan como texto sin "format" en el esquema (para poder decir "" = hoy).
+FECHAS_DE_TEXTO = {("proponer_abono", "fecha"), ("proponer_gasto", "fecha")}
 
 _TIPOS = {
     "string": lambda v: isinstance(v, str),
@@ -105,6 +154,18 @@ def validar(nombre, entrada):
         valor = entrada[campo]
         if not _cumple(valor, propiedad):
             raise ErrorDeHerramienta(f"El campo {campo} de {nombre} no es válido.")
+        vacio = VACIOS.get((nombre, campo), object())
+        if valor == vacio and type(valor) is type(vacio):
+            convertida[campo] = None
+            continue
+        if (nombre, campo) in FECHAS_DE_TEXTO:
+            try:
+                convertida[campo] = date.fromisoformat(valor)
+            except ValueError:
+                raise ErrorDeHerramienta(
+                    f"El campo {campo} de {nombre} debe ser una fecha AAAA-MM-DD."
+                ) from None
+            continue
         rango = RANGOS.get((nombre, campo))
         if rango is not None and valor is not None:
             medida = len(valor) if isinstance(valor, str) else valor

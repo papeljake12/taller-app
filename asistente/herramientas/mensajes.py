@@ -20,6 +20,7 @@ Los dos viven solo en la tarjeta, que se guarda en la sesión y se dibuja en el 
 """
 
 import re
+from decimal import Decimal
 from urllib.parse import urlencode, urljoin
 
 from django.urls import reverse
@@ -39,6 +40,8 @@ _NUMERO = r"(\d{1,3}(?:[.,]\d{3})+(?!\d)|\d+)"
 _CON_SIGNO = re.compile(r"\$\s*" + _NUMERO)
 # ... o "480.000 pesos" / "480000 COP".
 _CON_PALABRA = re.compile(_NUMERO + r"\s*(?:pesos|cop)\b", re.IGNORECASE)
+# ... o "480 mil" / "1,8 millones" (tanda 8: el revisor vio que así se colaba una cifra).
+_CON_MIL = re.compile(r"(\d+(?:[.,]\d+)?)\s*(mil(?:lones?)?)\b", re.IGNORECASE)
 
 
 def cifras_en_pesos(texto):
@@ -49,6 +52,11 @@ def cifras_en_pesos(texto):
             valor = int(numero.replace(".", "").replace(",", ""))
             if valor not in encontradas:
                 encontradas.append(valor)
+    for numero, palabra in _CON_MIL.findall(texto):
+        por = 1_000 if palabra.lower() == "mil" else 1_000_000
+        valor = int(Decimal(numero.replace(",", ".")) * por)
+        if valor not in encontradas:
+            encontradas.append(valor)
     return encontradas
 
 

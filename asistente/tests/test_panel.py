@@ -63,10 +63,10 @@ class Falsos:
         self.rutas.append((taller, ruta))
         return f"La dueña está en {ruta or 'Hoy'}.", self.pedido
 
-    def preguntar(self, *, cliente, ctx, mensajes, pregunta, pagina, herramientas=None):
+    def preguntar(self, *, cliente, ctx, mensajes, pregunta, pagina, herramientas=None, nota=""):
         self.llamadas.append(
             {"cliente": cliente, "ctx": ctx, "mensajes": list(mensajes), "pregunta": pregunta,
-             "pagina": pagina}
+             "pagina": pagina, "nota": nota}
         )
         if self.error:
             raise self.error
@@ -185,7 +185,8 @@ def test_el_panel_con_htmx_trae_lo_que_espera_app_js(sesion_duena, prendido):
 
     titulo = uno(id="asistente-titulo")
     assert titulo["etiqueta"] == "h2" and "Asistente" in titulo["texto"]
-    assert "Solo consulta" in html
+    # Tanda 8: el agente ya no es solo consulta, y la insignia se fue.
+    assert "Solo consulta" not in html
     mensajes = uno(id="asistente-mensajes")
     assert mensajes["clases"] == ["asistente__mensajes"]
     assert mensajes["atributos"]["aria-live"] == "polite"
@@ -201,8 +202,10 @@ def test_el_panel_con_htmx_trae_lo_que_espera_app_js(sesion_duena, prendido):
     caja = uno(name="pregunta", id="asistente-pregunta")
     assert caja["etiqueta"] == "textarea" and caja["atributos"]["maxlength"] == "500"
     assert "disabled" not in caja["atributos"]
-    assert caja["atributos"]["placeholder"] == "Pregunta algo de tu taller"
+    assert caja["atributos"]["placeholder"] == "Cuéntame o pregúntame algo"
     assert uno(name="pagina")["atributos"]["type"] == "hidden"
+    # Tanda 8: la clave del borrador que se está corrigiendo (la llena app.js).
+    assert uno(name="corrige")["atributos"]["type"] == "hidden"
     # Los dos formularios (la pregunta y "Nueva conversación") llevan su ficha CSRF.
     formularios = html.split("</form>")[:2]
     assert all('name="csrfmiddlewaretoken"' in f for f in formularios)
@@ -215,7 +218,7 @@ def test_el_panel_con_htmx_trae_lo_que_espera_app_js(sesion_duena, prendido):
     assert nueva["atributos"]["hx-post"] == "/asistente/nueva/"
     assert nueva["atributos"]["hx-target"] == "#asistente-mensajes"
     assert uno(**{"aria-label": "Nueva conversación"})["atributos"]["form"] == "asistente-nueva"
-    assert "Solo lee tus datos, no cambia nada." in html
+    assert "Nada se guarda hasta que toques Guardar." in html
     # El aviso del uso va en el pie, encima de la caja.
     assert html.index('id="asistente-uso"') < html.index('id="asistente-pregunta"')
     assert html.index('id="asistente-mensajes"') < html.index("data-asistente-form")
@@ -228,9 +231,9 @@ def test_el_panel_copia_la_cabeza_de_la_maqueta(sesion_duena, prendido):
     assert ('<span class="esfera avatar-asistente" data-esfera data-esfera-viva aria-hidden="true">'
             '<canvas class="esfera__lienzo"></canvas></span>Asistente</h2>') in html
     assert "#asistente-cara" not in html
-    assert '<span class="etiqueta etiqueta--gris">Solo consulta</span>' in html
-    assert "Pregúntame lo que quieras saber de tu taller." in html
-    assert "Miro tus pedidos, abonos, telas y gastos, y te contesto con las cifras." in html
+    assert "Solo consulta" not in html
+    assert "Cuéntame qué pasó o pregúntame algo de tu taller." in html
+    assert "Anoto pedidos, abonos y gastos cuando me cuentas, y te contesto con tus cifras." in html
 
 
 def test_sin_javascript_el_panel_es_una_pagina_entera(sesion_duena, prendido):

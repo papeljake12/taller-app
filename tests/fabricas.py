@@ -141,3 +141,37 @@ def crear_uso(taller, fecha=None, preguntas=1, **campos):
         while UsoAsistente.objects.filter(taller=taller, fecha=fecha).exists():
             fecha -= timedelta(days=1)
     return UsoAsistente.objects.create(taller=taller, fecha=fecha, preguntas=preguntas, **campos)
+
+
+# --- Tanda 8: el agente ---------------------------------------------------------------------
+
+
+def crear_tela_pedido(pedido, tela=None, metros=5, **campos):
+    """La tela de un pedido. Sin tela, una nueva del mismo taller."""
+    from telas.models import TelaPedido
+
+    tela = tela or crear_tela(pedido.taller)
+    return TelaPedido.objects.create(pedido=pedido, tela=tela, metros=metros, **campos)
+
+
+def crear_resumen(taller, fecha=None, texto="Buenos días. Resumen de ejemplo.", **campos):
+    """El resumen de un día. Sin fecha, hoy; si hoy ya tiene, el día de antes que esté libre."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from asistente.models import ResumenDelDia
+
+    if fecha is None:
+        fecha = timezone.localdate()
+        while ResumenDelDia.objects.filter(taller=taller, fecha=fecha).exists():
+            fecha -= timedelta(days=1)
+    return ResumenDelDia.objects.create(taller=taller, fecha=fecha, texto=texto, **campos)
+
+
+def crear_borrador_usado(taller, clave=None, **campos):
+    from asistente.models import BorradorUsado
+
+    return BorradorUsado.objects.create(
+        taller=taller, clave=clave or f"clave{next(_numero):027d}", **campos
+    )

@@ -37,6 +37,15 @@ de 390 px de ancho, o abre `diseno/index.html`, que las muestra todas en 390 px.
 | `diseno/tallas-publico-listo.html` | Formulario público de tallas, ya enviado |
 | `diseno/asistente.html` | Asistente abierto encima de Hoy, y Hoy con su caja para preguntarle (tanda 7) |
 | `diseno/asistente-limite.html` | Asistente sin preguntas por hoy (tanda 7) |
+| `diseno/asistente-agente.html` | El agente en el panel: borradores pendiente, guardado y "¿a cuál?" (tanda 8) |
+| `diseno/hoy-agente.html` | Hoy con el asistente prendido y "Tu resumen de hoy" arriba (tanda 8) |
+
+`diseno/hoy.html` sigue siendo Hoy con el asistente apagado (la caja grande es el buscador).
+El resumen de la mañana solo existe con el asistente prendido, por eso va en su propia página,
+`diseno/hoy-agente.html`. Los borradores van en `diseno/asistente-agente.html` para no tapar
+las tarjetas de la tanda 7 de `diseno/asistente.html`. Las piezas nuevas de la tanda 8, y los
+cambios en `diseno/pedido.html` y `diseno/asistente.html`, las aprobó David el 15 de noviembre
+de 2026.
 
 Hoy, Pedidos, Pedido por dentro, la pantalla vacía y el celular de Hoy y de Pedidos salen
 tal cual de la maqueta aprobada. Las demás se adaptaron con el mismo lenguaje y se le muestran
@@ -236,6 +245,9 @@ una plantilla de `templates/piezas/`.
 | Gráfica de barras | `.grafica` | Azul y `--gris-grafica`, esquinas de 4 px, líneas guía `#F1F1F1`, con leyenda |
 | Ventana | `.ventana` | Tarjeta flotante de 620 px: cabeza gris, cuerpo y pie con los botones. En celular sube desde abajo |
 | Aviso corto | `.aviso-corto` | Negro, esquinas de 12 px, abajo en el centro |
+| Borrador del agente (tanda 8) | `.borrador`, `.borrador__fila`, `__texto`, `__aviso`, `--reemplazado`, `__opciones` | Tarjeta del panel. Una fila por cosa con línea arriba: qué es en negrita, el detalle en gris, el valor a la derecha y el aviso ámbar debajo, a todo el ancho. Pie con "Corregir" y "Guardar" (negro). Ver "El agente" |
+| Resumen del día (tanda 8) | `.resumen-dia`, `.resumen-dia__parrafo` | Tarjeta de Hoy con la esfera, el párrafo (máximo 68 caracteres por línea) y filas compactas con su botón |
+| Lo anotó el asistente (tanda 8) | `.cronologia__que`, `.cronologia__asistente` | Línea gris de 12 px con la esfera de 14 px, debajo de lo que pasó |
 
 ## Alineación
 
@@ -283,6 +295,11 @@ Se arma solo con lo que ya se guarda, sin cambiar el modelo de datos:
 Va del más reciente al más antiguo, agrupado por día ("Hoy", "Ayer", "7 de noviembre"). Los
 cambios de etapa no aparecen porque hoy no se guardan; guardarlos cambiaría el modelo de datos
 y hay que preguntarle a David antes.
+
+**Tanda 8:** lo que se guardó con el agente (el pedido creado y sus abonos, con
+`por_asistente`) lleva debajo, en gris y con la esfera pequeña de 14 px, "Lo anotó el
+asistente" (`.cronologia__asistente`, como en `diseno/pedido.html`). Así ella siempre ve qué
+hizo el agente.
 
 ## Animaciones
 
@@ -362,7 +379,8 @@ de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
   pregunta al asistente. Arriba "Pregúntale algo a tu asistente"; abajo el avatar, los atajos
   de siempre (Nuevo pedido, Registrar abono, Cotizar) y el botón negro de enviar. En celular
   va en una sola fila: avatar, texto y enviar. Lo que se escribe abre el panel con esa
-  pregunta. Con el asistente apagado es el buscador de `diseno/hoy.html`, como antes.
+  pregunta. Con el asistente apagado es el buscador de `diseno/hoy.html`, como antes. Desde la
+  tanda 8 dice "Cuéntale o pregúntale algo a tu asistente".
 - **Computador y pantallas medianas (768 px o más):** un panel blanco de 360 px que flota
   encima de la hoja, a la derecha, con la sombra de las ventanas y esquinas de 16 px. Empieza
   debajo del encabezado (no tapa el botón "Asistente" ni el principal) y queda 4 px adentro
@@ -392,6 +410,44 @@ de `diseno/estilo.css`. Qué dice y qué hace: `docs/10-asistente.md`.
 - **Mi taller:** un bloque "Asistente" con "N de 600" y el riel azul de siempre.
 - **Colores:** los de siempre. Rojo solo para lo vencido o atrasado, igual que en las
   pantallas.
+
+### El agente (tanda 8)
+
+Referencia: `diseno/asistente-agente.html`, `diseno/hoy-agente.html` y `diseno/pedido.html`.
+Estilos al final de la sección 7 de `diseno/estilo.css` ("El agente"), copiados idénticos a
+`static/css/app.css`. Qué hace: `docs/12-agente.md`.
+
+- **Panel:** ya no lleva la insignia "Solo consulta". La nota de abajo dice "Nada se guarda
+  hasta que toques Guardar. Puede equivocarse: revisa antes de guardar." El saludo: "Cuéntame
+  qué pasó o pregúntame algo de tu taller." La caja: "Cuéntame o pregúntame algo".
+- **Tarjeta de borrador** (`.borrador`): la misma tarjeta de las respuestas. Arriba el título
+  ("Para guardar") y la insignia de su estado; luego una fila por cosa (`.borrador__fila`):
+  qué es en negrita, el detalle en gris debajo, el valor en pesos a la derecha y, si falta
+  algo o la tela no alcanza, el aviso ámbar debajo de esa fila (`.borrador__aviso`). En el pie,
+  "Corregir" (secundario, con el lápiz) y "Guardar" (principal, negro). Estados:
+  - pendiente: insignia ámbar "Sin guardar" con circulito vacío;
+  - guardado: título "Guardado", insignia verde "Listo" con circulito lleno, y en el pie
+    "Guardado a las …" a la izquierda y los enlaces a lo creado a la derecha
+    (`.borrador__pie--hecho`). Es uno de los pocos verdes permitidos: quedó listo;
+  - reemplazado: las filas en gris (`.borrador--reemplazado`), insignia gris "Reemplazado",
+    sin botones;
+  - fallido: el aviso ámbar "No se guardó nada: …" y "Guardar" otra vez si se puede.
+- **"¿A cuál?"** (`.borrador__opciones`): cuando hay dos parecidos, una fila de chips grises,
+  uno por opción, como las sugerencias del saludo.
+- **Tu resumen de hoy** (`.resumen-dia`): en Hoy, después del saludo y antes de la caja
+  grande. Cabeza con la esfera, "Tu resumen de hoy" y, a la derecha, "Lo preparé a las …" (en
+  celular, solo la hora); el párrafo (`.resumen-dia__parrafo`, no más de 68 caracteres por
+  línea para que se lea fácil); y filas compactas (`fila--compacta`), cada una con su botón
+  ("Cobrar" y "Pedir tallas" con el ícono de WhatsApp, "Ver telas" con el de telas). La deuda
+  vencida lleva la insignia roja "Vencida"; la fila de telas, la ámbar "N telas". En celular
+  el botón de cada fila va a la derecha.
+- **Lo anotó el asistente:** ver "Cronología del pedido".
+- **Tela del pedido:** una tarjeta más del pedido por dentro, con las piezas de siempre: una
+  fila por tela (el nombre como enlace a Telas y los metros en gris), la insignia ámbar "Falta
+  tela" (circulito vacío) o la gris "Ya se cortó" en la cabeza, y el aviso ámbar (`.aviso`)
+  "Te faltan N m de X: tienes M m." debajo de la tela que no alcanza.
+- **Colores:** los de siempre. Ámbar para lo que falta o está sin guardar, rojo solo para
+  deudas vencidas y atrasos, verde solo para "Listo".
 
 ## Lo que se tomó de Shopify y lo que no
 

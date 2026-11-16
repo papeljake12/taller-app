@@ -34,13 +34,28 @@ Con esta etapa ya hay algo que se puede vender.
 
 ### 3. Ahorro de trabajo
 
-- Asistente del taller (tanda 7): la dueña le pregunta por sus pedidos, abonos, telas y
-  gastos y le contesta con las cifras; redacta mensajes y cotiza. Solo consulta. En la tanda 8,
-  tareas con confirmación. Ver `docs/10-asistente.md`.
-- IA para crear pedidos desde un mensaje o dictado.
-- Avisos automáticos: entregas de la semana, saldos vencidos, fechas de dotación.
+Desde el 15 de noviembre de 2026 esta etapa se ordena alrededor del **agente del taller**
+(`docs/12-agente.md`, aprobado por David). La idea: "Tú le cuentas, el agente lo hace. Tú
+solo confirmas." Para alguien que lleva años con el cuaderno, anotar todo a mano en la
+aplicación se siente como más trabajo; con el agente, ella cuenta lo que pasó y solo revisa.
+
+- **Asistente del taller (tanda 7, hecho):** la dueña le pregunta por sus pedidos, abonos,
+  telas y gastos y le contesta con las cifras; redacta mensajes y cotiza. Ver
+  `docs/10-asistente.md`.
+- **El agente, lo mínimo (tanda 8: T38, T39, T40 y T43):** ella le cuenta "vino la profe,
+  quiere 30 uniformes y dejó 500 mil" y el agente arma un borrador con el cliente, el pedido,
+  el abono y la tela. Nada se guarda hasta que ella toca **Guardar**. Cada mañana, arriba de
+  Hoy, le deja un resumen: a quién cobrar, qué tela no alcanza y qué pedidos esperan tallas.
+  El plan está en `docs/13-plan-tanda-8.md`.
+- **El agente, lo que sigue (T41, T42, T44 y T45):** se arma después de presentárselo a ella
+  y preguntarle qué más quiere. Cambiar la etapa y anotar "Usé" y "Entró" de tela con el
+  agente, descontar la tela al pasar a Corte, la lista de compras automática con la tela y los
+  materiales que faltan, y avisos con la acción lista (cobros quietos, entregas cerca, tallas
+  que faltan).
+- Por decidir aparte (cada una pide algo nuevo): dictarle por voz, que mande WhatsApp solo y
+  leer una foto del cuaderno.
+- Avisos de fechas de dotación.
 - Ficha de producción por pedido, para imprimir.
-- Lista de compras automática con los materiales que faltan.
 - Repetir un pedido anterior.
 - Medidas guardadas por persona.
 - Pago a costureras.

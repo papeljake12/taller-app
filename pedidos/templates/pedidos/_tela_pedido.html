@@ -1,0 +1,14 @@
+{% load piezas %}{% comment %}
+Tarjeta "Tela del pedido" (tanda 8, diseno/pedido.html): qué tela del inventario usa el pedido y
+cuántos metros. Solo para ver: la anota el agente al guardar un pedido nuevo; corregirla desde
+aquí llega con T42. Mientras el pedido está Confirmado esos metros cuentan como apartados y, si no
+alcanzan, sale "Falta tela" en ámbar con un aviso por cada tela. En corte o después, "Ya se
+cortó". Cotizado, sin insignia: todavía no aparta nada. Sin tela anotada, la tarjeta no sale.
+{% endcomment %}{% if tela_del_pedido.filas %}<section class="tarjeta" id="pedido-tela" aria-labelledby="t-tela-pedido">
+<div class="tarjeta__cabeza"><h2 id="t-tela-pedido">Tela del pedido</h2>{% if tela_del_pedido.faltan %}<span class="tarjeta__aparte"><span class="etiqueta etiqueta--ambar etiqueta--vacio">Falta tela</span></span>{% elif tela_del_pedido.cortada %}<span class="tarjeta__aparte"><span class="etiqueta etiqueta--gris">Ya se cortó</span></span>{% endif %}</div>
+<div class="tarjeta__cuerpo" style="gap: 0; padding-top: 0">
+{% for fila in tela_del_pedido.filas %}<div class="renglon"><a class="enlace" href="{% url 'telas:inicio' %}" style="flex: 1">{{ fila.tela.nombre }}</a><span class="texto-2">{{ fila.metros|metros }}</span></div>
+{% if fila.faltan %}<p class="aviso">Te faltan {{ fila.faltan|metros }} de {{ fila.tela.nombre|lower }}: tienes {{ fila.tela.metros|metros }}.</p>
+{% endif %}{% endfor %}</div>
+</section>
+{% endif %}

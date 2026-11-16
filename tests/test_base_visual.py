@@ -977,7 +977,7 @@ def test_con_el_asistente_la_caja_de_hoy_le_pregunta(sesion_duena, asistente_pre
     assert "caja-grande--asistente" in caja["clases"]
     assert caja["atributos"]["action"] == "/asistente/"
     assert texto["etiqueta"] == "textarea"
-    assert texto["atributos"]["placeholder"] == "Pregúntale algo a tu asistente"
+    assert texto["atributos"]["placeholder"] == "Cuéntale o pregúntale algo a tu asistente"
     assert texto["atributos"]["maxlength"] == "500"
     assert any("avatar-asistente" in e["clases"] for e in elementos)
     # Los atajos de siempre siguen, y el buscador de la caja ya no está.

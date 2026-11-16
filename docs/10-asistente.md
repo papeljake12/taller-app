@@ -1,8 +1,10 @@
 # Asistente del taller
 
-**Estado:** aprobado por David el 14 de noviembre de 2026. Falta aprobar las piezas nuevas de
-la maqueta (ver "Lo que ve la usuaria"). El plan de construcción de la tanda 7 está en
-`docs/11-plan-tanda-7.md`.
+**Estado:** aprobado por David el 14 de noviembre de 2026 y construido en la tanda 7 (plan en
+`docs/11-plan-tanda-7.md`). Desde la tanda 8 **ya no es solo consulta**: también propone
+tareas en un borrador que ella guarda con un toque. Eso está en `docs/12-agente.md` (aprobado
+el 15 de noviembre de 2026) y su plan en `docs/13-plan-tanda-8.md`. Este documento sigue
+valiendo para todo lo que el asistente ya hacía.
 
 ## Qué es
 
@@ -30,9 +32,10 @@ se tomó el asistente. Se corrige en la tanda 7.
 | Modelo | Claude Opus 5.5 (`claude-opus-5-5`) |
 | Esfuerzo | `medium` para consultas y mensajes; `high` para lo que toca plata (quién debe, cuentas del mes, gastos, cotizar). Se decide **una vez por pregunta**, con una regla en el código, no con IA |
 | Enrutar entre modelos (Haiku, Sonnet, Opus) | No por ahora. Se mide en la prueba real (T36) y se reconsidera cuando haya varios talleres |
-| Quién lo usa | Solo la dueña en la tanda 7. Las costureras entran en la tanda 8, con los mismos permisos que ya tienen |
-| Qué hace | Tanda 7: consultar, saber la pantalla actual, escribir mensajes y cotizar. **No crea, no cambia y no borra nada.** Tanda 8: tareas con confirmación |
-| Borrar | Nunca. Ni en la tanda 8 |
+| Quién lo usa | Solo la dueña. Cambió el 15 de noviembre de 2026: como solo ella usa la aplicación, las costureras no entran en la tanda 8. Lo que harían está escrito en `docs/04-permisos.md` ("El agente") |
+| Qué hace | Tanda 7: consultar, saber la pantalla actual, escribir mensajes y cotizar. Tanda 8: además **propone** pedidos, abonos y gastos en un borrador. **Nada se guarda hasta que ella toca Guardar**, y se guarda con los mismos formularios de las pantallas. **Nunca borra** |
+| Borrar | Nunca. Ni en la tanda 8 ni después |
+| Tocar Guardar | No cuenta como pregunta y no llama a Claude (decisión del 15 de noviembre de 2026) |
 | Barra de uso | Cuenta **preguntas**, no plata. La plata la ve solo David, en `/admin` |
 | Límites | 600 preguntas al mes y 40 al día por taller, editables por David en `/admin`. Al llegar al límite, **se frena** con un mensaje amable |
 | Encendido | **Apagado** para cada taller hasta que David lo active en `/admin` (límite en 0 = apagado) |
@@ -139,10 +142,16 @@ tarjeta de uso en Mi taller (`diseno/mi-taller.html`).
 - El registro de la aplicación (log) anota taller, tokens y esfuerzo de cada pregunta, **sin**
   el texto de la pregunta.
 
-## Tanda 8 (después)
+## Tanda 8: el agente
 
-Tareas con confirmación: crear pedidos, anotar abonos y gastos, cambiar la etapa y anotar
-"Usé" en telas. El asistente muestra un borrador con un botón "Guardar" y solo se guarda
-cuando ella lo toca, usando los mismos formularios y reglas de las pantallas. Nunca borra.
-Las costureras entran con sus permisos actuales. Queda por decidir si la cronología del
-pedido marca lo que se hizo "con el asistente". El bosquejo está en `docs/11-plan-tanda-7.md`.
+Lo que viene después de la tanda 7 ya está decidido y escrito aparte:
+
+- **Qué hace y por qué:** `docs/12-agente.md`. Ella le cuenta lo que pasó, el agente arma un
+  borrador (pedido, abono, gasto, tela) y ella lo guarda con un toque. Cada mañana le deja un
+  resumen arriba de Hoy. Lo guardado con el agente queda marcado en la cronología del pedido
+  ("Lo anotó el asistente"), que era lo que quedaba por decidir.
+- **Cómo se construye:** `docs/13-plan-tanda-8.md` (T38, T39, T40 y T43; lo demás, después
+  de presentárselo a ella).
+
+El bosquejo que había en la sección 7 de `docs/11-plan-tanda-7.md` quedó reemplazado por esos
+dos documentos.
