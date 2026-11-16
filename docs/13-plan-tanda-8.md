@@ -322,6 +322,17 @@ Lo que cambió respecto a lo de arriba al construir la base. **Manda esto si alg
   - la nota de lo guardado en el `system` de la siguiente pregunta se acepta y Claude la usa;
   - sin herramientas (como el resumen) contesta un párrafo corto sin 400.
 
+### 1.7 Ajustes al unir los carriles (revisor y coordinador)
+
+- El resumen cobra solo las deudas **vencidas** (como la maqueta); las demás ya están en la
+  tarjeta "Quién te debe" de Hoy.
+- `texto_pedir_tallas` vive en `pedidos/mensajes.py` (lo escribió el carril C).
+- La revisión de cifras (`cifras_en_pesos`) también ve "480 mil" y "1,8 millones".
+- Un pedido sin abono nace Cotizado y no aparta tela: su aviso dice "Cuando lo confirmes, te
+  faltarán 48 m de dril azul."
+- Queda para preguntarle a David: un abono a un pedido Cotizado lo deja Cotizado (igual que la
+  pantalla). ¿Debería pasarlo a Confirmado, como el pedido nuevo con abono?
+
 ## 2. Base del coordinador (T38, sin carriles)
 
 **T38. Base: documentos, maqueta, modelo, cálculos, borrador firmado y `confirmar`**

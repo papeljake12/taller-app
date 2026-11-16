@@ -167,19 +167,6 @@ def _por_whatsapp(texto_boton, pedido, mensaje):
     return Enlace(texto_boton, enlace) if enlace else _ver_pedido(pedido)
 
 
-def texto_pedir_tallas(pedido, direccion):
-    """El mensaje para pedirle al cliente las tallas que faltan, con el enlace del formulario.
-
-    Mismo tono que los de pedidos/mensajes.py (que no trae uno para pedir tallas).
-    """
-    recibidas, esperadas = calculos.tallas_recibidas(pedido)
-    return (
-        f"Hola, le escribimos {mensajes.firma(pedido.taller)}. Para su pedido "
-        f"({_sin_punto(pedido.detalle)}) todavía nos faltan {esperadas - recibidas} de "
-        f"{esperadas} tallas. Las pueden enviar en este enlace: {direccion} ¡Gracias!"
-    )
-
-
 # --- Los puntos -------------------------------------------------------------------------------
 
 
@@ -335,7 +322,7 @@ def tallas(taller, hoy=None, url_base=""):
                 titulo=pedido.cliente.nombre,
                 pedido=_sin_punto(pedido.detalle),
                 detalle=detalle + ".",
-                boton=_por_whatsapp("Pedir tallas", pedido, texto_pedir_tallas(pedido, direccion)),
+                boton=_por_whatsapp("Pedir tallas", pedido, mensajes.texto_pedir_tallas(pedido, direccion)),
             )
         )
     return puntos

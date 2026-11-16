@@ -122,10 +122,10 @@ hacen después de presentárselo a ella.
   la cronología y "Tela del pedido" (solo para ver); contratos, esquemas, borrador firmado de un solo uso, guardadores y la
   dirección `asistente/confirmar/`; instrucciones sin "solo consulta"; prueba corta con la
   clave.
-- [ ] **T39. Proponer pedido y cliente** (carril A). Con el total del Cotizador, el abono
+- [x] **T39. Proponer pedido y cliente** (carril A). Con el total del Cotizador, el abono
   inicial, la tela y "si no está seguro, pregunta".
-- [ ] **T40. Proponer abono y gasto** (carril B).
-- [ ] **T43. Resumen de la mañana** (carril C). El comando `preparar_resumen`, la tarea de la
+- [x] **T40. Proponer abono y gasto** (carril B).
+- [x] **T43. Resumen de la mañana** (carril C). El comando `preparar_resumen`, la tarea de la
   madrugada del servidor (la instala David) y su tarjeta arriba de Hoy.
 
 Para después de presentárselo (escritas, sin construir):

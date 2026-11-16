@@ -218,7 +218,7 @@ def test_los_botones_abren_whatsapp_con_los_textos_y_sin_numero_van_al_pedido(ej
 def test_el_mensaje_de_pedir_tallas(ejemplo):
     colegio = _pedido(ejemplo, "Colegio Nuevo Amanecer")
 
-    texto = resumen.texto_pedir_tallas(colegio, "https://taller.example/tallas/abc/")
+    texto = mensajes.texto_pedir_tallas(colegio, "https://taller.example/tallas/abc/")
 
     assert texto == (
         "Hola, le escribimos de Taller de ejemplo. Para su pedido (40 uniformes de diario) "

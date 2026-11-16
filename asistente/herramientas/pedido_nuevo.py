@@ -220,7 +220,17 @@ def _revisado(prenda, tela):
     return "Revisé " + ", ".join(partes[:-1]) + " y " + partes[-1]
 
 
-def _fila_tela(ctx, tela, metros, prenda, cantidad):
+def _aviso_de_tela(faltan, nombre_tela, confirmado):
+    """Lo que falta de tela. Un pedido sin abono nace Cotizado y todavía no aparta tela (ajuste
+    del revisor): el aviso dice que faltará cuando se confirme."""
+    if faltan <= 0:
+        return ""
+    if confirmado:
+        return f"Te faltan {texto_metros(faltan)} de {nombre_tela}."
+    return f"Cuando lo confirmes, te faltarán {texto_metros(faltan)} de {nombre_tela}."
+
+
+def _fila_tela(ctx, tela, metros, prenda, cantidad, confirmado=True):
     """(la fila "Tela", la acción tela_pedido)."""
     nombre_tela = nombre_para_titulo(tela.nombre, 1)  # "Dril azul" -> "dril azul"
     por_unidad = ""
@@ -246,7 +256,7 @@ def _fila_tela(ctx, tela, metros, prenda, cantidad):
         "Tela",
         f"{texto_metros(necesita)} de {nombre_tela}{por_unidad}. {tienes}.",
         None,
-        f"Te faltan {texto_metros(faltan)} de {nombre_tela}." if faltan > 0 else "",
+        _aviso_de_tela(faltan, nombre_tela, confirmado),
     )
     accion = {"tipo": "tela_pedido",
               "datos": {"pedido": "@0", "tela": tela.pk, "metros": str(necesita)}}
@@ -313,7 +323,9 @@ def proponer_pedido(
         usada = _tela(ctx, tela)
         if isinstance(usada, Resultado):
             return usada
-        fila_tela, accion = _fila_tela(ctx, usada, metros, guardada, limpio["cantidad"])
+        fila_tela, accion = _fila_tela(
+            ctx, usada, metros, guardada, limpio["cantidad"], confirmado=abono is not None
+        )
         acciones.append(accion)
 
     # 7. Las filas, como en diseno/asistente-agente.html.

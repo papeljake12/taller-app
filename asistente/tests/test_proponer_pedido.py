@@ -559,3 +559,11 @@ def test_las_opciones_no_traen_secretos(ctx, taller, uniforme):
     texto = json.dumps(proponer(ctx, cliente="colegio").datos, ensure_ascii=False)
 
     assert "300 999 8888" not in texto and "Secreto" not in texto
+
+
+def test_sin_abono_la_tela_faltara_cuando_lo_confirme(ctx, uniforme, dril, colegio):
+    # Ajuste del revisor: sin abono el pedido nace Cotizado y todavía no aparta tela.
+    resultado = proponer(ctx, abono=0)
+
+    assert filas(resultado)["Tela"]["aviso"] == (
+        "Cuando lo confirmes, te faltarán 48 m de dril azul.")
