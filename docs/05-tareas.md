@@ -109,11 +109,40 @@ Qué es: `docs/10-asistente.md`. Cómo se construye y qué prueba cada tarea:
 - [x] **T37. La esfera de Lucy como ícono del asistente** (coordinador, pedido de David del
   2026-11-15): reemplaza al botón con carita en el encabezado, la caja de Hoy y el panel.
 
+## Tanda 8: el agente del taller (lo mínimo)
+
+Qué es: `docs/12-agente.md` (aprobado por David el 2026-11-15). Cómo se construye y qué prueba
+cada tarea: `docs/13-plan-tanda-8.md`. En esta tanda van T38, T39, T40 y T43; las demás se
+hacen después de presentárselo a ella.
+
+- [ ] **T38. Base: documentos, maqueta, modelo, cálculos, borrador firmado y `confirmar`**
+  (coordinador). Documentos al día; piezas nuevas de la maqueta (las aprueba David);
+  `TelaPedido`, `MovimientoTela.pedido`, `por_asistente`, `ResumenDelDia` y `BorradorUsado`
+  con sus migraciones; tela comprometida y "¿alcanza?" en `calculos.py`; "Lo anotó el asistente" en
+  la cronología y "Tela del pedido" (solo para ver); contratos, esquemas, borrador firmado de un solo uso, guardadores y la
+  dirección `asistente/confirmar/`; instrucciones sin "solo consulta"; prueba corta con la
+  clave.
+- [ ] **T39. Proponer pedido y cliente** (carril A). Con el total del Cotizador, el abono
+  inicial, la tela y "si no está seguro, pregunta".
+- [ ] **T40. Proponer abono y gasto** (carril B).
+- [ ] **T43. Resumen de la mañana** (carril C). El comando `preparar_resumen`, la tarea de la
+  madrugada del servidor (la instala David) y su tarjeta arriba de Hoy.
+
+Para después de presentárselo (escritas, sin construir):
+
+- [ ] **T41. Proponer etapa, "Usé" y "Entró".** Incluye "Descontar tela" al pasar a Corte,
+  también desde la pantalla del pedido.
+- [ ] **T42. Inventario:** corregir "Tela del pedido" desde la pantalla y lista de compras.
+- [ ] **T44. Avisos con la acción lista** (cobro quieto, entrega cerca, tela que no alcanza,
+  tallas que faltan).
+- [ ] **T45. Integración:** prueba de punta a punta de todo el agente, capturas y prueba real
+  con la clave (costo y tiempo). La parte de T38 a T43 se hace al cerrar la tanda 8.
+
 ## Etapas siguientes (todavía sin partir en tareas)
 
-- **Etapa 3, ahorro de trabajo:** IA para crear pedidos desde un mensaje o dictado, avisos
-  automáticos, ficha de producción para imprimir, lista de compras, repetir pedido, medidas
-  guardadas por persona, pago a costureras, ganancia por pedido.
+- **Etapa 3, ahorro de trabajo:** lo que queda después del agente (tanda 8): voz, ficha de
+  producción para imprimir, repetir pedido, medidas guardadas por persona, pago a costureras,
+  ganancia por pedido.
 - **Etapa 4, más ventas:** portal del cliente, catálogo público, pagos en línea, agente de
   WhatsApp.
 - **Etapa 5, otros talleres:** registro de talleres nuevos, planes de precio, facturación
