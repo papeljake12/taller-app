@@ -11,6 +11,11 @@ La conversación se siembra por la vista de verdad con un Claude de mentira (asi
 una clave falsa: nunca se usa la clave del .env ni se sale a internet. Al terminar, los límites
 del taller y el conteo de preguntas quedan como estaban.
 
+Desde la tanda 8 (el agente) la conversación de ejemplo es la del agente: el pedido de las 10:30
+con su borrador pendiente, un abono ya guardado y un gasto pendiente. El "guardado" del abono se
+pone solo en la sesión (no se crea ningún abono), y Hoy lleva un resumen de la mañana de ejemplo
+que se borra al terminar.
+
 Con --formatos completo toma cada pantalla en 1366 x 768, en 1920 x 1080 y en celular (390 px).
 En computador comprueba que la página misma no se desplace (docs/08-diseno.md,
 "Desplazamiento": lo que se desplaza es el contenido de la hoja) y guarda la hoja completa,
@@ -99,7 +104,19 @@ PANTALLAS = {
         Pantalla("pedido-con-asistente", "/pedidos/{pedido}/", asistente=True),
         Pantalla("resumen-con-asistente", "/resumen/", asistente=True, solo_computador=True),
     ],
+    8: [
+        Pantalla("hoy-agente", "/", "hoy-agente.html"),
+        Pantalla("asistente-agente", "/", "asistente-agente.html", asistente=True),
+        Pantalla("pedido-agente", "/pedidos/{pedido}/", "pedido.html"),
+    ],
 }
+
+# El resumen de la mañana de ejemplo para las capturas (se borra al terminar).
+RESUMEN_DE_EJEMPLO = (
+    "Buenos días. Hoy no tienes entregas. Va atrasado el pedido de 8 overoles de Ferretería La "
+    "Esquina y todavía te debe $ 480.000. Faltan tallas en dos pedidos y se están acabando la "
+    "popelina y el piqué."
+)
 
 # Una clave que no sirve para nada: el asistente aparece, pero nada puede llamar a Claude.
 CLAVE_FALSA = "clave-falsa-solo-para-capturas"
@@ -197,7 +214,68 @@ def datos_para_direcciones(usuario):
     }
 
 
-def preparar_asistente(usuario, clave):
+def guion_del_agente(taller):
+    """(guion, preguntas) de la tanda 8: el pedido de las 10:30, un abono y un gasto."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from asistente import falso
+    from pedidos.models import Cliente, Pedido
+
+    colegio = Cliente.objects.filter(taller=taller, nombre="Colegio Nuevo Amanecer").first()
+    tambores = Pedido.objects.filter(taller=taller, detalle__startswith="15 polleras").first()
+    if colegio is None or tambores is None:
+        raise SystemExit("Faltan los ejemplos de la tanda 8: corre cargar_ejemplos.")
+    entrega = (timezone.localdate() + timedelta(days=30)).isoformat()
+    guion = [
+        falso.usa(("buscar_clientes", {"texto": "Colegio Nuevo Amanecer", "tipo": None}, "t1"),
+                  ("telas", {"solo_bajas": False}, "t2")),
+        falso.usa(("proponer_pedido", {
+            "cliente": colegio.nombre, "cliente_id": colegio.pk, "tipo_cliente": "",
+            "detalle": "30 uniformes de diario", "cantidad": 30, "tallaje": "nino",
+            "fecha_entrega": entrega, "prenda": "Uniforme de diario", "total": 0,
+            "abono": 500_000, "tela": "Dril azul", "metros": "",
+        }, "t3")),
+        falso.texto("Te dejé el pedido listo. Revísalo y toca Guardar:\n\nEl total sale de tu "
+                    "prenda guardada, con 30 % de ganancia. Si cobras otro precio, dímelo."),
+        falso.usa(("proponer_abono", {"pedido_id": tambores.pk, "cliente": "", "valor": 300_000,
+                                      "fecha": ""}, "t4")),
+        falso.texto("Este es el abono. Revísalo y toca Guardar:"),
+        falso.usa(("proponer_gasto", {"concepto": "Recibo de agua del taller",
+                                      "categoria": "servicios", "valor": 65_000, "fecha": "",
+                                      "pedido_id": 0}, "t5")),
+        falso.texto("Revísalo y toca Guardar:"),
+    ]
+    preguntas = [
+        "Vino la profe del Colegio Nuevo Amanecer, quiere 30 uniformes de diario para el 15 de "
+        "diciembre y dejó 500 mil.",
+        "Me abonaron 300 mil de Tambores del Río",
+        "Pagué el agua del taller, 65 mil",
+    ]
+    return guion, preguntas, tambores
+
+
+def marcar_guardado_en_la_sesion(clave, numero, pedido):
+    """Pone el borrador número `numero` como guardado, solo en la sesión (nada en la base)."""
+    from importlib import import_module
+
+    from django.conf import settings
+    from django.urls import reverse
+
+    sesion = import_module(settings.SESSION_ENGINE).SessionStore(session_key=clave)
+    conversacion = sesion["asistente"]
+    tarjetas = [t for turno in conversacion["turnos"] for t in turno["tarjetas"]
+                if t.get("tipo") == "borrador"]
+    tarjetas[numero]["datos"].update(
+        estado="guardado", hora="10:42 a. m.", mensaje="",
+        enlaces=[{"texto": "Ver el pedido", "url": reverse("pedidos:detalle", args=[pedido.pk])}],
+    )
+    sesion["asistente"] = conversacion
+    sesion.save()
+
+
+def preparar_asistente(usuario, clave, tanda=7):
     """Prende el asistente del taller y siembra una conversación de ejemplo en la sesión.
 
     Las tres preguntas pasan por la vista de verdad (cupo, ciclo, herramientas y tarjetas) con
@@ -220,12 +298,21 @@ def preparar_asistente(usuario, clave):
     taller.asistente_limite_dia = taller.asistente_limite_dia or 40
     taller.save(update_fields=["asistente_limite_mes", "asistente_limite_dia"])
 
+    from asistente.models import ResumenDelDia
+
+    resumen_creado = None
+    if tanda >= 8 and not ResumenDelDia.objects.filter(taller=taller, fecha=hoy).exists():
+        resumen_creado = ResumenDelDia.objects.create(
+            taller=taller, fecha=hoy, texto=RESUMEN_DE_EJEMPLO)
+
     def deshacer():
         taller.asistente_limite_mes, taller.asistente_limite_dia = limites
         taller.save(update_fields=["asistente_limite_mes", "asistente_limite_dia"])
         UsoAsistente.objects.filter(taller=taller, fecha=hoy).delete()
         if uso_antes:
             UsoAsistente.objects.create(**uso_antes)
+        if resumen_creado is not None:
+            resumen_creado.delete()
 
     tambores = Pedido.objects.filter(taller=taller, detalle__startswith="15 polleras").first()
     guion = [
@@ -252,6 +339,9 @@ def preparar_asistente(usuario, clave):
                     "ganancia u otra cantidad, dímelo y la vuelvo a sacar."),
     ]
     preguntas.append("¿Cuánto cobro por 15 vestidos de comparsa?")
+    tambores_del_agente = None
+    if tanda >= 8:
+        guion, preguntas, tambores_del_agente = guion_del_agente(taller)
 
     import asistente.cliente
 
@@ -268,6 +358,8 @@ def preparar_asistente(usuario, clave):
                                        HTTP_HX_REQUEST="true")
             if respuesta.status_code != 200 or "asistente__turno" not in respuesta.text:
                 raise SystemExit(f"No se pudo sembrar la conversación: «{pregunta}».")
+        if tambores_del_agente is not None:
+            marcar_guardado_en_la_sesion(clave, 1, tambores_del_agente)
     except BaseException:
         deshacer()
         raise
@@ -339,7 +431,7 @@ def main():
     faltan = [p.nombre for p in pantallas if "{" in p.url and not datos]
     if faltan:
         raise SystemExit(f"Faltan pedidos para {faltan}: carga los ejemplos (cargar_ejemplos).")
-    deshacer = preparar_asistente(usuario, clave) if opciones.tanda >= 7 else None
+    deshacer = preparar_asistente(usuario, clave, opciones.tanda) if opciones.tanda >= 7 else None
     puerto = puerto_libre()
     try:
         servidor = levantar_servidor(

@@ -491,8 +491,8 @@ def test_hoy_muestra_la_tarjeta_con_la_esfera_el_parrafo_y_las_filas(client, eje
     assert '<section class="tarjeta resumen-dia" aria-labelledby="t-resumen">' in html
     assert '<span class="esfera esfera--chica" data-esfera aria-hidden="true">' in html
     assert '<h2 id="t-resumen">Tu resumen de hoy</h2>' in html
-    assert ('<span class="tarjeta__aparte"><span class="solo-computador">Lo preparé a las&nbsp;'
-            "</span>5:00 a. m.</span>") in html
+    assert ('<span class="tarjeta__aparte"><span><span class="solo-computador">Lo preparé a las '
+            '</span>5:00 a. m.</span></span>') in html
     assert 'y todavía te debe <span class="dinero">$ 480.000</span>. Faltan tallas' in html
     tarjeta = html[html.index("resumen-dia"):html.index("</section>", html.index("resumen-dia"))]
     assert tarjeta.count('<div class="fila fila--compacta">') == 4

@@ -44,7 +44,8 @@ def preguntar(navegador, pregunta, pagina="/"):
         "/asistente/preguntar/", {"pregunta": pregunta, "pagina": pagina}, **HTMX
     )
     assert respuesta.status_code == 200
-    return respuesta.content.decode()
+    # La plata del borrador lleva un espacio que no se parte entre el $ y la cifra.
+    return respuesta.content.decode().replace(" ", " ")
 
 
 def resultados_de_herramientas(claude, llamada=1):
@@ -176,3 +177,100 @@ def test_si_claude_no_responde_no_se_gasta_la_pregunta(navegador, taller, monkey
 
     assert "No pude contestar ahora." in html
     assert not UsoAsistente.objects.filter(taller=taller, preguntas__gt=0).exists()
+
+
+# --- Tanda 8: el agente propone y ella guarda con un toque ------------------------------------
+
+from datetime import timedelta  # noqa: E402
+from decimal import Decimal  # noqa: E402
+
+from django.core.management import call_command  # noqa: E402
+
+from pedidos.models import Abono, Cliente  # noqa: E402
+from telas.models import TelaPedido  # noqa: E402
+
+
+def firma_de(html):
+    firmas = re.findall(r'name="firma" value="([^"]+)"', html)
+    assert len(firmas) == 1
+    return firmas[0]
+
+
+def test_el_pedido_de_las_10_30_de_punta_a_punta(navegador, taller, monkeypatch, settings):
+    colegio = Cliente.objects.get(taller=taller, nombre="Colegio Nuevo Amanecer")
+    entrega = (timezone.localdate() + timedelta(days=30)).isoformat()
+    claude = falso.instalar(monkeypatch, settings, [
+        falso.usa(("buscar_clientes", {"texto": "Colegio Nuevo Amanecer", "tipo": None}, "t1"),
+                  ("telas", {"solo_bajas": False}, "t2")),
+        falso.usa(("proponer_pedido", {
+            "cliente": "Colegio Nuevo Amanecer", "cliente_id": colegio.pk, "tipo_cliente": "",
+            "detalle": "30 uniformes de diario", "cantidad": 30, "tallaje": "nino",
+            "fecha_entrega": entrega, "prenda": "Uniforme de diario", "total": 0,
+            "abono": 500_000, "tela": "Dril azul", "metros": "",
+        }, "t3")),
+        falso.texto("Te dejé el pedido listo. Revísalo y toca Guardar."),
+        falso.texto("Ya quedó guardado."),
+    ])
+    pedidos_antes = Pedido.objects.count()
+
+    html = preguntar(navegador, "Vino la profe del Colegio Nuevo Amanecer, quiere 30 uniformes "
+                                "de diario y dejó 500 mil")
+
+    # La tarjeta trae las cifras de la aplicación, y nada se guardó todavía.
+    assert "Para guardar" in html and "Sin guardar" in html
+    assert "$ 2.310.000" in html and "$ 1.810.000" in html
+    assert "Te faltan 48 m de dril azul." in html
+    assert Pedido.objects.count() == pedidos_antes
+    # La firma nunca le llegó a Claude.
+    firma = firma_de(html)
+    assert firma not in todo_lo_que_vio_claude(claude)
+
+    guardado = navegador.post("/asistente/confirmar/", {"firma": firma}, **HTMX).content.decode()
+
+    assert "Listo" in guardado
+    pedido = Pedido.objects.get(taller=taller, detalle="30 uniformes de diario")
+    assert (pedido.cliente, pedido.total, pedido.estado, pedido.por_asistente) == (
+        colegio, 2_310_000, "confirmado", True)
+    assert Abono.objects.get(pedido=pedido).valor == 500_000
+    assert TelaPedido.objects.get(pedido=pedido).metros == Decimal("66.00")
+    ficha = navegador.get(f"/pedidos/{pedido.pk}/").content.decode()
+    assert "Lo anotó el asistente" in ficha
+    assert "Falta tela" in ficha and "Te faltan 48 m de dril azul: tienes 18 m." in ficha
+
+    # En la siguiente pregunta, Claude sabe lo que se guardó.
+    preguntar(navegador, "¿Qué quedó?")
+    assert f"pedido {pedido.pk}" in claude.llamadas[-1]["mensajes"][-1]["content"]
+
+
+def test_un_abono_desde_la_pantalla_del_pedido(navegador, taller, monkeypatch, settings):
+    tambores = Pedido.objects.get(taller=taller, cliente__nombre="Grupo de danza Tambores del Río")
+    falso.instalar(monkeypatch, settings, [
+        falso.usa(("proponer_abono", {"pedido_id": 0, "cliente": "", "valor": 300_000,
+                                      "fecha": ""}, "t1")),
+        falso.texto("Este es el abono. Revísalo y toca Guardar."),
+    ])
+
+    html = preguntar(navegador, "Me abonaron 300 mil", pagina=f"/pedidos/{tambores.pk}/")
+    assert "Falta $ 450.000" in html
+
+    navegador.post("/asistente/confirmar/", {"firma": firma_de(html)}, **HTMX)
+
+    abono = Abono.objects.get(pedido=tambores, valor=300_000)
+    assert abono.por_asistente
+    pagos = navegador.get(f"/pedidos/{tambores.pk}/").content.decode()
+    assert "$ 450.000" in pagos
+
+
+def test_el_resumen_de_la_manana_sale_en_hoy(navegador, taller, monkeypatch, settings):
+    falso.instalar(monkeypatch, settings, [
+        falso.texto("Buenos días. Va atrasado el pedido de 8 overoles de Ferretería La Esquina "
+                    "y todavía te debe $ 480.000."),
+    ])
+
+    call_command("preparar_resumen")
+    html = sin_espacios(navegador.get("/").content.decode())
+
+    assert "Tu resumen de hoy" in html
+    assert "todavía te debe" in html
+    assert "Ferretería La Esquina" in html and "Vencida" in html
+    assert "Telas por acabarse" in html
